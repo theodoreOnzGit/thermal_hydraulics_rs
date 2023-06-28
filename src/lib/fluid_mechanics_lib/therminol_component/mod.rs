@@ -1,7 +1,7 @@
 /// License
 ///    This file is part of thermal_hydraulics_rs, a partial library of the
 ///    thermal hydraulics library written in rust meant to help with the
-///    fluid mechanics aspects of the calculations
+///    fluid mechanics and heat transfer aspects of the calculations
 ///     
 ///    Copyright (C) 2022-2023  Theodore Kay Chen Ong, Singapore Nuclear
 ///    Research and Safety Initiative, Per F. Peterson, University of 
