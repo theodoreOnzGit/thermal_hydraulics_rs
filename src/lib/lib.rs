@@ -69,7 +69,11 @@
 #![warn(missing_docs)]
 extern crate uom;
 
+/// Fluid Mechanics Module
 pub mod fluid_mechanics_lib;
+
+/// Heat Transfer Module
+pub mod heat_transfer_lib;
 
 /// placeholder function
 pub fn add(left: usize, right: usize) -> usize {

@@ -4,17 +4,19 @@ pub mod concurrency_tests {
     use std::thread;
 
     use crate::fluid_mechanics_lib::fluid_component_calculation::FluidComponent;
-    use crate::fluid_mechanics_lib::fluid_component_calculation::
-        custom_component_calc::{FluidCustomComponentCalcPressureChange, FluidCustomComponentCalcPressureLoss};
+    // for future use, in case one wants to 
+    // 
+    //use crate::fluid_mechanics_lib::fluid_component_calculation::
+    //    custom_component_calc::{FluidCustomComponentCalcPressureChange, FluidCustomComponentCalcPressureLoss};
     use crate::fluid_mechanics_lib::fluid_component_calculation::standard_pipe_calc
-        ::{FluidPipeCalcPressureLoss,FluidPipeCalcPressureChange};
+        ::FluidPipeCalcPressureLoss;
     use uom::num_traits::Zero;
-    use uom::si::dynamic_viscosity::{millipascal_second, poise};
+    use uom::si::dynamic_viscosity::millipascal_second;
     use uom::si::f64::*;
     use uom::si::length::{meter, inch, millimeter};
     use uom::si::mass_density::kilogram_per_cubic_meter;
     use uom::si::mass_rate::kilogram_per_second;
-    use uom::si::pressure::{pascal, kilopascal};
+    use uom::si::pressure::pascal;
     use uom::si::angle::degree;
     
     /// Example 1: 
@@ -369,7 +371,7 @@ pub mod concurrency_tests {
 
         // i'm going to make an arbitrary function and move some values in
 
-        let mut mass_flow = MassRate::zero();
+        let mut _mass_flow = MassRate::zero();
 
         let f  = move || {
             // looks like instantiating structs here is ok
@@ -392,7 +394,7 @@ pub mod concurrency_tests {
 
             // and then let me bring in the air pipe
 
-            mass_flow = air_pipe.get_mass_flowrate_from_pressure_loss_immutable(pressure);
+            _mass_flow = air_pipe.get_mass_flowrate_from_pressure_loss_immutable(pressure);
             
         };
 
@@ -401,7 +403,7 @@ pub mod concurrency_tests {
 
         concurrent_thread.join().unwrap();
 
-        println!("{:?}", mass_flow);
+        println!("{:?}", _mass_flow);
 
     }
 
@@ -763,13 +765,13 @@ pub mod concurrency_tests {
 
         // i'm going to make an arbitrary function and move some values in
 
-        let mut mass_flow = MassRate::zero();
+        let mass_flow = MassRate::zero();
 
         let f  = move || {
             // looks like instantiating structs here is ok
             // and trait objects also
             let mut air_pipe_in_thread = AirPipe::new();
-            let mut trait_object_in_thread: 
+            let mut _trait_object_in_thread: 
                 &dyn FluidComponent = &mut air_pipe_in_thread;
 
             // i want to bring a pressure loss in
@@ -786,11 +788,11 @@ pub mod concurrency_tests {
 
             // let me see also if i can reference objects outside the thread
             // this is OK!
-            let trait_object_immutable: &dyn FluidComponent = &air_pipe;
+            let _trait_object_immutable: &dyn FluidComponent = &air_pipe;
             
             // i can also make mutable trait objects within here:
             // so yes i can borrow these as mutable and dow hat i want here
-            let trait_object_mutable: &mut dyn FluidComponent = &mut air_pipe_mutable;
+            let _trait_object_mutable: &mut dyn FluidComponent = &mut air_pipe_mutable;
             
             // now let me bring in the mutable air pipe
             // trait object
