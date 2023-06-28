@@ -1,7 +1,13 @@
 [package]
 name = "thermal_hydraulics_rs"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
+license = "GPL-3.0"
+description = "A Fluid Mechanics Library with useful traits and functions in Rust (part of a thermal hydraulics library)"
+homepage = "https://github.com/theodoreOnzGit/thermal_hydraulics_rs"
+repository ="https://github.com/theodoreOnzGit/thermal_hydraulics_rs"
+readme = "README.md"
+categories = ["science"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
