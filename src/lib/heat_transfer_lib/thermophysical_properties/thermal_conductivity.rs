@@ -135,6 +135,8 @@ fn fiberglass_thermal_conductivity(
 /// International journal of thermophysics, 12, 409-415. 
 ///
 /// data taken from ORNL
+///
+/// It's only good for range of 300K to 700K
 #[inline]
 fn steel_ss_304_l_ornl_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> ThermalConductivity {
@@ -246,4 +248,18 @@ pub fn thermal_conductivity_test_steel(){
         15.58,
         thermal_cond_graves_et_al_1991.value,
         max_relative=0.028);
+
+    // let's try now at 1000K 
+    // we expect thermal thermal_conductivity to be at 23.83
+
+    let thermal_cond_spline = 
+    steel_304_l_spline_thermal_conductivity(
+        ThermodynamicTemperature::new::<kelvin>(1000.0));
+
+    approx::assert_relative_eq!(
+        23.83,
+        thermal_cond_spline.value,
+        max_relative=0.028);
+
+
 }
