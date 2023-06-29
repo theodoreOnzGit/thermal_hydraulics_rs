@@ -228,15 +228,15 @@ pub fn ciet_crude_heater_v_1_0 (){
 
 
 
-    let enthalpy_outer_shell_next_timestep = 
-    control_volume_calculations::common_functions::
-    get_control_volume_enthalpy_next_timestep(
-            timestep, 
-            solid_conductor_enthalpy_flow, 
-            solid_conductor_enthalpy_flow, 
-            heat_supplied_to_system, 
-            work_done_on_system, 
-            control_volume_enthalpy_current_timestep);
+    //let enthalpy_outer_shell_next_timestep = 
+    //control_volume_calculations::common_functions::
+    //get_control_volume_enthalpy_next_timestep(
+    //        timestep, 
+    //        solid_conductor_enthalpy_flow, 
+    //        solid_conductor_enthalpy_flow, 
+    //        heat_supplied_to_system, 
+    //        work_done_on_system, 
+    //        control_volume_enthalpy_current_timestep);
 
 
 
