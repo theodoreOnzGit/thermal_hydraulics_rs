@@ -1,8 +1,5 @@
 use uom::si::f64::*;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
-use uom::si::pressure::atmosphere;
-use crate::fluid_mechanics_lib::therminol_component::
-dowtherm_a_properties::getDowthermADensity;
 use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAThermalConductivity;
 use uom::si::thermodynamic_temperature::kelvin;
 
@@ -14,6 +11,40 @@ use super::LiquidMaterial::*;
 
 use peroxide::prelude::*;
 
+/// returns thermal conductivity for a given material 
+///
+/// ```rust 
+/// use uom::si::f64::*;
+/// use uom::si::thermal_conductivity::watt_per_meter_kelvin;
+/// use uom::si::thermodynamic_temperature::kelvin;
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// SolidMaterial::SteelSS304L;
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// Material;
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// thermal_conductivity::thermal_conductivity;
+///
+/// use uom::si::pressure::atmosphere;
+///
+/// let steel = Material::Solid(SteelSS304L);
+/// let steel_temp = ThermodynamicTemperature::new::<kelvin>(350.0);
+/// let pressure = Pressure::new::<atmosphere>(1.0);
+///
+/// // at 350K, we should expect thermal conductivity, 
+/// // 15.58 W/(m K)
+///
+/// let steel_thermal_cond: ThermalConductivity = 
+/// thermal_conductivity(steel, steel_temp, pressure);
+///
+/// // Residuals from Graves et al. was about 3% at 350K for least 
+/// // squares regression. So 2.8% error is reasonable
+///
+/// approx::assert_relative_eq!(
+///     15.58,
+///     steel_thermal_cond.value,
+///     max_relative=0.028);
+///
+/// ``` 
 pub fn thermal_conductivity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> ThermalConductivity {
