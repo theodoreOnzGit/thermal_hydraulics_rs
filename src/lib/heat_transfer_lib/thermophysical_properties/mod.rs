@@ -39,3 +39,6 @@ pub mod density;
 
 /// Thermal conductivity calculation 
 pub mod thermal_conductivity;
+
+/// SpecificHeatCapacity calculation 
+pub mod specific_heat_capacity;

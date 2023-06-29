@@ -5,19 +5,19 @@ use std::f32::consts::PI;
 
 use uom::si::{f64::*, heat_transfer::watt_per_square_meter_kelvin};
 
-#[test]
-pub fn meant_to_fail(){
-
-    // now for rust , we don't have assert equal
-    // showing expected and test values
-    // we just see if left == right
-    // not like C#,
-    // where left is expected value,
-    // right is asserted value
-    //
-    assert_eq!(2.0,2.0);
-    unimplemented!();
-}
+//#[test]
+//pub fn meant_to_fail(){
+//
+//    // now for rust , we don't have assert equal
+//    // showing expected and test values
+//    // we just see if left == right
+//    // not like C#,
+//    // where left is expected value,
+//    // right is asserted value
+//    //
+//    assert_eq!(2.0,2.0);
+//    unimplemented!();
+//}
 
 /// This test prototypes the CIET 
 #[test]
