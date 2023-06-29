@@ -75,6 +75,10 @@ pub mod fluid_mechanics_lib;
 /// Heat Transfer Module
 pub mod heat_transfer_lib;
 
+/// use peroxide macros 
+#[macro_use]
+extern crate peroxide;
+
 /// placeholder function
 pub fn add(left: usize, right: usize) -> usize {
     left + right

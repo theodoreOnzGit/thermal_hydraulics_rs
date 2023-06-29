@@ -36,3 +36,6 @@ pub enum LiquidMaterial {
 
 /// Density calculation
 pub mod density;
+
+/// Thermal conductivity calculation 
+pub mod thermal_conductivity;
