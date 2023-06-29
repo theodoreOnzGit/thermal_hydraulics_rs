@@ -2,8 +2,10 @@ use uom::si::f64::MassDensity;
 use uom::si::f64::Pressure;
 use uom::si::f64::ThermodynamicTemperature;
 use uom::si::mass_density::kilogram_per_cubic_meter;
+use uom::si::pressure::atmosphere;
 use crate::fluid_mechanics_lib::therminol_component::
 dowtherm_a_properties::getDowthermADensity;
+use uom::si::thermodynamic_temperature::kelvin;
 
 use super::LiquidMaterial;
 use super::Material;
@@ -12,6 +14,28 @@ use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 
 /// returns a density given a material, temperature and pressure
+///
+/// example:
+///
+/// ```rust
+/// use uom::si::f64::*;
+/// use uom::si::pressure::atmosphere;
+/// use uom::si::thermodynamic_temperature::kelvin;
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::density::density;
+///
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::SolidMaterial::SteelSS304L;
+///
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::Material;
+///
+/// let steel = Material::Solid(SteelSS304L);
+/// let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
+/// let pressure = Pressure::new::<atmosphere>(1.0);
+///
+/// let density = density(steel, temperature, pressure);
+/// ```
 pub fn density(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> MassDensity {
@@ -84,4 +108,19 @@ fn copper_density() -> MassDensity {
 #[inline]
 fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> MassDensity{
     return getDowthermADensity(fluid_temp);
+}
+
+#[test]
+pub fn density_test_steel(){
+
+    let steel = Material::Solid(SteelSS304L);
+    let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+
+    let density = density(steel, temperature, pressure);
+
+    approx::assert_relative_eq!(
+        8030_f64,
+        density.value,
+        max_relative=0.01);
 }
