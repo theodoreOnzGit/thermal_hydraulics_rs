@@ -72,7 +72,7 @@ fn solid_thermal_conductivity(material: Material,
 
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature) ,
-        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(temperature),
+        SteelSS304L => steel_304_l_spline_thermal_conductivity(temperature),
         Copper => copper_thermal_conductivity(temperature),
     };
 
