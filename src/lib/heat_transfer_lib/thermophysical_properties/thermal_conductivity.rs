@@ -41,7 +41,7 @@ fn solid_thermal_conductivity(material: Material,
 
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature) ,
-        SteelSS304L => steel_ss_304_l_thermal_conductivity(temperature),
+        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(temperature),
         Copper => copper_thermal_conductivity(temperature),
     };
 
@@ -57,7 +57,8 @@ fn liquid_thermal_conductivity(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
-        Material::Solid(_) => panic!("liquid_thermal_conductivity, use LiquidMaterial enums only")
+        Material::Solid(_) => panic!(
+        "liquid_thermal_conductivity, use LiquidMaterial enums only")
     };
 
     let thermal_conductivity: ThermalConductivity = match liquid_material {
@@ -89,11 +90,11 @@ fn fiberglass_thermal_conductivity(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &thermal_conductivity_values_watt_per_meter_kelin);
 
-    let copper_thermal_conductivity_value = s.polynomial_at(
+    let fiberglass_thermal_conductivity_value = s.eval(
         temperature_value_kelvin);
 
     return ThermalConductivity::new::<watt_per_meter_kelvin>(
-        temperature_value_kelvin);
+        fiberglass_thermal_conductivity_value);
 }
 
 ///
@@ -101,8 +102,10 @@ fn fiberglass_thermal_conductivity(
 /// McElroy, D. L., & Gilchrist, K. E. (1991). The 
 /// thermal conductivity of AISI 304L stainless steel. 
 /// International journal of thermophysics, 12, 409-415. 
+///
+/// data taken from ORNL
 #[inline]
-fn steel_ss_304_l_thermal_conductivity(
+fn steel_ss_304_l_ornl_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> ThermalConductivity {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
@@ -135,11 +138,43 @@ fn copper_thermal_conductivity(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &thermal_conductivity_values_watt_per_meter_kelin);
 
-    let copper_thermal_conductivity_value = s.polynomial_at(
+    let copper_thermal_conductivity_value = s.
+        eval(temperature_value_kelvin);
+
+    ThermalConductivity::new::<watt_per_meter_kelvin>(
+        copper_thermal_conductivity_value)
+
+}
+
+/// returns thermal conductivity of stainless steel 304L
+/// cited from:
+/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
+/// validation using the compact integral effects test (CIET) experimental 
+/// data (No. ANL/NSE-19/11). Argonne National 
+/// Lab.(ANL), Argonne, IL (United States).
+#[inline]
+fn steel_304_l_spline_thermal_conductivity(
+    temperature: ThermodynamicTemperature) -> ThermalConductivity {
+
+    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
+    // here we use a cubic spline to interpolate the values
+    // it's a little calculation heavy, but don't really care now
+    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
+        400.0, 450.0, 500.0, 700.0, 1000.0);
+    let thermal_conductivity_values_watt_per_meter_kelin = c!(14.31,
+        14.94, 15.58, 16.21, 16.85, 17.48, 20.02, 23.83);
+    //let cp_values_watt_per_meter_kelin = c!(443.3375,
+    //    457.0361, 469.4894, 480.6974, 490.66, 500.6227, 526.7746,
+    //    551.6812);
+
+    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
+        &thermal_conductivity_values_watt_per_meter_kelin);
+
+    let steel_thermal_conductivity_value = s.eval(
         temperature_value_kelvin);
 
     return ThermalConductivity::new::<watt_per_meter_kelvin>(
-        temperature_value_kelvin);
+        steel_thermal_conductivity_value);
 }
 
 #[inline]
@@ -151,5 +186,33 @@ fn dowtherm_a_thermal_conductivity(
 #[test]
 pub fn thermal_conductivity_test_steel(){
 
-    todo!();
+    // we're going to test thermal conductivity for steel,
+    // first at 500K for both the spline and the correlation 
+    // thermal conductivity, we expect at 350K 
+    // 15.58 W/(m K)
+
+    let thermal_cond_spline = steel_304_l_spline_thermal_conductivity(
+        ThermodynamicTemperature::new::<kelvin>(350.0));
+
+    approx::assert_relative_eq!(
+        15.58,
+        thermal_cond_spline.value,
+        max_relative=0.001);
+
+    // now for the Graves et al. 1991 version, from ORNL
+    //
+
+    let thermal_cond_graves_et_al_1991 = 
+    steel_ss_304_l_ornl_thermal_conductivity(
+        ThermodynamicTemperature::new::<kelvin>(350.0));
+
+    // between graves and the Zou/Zweibaum version,
+    // there is abut 2.8\% difference
+    //
+    // Residuals from Graves et al. was about 3% at 350K for least 
+    // squares regression. So this is reasonable
+    approx::assert_relative_eq!(
+        15.58,
+        thermal_cond_graves_et_al_1991.value,
+        max_relative=0.028);
 }
