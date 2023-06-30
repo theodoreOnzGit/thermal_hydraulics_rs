@@ -1,3 +1,4 @@
+use uom::si::available_energy::joule_per_gram;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
 use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAEnthalpy;
@@ -188,7 +189,79 @@ fn dowtherm_a_specific_enthalpy(
     return getDowthermAEnthalpy(fluid_temp);
 }
 
+///
+/// Graves, R. S., Kollie, T. G., 
+/// McElroy, D. L., & Gilchrist, K. E. (1991). The 
+/// thermal conductivity of AISI 304L stainless steel. 
+/// International journal of thermophysics, 12, 409-415. 
+///
+/// data taken from ORNL
+///
+/// It's only good for range of 300K to 700K
+///
+/// However, I analytically integrated it with wolfram alpha
+#[inline]
+fn steel_ss_304_l_ornl_specific_enthalpy(
+    temperature: ThermodynamicTemperature) -> AvailableEnergy {
+
+    // first I define a function for specific enthalpy between two 
+    // temperatures in kelvin
+    fn definite_integral_specific_enthalpy(
+        temp_1: ThermodynamicTemperature,
+        temp_2: ThermodynamicTemperature) -> AvailableEnergy {
+
+        // the integration constant is assumed to be zero 
+
+        let temp_1_value_kelvin = temp_1.get::<kelvin>();
+        let temp_2_value_kelvin = temp_2.get::<kelvin>();
+
+        let enthalpy_value_joule_per_gram_per_kelvin_temp_1 = 
+        1.73333e-8 * f64::powf(temp_1_value_kelvin,3.0) 
+        + 0.000085 * f64::powf(temp_1_value_kelvin, 2.0)
+        + 0.4267 * temp_1_value_kelvin;
+
+        let enthalpy_value_joule_per_gram_per_kelvin_temp_2 = 
+        1.73333e-8 * f64::powf(temp_2_value_kelvin,3.0) 
+        + 0.000085 * f64::powf(temp_2_value_kelvin, 2.0)
+        + 0.4267 * temp_2_value_kelvin;
+
+        let enthalpy_difference_joule_per_gram = 
+        enthalpy_value_joule_per_gram_per_kelvin_temp_2 
+        - enthalpy_value_joule_per_gram_per_kelvin_temp_1;
+
+        AvailableEnergy::new::<joule_per_gram>(
+            enthalpy_difference_joule_per_gram)
+    }
+
+    // reference temperature is zero degrees c, 
+    // enthalpy is zero j/kg at that point
+    let refernce_temperature = ThermodynamicTemperature::new::
+    <kelvin>(273.15);
+
+    let steel_enthalpy = definite_integral_specific_enthalpy(
+        refernce_temperature, temperature);
+
+    steel_enthalpy
+}
+
 #[test]
 pub fn specific_enthalpy_test_steel(){
-    todo!("need to write test for specific enthalpy")
+    // let's test specifc enthalpy at 350K 
+
+    let test_temperature = ThermodynamicTemperature::new::
+    <kelvin>(350.0);
+
+    // wolfram gives an enthalpy (assuming enthalpy is zero at zero 
+    // degrees C, 273.15 K)
+    // this is done using the Graves et al. 1991 version for cp
+    //  j/g
+    let wolfram_enthalpy_value_joule_per_kg = 37.2524*1000.0;
+
+    let enthalpy_analytical_ornl = 
+    steel_ss_304_l_ornl_specific_enthalpy(test_temperature);
+
+    approx::assert_relative_eq!(
+        wolfram_enthalpy_value_joule_per_kg,
+        enthalpy_analytical_ornl.value,
+        max_relative=0.0001);
 }
