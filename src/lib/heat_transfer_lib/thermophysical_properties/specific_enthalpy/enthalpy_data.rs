@@ -114,14 +114,14 @@ fn copper_specific_enthalpy(
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     // here we use a cubic spline to interpolate the values
     // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(200.0, 
+    let specific_enthalpy_temperature_values_kelvin = c!(200.0, 
         250.0, 300.0, 350.0, 
         400.0, 500.0, 1000.0);
     let specific_heat_capacity_values_joule_per_kilogram_kelvin = c!(355.7047,
         373.6018, 384.7875, 392.6174,
         398.2103, 407.1588, 417.2260);
 
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
+    let s = CubicSpline::from_nodes(&specific_enthalpy_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
     let copper_specific_enthalpy_value = s.
@@ -146,13 +146,13 @@ fn steel_304_l_spline_specific_enthalpy(
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     // here we use a cubic spline to interpolate the values
     // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
+    let specific_enthalpy_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
         400.0, 450.0, 500.0, 700.0, 1000.0);
     let specific_heat_capacity_values_joule_per_kilogram_kelvin = c!(443.3375,
         457.0361, 469.4894, 480.6974, 490.66, 500.6227, 526.7746,
         551.6812);
 
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
+    let s = CubicSpline::from_nodes(&specific_enthalpy_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
     let steel_specific_enthalpy_value = s.integrate(
