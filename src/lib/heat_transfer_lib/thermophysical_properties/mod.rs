@@ -42,3 +42,6 @@ pub mod thermal_conductivity;
 
 /// SpecificHeatCapacity calculation 
 pub mod specific_heat_capacity;
+
+/// dynamic viscosity calculation 
+pub mod dynamic_viscosity;

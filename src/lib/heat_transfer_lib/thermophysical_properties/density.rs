@@ -34,24 +34,26 @@ use super::LiquidMaterial::*;
 /// let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
 /// let pressure = Pressure::new::<atmosphere>(1.0);
 ///
-/// let density = density(steel, temperature, pressure);
+/// let density_result = density(steel, temperature, pressure);
+///
+/// 
 /// ```
 pub fn density(material: Material, 
     temperature: ThermodynamicTemperature,
-    _pressure: Pressure) -> MassDensity {
+    _pressure: Pressure) -> Result<MassDensity, String> {
 
     let density: MassDensity = match material {
         Material::Solid(_) => solid_density(material, temperature),
         Material::Liquid(_) => liquid_density(material, temperature)
     };
 
-    return density;
+    return Ok(density);
 }
 
 // should the material happen to be a solid, use this function
 fn solid_density(material: Material,
     _temperature: ThermodynamicTemperature) -> MassDensity{
-    
+
     // first match the enum
 
     let solid_material: SolidMaterial = match material {
@@ -121,6 +123,6 @@ pub fn density_test_steel(){
 
     approx::assert_relative_eq!(
         8030_f64,
-        density.value,
+        density.unwrap().value,
         max_relative=0.01);
 }

@@ -34,7 +34,7 @@ use peroxide::prelude::*;
 /// // 15.58 W/(m K)
 ///
 /// let steel_thermal_cond: ThermalConductivity = 
-/// thermal_conductivity(steel, steel_temp, pressure);
+/// thermal_conductivity(steel, steel_temp, pressure).unwrap();
 ///
 /// // Residuals from Graves et al. was about 3% at 350K for least 
 /// // squares regression. So 2.8% error is reasonable
@@ -47,14 +47,14 @@ use peroxide::prelude::*;
 /// ``` 
 pub fn thermal_conductivity(material: Material, 
     temperature: ThermodynamicTemperature,
-    _pressure: Pressure) -> ThermalConductivity {
+    _pressure: Pressure) -> Result<ThermalConductivity,String> {
 
     let thermal_conductivity: ThermalConductivity = match material {
         Material::Solid(_) => solid_thermal_conductivity(material, temperature),
         Material::Liquid(_) => liquid_thermal_conductivity(material, temperature)
     };
 
-    return thermal_conductivity;
+    return Ok(thermal_conductivity);
 }
 
 // should the material happen to be a solid, use this function

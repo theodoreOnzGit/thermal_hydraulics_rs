@@ -35,7 +35,7 @@ use peroxide::prelude::*;
 /// // 470 W/(m K)
 ///
 /// let steel_thermal_cond: SpecificHeatCapacity = 
-/// specific_heat_capacity(steel, steel_temp, pressure);
+/// specific_heat_capacity(steel, steel_temp, pressure).unwrap();
 ///
 ///
 /// approx::assert_relative_eq!(
@@ -46,14 +46,14 @@ use peroxide::prelude::*;
 /// ``` 
 pub fn specific_heat_capacity(material: Material, 
     temperature: ThermodynamicTemperature,
-    _pressure: Pressure) -> SpecificHeatCapacity {
+    _pressure: Pressure) -> Result<SpecificHeatCapacity, String> {
 
     let specific_heat_capacity: SpecificHeatCapacity = match material {
         Material::Solid(_) => solid_specific_heat_capacity(material, temperature),
         Material::Liquid(_) => liquid_specific_heat_capacity(material, temperature)
     };
 
-    return specific_heat_capacity;
+    return Ok(specific_heat_capacity);
 }
 
 // should the material happen to be a solid, use this function
