@@ -12,7 +12,7 @@ use super::LiquidMaterial::*;
 
 use peroxide::prelude::*;
 
-/// returns thermal conductivity for a given material 
+/// returns cp for a given material 
 ///
 /// ```rust 
 /// use uom::si::f64::*;
@@ -206,8 +206,8 @@ pub fn specific_heat_capacity_test_steel(){
 
     // we're going to test thermal conductivity for steel,
     // first at 500K for both the spline and the correlation 
-    // thermal conductivity, we expect at 350K 
-    // 469.4894 W/(m K)
+    // cp, we expect at 350K 
+    // 469.4894 J/(kg K)
 
     let thermal_cond_spline = steel_304_l_spline_specific_heat_capacity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
