@@ -43,7 +43,7 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
     match solid_material {
         Fiberglass => todo!(),
         SteelSS304L => 
-            steel_304_l_spline_temperature_from_specific_enthalpy(
+            steel_304_l_spline_temp_attempt_2_from_specific_enthalpy(
                 h_material),
         Copper => todo!(),
     };
@@ -64,7 +64,118 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 ///
 /// Note: h in this function represents specific enthalpy
 #[inline]
-fn steel_304_l_spline_temperature_from_specific_enthalpy(
+fn steel_304_l_spline_temp_attempt_2_from_specific_enthalpy(
+    h_steel: AvailableEnergy) -> ThermodynamicTemperature {
+
+    let temperature_values_kelvin: Vec<f64>
+    = c!(250.0, 300.0, 350.0, 
+        400.0, 450.0, 500.0, 700.0, 1000.0);
+
+    let temperature_vec_len = 
+    temperature_values_kelvin.len();
+
+    // now the integrals are indefinite, hence I need to ensure 
+    // the enthalpies are taken with reference to the common 
+    // reference point of 0 degrees C or 273.15 K
+
+    let mut enthalpy_vector = vec![0.0; temperature_vec_len];
+
+    for index_i in 0..temperature_vec_len {
+
+        // first, evaluate the enthalpy at temperature values 
+        let temperature_value = temperature_values_kelvin[index_i];
+
+        //next let's evaluate the specific enthalpy of steel 
+        let steel = Material::Solid(SteelSS304L);
+        let steel_temp = ThermodynamicTemperature::new::<kelvin>(
+            temperature_value);
+        let pressure = Pressure::new::<atmosphere>(1.0);
+
+        let steel_enthalpy_result = specific_enthalpy(steel, 
+            steel_temp, pressure);
+
+        let steel_enthalpy_value = match steel_enthalpy_result {
+            Ok(steel_enthalpy) => steel_enthalpy.value,
+            // i can of course unwrap the result,
+            // but i want to leave it more explicit in case 
+            // i wish to manually handle the error
+            Err(error_msg) => panic!("{}",error_msg),
+        };
+
+        // once i evalute the enthalpy value, pass it on to the vector
+
+        enthalpy_vector[index_i] = steel_enthalpy_value;
+
+    }
+
+
+    // now I have my enthalpy vector, i can do an inverted spline 
+    // to have enthalpy given in as an input, and temperature received
+    // as an output
+
+    let enthalpy_to_temperature_spline = 
+    CubicSpline::from_nodes(&enthalpy_vector,
+    &temperature_values_kelvin);
+
+    // now let's get our enthalpy in joules_per_kg
+    let h_steel_joules_per_kg = h_steel.get::<joule_per_kilogram>();
+
+    let temperature_from_enthalpy_kelvin = 
+    enthalpy_to_temperature_spline.eval(h_steel_joules_per_kg);
+
+    // return temperature
+    ThermodynamicTemperature::new::<kelvin>(
+        temperature_from_enthalpy_kelvin)
+
+}
+
+#[test]
+pub fn temperature_from_enthalpy_test_spline_2(){
+    // we'll test temperature at 375K 
+    // we should get an enthalpy from the spline 
+    // for zweibaum's paper 
+
+    let steel = Material::Solid(SteelSS304L);
+    let steel_temp = ThermodynamicTemperature::new::<kelvin>(375.0);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+
+    let enthalpy_spline_zweibaum_375k = specific_enthalpy(
+        steel,steel_temp,pressure).unwrap();
+
+    // now we have an enthalpy, let's check the temperature 
+
+    let temperature_from_enthalpy_test = 
+    steel_304_l_spline_temp_attempt_2_from_specific_enthalpy(
+        enthalpy_spline_zweibaum_375k);
+
+    // we are basically off by less than 0.5K, which is 
+    // within measurement error!
+    approx::assert_abs_diff_eq!(
+        temperature_from_enthalpy_test.get::<kelvin>(),
+        375.0,
+        epsilon=0.5);
+
+
+}
+
+/// Old attempt of spline,
+/// attempt 1
+///
+/// returns temperature of stainless steel 304L 
+/// cited from:
+/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
+/// validation using the compact integral effects test (CIET) experimental 
+/// data (No. ANL/NSE-19/11). Argonne National 
+/// Lab.(ANL), Argonne, IL (United States).
+///
+/// The algorithm is to make a spline of enthalpy and temperature
+///
+/// Note: h in this function represents specific enthalpy
+///
+/// I suspected that the integral function may have messed up the 
+/// spline, thus we have unsatisfactory behaviour
+#[inline]
+fn steel_304_l_spline_temp_attempt_1_from_specific_enthalpy(
     h_steel: AvailableEnergy) -> ThermodynamicTemperature {
 
     let temperature_values_kelvin: Vec<f64>
@@ -122,7 +233,7 @@ fn steel_304_l_spline_temperature_from_specific_enthalpy(
 }
 
 #[test]
-pub fn temperature_from_enthalpy_test_spline(){
+pub fn temperature_from_enthalpy_test_spline_1(){
     // we'll test temperature at 375K 
     // we should get an enthalpy from the spline 
     // for zweibaum's paper 
@@ -137,12 +248,17 @@ pub fn temperature_from_enthalpy_test_spline(){
     // now we have an enthalpy, let's check the temperature 
 
     let temperature_from_enthalpy_test = 
-    steel_304_l_spline_temperature_from_specific_enthalpy(
+    steel_304_l_spline_temp_attempt_1_from_specific_enthalpy(
         enthalpy_spline_zweibaum_375k);
 
     // we are basically off by about 21K,
     // the temperature was i think 354K
     approx::assert_abs_diff_eq!(
+        temperature_from_enthalpy_test.get::<kelvin>(),
+        375.0,
+        epsilon=21.0);
+
+    approx::assert_abs_diff_ne!(
         temperature_from_enthalpy_test.get::<kelvin>(),
         375.0,
         epsilon=0.0);
