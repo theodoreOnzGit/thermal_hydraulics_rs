@@ -18,21 +18,80 @@ use peroxide::prelude::*;
 ///
 /// ```rust 
 /// use uom::si::f64::*;
-/// use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
+/// use uom::si::specific_heat_capacity::{joule_per_kilogram_kelvin,
+/// joule_per_gram_degree_celsius};
 /// use uom::si::thermodynamic_temperature::kelvin;
+/// use uom::si::temperature_interval::degree_celsius;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// SolidMaterial::SteelSS304L;
+/// SolidMaterial::{SteelSS304L,Copper};
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
 /// Material;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// specific_heat_capacity::specific_heat_capacity;
+/// specific_enthalpy::specific_enthalpy;
 ///
 /// use uom::si::pressure::atmosphere;
 ///
 /// let steel = Material::Solid(SteelSS304L);
-/// let steel_temp = ThermodynamicTemperature::new::<kelvin>(350.0);
+/// let steel_temp = ThermodynamicTemperature::new::<kelvin>(273.15);
 /// let pressure = Pressure::new::<atmosphere>(1.0);
-/// todo!("write doctest for specific enthalpy");
+///
+/// // enthalpy should be zero at 273.15 K
+///
+/// let steel_enthalpy_273_15_kelvin = 
+/// specific_enthalpy(steel, steel_temp, pressure);
+///
+/// approx::assert_relative_eq!(
+///     0.0,
+///     steel_enthalpy_273_15_kelvin.unwrap().value,
+///     max_relative=0.045);
+/// 
+/// // we can also calculate enthalpy change of copper 
+/// // from 375K to 425K
+/// let test_temperature_1 = ThermodynamicTemperature::new::
+/// <kelvin>(375.0);
+/// let test_temperature_2 = ThermodynamicTemperature::new::
+/// <kelvin>(425.0);
+///
+/// let copper = Material::Solid(Copper);
+///
+/// let copper_enthalpy_change = 
+/// specific_enthalpy(copper, test_temperature_2, pressure).unwrap()
+/// - specific_enthalpy(copper, test_temperature_1, pressure).unwrap();
+///
+/// // http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/sphtt.html
+/// // https://www.engineeringtoolbox.com/specific-heat-metals-d_152.html
+/// // copper at 20C has heat capacity of 
+/// // 0.386 J/(g K)
+/// // going to use this to estimate a ballpark figure to find enthalpy 
+/// // h = cp(T2 - T1)
+/// 
+/// // we can't usually subtract thermodynamic temperatures from each 
+/// // other, we need a termpature interval
+/// // 
+///
+/// let cp_copper_20_c = 
+/// SpecificHeatCapacity::new::<joule_per_gram_degree_celsius>(0.386);
+/// 
+/// let temperature_difference = 
+/// TemperatureInterval::new::<degree_celsius>(
+/// test_temperature_2.value - test_temperature_1.value);
+///
+/// let specific_enthalpy_ballpark = 
+/// cp_copper_20_c * temperature_difference;
+/// 
+/// // the ballpark value is 19300 J/kg
+/// approx::assert_relative_eq!(
+///     specific_enthalpy_ballpark.value,
+///     19300.0,
+///     max_relative=0.0001);
+///
+/// // it's less than 4% different from the ballpark value
+/// // This means the copper enthalpy change should be quite reasonable
+///
+/// approx::assert_relative_eq!(
+///     specific_enthalpy_ballpark.value,
+///     copper_enthalpy_change.value,
+///     max_relative=0.04);
 ///
 /// ``` 
 pub fn specific_enthalpy(material: Material, 
@@ -48,6 +107,9 @@ pub fn specific_enthalpy(material: Material,
 }
 
 // should the material happen to be a solid, use this function
+//
+// probably should have a temperature range checker in 
+// future
 fn solid_specific_enthalpy(material: Material,
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
     
@@ -245,7 +307,7 @@ fn steel_ss_304_l_ornl_specific_enthalpy(
 }
 
 #[test]
-pub fn specific_enthalpy_test_steel(){
+pub fn specific_enthalpy_test_steel_ornl(){
     // let's test specifc enthalpy at 350K 
 
     let test_temperature = ThermodynamicTemperature::new::
@@ -254,7 +316,7 @@ pub fn specific_enthalpy_test_steel(){
     // wolfram gives an enthalpy (assuming enthalpy is zero at zero 
     // degrees C, 273.15 K)
     // this is done using the Graves et al. 1991 version for cp
-    //  j/g
+    //  37.2524 j/g
     let wolfram_enthalpy_value_joule_per_kg = 37.2524*1000.0;
 
     let enthalpy_analytical_ornl = 
@@ -264,4 +326,64 @@ pub fn specific_enthalpy_test_steel(){
         wolfram_enthalpy_value_joule_per_kg,
         enthalpy_analytical_ornl.value,
         max_relative=0.0001);
+
+    
 }
+
+/// here is a test for comparing ornl and nico zweibaum's value 
+/// at 375 to 425 kelvin
+///
+/// the cp correlation was from 300 to 700 Kelvin, so using 273.15 
+/// as zero enthalpy is technically outside the range.
+///
+/// Despite this, it should still be able to calculate enthalpy 
+/// change from 375 K to 425K
+#[test]
+pub fn specific_enthalpy_test_steel_ornl_and_zweibaum_spline(){
+    // let's test specifc enthalpy at 350K 
+
+    let test_temperature_1 = ThermodynamicTemperature::new::
+    <kelvin>(375.0);
+    let test_temperature_2 = ThermodynamicTemperature::new::
+    <kelvin>(425.0);
+
+    // wolfram gives an enthalpy (assuming enthalpy is zero at zero 
+    // degrees C, 273.15 K)
+    // this is done using the Graves et al. 1991 version for cp
+    // 25.1515 j/g for 375 to 425 K
+    let wolfram_enthalpy_value_joule_per_kg = 25.1515*1000.0;
+
+    let enthalpy_analytical_ornl = 
+    steel_ss_304_l_ornl_specific_enthalpy(test_temperature_2)
+    - steel_ss_304_l_ornl_specific_enthalpy(test_temperature_1);
+
+    approx::assert_relative_eq!(
+        wolfram_enthalpy_value_joule_per_kg,
+        enthalpy_analytical_ornl.value,
+        max_relative=0.0001);
+
+    // now let's test the spline version 
+    //
+    let enthalpy_spline_zweibaum = 
+    steel_304_l_spline_specific_enthalpy(test_temperature_2)
+    - steel_304_l_spline_specific_enthalpy(test_temperature_1);
+
+    // there is about a 4.5% difference between the ornl value 
+    // and the spline value
+    // doesn't seem too bad honestly.
+    //
+    // Of course, one can do uncertainty propagation in order to 
+    // find out the degree of change, but I won't do that for now.
+    //
+    // otherwise, spline should work quite okay
+    approx::assert_relative_eq!(
+        enthalpy_analytical_ornl.value,
+        enthalpy_spline_zweibaum.value,
+        max_relative=0.045);
+
+    
+
+
+    
+}
+

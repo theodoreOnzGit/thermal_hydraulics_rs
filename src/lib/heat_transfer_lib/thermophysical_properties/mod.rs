@@ -5,6 +5,7 @@
 /// or something
 /// then it will extract the 
 /// thermophysical property for you in unit safe method
+#[derive(Debug,Clone,Copy,PartialEq)]
 pub enum Material {
     /// Contains a list of selectable solids
     Solid(SolidMaterial),
@@ -14,6 +15,7 @@ pub enum Material {
 
 
 /// Contains a selection of solids with predefined material properties
+#[derive(Debug,Clone,Copy,PartialEq)]
 pub enum SolidMaterial {
     /// stainless steel 304 L, 
     /// material properties from 
@@ -29,6 +31,7 @@ pub enum SolidMaterial {
 }
 
 /// Contains a selection of liquids with predefined material properties
+#[derive(Debug,Clone,Copy,PartialEq)]
 pub enum LiquidMaterial {
     /// therminol VP1 
     TherminolVP1,
