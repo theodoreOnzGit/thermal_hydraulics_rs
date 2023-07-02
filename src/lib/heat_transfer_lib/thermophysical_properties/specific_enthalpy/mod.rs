@@ -106,6 +106,79 @@ pub fn specific_enthalpy(material: Material,
     return Ok(specific_enthalpy);
 }
 
+/// This function allows you to obtain ThermodynamicTemperature 
+/// from AvailableEnergy (a.k.a specific enthalpy) of a material 
+/// as long as we have the material in the database
+///
+/// example: 
+/// ```rust
+/// use uom::si::f64::*;
+/// use uom::si::specific_heat_capacity::{joule_per_kilogram_kelvin,
+/// joule_per_gram_degree_celsius};
+/// use uom::si::thermodynamic_temperature::{kelvin,degree_celsius};
+/// use uom::si::temperature_interval::degree_celsius as 
+/// interval_degree_celsius;
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// SolidMaterial::{SteelSS304L,Copper};
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// Material;
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// specific_enthalpy::specific_enthalpy;
+///
+/// use uom::si::pressure::atmosphere;
+///
+/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// specific_enthalpy::temperature_from_specific_enthalpy;
+///
+///
+/// // let's get steel at 20 degree_celsius
+///
+/// let steel = Material::Solid(SteelSS304L);
+/// let steel_temp = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+/// let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+///
+/// let enthalpy_spline_zweibaum = specific_enthalpy(
+///     steel,steel_temp,atmospheric_pressure).unwrap();
+///
+/// // now this enthalpy value is about 
+/// // 9050 J/kg +/- 0.5 J/kg 
+/// // the epsilon here is just round off error 
+/// // NOT measurement uncertainty or anything else
+/// let round_off_error = 0.5;
+///
+/// approx::assert_abs_diff_eq!(
+///     enthalpy_spline_zweibaum.value,
+///     9050_f64,
+///     epsilon=round_off_error);
+///
+/// // let's use this enthalpy value to get a ThermodynamicTemperature
+///
+/// let steel_temperature_test = 
+/// temperature_from_specific_enthalpy(steel,
+/// enthalpy_spline_zweibaum,
+/// atmospheric_pressure).unwrap();
+/// 
+/// // this should get back 20 degrees C with 0.001 degree_celsius of 
+/// // error at most
+/// approx::assert_abs_diff_eq!(
+///     steel_temperature_test.get::<degree_celsius>(),
+///     20_f64,
+///     epsilon=0.001);
+/// ```
+pub fn temperature_from_specific_enthalpy(material: Material, 
+    material_enthalpy: AvailableEnergy,
+    _pressure: Pressure) -> Result<ThermodynamicTemperature, String> {
 
+    let specific_enthalpy: ThermodynamicTemperature = match material {
+        Material::Solid(_) => 
+            get_solid_temperature_from_specific_enthalpy(
+                material, material_enthalpy),
+        Material::Liquid(_) => 
+            get_liquid_temperature_from_specific_enthalpy(
+                material, material_enthalpy)
+    };
+
+    return Ok(specific_enthalpy);
+}
 
 

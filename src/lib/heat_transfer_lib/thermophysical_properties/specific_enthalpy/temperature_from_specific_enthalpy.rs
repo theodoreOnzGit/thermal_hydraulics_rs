@@ -1,6 +1,8 @@
+use roots::SimpleConvergency;
 use uom::si::available_energy::joule_per_gram;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
+use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties;
 use crate::fluid_mechanics_lib::therminol_component::
 dowtherm_a_properties::getDowthermAEnthalpy;
 use uom::si::thermodynamic_temperature::kelvin;
@@ -19,7 +21,6 @@ use peroxide::prelude::*;
 
 // for root finding with brent
 extern crate roots;
-use roots::Roots;
 use roots::find_root_brent;
 // should the material happen to be a solid, use this function
 // to extract temperature from enthalpy
@@ -46,7 +47,9 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 
     let material_temperature: ThermodynamicTemperature = 
     match solid_material {
-        Fiberglass => todo!(),
+        Fiberglass => 
+            fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
+                h_material),
         SteelSS304L => 
             steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
                 h_material),
@@ -58,6 +61,37 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
     return material_temperature;
 
 
+}
+
+// should the material happen to be a liquid, use this function
+// pub(in crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy) 
+// here only makes it accessible to the 
+// specific_enthalpy/mod.rs 
+// nothing else
+pub(in crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy) 
+fn get_liquid_temperature_from_specific_enthalpy(material: Material, 
+    fluid_temp: AvailableEnergy) -> ThermodynamicTemperature {
+
+    let liquid_material: LiquidMaterial = match material {
+        Material::Liquid(DowthermA) => DowthermA,
+        Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Solid(_) => panic!(
+        "liquid_specific_enthalpy, use LiquidMaterial enums only")
+    };
+
+    let specific_enthalpy: ThermodynamicTemperature = match liquid_material {
+        DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
+        TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp)
+    };
+
+    return specific_enthalpy;
+}
+
+#[inline]
+fn dowtherm_a_get_temperature_from_enthalpy(
+    fluid_temp: AvailableEnergy) -> ThermodynamicTemperature{
+    return dowtherm_a_properties::
+        get_temperature_from_enthalpy(fluid_temp);
 }
 
 
@@ -162,11 +196,13 @@ fn fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
     let lower_limit : f64 = temperature_from_enthalpy_kelvin -
         brent_error_bound;
 
+
+    let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:30 };
     let fluid_temperature_degrees_c_result
     = find_root_brent(upper_limit,
         lower_limit,
         enthalpy_root,
-        &mut 1e-8_f64
+        &mut convergency
     );
 
     let temperature_from_enthalpy_kelvin = 
@@ -331,11 +367,12 @@ fn copper_spline_temp_attempt_2_from_specific_enthalpy(
     let lower_limit : f64 = temperature_from_enthalpy_kelvin -
         brent_error_bound;
 
+    let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:30 };
     let fluid_temperature_degrees_c_result
     = find_root_brent(upper_limit,
         lower_limit,
         enthalpy_root,
-        &mut 1e-8_f64
+        &mut convergency
     );
 
     let temperature_from_enthalpy_kelvin = 
@@ -502,11 +539,12 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
     let lower_limit : f64 = temperature_from_enthalpy_kelvin -
         brent_error_bound;
 
+    let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:30 };
     let fluid_temperature_degrees_c_result
     = find_root_brent(upper_limit,
         lower_limit,
         enthalpy_root,
-        &mut 1e-8_f64
+        &mut convergency
     );
 
     let temperature_from_enthalpy_kelvin = 
