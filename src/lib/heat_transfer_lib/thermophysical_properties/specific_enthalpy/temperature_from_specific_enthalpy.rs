@@ -14,8 +14,13 @@ use uom::si::pressure::atmosphere;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy
 ::specific_enthalpy;
 
+// for spline method
 use peroxide::prelude::*;
 
+// for root finding with brent
+extern crate roots;
+use roots::Roots;
+use roots::find_root_brent;
 // should the material happen to be a solid, use this function
 // to extract temperature from enthalpy
 //
@@ -50,6 +55,122 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 
     return material_temperature;
 
+
+}
+#[inline]
+fn copper_spline_temp_attempt_2_from_specific_enthalpy(
+    h_copper: AvailableEnergy) -> ThermodynamicTemperature {
+
+    // the idea is basically to evaluate enthalpy at the 
+    // following temperatures
+    let temperature_values_kelvin: Vec<f64>
+    = c!(200.0 ,250.0, 300.0, 350.0, 
+        400.0, 500.0, 1000.0);
+
+    // and then use that to formulate a spline,
+    // with the spline, i'll evaluate enthalpy from temperature
+    // within pretty much one iteration. However, it is spline 
+    // construction which may take a little long. 
+    //
+    // However, the number of iterations per calculation is fixed
+    //
+    // I won't optimise it now just yet
+
+    let temperature_vec_len = 
+    temperature_values_kelvin.len();
+
+    let mut enthalpy_vector = vec![0.0; temperature_vec_len];
+
+    for index_i in 0..temperature_vec_len {
+
+        // first, evaluate the enthalpy at temperature values 
+        let temperature_value = temperature_values_kelvin[index_i];
+
+        //next let's evaluate the specific enthalpy of copper 
+        let copper = Material::Solid(Copper);
+        let copper_temp = ThermodynamicTemperature::new::<kelvin>(
+            temperature_value);
+        let pressure = Pressure::new::<atmosphere>(1.0);
+
+        let copper_enthalpy_result = specific_enthalpy(copper, 
+            copper_temp, pressure);
+
+        let copper_enthalpy_value = match copper_enthalpy_result {
+            Ok(copper_enthalpy) => copper_enthalpy.value,
+            // i can of course unwrap the result,
+            // but i want to leave it more explicit in case 
+            // i wish to manually handle the error
+            Err(error_msg) => panic!("{}",error_msg),
+        };
+
+        // once i evalute the enthalpy value, pass it on to the vector
+
+        enthalpy_vector[index_i] = copper_enthalpy_value;
+
+    }
+
+
+    // now I have my enthalpy vector, i can do an inverted spline 
+    // to have enthalpy given in as an input, and temperature received
+    // as an output
+
+    let enthalpy_to_temperature_spline = 
+    CubicSpline::from_nodes(&enthalpy_vector,
+    &temperature_values_kelvin);
+
+    // now let's get our enthalpy in joules_per_kg
+    let h_copper_joules_per_kg = h_copper.get::<joule_per_kilogram>();
+
+    let temperature_from_enthalpy_kelvin = 
+    enthalpy_to_temperature_spline.eval(h_copper_joules_per_kg);
+
+    // now, the copper enthalpy will not be quite near 
+    // enough, but it is very close. We can bracket 
+    // the root 
+
+
+    let enthalpy_root = |temp_degrees_c_value : f64| -> f64 {
+        let lhs_value = h_copper.get::<joule_per_kilogram>();
+
+
+        let copper = Material::Solid(Copper);
+        let copper_temp = ThermodynamicTemperature::new::
+            <kelvin>(temp_degrees_c_value) ;
+        let pressure = Pressure::new::<atmosphere>(1.0);
+
+        let rhs = specific_enthalpy(copper, 
+            copper_temp, pressure);
+
+        let rhs_value = match rhs {
+            Ok(enthalpy_val) => enthalpy_val.get::<joule_per_kilogram>(),
+                // fall back to guess value, 
+            Err(error_msg) => panic!("{}",error_msg),
+        };
+
+        return lhs_value-rhs_value;
+    };
+
+    let brent_error_bound: f64 = 30.0;
+
+    let upper_limit: f64 = temperature_from_enthalpy_kelvin +
+        brent_error_bound;
+
+    let lower_limit : f64 = temperature_from_enthalpy_kelvin -
+        brent_error_bound;
+
+    let fluid_temperature_degrees_c_result
+    = find_root_brent(upper_limit,
+        lower_limit,
+        enthalpy_root,
+        &mut 1e-8_f64
+    );
+
+    let temperature_from_enthalpy_kelvin = 
+    fluid_temperature_degrees_c_result.unwrap();
+
+    // return temperature
+    ThermodynamicTemperature::new::<kelvin>(
+        temperature_from_enthalpy_kelvin)
 
 }
 
