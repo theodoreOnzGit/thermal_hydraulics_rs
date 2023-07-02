@@ -1,9 +1,11 @@
 use uom::si::available_energy::joule_per_gram;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
+use uom::si::pressure::atmosphere;
 use crate::fluid_mechanics_lib::therminol_component::
 dowtherm_a_properties::getDowthermAEnthalpy;
-use uom::si::thermodynamic_temperature::kelvin;
+use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
+use uom::si::thermodynamic_temperature::{degree_celsius,kelvin};
 
 use super::LiquidMaterial;
 use super::Material;
@@ -77,29 +79,40 @@ fn liquid_specific_enthalpy(material: Material,
 /// Lab.(ANL), Argonne, IL (United States).
 ///
 /// specific enthalpy at 273.15 K = 0
+///
+/// cp = 844 J/(kg K)
+/// hence 
+/// h = 844 * T - 844 * (273.15)
 #[inline]
 fn fiberglass_specific_enthalpy(
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
 
-    let temp_value_kelvin = temperature.get::<kelvin>();
-    // fiberglass cp in J/kg.K
-    fn fiberglass_cp_float(temp_value_kelvin: f64) -> f64 {
-
-        let temperature = ThermodynamicTemperature::
-            new::<kelvin>(temp_value_kelvin);
-        let fiberglass_specific_heat_capacity_value_j_per_kg_k: f64 = 
-        fiberglass_specific_enthalpy(temperature).value;
-
-        fiberglass_specific_heat_capacity_value_j_per_kg_k
-    }
-
     let specific_enthalpy_value_j_per_kg = 
-    integrate(fiberglass_cp_float, (273.15,temp_value_kelvin));
+    844.0 * temperature.get::<degree_celsius>() ;
 
     return AvailableEnergy::new::<joule_per_kilogram>(
         specific_enthalpy_value_j_per_kg);
 }
+#[test]
+fn fiberglass_enthalpy_test() {
 
+    let fiberglass_temp = ThermodynamicTemperature::new::
+        <kelvin>(373.0);
+
+
+    let fiberglass_reference_enthalpy_value 
+    = 844.0 * (fiberglass_temp.get::<kelvin>() - 
+        273.15);
+
+    let fiberglass_enthalpy = 
+    fiberglass_specific_enthalpy(fiberglass_temp);
+
+    approx::assert_abs_diff_eq!(
+        fiberglass_reference_enthalpy_value,
+        fiberglass_enthalpy.value,
+        epsilon=0.005);
+
+}
 
 /// returns specific enthalpy of copper
 /// cited from:
