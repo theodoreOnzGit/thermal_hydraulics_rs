@@ -223,6 +223,39 @@ pub fn ciet_crude_heater_v_1_0 (){
     //
     // First of course, solid properties, we'll need copper,
     // steel and fibreglass at the bare minimum
+    //
+    // now we basically need thermal resistances between each node 
+    //
+    // [T_dowtherm] --- T_inner_surface -- [T_heater_inner] --- 
+    // [T_heater_outer]
+    // --- T_outer_surface --- T_air 
+    // 
+    // Now, only T_dowtherm, T_heater_inner and T_heater outer, 
+    // which I bracketed, have thermal inertia, 
+    // the rest are boundary conditions
+    //
+    // In factor, we probably don't explicitly calculate inner surface 
+    // or outer surface temperatures in intermediate calculation 
+    // steps
+    // 
+    // The bracketed terms therefore represent control volumes which 
+    // I need to connect to each other 
+    //
+    // How can I do so without over-abstracting the thing?
+    //
+    // because every control volume interaction is quite complex 
+    //
+    // We could do a matrix style as with CFD, but matrices are 
+    // abstract, and make the code hard to read, unless of course 
+    // you do things like OPENFOAM where the PDEs are set by the user 
+    // through the solver syntax which is pretty easy to read.
+    //
+    // One idea I have is to have a big task list, that when I connect 
+    // control volumes interactions together, I add it to this big task 
+    // list 
+    //
+    // However, for annular shells, GeN-Foam already has syntax 
+    // written in C++ for GeN-Foam which i can port to Rust
 
     
 
