@@ -86,10 +86,8 @@ pub enum HeatTransferInteractionTypes {
     /// the two nodes
     ///
     DualCartesianThermalResistance(
-        Material,
-        Length,
-        Material,
-        Length
+        CartesianThermalResistanceProperties,
+        CartesianThermalResistanceProperties
     ),
 
     /// 1D Cylindrical Coordinates Thermal Resistance
@@ -150,9 +148,10 @@ pub enum HeatTransferInteractionTypes {
     /// the two nodes
     ///
     ///
-    /// For convection 
+    /// For convection, the heat flux from solid surface to fluid 
+    /// is:
     ///
-    /// q'' = 
+    /// q'' = h (T_s - T_f)
     ///
     ///
     CylindricalConductionConvectionThermalResistanceOuterWall(
@@ -167,6 +166,13 @@ pub enum HeatTransferInteractionTypes {
     /// The uom type is Power
     UserSpecifiedHeatAddition(Power),
 }
+
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub struct CartesianThermalResistanceProperties {
+    thickness: Length,
+    material_type: Material,
+}
+
 
 
 
