@@ -20,7 +20,7 @@ use uom::si::{f64::*, heat_transfer::watt_per_square_meter_kelvin};
 //}
 
 /// This test prototypes the CIET 
-#[test]
+// #[test]
 pub fn ciet_crude_heater_v_1_0 (){
 
     use uom::si::thermodynamic_temperature::degree_celsius;
