@@ -40,6 +40,136 @@ pub enum BCTypes {
 }
 
 
+/// Contains possible heat transfer interactions between the nodes
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub enum HeatTransferInteractionTypes {
+    /// The user specifies a thermal conductance between the nodes
+    /// in units of power/kelvin
+    UserSpecifiedThermalConductance(ThermalConductance),
+
+    /// 1D Cartesian Coordinates Thermal Resistance
+    ///
+    /// basically have two nodes 
+    ///
+    /// // ----------------------------
+    /// // |                          |
+    /// // *                          *
+    /// // |                          |
+    /// // ----------------------------
+    /// // node_1                  node_2
+    ///
+    /// between them there is a thermal resistance 
+    /// based on a q'' = k dT/dx
+    ///
+    /// we have one material which determines conductivity 
+    /// and then a length which determines the distance between 
+    /// the two nodes
+    ///
+    SingleCartesianThermalResistance(Material,Length),
+
+    /// 1D Cartesian Coordinates Thermal Resistance
+    ///
+    /// basically have three nodes 
+    ///
+    /// // -------------------------------------------------------
+    /// // |                          |                          |
+    /// // *                          *                          *
+    /// // |                          |                          |
+    /// // -------------------------------------------------------
+    /// // node_1                  node_2                     node_3
+    ///
+    /// between them there is a thermal resistance 
+    /// based on a q'' = k dT/dx
+    ///
+    /// we have two materials which determines conductivity 
+    /// and then two lengths which determines the distance between 
+    /// the two nodes
+    ///
+    DualCartesianThermalResistance(
+        Material,
+        Length,
+        Material,
+        Length
+    ),
+
+    /// 1D Cylindrical Coordinates Thermal Resistance
+    ///
+    /// basically have three nodes 
+    ///
+    /// // -------------------------------------------------------
+    /// // |                          |                          |
+    /// // *                          *                          *
+    /// // |                          |                          |
+    /// // -------------------------------------------------------
+    /// // node_1                  node_2                     node_3
+    ///
+    /// between them there is a thermal resistance 
+    /// based on a q'' = k dT/dx
+    ///
+    /// we have two materials which determines conductivity 
+    /// and then two lengths which determines the distance between 
+    /// the two nodes 
+    ///
+    /// one also needs to determine the 
+    /// inner diameter, outer diameter and length of the tube 
+    /// 
+    /// // TODO: 
+    /// This is the bare minimum we need, 
+    /// Though TBH, I also want the compiler to alert the user 
+    /// as to what kind of stuff to put in
+    ///
+    /// Like a type wrapper,
+    /// I'll do this after lunch (TBD)
+    ///
+    DualCylindricalThermalResistance(
+        (Material,Length),
+        (Material,Length),
+        (Length, Length, Length)
+    ),
+
+    /// 1D Cylindrical Coordinates Thermal Resistance
+    ///
+    /// basically have three nodes along the outer wall
+    ///
+    /// // ----------------------------
+    /// // |                          |                          
+    /// // *                          *                          *
+    /// // |                          |                         (T_f) 
+    /// // ----------------------------
+    /// // node_1                  node_2                     Fluid_node
+    ///
+    /// between node_1 and node_2 there is a thermal resistance 
+    /// based on a q'' = k dT/dx
+    ///
+    /// between node_2 and fluid_node, there is convection resistance
+    /// specified by a Nusselt Number
+    ///
+    /// For the conduction bit,
+    /// we have one material which determines conductivity 
+    /// and then length which determines the distance between 
+    /// the two nodes
+    ///
+    ///
+    /// For convection 
+    ///
+    /// q'' = 
+    ///
+    ///
+    CylindricalConductionConvectionThermalResistanceOuterWall(
+        Material,
+        Length,
+        Material,
+        Length
+    ),
+
+
+    /// The user Specifies a heat Addition for the BC
+    /// The uom type is Power
+    UserSpecifiedHeatAddition(Power),
+}
+
+
+
 /// SingleCVNode (single control volume node) represents 
 /// the control volume with a fixed point
 ///
