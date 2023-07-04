@@ -65,7 +65,7 @@ pub enum HeatTransferInteractionTypes {
     /// and then a length which determines the distance between 
     /// the two nodes
     ///
-    SingleCartesianThermalResistance(Material,Length),
+    SingleCartesianThermalResistance(Material,XThicknessThermalConduction),
 
     /// 1D Cartesian Coordinates Thermal Resistance
     ///
@@ -85,11 +85,12 @@ pub enum HeatTransferInteractionTypes {
     /// and then two lengths which determines the distance between 
     /// the two nodes
     ///
+    /// Information must be passed in as a tuple,
+    ///
+    ///
     DualCartesianThermalResistance(
-        Material,
-        Length,
-        Material,
-        Length,
+        (XThicknessThermalConduction, Length),
+        (XThicknessThermalConduction, Length),
     ),
 
     /// 1D Cylindrical Coordinates Thermal Resistance
@@ -104,7 +105,7 @@ pub enum HeatTransferInteractionTypes {
     /// // node_1                  node_2                     node_3
     ///
     /// between them there is a thermal resistance 
-    /// based on a q'' = k dT/dx
+    /// based on a q'' = k dT/dr
     ///
     /// we have two materials which determines conductivity 
     /// and then two lengths which determines the distance between 
