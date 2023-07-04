@@ -86,8 +86,10 @@ pub enum HeatTransferInteractionTypes {
     /// the two nodes
     ///
     DualCartesianThermalResistance(
-        CartesianThermalResistanceProperties,
-        CartesianThermalResistanceProperties
+        Material,
+        Length,
+        Material,
+        Length,
     ),
 
     /// 1D Cylindrical Coordinates Thermal Resistance
@@ -167,12 +169,60 @@ pub enum HeatTransferInteractionTypes {
     UserSpecifiedHeatAddition(Power),
 }
 
+
+/// XThicknessThermalConduction is essentially a struct containing 
+/// one length describing a thickness in cartesian coordinates 
+/// for thermal conduction.
+///
+/// This type is meant for an input for various enums and functions 
+/// in this crate.
+///
+/// It is meant to guide the user so that they know what the 
+/// length inputs represents.
+///
+/// ```rust
+///
+/// use uom::si::length::meter;
+/// use uom::si::f64::*;
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// control_volume_calculations:: heat_transfer_entities:: 
+/// XThicknessThermalConduction;
+///
+/// // let's say you have a thickness of 0.5 which you want to describe
+///
+/// let thickness_of_wall = Length::new::<meter>(0.5);
+///
+/// // we first need to convert it into an XThicknessThermalConduction
+/// // type first
+/// let wall_thickness_input = XThicknessThermalConduction::from(
+/// thickness_of_wall);
+///
+/// // to convert it back into a length type, we use the into() method 
+///
+/// let thickness_wall_for_calculation: Length = 
+/// wall_thickness_input.into();
+/// 
+/// // both these are the same
+/// assert_eq!(thickness_of_wall, thickness_wall_for_calculation);
+/// ```
+/// 
+/// 
 #[derive(Debug,Clone,Copy,PartialEq)]
-pub struct CartesianThermalResistanceProperties {
+pub struct XThicknessThermalConduction {
     thickness: Length,
-    material_type: Material,
 }
 
+impl From<Length> for XThicknessThermalConduction {
+    fn from(thickness: Length) -> Self{
+        Self { thickness }
+    }
+}
+
+impl Into<Length> for XThicknessThermalConduction {
+    fn into(self) -> Length {
+        self.thickness
+    }
+}
 
 
 
