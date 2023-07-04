@@ -114,18 +114,16 @@ pub enum HeatTransferInteractionTypes {
     /// one also needs to determine the 
     /// inner diameter, outer diameter and length of the tube 
     /// 
-    /// // TODO: 
-    /// This is the bare minimum we need, 
-    /// Though TBH, I also want the compiler to alert the user 
-    /// as to what kind of stuff to put in
     ///
-    /// Like a type wrapper,
-    /// I'll do this after lunch (TBD)
+    /// 
     ///
     DualCylindricalThermalResistance(
-        (Material,Length),
-        (Material,Length),
-        (Length, Length, Length)
+        (Material,RadialCylindricalThicknessThermalConduction),
+        (Material,RadialCylindricalThicknessThermalConduction),
+        (InnerDiameterThermalConduction, 
+        OuterDiameterThermalConduction, 
+        CylinderLengthThermalConduction
+    )
     ),
 
     /// 1D Cylindrical Coordinates Thermal Resistance
@@ -154,14 +152,19 @@ pub enum HeatTransferInteractionTypes {
     /// For convection, the heat flux from solid surface to fluid 
     /// is:
     ///
-    /// q'' = h (T_s - T_f)
+    /// q = h A(T_s - T_f)
+    /// 
+    /// for hA
+    /// surface area is calculated by specifying an outer diameter 
+    /// and a cylindrical axial length
+    ///
     ///
     ///
     CylindricalConductionConvectionThermalResistanceOuterWall(
-        Material,
-        Length,
-        Material,
-        Length
+        (Material,RadialCylindricalThicknessThermalConduction),
+        (HeatTransfer, 
+        OuterDiameterThermalConduction, 
+        CylinderLengthThermalConduction),
     ),
 
 
@@ -170,61 +173,30 @@ pub enum HeatTransferInteractionTypes {
     UserSpecifiedHeatAddition(Power),
 }
 
-
-/// XThicknessThermalConduction is essentially a struct containing 
-/// one length describing a thickness in cartesian coordinates 
-/// for thermal conduction.
+/// Contains different length types for use in defining interactions 
+/// between heat transfer entities
 ///
-/// This type is meant for an input for various enums and functions 
-/// in this crate.
+/// This is to make it clear to the user exactly what 
+/// kind of length we are specifying 
 ///
-/// It is meant to guide the user so that they know what the 
-/// length inputs represents.
+/// For example, to define an annular hollow cylinder, we need three 
+/// lengths:
 ///
-/// ```rust
+/// the zLength of the cylinder,
+/// inner diameter 
+/// outer diameter
 ///
-/// use uom::si::length::meter;
-/// use uom::si::f64::*;
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// control_volume_calculations:: heat_transfer_entities:: 
-/// XThicknessThermalConduction;
+/// each of these have type Length. The user would have to read 
+/// the documentation as to what kind of length is being 
+/// specified by the user 
 ///
-/// // let's say you have a thickness of 0.5 which you want to describe
+/// Hence, I'm making some extra types to force the compiler to tell you 
+/// (the user) what kind of length you need to specify
 ///
-/// let thickness_of_wall = Length::new::<meter>(0.5);
-///
-/// // we first need to convert it into an XThicknessThermalConduction
-/// // type first
-/// let wall_thickness_input = XThicknessThermalConduction::from(
-/// thickness_of_wall);
-///
-/// // to convert it back into a length type, we use the into() method 
-///
-/// let thickness_wall_for_calculation: Length = 
-/// wall_thickness_input.into();
 /// 
-/// // both these are the same
-/// assert_eq!(thickness_of_wall, thickness_wall_for_calculation);
-/// ```
-/// 
-/// 
-#[derive(Debug,Clone,Copy,PartialEq)]
-pub struct XThicknessThermalConduction {
-    thickness: Length,
-}
-
-impl From<Length> for XThicknessThermalConduction {
-    fn from(thickness: Length) -> Self{
-        Self { thickness }
-    }
-}
-
-impl Into<Length> for XThicknessThermalConduction {
-    fn into(self) -> Length {
-        self.thickness
-    }
-}
-
+///
+pub mod heat_transfer_dimensions;
+pub use heat_transfer_dimensions::*;
 
 
 /// SingleCVNode (single control volume node) represents 
