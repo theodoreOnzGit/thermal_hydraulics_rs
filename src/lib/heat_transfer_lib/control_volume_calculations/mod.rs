@@ -50,6 +50,11 @@ pub mod common_functions;
 /// control volumes and boundary conditions
 pub mod heat_transfer_entities;
 
+/// heat_transfer_interactions contains the structs and enums 
+/// which describe behaviour for how control volumes and BCs 
+/// (heat_transfer_entities) interact with each other
+pub mod heat_transfer_interactions;
+
 ///// This module contains traits useful for constructing control volumes
 /////
 ///// The difference between this and the fluid entity structs and traits

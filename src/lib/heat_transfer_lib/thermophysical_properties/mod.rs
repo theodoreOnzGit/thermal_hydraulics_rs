@@ -1,5 +1,6 @@
 //! This module contains a library of liquid and solid 
 //! thermophysical properties
+
 /// basically,
 /// insert this enum into a thermophysical property function 
 /// or something
@@ -53,3 +54,8 @@ pub mod dynamic_viscosity;
 
 /// specific enthalpy calculation
 pub mod specific_enthalpy;
+
+/// (hopefully) useful information in case a function fails to behave 
+/// properly 
+pub mod error_types;
+
