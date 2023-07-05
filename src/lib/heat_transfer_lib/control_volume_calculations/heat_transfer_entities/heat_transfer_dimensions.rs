@@ -1,4 +1,21 @@
+//! In this module, we develop additional types for dimensions 
+//! Previously in uom, we have lengths, but lengths can refer to 
+//! diameter, radii, thickness etc. 
+//! 
+//! to ensure the user knows what he or she is defining 
+//! I strongly type these quantites as well
+//!
+//! For example, we have XThicknessThermalConduction, 
+//! which is specifically used to describe wall thickness 
+//! in cartesian coordinates for conduction purposes
 use uom::si::f64::*;
+
+/// to make these quantities easy to implement, I will use 
+/// a macro to initiate construction of these objects 
+/// credit:
+/// // https://stackoverflow.com/questions/63306731/can-a-macro-simplify-trait-impl
+
+
 /// XThicknessThermalConduction is essentially a struct containing 
 /// one length describing a thickness in cartesian coordinates 
 /// for thermal conduction.
@@ -128,5 +145,25 @@ impl From<Length> for CylinderLengthThermalConduction {
 impl Into<Length> for CylinderLengthThermalConduction {
     fn into(self) -> Length {
         self.thickness
+    }
+}
+
+
+/// This represents an Cross Sectional Area
+/// ie. axial length for a cylindrical body
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub struct CrossSectionalArea {
+    xs_area: Area,
+}
+
+impl From<Area> for CrossSectionalArea {
+    fn from(xs_area: Area) -> Self{
+        Self { xs_area }
+    }
+}
+
+impl Into<Area> for CrossSectionalArea {
+    fn into(self) -> Area {
+        self.xs_area
     }
 }

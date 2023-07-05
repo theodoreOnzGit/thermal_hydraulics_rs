@@ -11,10 +11,12 @@ heat_transfer_entities::*;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::HeatTransferEntity;
 
-/// for 1D calculations, we need to calculate conductance as well,
-/// but there is no area, hence, we have to use a unit area to calculate 
-/// the conductance 
-pub const UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS: f64 = 1.0;
+/// This is a calculation library for all interactions between 
+/// the various heat transfer entities
+pub(in crate::heat_transfer_lib::
+    control_volume_calculations::heat_transfer_interactions) 
+mod calculations;
+use calculations::*;
 
 /// Contains possible heat transfer interactions between the nodes
 #[derive(Debug,Clone,Copy,PartialEq)]
@@ -339,57 +341,7 @@ fn get_thermal_conductance(
     return Ok(conductance);
 }
 
-/// conductance is watts per kelvin or 
-/// q = (kA)/dx * dT
-/// conductance here is kA/dx
-/// thermal resistance is 1/conductance
-fn get_conductance_single_cartesian_one_dimension(
-    material: Material,
-    material_temperature_1: ThermodynamicTemperature,
-    material_temperature_2: ThermodynamicTemperature,
-    material_pressure_1: Pressure,
-    material_pressure_2: Pressure,
-    thickness: XThicknessThermalConduction) -> Result<ThermalConductance,String> 
-{
 
-    // note, the question mark here (?) at the end denotes 
-    // error propagation.
-    //
-    // So basically, we do pattern matching. If it's an error,
-    // return an error as the result enum 
-    // if it's successful, it will obtain the value in the Ok()
-    // variant of the enum
-
-    let average_material_pressure: Pressure = 
-    (material_pressure_1 + material_pressure_2)/2.0;
-
-    let average_material_temperature_kelvin = 
-    material_temperature_1.value + material_temperature_2.value
-    -273.15;
-
-    let average_material_temperature = 
-    ThermodynamicTemperature::new::<kelvin>(average_material_temperature_kelvin);
-
-
-    let material_thermal_conductivity = thermal_conductivity(
-        material, 
-        average_material_temperature, 
-        average_material_pressure)?;    
-
-    let cross_sectional_area: Area = Area::new::<uom::si::area::square_meter>(
-        UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS);
-
-    let material_thickness: Length = thickness.into();
-
-    let material_conductance: ThermalConductance = 
-    material_thermal_conductivity * 
-    cross_sectional_area / 
-    material_thickness;
-    
-
-    return Ok(material_conductance);
-
-}
 
 
 ///
