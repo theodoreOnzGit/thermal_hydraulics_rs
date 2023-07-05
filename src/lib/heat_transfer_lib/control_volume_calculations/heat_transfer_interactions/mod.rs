@@ -212,11 +212,13 @@ fn calculate_control_volume_serial(
 }
 
 // this function specifically interacts between two single CV nodes
+//
 #[inline]
 fn caclulate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
-    interaction: HeatTransferInteractionType){
+    interaction: HeatTransferInteractionType,
+    timestep: Time){
 
     // let's get the two temperatures of the control volumes first
     // so let me get the enthalpies, and then their respective 
@@ -237,9 +239,15 @@ fn caclulate_between_two_singular_cv_nodes(
 
     // we will now get their respective temperatures 
     let single_cv_1_temperature = temperature_from_specific_enthalpy(
-        single_cv_1_material, single_cv_1_enthalpy, single_cv_1_pressure);
+        single_cv_1_material, 
+        single_cv_1_enthalpy, 
+        single_cv_1_pressure)
+        .unwrap();
     let single_cv_2_temperature = temperature_from_specific_enthalpy(
-        single_cv_2_material, single_cv_2_enthalpy, single_cv_2_pressure);
+        single_cv_2_material, 
+        single_cv_2_enthalpy, 
+        single_cv_2_pressure)
+        .unwrap();
 
     // now that we got their respective temperatures we can calculate 
     // the thermal conductance between them
@@ -253,17 +261,53 @@ fn caclulate_between_two_singular_cv_nodes(
     // for convection, we get: 
     // q = hA (Delta T)
     // hA becomes the thermal conductance
+    //
+    // If we denote thermal conductance as Htc
+    // 
+    // Then a general formula for heat flowing from 
+    // temperature T_1 to T_2 is 
+    //
+    // T_1 --> q --> T_2 
+    //
+    // q = - Htc (T_2 - T_1)
+
     // 
     // // TODO: probably change the unwrap for later
     let thermal_conductance = get_thermal_conductance(
-        single_cv_1_temperature.unwrap(), 
-        single_cv_2_temperature.unwrap(),
+        single_cv_1_temperature, 
+        single_cv_2_temperature,
         single_cv_1_pressure, 
         single_cv_2_pressure, 
-        interaction);
+        interaction).unwrap();
 
     // suppose now we have thermal conductance, we can now obtain the 
     // power flow
+    //
+
+    let cv_2_temp_minus_cv_1_temp_kelvin: f64 = 
+        single_cv_2_temperature.get::<kelvin>() - 
+        single_cv_1_temperature.get::<kelvin>();
+
+    let cv_2_temp_minus_cv_1: TemperatureInterval = 
+    TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+        cv_2_temp_minus_cv_1_temp_kelvin);
+
+    let heat_flowrate_from_cv_1_to_cv_2: Power = 
+    - thermal_conductance * cv_2_temp_minus_cv_1;
+
+    // now, we add a heat loss term to cv_1 
+    // and a heat gain term to cv_2 
+    //
+    // using timestep
+    // the signs should cancel out
+    let enthalpy_lost_by_cv_1: Energy = 
+    heat_flowrate_from_cv_1_to_cv_2 * timestep;
+
+    let enthalpy_gain_by_cv_2: Energy = enthalpy_lost_by_cv_1;
+
+    single_cv_1.enthalpy_change_vector.push(-enthalpy_lost_by_cv_1);
+    single_cv_1.enthalpy_change_vector.push(enthalpy_gain_by_cv_2);
+
 }
 
 /// this is thermal conductance function 
