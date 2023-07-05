@@ -33,6 +33,8 @@
 //! given various inputs
 //!
 //!
+use std::f64::consts::{PI, E};
+
 use uom::si::f64::*;
 
 /// calcualtes heat flow using a thermal resistance model,
@@ -403,4 +405,62 @@ pub fn obtain_power_through_wall_thermal_resistance(
 }
 
 
+/// thermal resistance for cylindrical annular region 
+/// the String Error is temporary, probably need to refine in 
+/// later editions with a proper error type
+/// // https://web2.clarkson.edu/projects/subramanian/ch330/notes/Conduction%20in%20the%20Cylindrical%20Geometry.pdf
+///
+/// Thermal conductance is just inverse of thermal resistance
+/// it is 
+/// (2 * pi * L * K)/
+/// ln(outer_radius/inner_radius)
+///
+///
+///
+pub fn obtain_thermal_conductance_annular_cylinder(
+    inner_diameter: Length,
+    outer_diameter: Length, 
+    cylinder_length: Length,
+    k: ThermalConductivity) -> Result<ThermalConductance, String>{
+
+    // check if values are problematic 
+    
+    if inner_diameter.value <= 0.0 {
+        return Err("inner diameter specified is less than or equal\n 
+            to zero for annular cylinder thermal conductance".to_string());
+    }
+
+    if cylinder_length.value <= 0.0 {
+        return Err("cylinder_length specified is less than or equal\n 
+            to zero for annular cylinder thermal conductance".to_string());
+    }
+
+    if k.value <= 0.0 {
+        return Err("negative thermal \n 
+            thermal_conductivity supplied".to_string());
+    }
+
+    if outer_diameter <= inner_diameter {
+        return Err("outer diameter specified is less than or equal\n 
+            to inner_diameter for annular cylinder thermal conductance".to_string());
+    }
+
+    // Perform calculations
+
+    let numerator: ThermalConductance = 2.0 * PI * cylinder_length * k;
+
+    let outer_radius_divide_by_inner_radius: Ratio = 
+    outer_diameter/inner_diameter;
+
+    let denominator: f64 = outer_radius_divide_by_inner_radius
+        .value
+        .log(E);
+    // E here is euler's number, as in 2.718
+    // a constant within f64
+    //
+    //
+
+    return Ok(numerator/denominator);
+
+}
 

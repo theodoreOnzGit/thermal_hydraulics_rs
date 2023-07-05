@@ -3,8 +3,9 @@ use std::f64::consts::PI;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::{f64::*, pressure::atmosphere};
+use crate::heat_transfer_lib::control_volume_calculations::common_functions::obtain_thermal_conductance_annular_cylinder;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::{thermal_conductivity};
 use crate::heat_transfer_lib::thermophysical_properties
 ::{Material, specific_enthalpy::specific_enthalpy};
 use crate::heat_transfer_lib::control_volume_calculations:: 
@@ -208,27 +209,69 @@ fn get_conductance_single_cylindrical_radial(
     material_pressure_inner_shell: Pressure,
     material_pressure_outer_shell: Pressure,
     id: InnerDiameterThermalConduction,
-    od: OuterDiameterThermalConduction,
-    l: CylinderLengthThermalConduction,
-    thickness: XThicknessThermalConduction) -> Result<ThermalConductance,String> 
+    inner_shell_thickness: RadialCylindricalThicknessThermalConduction,
+    outer_shell_thickness: RadialCylindricalThicknessThermalConduction,
+    l: CylinderLengthThermalConduction) -> Result<ThermalConductance,String> 
 {
 
-    // convert quantities to their standard uom types
+    // convert quantities to their standard uom Length types
     let id: Length = id.into();
-    let od: Length = od.into();
+    let inner_shell_thickness: Length = inner_shell_thickness.into();
+    let outer_shell_thickness: Length = outer_shell_thickness.into();
+    let od: Length = id + inner_shell_thickness + outer_shell_thickness;
     let l: Length = l.into();
 
-    // we can begin calculating surface areas
-    let inner_surface_area: Area = PI * id * l;
-    let outer_surface_area: Area = PI * od * l;
 
-    todo!()
+    // also, we need the interim_diameter which is the outer 
+    // diameter of the inner shell 
+    // so that we know the relative thicknesses of these two layers
+    let interim_diameter: Length = id + inner_shell_thickness;
+
+    // now we need to calculate thermal resistance of an annular 
+    // cylindrical layer
+
+    // so we have inner layer thermal conductance 
+    // the question mark propagates the error with match statement
+
+    let inner_thermal_conductivity = thermal_conductivity(
+        material_inner_shell,
+        material_temperature_inner_shell,
+        material_pressure_inner_shell)?;
+
+    let outer_thermal_conductivity = thermal_conductivity(
+        material_outer_shell,
+        material_temperature_outer_shell,
+        material_pressure_outer_shell)?;
 
 
-    //let material_thermal_conductivity = thermal_conductivity(
-    //    material, 
-    //    average_material_temperature, 
-    //    average_material_pressure)?;    
+    let inner_layer_conductance: ThermalConductance = 
+    obtain_thermal_conductance_annular_cylinder(
+        id,
+        interim_diameter,
+        l,
+        inner_thermal_conductivity)?;
+
+    let outer_layer_conductance: ThermalConductance = 
+    obtain_thermal_conductance_annular_cylinder(
+        interim_diameter,
+        od,
+        l,
+        outer_thermal_conductivity)?;
+
+    // the obtain_thermal_conductance_annular_cylinder already checks 
+    // that conductivity should be non zero, 
+    // k should be non zero and lengths are non zero
+    // also checks that 
+    // od > id
+
+    // now we have both conductances, we can sum up their resistances 
+
+    let total_thermal_resistance = 
+    1.0/inner_layer_conductance + 1.0/outer_layer_conductance;
+
+    return Ok(1.0/total_thermal_resistance);
 
 
 }
+
+
