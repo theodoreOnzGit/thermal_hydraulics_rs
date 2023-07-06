@@ -219,8 +219,7 @@ fn calculate_control_volume_serial(
 fn caclulate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
-    interaction: HeatTransferInteractionType,
-    timestep: Time){
+    interaction: HeatTransferInteractionType){
 
     // let's get the two temperatures of the control volumes first
     // so let me get the enthalpies, and then their respective 
@@ -302,13 +301,11 @@ fn caclulate_between_two_singular_cv_nodes(
     //
     // using timestep
     // the signs should cancel out
-    let enthalpy_lost_by_cv_1: Energy = 
-    heat_flowrate_from_cv_1_to_cv_2 * timestep;
 
-    let enthalpy_gain_by_cv_2: Energy = enthalpy_lost_by_cv_1;
-
-    single_cv_1.enthalpy_change_vector.push(-enthalpy_lost_by_cv_1);
-    single_cv_1.enthalpy_change_vector.push(enthalpy_gain_by_cv_2);
+    single_cv_1.rate_enthalpy_change_vector.
+        push(-heat_flowrate_from_cv_1_to_cv_2);
+    single_cv_1.rate_enthalpy_change_vector.
+        push(heat_flowrate_from_cv_1_to_cv_2);
 
 }
 

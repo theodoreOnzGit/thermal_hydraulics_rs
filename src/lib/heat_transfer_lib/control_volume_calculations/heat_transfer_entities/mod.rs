@@ -106,8 +106,10 @@ pub struct SingleCVNode {
     /// temperature
     pub next_timestep_specific_enthalpy: AvailableEnergy,
 
-    /// contains changes to the specific enthalpy due to changes
-    pub enthalpy_change_vector: Vec<Energy>,
+    /// contains rate of change of the specific enthalpy due to changes
+    /// once courant_number is determined, we would use the correct 
+    /// timestep to multiply the power into an overall enthalpy change
+    pub rate_enthalpy_change_vector: Vec<Power>,
 
     /// control volume mass 
     pub mass_control_volume: Mass,
@@ -141,15 +143,18 @@ impl SingleCVNode {
 
         };
 
-        let cv_enthalpy_change_vec: Vec<Energy> = vec![];
+        // we store a vector of power at current timestep,
+        // once courant_number is decided, then we shall decide the 
+        // timestep
+        let cv_rate_enthalpy_change_vec: Vec<Power> = vec![];
 
         return Self{
             current_timestep_control_volume_specific_enthalpy : 
             cv_enthalpy,
             next_timestep_specific_enthalpy : 
             cv_enthalpy,
-            enthalpy_change_vector : 
-            cv_enthalpy_change_vec,
+            rate_enthalpy_change_vector : 
+            cv_rate_enthalpy_change_vec,
             mass_control_volume : 
             cv_mass,
             material_control_volume: 
