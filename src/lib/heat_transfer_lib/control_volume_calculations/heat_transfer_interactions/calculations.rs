@@ -2,18 +2,17 @@ use std::f64::consts::PI;
 
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
-use uom::si::{f64::*, pressure::atmosphere};
+use uom::si::f64::*;
 use crate::heat_transfer_lib::control_volume_calculations::common_functions::obtain_thermal_conductance_annular_cylinder;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::{thermal_conductivity};
-use crate::heat_transfer_lib::thermophysical_properties
-::{Material, specific_enthalpy::specific_enthalpy};
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties ::Material;
+
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::*;
 
-
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::HeatTransferEntity;
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::calculations::
+CylindricalAndSphericalSolidFluidArrangement::*;
 
 /// for 1D calculations, we need to calculate conductance as well,
 /// but there is no area, hence, we have to use a unit area to calculate 
@@ -190,10 +189,6 @@ fn get_conductance_single_cartesian_three_dimensions(
 /// we would need to return a thermal conductance based on a 1D 
 /// heat transfer model in the r coordinate
 ///
-/// conductance is watts per kelvin or 
-/// q = (kA)/dr * dT
-/// conductance here is kA/dr
-/// thermal resistance is 1/conductance
 /// 
 /// Now, it is important also to specify which control volume is 
 /// adjacent to the
@@ -201,7 +196,7 @@ fn get_conductance_single_cartesian_three_dimensions(
 /// 
 ///
 pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
-fn get_conductance_single_cylindrical_radial(
+fn get_conductance_cylindrical_radial_two_materials(
     material_inner_shell: Material,
     material_outer_shell: Material,
     material_temperature_inner_shell: ThermodynamicTemperature,
@@ -243,7 +238,15 @@ fn get_conductance_single_cylindrical_radial(
         material_temperature_outer_shell,
         material_pressure_outer_shell)?;
 
-
+    // again 
+    // |                                 | 
+    // |                                 | 
+    // *---------------*-----------------* 
+    // |                                 | 
+    // |                                 | 
+    //
+    // inner        interim             outer 
+    //
     let inner_layer_conductance: ThermalConductance = 
     obtain_thermal_conductance_annular_cylinder(
         id,
@@ -274,4 +277,127 @@ fn get_conductance_single_cylindrical_radial(
 
 }
 
+
+
+/// Suppose we have two control volumes of differing materials and  
+/// temperature 
+///
+/// one control volume is a solid and the other is a fluid
+///
+/// now, we want to calculate thermal resistance between them
+///
+/// for fluids, the thermal resistance or conductance is quite 
+/// straightforward 
+///
+/// from fluid to solid heat transfer,
+/// Q = -hA (T_solid - T_fluid)
+///
+/// resistance here is hA 
+/// where A is the curved surface area pi*D*L
+///
+/// for solid thermal resistance, we use the 
+/// obtain_thermal_conductance_annular_cylinder 
+/// function under common functions
+///
+/// that would need an inner diameter and an outer diameter
+///
+/// There are two cases here. 
+/// 
+/// Firstly, 
+/// the fluid is an in the tube side of a heat exchanger or pipe,
+/// hence the solid is considered on the outside 
+///
+/// The surface area will be based on the inner diameter 
+///
+/// Secondly, the fluid is on the outside of the cylindrical solid,
+/// in this case, the surface area will be based on the outer diameter
+///
+/// 
+///
+///
+pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
+fn get_conductance_single_cylindrical_radial_solid_liquid(
+    solid: Material,
+    solid_temperature: ThermodynamicTemperature,
+    solid_pressure: Pressure,
+    h: HeatTransfer,
+    id: InnerDiameterThermalConduction,
+    od: OuterDiameterThermalConduction,
+    l: CylinderLengthThermalConduction,
+    solid_liquid_arrangement: CylindricalAndSphericalSolidFluidArrangement) 
+-> Result<ThermalConductance,String> 
+{
+
+    // first thing first, let's do the uncomplicated part 
+    // that is to calculate the thermal resistance of the solid part
+
+    // convert quantities to their standard uom Length types
+    let id: Length = id.into();
+    let od: Length = od.into();
+    let l: Length = l.into();
+
+    // I need to typecast the solid material into a material enum 
+
+
+    let solid_thermal_conductivity: ThermalConductivity = 
+    thermal_conductivity(solid, 
+        solid_temperature, 
+        solid_pressure)?;
+
+    let solid_layer_conductance: ThermalConductance = 
+    obtain_thermal_conductance_annular_cylinder(
+        id,
+        od,
+        l,
+        solid_thermal_conductivity)?;
+
+    // now then, we deal with the thermal resistance on the liquid 
+    // end
+    //
+    // firstly, we get a h value, 
+    // which is already in the function inputs
+    // next, we need something to tell us if the solid is on the 
+    // inside or outside, I could either use an enum or an if statement
+    //
+    // enums are strongly typed so I'll use those ,
+    // this way, the compiler will guide the user on what to do
+    //
+    // it's kind of long but the compiler will tell you what inputs 
+    // you need basically
+
+    // now let's handle the cases, and depending on the cases, 
+    // the surface area will change 
+    //
+    // area is PI * D * L
+
+
+    let surface_area_for_solid_liquid_boundary: Area = match 
+        solid_liquid_arrangement {
+            FluidOnInnerSurfaceOfSolidShell => PI * id * l,
+            FluidOnOuterSurfaceOfSolidShell => PI * od * l,
+        };
+
+    let liquid_thermal_conductance: ThermalConductance = 
+    h * surface_area_for_solid_liquid_boundary;
+
+    // now we do overall thermal resistance and conductance
+
+    let overall_thermal_resistance = 1.0/liquid_thermal_conductance 
+    + 1.0/solid_layer_conductance;
+    
+    return Ok(1.0/overall_thermal_resistance);
+
+}
+
+/// basically an enum for you to specify 
+/// if the liquid on the inner curved surface of the shell or outer 
+/// curved surface of the shell
+///
+/// in the context of a convection and conductivity 
+/// thermal resistance calculation,
+///
+pub enum CylindricalAndSphericalSolidFluidArrangement {
+    FluidOnInnerSurfaceOfSolidShell,
+    FluidOnOuterSurfaceOfSolidShell
+}
 
