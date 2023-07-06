@@ -295,20 +295,24 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
     // I'll pass in both these option types into a function which 
     // calculates specifically for two control volumes
 
-    let (control_vol_1, control_vol_2) :
+    let (_control_vol_1, _control_vol_2) :
     (&mut CVType, &mut CVType) = match 
         (control_vol_1_opt, control_vol_2_opt) {
-            (Some(single_cv_1), Some(single_cv_2)) 
-                => (single_cv_1, single_cv_2),
+            (Some(cv_1), Some(cv_2)) 
+                => {
+
+                    calculate_control_volume_serial(
+                        cv_1, 
+                        cv_2, 
+                        interaction)?;
+
+                    (cv_1, cv_2)
+                },
             _ => return Err("other BCs not yet implemented"
             .to_string()),
         };
 
 
-    calculate_control_volume_serial(
-        control_vol_1, 
-        control_vol_2, 
-        interaction)?;
 
     return Ok(());
    
