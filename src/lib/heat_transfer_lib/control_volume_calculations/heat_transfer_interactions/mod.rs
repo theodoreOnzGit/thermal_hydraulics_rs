@@ -275,7 +275,7 @@ pub enum HeatTransferInteractionType {
 /// using mutable borrows
 pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
     entity_2: &mut HeatTransferEntity,
-    interaction: HeatTransferInteractionType){
+    interaction: HeatTransferInteractionType)-> Result<(), String>{
 
     // first thing first, probably want to unpack the enums to obtain 
     // the underlying control volume and BCs
@@ -295,9 +295,12 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
     // I'll pass in both these option types into a function which 
     // calculates specifically for two control volumes
 
-
+    return Ok(());
    
 }
+
+use crate::heat_transfer_lib::control_volume_calculations:: 
+heat_transfer_entities::CVType::*;
 
 // the job of this function is to take in a control volume 
 // and then mutate it by calculating its interaction
@@ -305,13 +308,35 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
 fn calculate_control_volume_serial(
     control_vol_1: &mut CVType,
     control_vol_2: &mut CVType,
-    interaction: HeatTransferInteractionType){
+    interaction: HeatTransferInteractionType) -> Result<(),String>{
 
     // let me first match my control volumes to their various types
-    //
-    // // TODO: handle the case of heat addition 
-    //
-    // // TODO: handle the case of conduction
+
+    let single_cv_1_opt: Option<&mut SingleCVNode> = match control_vol_1 {
+        SingleCV(single_cv) => Some(single_cv),
+        _ => None,
+    };
+
+    let single_cv_2_opt: Option<&mut SingleCVNode> = match control_vol_2 {
+        SingleCV(single_cv) => Some(single_cv),
+        _ => None,
+    };
+
+    let (single_cv_1, single_cv_2) :
+    (&mut SingleCVNode, &mut SingleCVNode) = match 
+        (single_cv_1_opt, single_cv_2_opt) {
+            (Some(single_cv_1), Some(single_cv_2)) 
+                => (single_cv_1, single_cv_2),
+            _ => return Err("other cvs implemented, may want a better implementation"
+            .to_string()),
+        };
+
+    caclulate_between_two_singular_cv_nodes(
+        single_cv_1, 
+        single_cv_2, 
+        interaction)?;
+
+    return Ok(());
 
 }
 
@@ -321,7 +346,7 @@ fn calculate_control_volume_serial(
 fn caclulate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
-    interaction: HeatTransferInteractionType){
+    interaction: HeatTransferInteractionType)-> Result<(), String>{
 
     // let's get the two temperatures of the control volumes first
     // so let me get the enthalpies, and then their respective 
@@ -344,13 +369,11 @@ fn caclulate_between_two_singular_cv_nodes(
     let single_cv_1_temperature = temperature_from_specific_enthalpy(
         single_cv_1_material, 
         single_cv_1_enthalpy, 
-        single_cv_1_pressure)
-        .unwrap();
+        single_cv_1_pressure)?;
     let single_cv_2_temperature = temperature_from_specific_enthalpy(
         single_cv_2_material, 
         single_cv_2_enthalpy, 
-        single_cv_2_pressure)
-        .unwrap();
+        single_cv_2_pressure)?;
 
     // now that we got their respective temperatures we can calculate 
     // the thermal conductance between them
@@ -381,7 +404,7 @@ fn caclulate_between_two_singular_cv_nodes(
         single_cv_2_temperature,
         single_cv_1_pressure, 
         single_cv_2_pressure, 
-        interaction).unwrap();
+        interaction)?;
 
     // suppose now we have thermal conductance, we can now obtain the 
     // power flow
@@ -409,6 +432,8 @@ fn caclulate_between_two_singular_cv_nodes(
     single_cv_1.rate_enthalpy_change_vector.
         push(heat_flowrate_from_cv_1_to_cv_2);
 
+    return Ok(());
+
 }
 
 /// this is thermal conductance function 
@@ -420,7 +445,8 @@ fn get_thermal_conductance(
     material_temperature_2: ThermodynamicTemperature,
     material_pressure_1: Pressure,
     material_pressure_2: Pressure,
-    interaction: HeatTransferInteractionType) -> Result<ThermalConductance, String> 
+    interaction: HeatTransferInteractionType) 
+-> Result<ThermalConductance, String> 
 {
 
     let conductance: ThermalConductance = match 
@@ -557,7 +583,9 @@ fn get_thermal_conductance(
     return Ok(conductance);
 }
 
-/// todo, test to be implemented
+/// basically have a simple test here, I want to  check whether 
+/// the thermal conductance returned by the enum system works 
+///
 #[test]
 fn thermal_conductance_test_convection_conduction_boundary(){
 
