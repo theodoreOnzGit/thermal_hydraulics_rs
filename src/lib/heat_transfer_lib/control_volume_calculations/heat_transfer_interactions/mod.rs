@@ -41,29 +41,6 @@ pub enum CylindricalAndSphericalSolidFluidArrangement {
     FluidOnOuterSurfaceOfSolidShell
 }
 
-/// basically an enum for you to specify 
-/// which control volume is arranged to the front or back
-/// relative to each other
-///
-/// -----------------------------------------> r
-/// cv1               ||                  cv2
-///
-/// cv stands for control volume
-///
-/// In this case, cv1 is at the "back" and 
-/// cv2 is at the "front" end
-///
-/// note that you can in theory specify boundary conditions 
-/// as well since OpenFOAM does allow for advection boundary 
-/// conditions, I'll follow suit
-///
-/// do note, this does not necessarily follow flow direction 
-/// because there can be backflows as well
-#[derive(Debug,Clone,PartialEq)]
-pub enum AdvectionTransportArrangement {
-    Front(HeatTransferEntity),
-    Back(HeatTransferEntity),
-}
 
 
 /// Contains possible heat transfer interactions between the nodes

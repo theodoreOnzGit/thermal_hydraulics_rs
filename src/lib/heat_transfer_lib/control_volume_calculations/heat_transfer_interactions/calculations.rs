@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
 
+use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
@@ -395,4 +396,96 @@ fn get_conductance_single_cylindrical_radial_solid_liquid(
 
 
 
+/// calculates enthalpy flow between two heat transfer entities
+pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
+fn calculate_enthalpy_flow_between_two_heat_transfer_entities(
+    front_entity: FrontHeatTransferEntity,
+    back_entity: BackHeatTransferEntity,
+    mass_flowrate_from_back_to_front_cv: MassRate) -> Result<Power, String>{
+    
+    // first we need to extract the heat transfer entities
+    let front_entity: HeatTransferEntity = front_entity.into();
+    let back_entity: HeatTransferEntity = back_entity.into();
 
+    // assuming they are control volumes, handle this case first 
+
+    let cv_front: Option<CVType> = match front_entity {
+        HeatTransferEntity::ControlVolume(cv_type) => Some(cv_type),
+        HeatTransferEntity::BoundaryConditions(_) => None,
+    };
+
+    let cv_back : Option<CVType> = match back_entity {
+        HeatTransferEntity::ControlVolume(cv_type) => Some(cv_type),
+        HeatTransferEntity::BoundaryConditions(_) => None,
+    };
+
+    // now typecast them to their cv types
+
+    let cv_front: CVType = match cv_front {
+        Some(cv_type) => cv_type,
+        None => todo!("other heat transfer entity types not implemented"),
+    };
+
+    let cv_back: CVType = match cv_back {
+        Some(cv_type) => cv_type,
+        None => todo!("other other heat transfer entity types not implemented"),
+    };
+
+    let single_cv_front: SingleCVNode = match cv_front {
+        CVType::SingleCV(cv) => cv,
+        _ => todo!("other other control volume types not implemented"),
+    };
+
+    let single_cv_back: SingleCVNode = match cv_back {
+        CVType::SingleCV(cv) => cv,
+        _ => todo!("other other control volume types not implemented"),
+    };
+
+    // now that we've unpacked the single cv, we'll need to obtain 
+    // the mass flowrate from the back cv to front cv 
+    //
+    // flow direction
+    // -------------------------------------------->
+    //
+    // back cv                                   front cv
+    //
+    // the user must specify a mass flowrate...
+    //
+    // unfortunately, we cannot assign a single mass flowrate to 
+    // each cv since multiple mass flowrates can come to and from 
+    // each cv in general 
+    // but, we can get the enthalpy of the back cv 
+    // and front cv 
+
+    let back_cv_enthalpy: AvailableEnergy = 
+    single_cv_back.current_timestep_control_volume_specific_enthalpy;
+
+    let front_cv_enthalpy: AvailableEnergy = 
+    single_cv_front.current_timestep_control_volume_specific_enthalpy;
+
+    // now depending on whether mass flowrate from back to front is 
+    // positive or negative, that will determine which enthalpy we 
+    // use 
+
+    let mut enthalpy_of_stream: AvailableEnergy;
+
+    // if mass flow is from back to front
+    if mass_flowrate_from_back_to_front_cv.value > 0.0 {
+        enthalpy_of_stream = back_cv_enthalpy;
+    } else if mass_flowrate_from_back_to_front_cv.value < 0.0 {
+        enthalpy_of_stream = front_cv_enthalpy;
+    } else {
+        // if neither of the above cases are satisfied 
+        // mass flowrate is zero, advection from one cv to 
+        // the other is zero
+        return Ok(Power::new::<watt>(0.0));
+    }
+
+    let enthalpy_from_cv_1_to_cv_2: Power = 
+    enthalpy_of_stream * mass_flowrate_from_back_to_front_cv;
+
+    // in theory, we should be able to mutate the cvs and push the vector 
+    // in, but I don't think I will do that now
+    return Ok(enthalpy_from_cv_1_to_cv_2);
+
+}

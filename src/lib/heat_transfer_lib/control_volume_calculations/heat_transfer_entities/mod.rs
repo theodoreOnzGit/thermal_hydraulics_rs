@@ -16,6 +16,53 @@ pub enum HeatTransferEntity {
     BoundaryConditions(BCType)
 }
 
+/// To determine heat transfer between two control volumes or 
+/// generally, two heat transfer entities, one must determine 
+/// which control volume is in front and which is at the back
+/// 
+/// This type would tell the solver that this control volume is 
+/// in the front
+/// 
+#[derive(Debug,Clone,PartialEq)]
+pub struct FrontHeatTransferEntity {
+    entity: HeatTransferEntity,
+}
+
+impl From<HeatTransferEntity> for FrontHeatTransferEntity {
+    fn from(entity: HeatTransferEntity) -> Self{
+        Self { entity }
+    }
+}
+
+impl Into<HeatTransferEntity> for FrontHeatTransferEntity {
+    fn into(self) -> HeatTransferEntity {
+        self.entity
+    }
+}
+
+/// To determine heat transfer between two control volumes or 
+/// generally, two heat transfer entities, one must determine 
+/// which control volume is in front and which is at the back
+/// 
+/// This type would tell the solver that this control volume is 
+/// in the back
+/// 
+#[derive(Debug,Clone,PartialEq)]
+pub struct BackHeatTransferEntity {
+    entity: HeatTransferEntity,
+}
+
+impl From<HeatTransferEntity> for BackHeatTransferEntity {
+    fn from(entity: HeatTransferEntity) -> Self{
+        Self { entity }
+    }
+}
+
+impl Into<HeatTransferEntity> for BackHeatTransferEntity {
+    fn into(self) -> HeatTransferEntity {
+        self.entity
+    }
+}
 
 /// Contains Types of Control Volumes (CVs)
 #[derive(Debug,Clone,PartialEq)]
