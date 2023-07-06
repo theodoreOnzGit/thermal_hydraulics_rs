@@ -11,8 +11,12 @@ use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::*;
 
 use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_interactions::calculations::
+heat_transfer_interactions::
 CylindricalAndSphericalSolidFluidArrangement::*;
+
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::
+CylindricalAndSphericalSolidFluidArrangement;
 
 /// for 1D calculations, we need to calculate conductance as well,
 /// but there is no area, hence, we have to use a unit area to calculate 
@@ -389,16 +393,6 @@ fn get_conductance_single_cylindrical_radial_solid_liquid(
 
 }
 
-/// basically an enum for you to specify 
-/// if the liquid on the inner curved surface of the shell or outer 
-/// curved surface of the shell
-///
-/// in the context of a convection and conductivity 
-/// thermal resistance calculation,
-///
-pub enum CylindricalAndSphericalSolidFluidArrangement {
-    FluidOnInnerSurfaceOfSolidShell,
-    FluidOnOuterSurfaceOfSolidShell
-}
+
 
 

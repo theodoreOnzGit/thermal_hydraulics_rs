@@ -31,7 +31,7 @@ impl fmt::Display for MaterialTypeError {
 #[derive(Debug, Clone)]
 pub struct TemperatureRangeError;
 
-impl Error for TemperatureRangeError {}
+impl Error for TemperatureRangeError { }
 
 impl fmt::Display for TemperatureRangeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
