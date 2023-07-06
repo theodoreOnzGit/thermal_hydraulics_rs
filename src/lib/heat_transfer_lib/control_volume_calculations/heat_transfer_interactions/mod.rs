@@ -457,6 +457,35 @@ fn get_thermal_conductance(
                         FluidOnInnerSurfaceOfSolidShell ,
                     )?
                 },
+
+            HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidOutside(
+                (solid_material, shell_thickness,
+                solid_temperature, solid_pressure), 
+                (h, outer_diameter, cylinder_length)) => {
+
+                    let od: Length = outer_diameter.clone().into();
+                    let thicnkess: Length = shell_thickness.clone().into();
+
+                    let id: Length = od - thicnkess;
+
+                    let inner_diameter: InnerDiameterThermalConduction = 
+                    InnerDiameterThermalConduction::from(id);
+
+                    // after all the typing conversion, we can 
+                    // get our conductance
+                    get_conductance_single_cylindrical_radial_solid_liquid(
+                        solid_material,
+                        solid_temperature,
+                        solid_pressure,
+                        h,
+                        inner_diameter,
+                        outer_diameter,
+                        cylinder_length,
+                        CylindricalAndSphericalSolidFluidArrangement::
+                        FluidOnInnerSurfaceOfSolidShell ,
+                    )?
+                },
             _ => todo!("define other enum options"),
         };
 
