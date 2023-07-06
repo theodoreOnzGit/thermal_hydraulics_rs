@@ -504,18 +504,53 @@ fn get_thermal_conductance(
                 (inner_diameter,
                 outer_diameter,
                 cylinder_length)
-            ) => get_conductance_cylindrical_radial_two_materials(
-                    inner_material,
-                    outer_material,
-                    material_temperature_1, //convention, 1 is inner shell
-                    material_temperature_2, // convention 2, is outer shell
-                    material_pressure_1,
-                    material_pressure_2,
-                    inner_diameter,
-                    inner_shell_thickness,
-                    outer_shell_thickness,
-                    cylinder_length,
-                )?,
+            ) => {
+                    // first, want to check if inner_diameter + 
+                    // shell thicknesses is outer diameter 
+
+                    let expected_outer_diameter: Length;
+                    let id: Length = inner_diameter.into();
+                    let inner_thickness: Length =  inner_shell_thickness.into();
+                    let outer_thickness: Length =  outer_shell_thickness.into();
+
+                    expected_outer_diameter = 
+                        id + inner_thickness + outer_thickness;
+
+                    let od: Length = outer_diameter.into();
+
+                    // inner diameter and outer diameter values must be 
+                    // equal to within 1 nanometer 1e-9 m
+                    if (od.value - expected_outer_diameter.value).abs() > 1e-9
+                    {
+
+                        let mut error_str: String = "the inner diameter 
+                            plus shell thicknesses do not equate 
+                            to outer diameter".to_string();
+
+                        error_str += "supplied outer diameter (m):";
+                        error_str += &od.value.to_string();
+                        error_str += "expected outer diameter (m):";
+                        error_str += &expected_outer_diameter.value.to_string();
+
+
+                        return Err(error_str
+                        );
+                    }
+
+                    get_conductance_cylindrical_radial_two_materials(
+                        inner_material,
+                        outer_material,
+                        material_temperature_1, //convention, 1 is inner shell
+                        material_temperature_2, // convention 2, is outer shell
+                        material_pressure_1,
+                        material_pressure_2,
+                        inner_diameter,
+                        inner_shell_thickness,
+                        outer_shell_thickness,
+                        cylinder_length,
+                    )?
+                }
+                ,
             _ => todo!("define other enum options"),
         };
 
