@@ -317,7 +317,8 @@ fn get_conductance_cylindrical_radial_two_materials(
 /// Secondly, the fluid is on the outside of the cylindrical solid,
 /// in this case, the surface area will be based on the outer diameter
 ///
-/// 
+/// you tell the solver which is which using an enum
+/// CylindricalAndSphericalSolidFluidArrangement
 ///
 ///
 pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
@@ -467,7 +468,7 @@ fn calculate_enthalpy_flow_between_two_heat_transfer_entities(
     // positive or negative, that will determine which enthalpy we 
     // use 
 
-    let mut enthalpy_of_stream: AvailableEnergy;
+    let enthalpy_of_stream: AvailableEnergy;
 
     // if mass flow is from back to front
     if mass_flowrate_from_back_to_front_cv.value > 0.0 {

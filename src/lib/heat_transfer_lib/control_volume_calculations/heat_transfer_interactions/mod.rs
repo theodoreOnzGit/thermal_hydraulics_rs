@@ -141,23 +141,37 @@ pub enum HeatTransferInteractionType {
     ///
     /// basically have three control volumes along the outer wall
     ///
+    /// -------------------------------------------------------> r
     /// // ----------------------------
     /// // |                          |                          
-    /// // *                          *                          *
+    /// // * solid_cv_1               *                          *
     /// // |                          |                         (T_f) 
     /// // ----------------------------
-    /// // cv_1                  cv_2                     Fluid_node
+    /// //                        solid_surface              Fluid_node
     ///
-    /// between cv_1 and cv_2 there is a thermal resistance 
-    /// based on a q'' = k dT/dx
+    /// Where r is the radius 
+    /// basically the liquid is on the outside (larger r)
     ///
-    /// between cv_2 and fluid_node, there is convection resistance
-    /// specified by a Nusselt Number
+    /// between solid_cv_1 and the solid_surface 
+    /// cv_2 there is a thermal resistance 
+    /// based on a q'' = k dT/dr
+    ///
+    /// between solid_surface and fluid_node, there is convection resistance
+    /// specified by a Nusselt Number so that we get a heat transfer 
+    /// coefficient
     ///
     /// For the conduction bit,
     /// we have one material which determines conductivity 
     /// and then length which determines the distance between 
     /// the two control volumes
+    ///
+    /// the thermal conductance is determined by 
+    /// Thermal conductance 
+    /// /// (2 * pi * L * K)/
+    /// ln(outer_radius/inner_radius)
+    ///
+    /// using obtain_thermal_conductance_annular_cylinder
+    /// under common_functions
     ///
     ///
     /// For convection, the heat flux from solid surface to fluid 
@@ -171,10 +185,68 @@ pub enum HeatTransferInteractionType {
     ///
     ///
     ///
-    CylindricalConductionConvectionThermalConductanceOuterWall(
-        (Material,RadialCylindricalThicknessThermalConduction),
+    CylindricalConductionConvectionLiquidOutside(
+        (Material,RadialCylindricalThicknessThermalConduction,
+        ThermodynamicTemperature,Pressure),
         (HeatTransfer, 
         OuterDiameterThermalConduction, 
+        CylinderLengthThermalConduction),
+    ),
+
+    /// 1D Cylindrical Coordinates Thermal Resistance
+    /// We return a ThermalConductance because it's more convenient
+    ///
+    /// basically have three control volumes along the outer wall
+    ///
+    /// -------------------------------------------------------> r
+    /// //                           ----------------------------
+    /// //                           |                          |                          
+    /// // *                         *         solid_cv_1       *                  
+    /// //                           |                          |                   
+    /// // fluid node                ----------------------------
+    /// // (T_f)                solid_surface
+    ///
+    /// Where r is the radius 
+    /// basically the liquid is on the inside (larger smaller r)
+    ///
+    /// between solid_cv_1 and solid_surface 
+    /// there is a thermal resistance 
+    /// based on a q'' = k dT/dr
+    ///
+    /// between solid_surface and fluid_node, there is convection resistance
+    /// specified by a Nusselt Number so that we get a heat transfer 
+    /// coefficient
+    ///
+    /// For the conduction bit,
+    /// we have one material which determines conductivity 
+    /// and then length which determines the distance between 
+    /// the two control volumes
+    ///
+    /// the thermal conductance is determined by 
+    /// Thermal conductance 
+    /// /// (2 * pi * L * K)/
+    /// ln(outer_radius/inner_radius)
+    ///
+    /// using obtain_thermal_conductance_annular_cylinder
+    /// under common_functions
+    ///
+    ///
+    /// For convection, the heat flux from solid surface to fluid 
+    /// is:
+    ///
+    /// q = h A(T_s - T_f)
+    /// 
+    /// for hA
+    /// surface area is calculated by specifying an outer diameter 
+    /// and a cylindrical axial length
+    ///
+    ///
+    ///
+    CylindricalConductionConvectionLiquidInside(
+        (Material,RadialCylindricalThicknessThermalConduction,
+        ThermodynamicTemperature,Pressure),
+        (HeatTransfer, 
+        InnerDiameterThermalConduction, 
         CylinderLengthThermalConduction),
     ),
 
@@ -357,6 +429,34 @@ fn get_thermal_conductance(
                     material_pressure_1, 
                     material_pressure_2, 
                     thickness)?,
+            HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidInside(
+                (solid_material, shell_thickness,
+                solid_temperature, solid_pressure), 
+                (h, inner_diameter, cylinder_length)) => {
+
+                    let id: Length = inner_diameter.clone().into();
+                    let thicnkess: Length = shell_thickness.clone().into();
+
+                    let od: Length = id+thicnkess;
+
+                    let outer_diameter: OuterDiameterThermalConduction = 
+                    OuterDiameterThermalConduction::from(od);
+
+                    // after all the typing conversion, we can 
+                    // get our conductance
+                    get_conductance_single_cylindrical_radial_solid_liquid(
+                        solid_material,
+                        solid_temperature,
+                        solid_pressure,
+                        h,
+                        inner_diameter,
+                        outer_diameter,
+                        cylinder_length,
+                        CylindricalAndSphericalSolidFluidArrangement::
+                        FluidOnInnerSurfaceOfSolidShell ,
+                    )?
+                },
             _ => todo!("define other enum options"),
         };
 
