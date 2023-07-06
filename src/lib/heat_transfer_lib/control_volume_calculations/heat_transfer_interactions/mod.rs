@@ -1,3 +1,6 @@
+use std::f64::consts::PI;
+
+use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::{f64::*, pressure::atmosphere};
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
@@ -17,6 +20,8 @@ pub(in crate::heat_transfer_lib::
     control_volume_calculations::heat_transfer_interactions) 
 mod calculations;
 use calculations::*;
+
+use super::common_functions::obtain_power_two_convection_one_conduction_thermal_resistance;
 
 /// basically an enum for you to specify 
 /// if the liquid on the inner curved surface of the shell or outer 
@@ -408,6 +413,8 @@ fn caclulate_between_two_singular_cv_nodes(
 
 /// this is thermal conductance function 
 /// it calculates thermal conductance based on the supplied enum
+///
+/// TODO: probably want to test this function out
 fn get_thermal_conductance(
     material_temperature_1: ThermodynamicTemperature,
     material_temperature_2: ThermodynamicTemperature,
@@ -422,7 +429,7 @@ fn get_thermal_conductance(
                 user_specified_conductance) => user_specified_conductance,
             HeatTransferInteractionType
                 ::SingleCartesianThermalConductanceOneDimension(
-            material,thickness) => get_conductance_single_cartesian_one_dimension(
+                material,thickness) => get_conductance_single_cartesian_one_dimension(
                     material,
                     material_temperature_1, 
                     material_temperature_2, 
@@ -486,10 +493,277 @@ fn get_thermal_conductance(
                         FluidOnInnerSurfaceOfSolidShell ,
                     )?
                 },
+            // note: actually function signatures are a little more 
+            // friendly to use than packing enums with lots of stuff 
+            // so may change stuffing enums with tuples to stuffing 
+            // enums with a single struct
+            HeatTransferInteractionType
+                ::DualCylindricalThermalConductance(
+                (inner_material,inner_shell_thickness),
+                (outer_material,outer_shell_thickness),
+                (inner_diameter,
+                outer_diameter,
+                cylinder_length)
+            ) => get_conductance_cylindrical_radial_two_materials(
+                    inner_material,
+                    outer_material,
+                    material_temperature_1, //convention, 1 is inner shell
+                    material_temperature_2, // convention 2, is outer shell
+                    material_pressure_1,
+                    material_pressure_2,
+                    inner_diameter,
+                    inner_shell_thickness,
+                    outer_shell_thickness,
+                    cylinder_length,
+                )?,
             _ => todo!("define other enum options"),
         };
 
     return Ok(conductance);
+}
+
+/// todo, test to be implemented
+#[test]
+fn thermal_conductance_test_convection_conduction_boundary(){
+
+    // first we can use the existing common_functions 
+    // model to obtain power 
+    // between a one convection one conduction thermal resistance
+    // let's suppose we have a pipe of 0.015 m inner diameter 
+    // 0.020 m outer diameter 
+    // this is a cylindrical surface
+    // pipe is 1m long
+    //
+    // pipe is made of copper
+    //
+    // the pipe itself has a heat transfer coefficient of 
+    // 100 W/(m^2 K) inside and 20 W/(m^2 K) 
+    //
+    // The ambient air temperature is 20 C, whereas the 
+    // fluid temperature is 100C 
+
+    let temperature_of_heat_recipient = ThermodynamicTemperature::new
+        ::<uom::si::thermodynamic_temperature::degree_celsius>(20.0);
+
+    let temperature_of_heat_source = ThermodynamicTemperature::new
+        ::<uom::si::thermodynamic_temperature::degree_celsius>(100.0);
+
+    // now we define the inner surface,
+    // area is pi* id * L (inner diameter)
+    // this is boundary between pipe and liquid
+
+    let heat_transfer_coefficient_1 = HeatTransfer::new 
+        ::<watt_per_square_meter_kelvin>(100.0);
+
+    let id = Length::new::<uom::si::length::meter>(0.015);
+    let pipe_length = Length::new::<uom::si::length::meter>(1.0);
+
+    let average_surface_area_1: Area = id * pipe_length * PI;
+
+    // then define the outer surface, this is boundary between pipe and 
+    // ambient air
+
+    let heat_transfer_coefficient_2 = HeatTransfer::new 
+    ::<watt_per_square_meter_kelvin>(20.0);
+
+    let od = Length::new::<uom::si::length::meter>(0.020);
+    let pipe_length = Length::new::<uom::si::length::meter>(1.0);
+
+    let average_surface_area_2: Area = od * pipe_length * PI;
+
+    // now for the conductance thermal resistance, while there is 
+    // a formal integral with which to get average surface area for
+    // the thermal conductance, perhaps with some use of log mean area 
+    // or something like that, I'm just going to lazily average the 
+    // surface area to get a ballpark figure 
+    
+    let lazily_averaged_surface_area_for_conduction: Area = 
+    0.5*(average_surface_area_1 + average_surface_area_2);
+
+    // now let's get copper thermal conductivity at some mean temperature,
+    // say 70C, of course, one can calculate this out iteratively 
+    // but i only ballpark 
+
+    let copper_temperature = ThermodynamicTemperature::new
+        ::<uom::si::thermodynamic_temperature::degree_celsius>(70.0);
+
+    let copper: Material = Material::Solid(
+        crate::heat_transfer_lib::
+        thermophysical_properties::SolidMaterial::Copper);
+
+    // now let's obtain thermal conductivity
+
+    let copper_pressure = Pressure::new::<atmosphere>(1.0);
+
+    let average_thermal_conductivity = 
+    thermal_conductivity(copper, copper_temperature, copper_pressure)
+        .unwrap();
+
+    // now let's obtain the power, 
+    let ballpark_estimate_power: Power = 
+    obtain_power_two_convection_one_conduction_thermal_resistance(
+        temperature_of_heat_recipient, 
+        temperature_of_heat_source, 
+        average_surface_area_1, 
+        heat_transfer_coefficient_1, 
+        average_surface_area_2, 
+        heat_transfer_coefficient_2, 
+        average_thermal_conductivity, 
+        lazily_averaged_surface_area_for_conduction, 
+        pipe_length);
+
+    // the power across this is about 75 watts
+    approx::assert_relative_eq!(
+        ballpark_estimate_power.value,
+        75.6831308452296,
+        epsilon=0.01);
+
+    // the conductance (Htc) is about 
+    // q = Htc (T_1-T_2)
+
+    let temperature_diff: TemperatureInterval = TemperatureInterval::new
+        ::<uom::si::temperature_interval::degree_celsius>(80.0);
+
+    let thermal_conductance_ballpark_value: ThermalConductance = 
+    ballpark_estimate_power/temperature_diff;
+
+    // conductance is about 0.946 watt/kelvin
+    approx::assert_relative_eq!(
+        thermal_conductance_ballpark_value.value,
+        0.94603913556537,
+        epsilon=0.01);
+
+    // now then, let's get conductance from here.
+
+    // first we need an interaction type: 
+    // and two material temperatures and pressures 
+    // we assume copper is 70C for simplicity
+
+    // we'll need to do two halves, one is the copper 
+    // with hot liquid inside 
+    // the help messages aren't too helpful here
+    // from the compiler
+    // may want to insert a struct instead
+
+    // the thickness I expect here is perhaps 1/4 of the pipe thickness 
+    // this is a rough estimate
+
+    let radial_thicnkess = (od-id)/4.0;
+    let radial_thicnkess: RadialCylindricalThicknessThermalConduction = 
+    RadialCylindricalThicknessThermalConduction::from(radial_thicnkess);
+
+
+    // it's quite a clunky way to define geometry and thermal resistance 
+    // but it will have to do for now
+    //
+    // moreover, one has to decide where best to situate the control 
+    // vol nodes so that thermal resistance is best defined
+    let copper_hot_liquid_interaction = 
+        HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidInside(
+                (// kind of clunky to use but ok
+                    copper,
+                    radial_thicnkess,
+                    copper_temperature,
+                    copper_pressure,
+                ), 
+                (
+                    heat_transfer_coefficient_1,
+                    InnerDiameterThermalConduction::from(id),
+                    CylinderLengthThermalConduction::from(pipe_length),
+                )
+            );
+
+    let inner_convection_boundary_conductance: ThermalConductance = 
+    get_thermal_conductance(
+        copper_temperature, 
+        copper_temperature, 
+        copper_pressure, //these don't really need to be defined, 
+        //probably fine tune later
+        copper_pressure, 
+        copper_hot_liquid_interaction).unwrap();
+
+    let inner_convection_boundary_thermal_resistance = 
+    1.0/inner_convection_boundary_conductance;
+
+    // now let's do it for the outer boundary 
+
+    let copper_air_interaction = HeatTransferInteractionType::
+        CylindricalConductionConvectionLiquidOutside(
+            (
+                copper,
+                radial_thicnkess,
+                copper_temperature,
+                copper_pressure,
+            ), 
+            (
+                heat_transfer_coefficient_2,
+                OuterDiameterThermalConduction::from(od),
+                CylinderLengthThermalConduction::from(pipe_length),
+            )
+        );
+
+    let outer_convection_boundary_conductance: ThermalConductance = 
+    get_thermal_conductance(
+        copper_temperature, 
+        copper_temperature, 
+        copper_pressure, //these don't really need to be defined, 
+        //probably fine tune later
+        copper_pressure, 
+        copper_air_interaction).unwrap();
+
+    let outer_convection_boundary_thermal_resistance = 
+    1.0/outer_convection_boundary_conductance;
+
+    // now let's do it for the middle boundary 
+    // where there are two layers of copper
+    
+    let inner_interim_diameter: Length = id + radial_thicnkess.into();
+    let outer_interim_diameter: Length = od - radial_thicnkess.into();
+
+    let copper_shell_internal_interaction = 
+    HeatTransferInteractionType::
+        DualCylindricalThermalConductance(
+            (copper, radial_thicnkess), 
+            (copper, radial_thicnkess), 
+            (
+                InnerDiameterThermalConduction::from(inner_interim_diameter),
+                OuterDiameterThermalConduction::from(outer_interim_diameter),
+                CylinderLengthThermalConduction::from(pipe_length),
+            )
+        );
+
+    let copper_shell_inside_thermal_conductance: ThermalConductance = 
+    get_thermal_conductance(
+        copper_temperature, 
+        copper_temperature, 
+        copper_pressure, 
+        copper_pressure, 
+        copper_shell_internal_interaction
+    ).unwrap();
+
+    let copper_shell_inside_thermal_resistance = 
+    1.0/copper_shell_inside_thermal_conductance;
+
+    // now find overall conductance 
+
+    let overall_resistance = copper_shell_inside_thermal_resistance +
+    outer_convection_boundary_thermal_resistance +
+    inner_convection_boundary_thermal_resistance;
+
+    let overall_conductance: ThermalConductance = 
+    1.0/overall_resistance;
+
+    // values match to within 0.5%
+    // yes!
+    //
+    // must say though, it's kind of user unfriendly to use
+    // for now, i'll leave it, it seems to work
+    approx::assert_relative_eq!(
+        thermal_conductance_ballpark_value.value,
+        overall_conductance.value,
+        epsilon=0.005);
+
 }
 
 

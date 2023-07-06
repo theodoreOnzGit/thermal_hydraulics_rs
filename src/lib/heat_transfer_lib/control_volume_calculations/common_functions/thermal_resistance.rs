@@ -192,7 +192,7 @@ pub fn obtain_power_two_convection_one_conduction_thermal_resistance(
     average_surface_area_2: Area,
     heat_transfer_coefficient_2: HeatTransfer,
     average_thermal_conductivity: ThermalConductivity,
-    average_surface_area: Area,
+    average_surface_area_thermal_cond: Area,
     length_of_wall: Length
     ) -> Power {
 
@@ -215,7 +215,7 @@ pub fn obtain_power_two_convection_one_conduction_thermal_resistance(
     let thermal_resistance_3 = 
         length_of_wall
         /average_thermal_conductivity
-        /average_surface_area;
+        /average_surface_area_thermal_cond;
 
     let thermal_resistance = 
         thermal_resistance_1 
