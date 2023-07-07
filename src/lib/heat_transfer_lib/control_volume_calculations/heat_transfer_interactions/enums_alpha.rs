@@ -239,5 +239,25 @@ pub enum HeatTransferInteractionType {
 
     /// The user Specifies a heat Addition for the BC
     /// The uom type is Power
-    UserSpecifiedHeatAddition(Power),
+    UserSpecifiedHeatAddition,
+    
+    /// Use this enum to specify a constant heat flux
+    /// you will, of course, need to provide an area
+    UserSpecifiedHeatFluxCustomArea(Area),
+
+    /// Use this enum to identify that you are 
+    /// specifying a curved cylindrical surface area 
+    /// on the outer surface of a cylinder
+    UserSpecifiedHeatFluxCylindricalOuterArea(
+        CylinderLengthThermalConduction,
+        OuterDiameterThermalConduction,
+    ),
+
+    /// Use this enum to identify that you are 
+    /// specifying a curved cylindrical surface area 
+    /// on the inner surface of a cylinder
+    UserSpecifiedHeatFluxCylindricalInnerArea(
+        CylinderLengthThermalConduction,
+        InnerDiameterThermalConduction,
+    ),
 }

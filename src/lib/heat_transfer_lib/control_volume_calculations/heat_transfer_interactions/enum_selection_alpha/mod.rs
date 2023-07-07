@@ -16,6 +16,8 @@
 //! Note that if two BCs interact with each other, it kind of doesn't 
 //! matter because you cannot change temperatures of each BC
 //!
+use std::f64::consts::PI;
+
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib;
@@ -95,7 +97,7 @@ fn calculate_control_volume_boundary_condition_serial(
     let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
             => calculate_single_cv_node_constant_heat_addition(
-                single_cv, *heat_rate),
+                single_cv, *heat_rate, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
             => calculate_single_cv_node_constant_heat_flux(
                 single_cv, *heat_flux, interaction),
@@ -121,7 +123,28 @@ pub (in crate::heat_transfer_lib::control_volume_calculations)
 fn calculate_single_cv_node_constant_heat_addition(
     control_vol: &mut SingleCVNode,
     heat_added_to_control_vol: Power,
+    interaction: HeatTransferInteractionType
     ) -> Result<(), String> {
+
+    // ensure that the interaction is UserSpecifiedHeatAddition
+    // otherwise, return error 
+
+    match interaction {
+        heat_transfer_lib::control_volume_calculations::
+            heat_transfer_interactions::
+            enums_alpha::HeatTransferInteractionType::
+            UserSpecifiedHeatAddition => {
+                // return a void value, that would be dropped 
+                // instantly
+                //
+                // it pretty much has the same meaning as break
+                ()
+            },
+
+        _ => return Err("you need to specify that the interaction type \n 
+            is UserSpecifiedHeatAddition".to_string()),
+    };
+
 
     control_vol.rate_enthalpy_change_vector.
         push(heat_added_to_control_vol);
@@ -134,10 +157,84 @@ fn calculate_single_cv_node_constant_heat_addition(
 /// power added
 fn calculate_single_cv_node_constant_heat_flux(
     control_vol: &mut SingleCVNode,
-    heat_flux: HeatFluxDensity,
+    heat_flux_into_control_vol: HeatFluxDensity,
     interaction: HeatTransferInteractionType) -> Result<(), String> {
 
-    return Err("not implemented yet".to_string());
+     let heat_transfer_area: Area = match interaction{
+        HeatTransferInteractionType::
+            UserSpecifiedThermalConductance(_) => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+        HeatTransferInteractionType::
+            SingleCartesianThermalConductanceOneDimension(_, _) => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+        HeatTransferInteractionType::
+            DualCartesianThermalConductance(_, _) => 
+            return Err("please specify interaction \n 
+                type as UserSpecifiedHeatFluxCustomArea \n 
+                or Similar".to_string()),
+
+        HeatTransferInteractionType::
+            DualCylindricalThermalConductance(_, _, _) => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or \n
+                Similar".to_string()),
+
+        HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidOutside(_, _) => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+        HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidInside(_, _) => 
+            return Err("please specify interaction \n 
+                type as UserSpecifiedHeatFluxCustomArea \n 
+                or Similar".to_string()),
+
+        HeatTransferInteractionType::
+            UserSpecifiedHeatAddition => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+        // these interaction types are acceptable
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCustomArea(area) => area,
+
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCylindricalOuterArea(
+            cylinder_length, od) => {
+                let od: Length = od.into();
+                let cylinder_length: Length  = cylinder_length.into();
+
+                let area = PI * od * cylinder_length;
+                area
+            },
+
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCylindricalInnerArea(
+            cylinder_length, id) => {
+                let id: Length = id.into();
+                let cylinder_length: Length  = cylinder_length.into();
+
+                let area = PI * id * cylinder_length;
+                area
+
+            },
+
+    };
+
+    let heat_flowrate_into_control_vol: Power = 
+    heat_flux_into_control_vol * heat_transfer_area;
+
+    control_vol.rate_enthalpy_change_vector.
+        push(heat_flowrate_into_control_vol);
+
+    return Ok(());
+
+
 }
 
 /// suppose control volume interacts with constant temperature BC
