@@ -1,18 +1,31 @@
+//! enum selection basically handles how control volumes (CVs) interact 
+//! with each other and with boundary conditions (BCs)
+//! 
+//! together, the CVs and BCs are part of a superset or enum called 
+//! heat_transfer_entities
+//!
+//! This enum selection decides what happens if two CVs interact with 
+//! each other, or a CV and BC interact with each other, or if two BCs 
+//! interact with each other 
+//!
+//! CVs differ from BCs in that BCs do not have thermal inertia 
+//! or any heat capacity. BCs will supply a heat or stay at a fixed 
+//! Temperature (thermal reservoir)
+//!
+//!
+//! Note that if two BCs interact with each other, it kind of doesn't 
+//! matter because you cannot change temperatures of each BC
+//!
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::*;
 
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::CVType::*;
 
-use crate::heat_transfer_lib::control_volume_calculations
-::common_functions::*;
+
 use crate::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_interactions::*;
 
@@ -55,8 +68,100 @@ fn calculate_control_volume_serial(
 
 }
 
-// this function specifically interacts between two single CV nodes
-//
+/// the job of this function is to handle interactions between 
+/// boundary conditions 
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_boundary_condition_serial(
+    _boundary_condition_1: &mut BCType,
+    _boundary_condition_2: &mut BCType,
+    _interaction: HeatTransferInteractionType) -> Result<(),String>{
+
+
+    return Err("interactions between two boundary conditions \n
+        not implemented".to_string());
+}
+
+/// the job of this function is to handle interactions between 
+/// a control_volume and a boundary condition
+///
+/// here we have to handle some BC types, 
+/// these are the most basic:
+/// 1. constant heat flux
+/// 2. constant temperature
+/// 3. constant heat addition
+///
+/// For each case, there should be a function
+/// to handle each case
+///
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_control_volume_boundary_condition_serial(
+    control_vol: &mut CVType,
+    boundary_condition: &mut BCType,
+    interaction: HeatTransferInteractionType) -> Result<(),String> {
+
+    let cv_result = match (control_vol, boundary_condition) {
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
+            => calculate_single_cv_node_constant_heat_addition(
+                single_cv, *heat_rate),
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
+            => calculate_single_cv_node_constant_heat_flux(
+                single_cv, *heat_flux, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
+            => calculate_single_cv_node_constant_temperature(
+                single_cv, *bc_temperature, interaction),
+        (ArrayCV,_) => todo!(),
+    };
+
+    return cv_result;
+}
+
+
+/// suppose the control volume interacts with a BC which is 
+/// a constant heat addition, which is a constant power rating
+/// 
+///
+/// cooling is also possible, just supply a negative Power 
+/// quantity
+///
+#[inline]
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_single_cv_node_constant_heat_addition(
+    control_vol: &mut SingleCVNode,
+    heat_added_to_control_vol: Power,
+    ) -> Result<(), String> {
+
+    control_vol.rate_enthalpy_change_vector.
+        push(heat_added_to_control_vol);
+
+    return Ok(());
+}
+
+/// suppose control volume interacts with a constant heat flux BC
+/// we will need a sort of surface area in order to determine the 
+/// power added
+fn calculate_single_cv_node_constant_heat_flux(
+    control_vol: &mut SingleCVNode,
+    heat_flux: HeatFluxDensity,
+    interaction: HeatTransferInteractionType
+    ) -> Result<(), String> {
+
+    return Err("not implemented yet".to_string());
+}
+
+/// suppose control volume interacts with constant temperature BC
+/// we need some thermal conductance value to obtain a power
+/// value
+fn calculate_single_cv_node_constant_temperature(
+    control_vol: &mut SingleCVNode,
+    boundary_condition_temperature: ThermodynamicTemperature,
+    interaction: HeatTransferInteractionType) -> Result<(), String> {
+
+    return Err("not implemented yet".to_string());
+}
+
+// this function specifically calculates interaction 
+// between two single CV nodes
+// 
 #[inline]
 fn caclulate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,

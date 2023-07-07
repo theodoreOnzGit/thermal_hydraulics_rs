@@ -50,13 +50,17 @@ pub use enums_alpha::*;
 /// for how heat transfer entities 
 /// ie control volumes and boundary conditions 
 /// interact with each other
+/// and also control volume mutation
+/// 
 ///
 /// one thread calculation only
 ///
 /// note that the enum_selection_alpha module 
 /// here are UNSTABLE, I may not preserve the API
 ///
-/// alpha here means unstable
+/// alpha here means unstable 
+///
+///
 mod enum_selection_alpha;
 use enum_selection_alpha::*;
 
@@ -66,6 +70,7 @@ use enum_selection_alpha::*;
 /// for how heat transfer entities 
 /// ie control volumes and boundary conditions 
 /// interact with each other
+/// and also control volume mutation
 ///
 /// multithread calculation only
 ///
