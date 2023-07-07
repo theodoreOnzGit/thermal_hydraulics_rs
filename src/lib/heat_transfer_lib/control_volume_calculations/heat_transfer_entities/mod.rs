@@ -12,7 +12,7 @@ thermophysical_properties::{Material,
 pub enum HeatTransferEntity {
     /// Contains a list of ControlVolumeTypes
     ControlVolume(CVType),
-    /// Contains a list of selectable liquids
+    /// Contains a list of Boundary conditions
     BoundaryConditions(BCType)
 }
 

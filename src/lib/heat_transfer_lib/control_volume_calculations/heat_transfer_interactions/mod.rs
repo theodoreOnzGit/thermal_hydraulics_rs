@@ -100,42 +100,38 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
 
     // first thing first, probably want to unpack the enums to obtain 
     // the underlying control volume and BCs
+    // 
+    // Basically there are four permutations of what the user may choose 
+    // either link two control volumes,
+    // link a control vol and BC  (or BC first then control vol)
+    // lastly, two BCs 
+    // (which is kind of invalid though, 
+    // but i suppose it may make sense for steady state)
+    //
 
-    let control_vol_1_opt: Option<&mut CVType> = match entity_1 {
-        HeatTransferEntity::ControlVolume(control_vol_type) 
-            => Some(control_vol_type),
-        _ => None,
+    let heat_transfer_entity_result = match (entity_1,entity_2) {
+        (HeatTransferEntity::ControlVolume(cv_type_1),
+            HeatTransferEntity::ControlVolume(cv_type_2)) =>
+            calculate_control_volume_serial(
+                cv_type_1, 
+                cv_type_2, 
+                interaction),
+        (HeatTransferEntity::BoundaryConditions(bc_type),
+            HeatTransferEntity::ControlVolume(cv_type)) =>
+            calculate_control_volume_boundary_condition_serial(
+                cv_type, bc_type, interaction),
+        (HeatTransferEntity::ControlVolume(cv_type),
+            HeatTransferEntity::BoundaryConditions(bc_type)) =>
+            calculate_control_volume_boundary_condition_serial(
+                cv_type, bc_type, interaction),
+        (HeatTransferEntity::BoundaryConditions(bc_type_1),
+            HeatTransferEntity::BoundaryConditions(bc_type_2)) =>
+            calculate_boundary_condition_serial(
+                bc_type_1, bc_type_2, interaction),
     };
 
-    let control_vol_2_opt: Option<&mut CVType> = match entity_2 {
-        HeatTransferEntity::ControlVolume(control_vol_type) 
-            => Some(control_vol_type),
-        _ => None,
-    };
 
-    // I'll pass in both these option types into a function which 
-    // calculates specifically for two control volumes
-
-    let (_control_vol_1, _control_vol_2) :
-    (&mut CVType, &mut CVType) = match 
-        (control_vol_1_opt, control_vol_2_opt) {
-            (Some(cv_1), Some(cv_2)) 
-                => {
-
-                    calculate_control_volume_serial(
-                        cv_1, 
-                        cv_2, 
-                        interaction)?;
-
-                    (cv_1, cv_2)
-                },
-            _ => return Err("other BCs not yet implemented"
-            .to_string()),
-        };
-
-
-
-    return Ok(());
+    return heat_transfer_entity_result;
    
 }
 

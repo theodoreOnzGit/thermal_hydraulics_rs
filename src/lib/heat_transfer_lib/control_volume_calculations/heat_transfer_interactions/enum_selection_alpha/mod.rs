@@ -39,32 +39,24 @@ fn calculate_control_volume_serial(
     interaction: HeatTransferInteractionType) -> Result<(),String>{
 
     // let me first match my control volumes to their various types
+    // at each matching arm, use those as inputs
 
-    let single_cv_1_opt: Option<&mut SingleCVNode> = match control_vol_1 {
-        SingleCV(single_cv) => Some(single_cv),
-        _ => None,
+    let cv_result = match (control_vol_1, control_vol_2) {
+        (SingleCV(single_cv_1), SingleCV(single_cv_2)) =>
+            caclulate_between_two_singular_cv_nodes(
+                single_cv_1, 
+                single_cv_2, 
+                interaction),
+        (ArrayCV, SingleCV(_)) =>
+            Err("Array CV calcs not yet implemented".to_string()),
+        (SingleCV(_), ArrayCV) =>
+            Err("Array CV calcs not yet implemented".to_string()),
+        (ArrayCV, ArrayCV) =>
+            Err("Array CV calcs not yet implemented".to_string()),
     };
 
-    let single_cv_2_opt: Option<&mut SingleCVNode> = match control_vol_2 {
-        SingleCV(single_cv) => Some(single_cv),
-        _ => None,
-    };
 
-    let (single_cv_1, single_cv_2) :
-    (&mut SingleCVNode, &mut SingleCVNode) = match 
-        (single_cv_1_opt, single_cv_2_opt) {
-            (Some(single_cv_1), Some(single_cv_2)) 
-                => (single_cv_1, single_cv_2),
-            _ => return Err("other cvs implemented, may want a better implementation"
-            .to_string()),
-        };
-
-    caclulate_between_two_singular_cv_nodes(
-        single_cv_1, 
-        single_cv_2, 
-        interaction)?;
-
-    return Ok(());
+    return cv_result;
 
 }
 
@@ -99,7 +91,7 @@ fn calculate_control_volume_boundary_condition_serial(
     boundary_condition: &mut BCType,
     interaction: HeatTransferInteractionType) -> Result<(),String> {
 
-    let cv_result = match (control_vol, boundary_condition) {
+    let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
             => calculate_single_cv_node_constant_heat_addition(
                 single_cv, *heat_rate),
@@ -112,7 +104,7 @@ fn calculate_control_volume_boundary_condition_serial(
         (ArrayCV,_) => todo!(),
     };
 
-    return cv_result;
+    return cv_bc_result;
 }
 
 
@@ -142,8 +134,7 @@ fn calculate_single_cv_node_constant_heat_addition(
 fn calculate_single_cv_node_constant_heat_flux(
     control_vol: &mut SingleCVNode,
     heat_flux: HeatFluxDensity,
-    interaction: HeatTransferInteractionType
-    ) -> Result<(), String> {
+    interaction: HeatTransferInteractionType) -> Result<(), String> {
 
     return Err("not implemented yet".to_string());
 }
