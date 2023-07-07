@@ -18,6 +18,7 @@
 //!
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
+use crate::heat_transfer_lib;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 
@@ -101,7 +102,7 @@ fn calculate_control_volume_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_single_cv_node_constant_temperature(
                 single_cv, *bc_temperature, interaction),
-        (ArrayCV,_) => todo!(),
+        (ArrayCV,_) => Err("array cv not yet implemented".to_string()),
     };
 
     return cv_bc_result;
@@ -147,7 +148,65 @@ fn calculate_single_cv_node_constant_temperature(
     boundary_condition_temperature: ThermodynamicTemperature,
     interaction: HeatTransferInteractionType) -> Result<(), String> {
 
-    return Err("not implemented yet".to_string());
+    // first let's get the control volume temperatures out
+    
+    let cv_enthalpy = 
+    control_vol.current_timestep_control_volume_specific_enthalpy;
+
+    let cv_material = control_vol.material_control_volume;
+
+    let cv_pressure = control_vol.pressure_control_volume;
+
+    let cv_temperature = heat_transfer_lib::thermophysical_properties:: 
+        specific_enthalpy::temperature_from_specific_enthalpy(
+            cv_material, 
+            cv_enthalpy, 
+            cv_pressure)?;
+
+    // for now we assume the boundary condition pressure is the same 
+    // as the control volume pressure, because pressure is not 
+    // specified or anything
+
+    let bc_pressure = cv_pressure.clone();
+    
+    // we'll need thermal conductance 
+
+    let cv_bc_conductance: ThermalConductance = 
+    get_thermal_conductance(
+        cv_temperature, 
+        boundary_condition_temperature, 
+        cv_pressure, 
+        bc_pressure, 
+        interaction)?;
+
+    // with conductance settled, we should be able to calculate a power 
+
+    let bc_temp_minus_cv_temp_kelvin: f64 = 
+        boundary_condition_temperature.get::<kelvin>() - 
+        cv_temperature.get::<kelvin>();
+
+    let bc_temp_mins_cv_temp: TemperatureInterval = 
+    TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+        bc_temp_minus_cv_temp_kelvin);
+
+    // heat flow to the destination 
+    // be is proportional to -(T_final - T_initial) 
+    // or -(T_destination - T_source)
+    //
+    // so if the destination is the boundary condition,
+    //
+    let heat_flowrate_from_cv_to_bc: Power = 
+    - cv_bc_conductance * bc_temp_mins_cv_temp;
+
+    // now, push the power change or heat flowrate 
+    // to the control volume 
+    //
+
+    control_vol.rate_enthalpy_change_vector.
+        push(heat_flowrate_from_cv_to_bc);
+
+    // and we done!
+    return Ok(());
 }
 
 // this function specifically calculates interaction 
@@ -240,7 +299,7 @@ fn caclulate_between_two_singular_cv_nodes(
 
     single_cv_1.rate_enthalpy_change_vector.
         push(-heat_flowrate_from_cv_1_to_cv_2);
-    single_cv_1.rate_enthalpy_change_vector.
+    single_cv_2.rate_enthalpy_change_vector.
         push(heat_flowrate_from_cv_1_to_cv_2);
 
     return Ok(());
@@ -252,10 +311,10 @@ fn caclulate_between_two_singular_cv_nodes(
 ///
 /// TODO: probably want to test this function out
 fn get_thermal_conductance(
-    material_temperature_1: ThermodynamicTemperature,
-    material_temperature_2: ThermodynamicTemperature,
-    material_pressure_1: Pressure,
-    material_pressure_2: Pressure,
+    temperature_1: ThermodynamicTemperature,
+    temperature_2: ThermodynamicTemperature,
+    pressure_1: Pressure,
+    pressure_2: Pressure,
     interaction: HeatTransferInteractionType) 
 -> Result<ThermalConductance, String> 
 {
@@ -268,10 +327,10 @@ fn get_thermal_conductance(
                 ::SingleCartesianThermalConductanceOneDimension(
                 material,thickness) => get_conductance_single_cartesian_one_dimension(
                     material,
-                    material_temperature_1, 
-                    material_temperature_2, 
-                    material_pressure_1, 
-                    material_pressure_2, 
+                    temperature_1, 
+                    temperature_2, 
+                    pressure_1, 
+                    pressure_2, 
                     thickness)?,
             HeatTransferInteractionType::
                 CylindricalConductionConvectionLiquidInside(
@@ -377,10 +436,10 @@ fn get_thermal_conductance(
                     get_conductance_cylindrical_radial_two_materials(
                         inner_material,
                         outer_material,
-                        material_temperature_1, //convention, 1 is inner shell
-                        material_temperature_2, // convention 2, is outer shell
-                        material_pressure_1,
-                        material_pressure_2,
+                        temperature_1, //convention, 1 is inner shell
+                        temperature_2, // convention 2, is outer shell
+                        pressure_1,
+                        pressure_2,
                         inner_diameter,
                         inner_shell_thickness,
                         outer_shell_thickness,
@@ -388,7 +447,7 @@ fn get_thermal_conductance(
                     )?
                 }
                 ,
-            _ => todo!("define other enum options"),
+            _ => return Err("define other enum options".to_string()),
         };
 
     return Ok(conductance);
