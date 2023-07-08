@@ -16,14 +16,10 @@
 //! Note that if two BCs interact with each other, it kind of doesn't 
 //! matter because you cannot change temperatures of each BC
 //!
-use std::f64::consts::PI;
 
-use uom::si::thermodynamic_temperature::kelvin;
+
+
 use uom::si::f64::*;
-use crate::heat_transfer_lib;
-use crate::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
-
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::CVType::*;
@@ -254,9 +250,71 @@ fn get_thermal_conductance(
                         outer_shell_thickness,
                         cylinder_length,
                     )?
-                }
-                ,
-            _ => return Err("define other enum options".to_string()),
+                },
+            HeatTransferInteractionType::UserSpecifiedHeatAddition  
+                => {
+                    return Err("interaction type needs to be \n 
+                        thermal conductance".to_string());
+                },
+
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCustomArea(_) => {
+
+                    return Err("interaction type needs to be \n 
+                        thermal conductance".to_string());
+
+                },
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
+
+                    return Err("interaction type needs to be \n 
+                        thermal conductance".to_string());
+
+                },
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
+
+                    return Err("interaction type needs to be \n 
+                        thermal conductance".to_string());
+
+                },
+            HeatTransferInteractionType::
+                DualCartesianThermalConductance(
+                (material_1, thickness_1),
+                (material_2,thickness_2)) => { 
+                    
+                    let conductnace_layer_1: ThermalConductance 
+                    = get_conductance_single_cartesian_one_dimension(
+                        material_1,
+                        temperature_1, 
+                        temperature_1, 
+                        pressure_1, 
+                        pressure_1, 
+                        thickness_1)?;
+
+                    let conductnace_layer_2: ThermalConductance 
+                    = get_conductance_single_cartesian_one_dimension(
+                        material_2,
+                        temperature_2, 
+                        temperature_2, 
+                        pressure_2, 
+                        pressure_2, 
+                        thickness_2)?;
+
+                    let overall_resistance = 
+                    1.0/conductnace_layer_2 
+                    + 1.0/conductnace_layer_1;
+
+                    // return the conductance or resistnace inverse
+
+                    1.0/overall_resistance
+            },
+            HeatTransferInteractionType::
+                SingleCartesianThermalConductanceThreeDimension() 
+                => {
+                    todo!();
+                },
+
         };
 
     return Ok(conductance);

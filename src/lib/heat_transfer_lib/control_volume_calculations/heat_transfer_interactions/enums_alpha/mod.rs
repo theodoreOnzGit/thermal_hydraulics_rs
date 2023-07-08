@@ -62,6 +62,12 @@ pub enum HeatTransferInteractionType {
         XThicknessThermalConduction
     ),
 
+
+    SingleCartesianThermalConductanceThreeDimension(
+    ),
+
+
+
     /// 1D Cartesian Coordinates Thermal Resistance, for solids only
     /// We return a ThermalConductance because it's more convenient
     ///
@@ -85,8 +91,8 @@ pub enum HeatTransferInteractionType {
     ///
     ///
     DualCartesianThermalConductance(
-        (XThicknessThermalConduction, Length),
-        (XThicknessThermalConduction, Length),
+        (Material, XThicknessThermalConduction),
+        (Material, XThicknessThermalConduction),
     ),
 
     /// 1D Cylindrical Coordinates Thermal Resistance
