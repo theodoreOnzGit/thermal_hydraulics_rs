@@ -63,7 +63,7 @@ pub enum HeatTransferInteractionType {
     ),
 
 
-    SingleCartesianThermalConductanceThreeDimension(
+    DualCartesianThermalConductanceThreeDimension(
     ),
 
 

@@ -310,8 +310,17 @@ fn get_thermal_conductance(
                     1.0/overall_resistance
             },
             HeatTransferInteractionType::
-                SingleCartesianThermalConductanceThreeDimension() 
+                DualCartesianThermalConductanceThreeDimension() 
                 => {
+                    //get_conductance_dual_cartesian_three_dimensions(
+                    //    material_1, 
+                    //    material_2, 
+                    //    temperature_1, 
+                    //    temperature_2, 
+                    //    pressure_1, 
+                    //    pressure_2, 
+                    //    xs_area, 
+                    //    thickness);
                     todo!();
                 },
 

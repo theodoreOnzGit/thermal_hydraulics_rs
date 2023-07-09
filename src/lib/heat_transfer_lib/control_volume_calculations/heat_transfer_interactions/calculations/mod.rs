@@ -106,7 +106,7 @@ fn get_conductance_single_cartesian_one_dimension(
 ///
 ///
 pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
-fn get_conductance_single_cartesian_three_dimensions(
+fn get_conductance_dual_cartesian_three_dimensions(
     material_1: Material,
     material_2: Material,
     material_temperature_1: ThermodynamicTemperature,
