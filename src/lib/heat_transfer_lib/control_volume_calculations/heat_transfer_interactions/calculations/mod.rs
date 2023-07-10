@@ -114,7 +114,8 @@ fn get_conductance_dual_cartesian_three_dimensions(
     material_pressure_1: Pressure,
     material_pressure_2: Pressure,
     xs_area: CrossSectionalArea,
-    thickness: XThicknessThermalConduction) -> Result<ThermalConductance,String> 
+    thickness_1: XThicknessThermalConduction,
+    thickness_2: XThicknessThermalConduction) -> Result<ThermalConductance,String> 
 {
 
     // note, the question mark here (?) at the end denotes 
@@ -138,7 +139,8 @@ fn get_conductance_dual_cartesian_three_dimensions(
         material_temperature_2, 
         material_pressure_2)?;    
 
-    let material_thickness: Length = thickness.into();
+    let material_thickness_1: Length = thickness_1.into();
+    let material_thickness_2: Length = thickness_2.into();
 
     let cross_sectional_area: Area = xs_area.into();
 
@@ -147,12 +149,12 @@ fn get_conductance_dual_cartesian_three_dimensions(
     let material_1_conductance: ThermalConductance = 
     material_1_thermal_conductivity * 
     cross_sectional_area / 
-    material_thickness;
+    material_thickness_1;
 
     let material_2_conductance: ThermalConductance = 
     material_2_thermal_conductivity * 
     cross_sectional_area / 
-    material_thickness;
+    material_thickness_2;
 
     // we invert them to find the resistance
     //

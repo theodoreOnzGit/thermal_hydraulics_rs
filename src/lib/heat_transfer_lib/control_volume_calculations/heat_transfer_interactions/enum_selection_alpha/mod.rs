@@ -310,18 +310,35 @@ fn get_thermal_conductance(
                     1.0/overall_resistance
             },
             HeatTransferInteractionType::
-                DualCartesianThermalConductanceThreeDimension() 
+                DualCartesianThermalConductanceThreeDimension(
+                data_dual_cartesian_conduction) 
                 => {
-                    //get_conductance_dual_cartesian_three_dimensions(
-                    //    material_1, 
-                    //    material_2, 
-                    //    temperature_1, 
-                    //    temperature_2, 
-                    //    pressure_1, 
-                    //    pressure_2, 
-                    //    xs_area, 
-                    //    thickness);
-                    todo!();
+
+                    let material_1 = 
+                    data_dual_cartesian_conduction .material_1;
+
+                    let material_2 = 
+                    data_dual_cartesian_conduction .material_2;
+
+                    let thickness_1 = 
+                    data_dual_cartesian_conduction .thickness_1;
+
+                    let thickness_2 = 
+                    data_dual_cartesian_conduction .thickness_2;
+
+                    let xs_area = 
+                    data_dual_cartesian_conduction .xs_area;
+
+                    get_conductance_dual_cartesian_three_dimensions(
+                        material_1, 
+                        material_2, 
+                        temperature_1, 
+                        temperature_2, 
+                        pressure_1, 
+                        pressure_2, 
+                        xs_area, 
+                        thickness_1,
+                        thickness_2)?
                 },
 
         };

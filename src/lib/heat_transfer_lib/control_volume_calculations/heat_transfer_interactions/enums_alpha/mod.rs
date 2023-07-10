@@ -4,9 +4,12 @@ use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::*;
 
+mod data_enum_structs;
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::HeatTransferEntity;
+
+use self::data_enum_structs::DataDualCartesianThermalConductanceThreeDimension;
 /// basically an enum for you to specify 
 /// if the liquid on the inner curved surface of the shell or outer 
 /// curved surface of the shell
@@ -63,7 +66,14 @@ pub enum HeatTransferInteractionType {
     ),
 
 
+    /// suppose there are two blocks with the same cross sectional 
+    /// area, each of its own thickness and material makeup 
+    ///
+    /// this is DualCartesianThermalConductanceThreeDimension
+    /// we have three dimensional blocks, but the conduction is along 
+    /// the thickness of the block, tube or cylinder
     DualCartesianThermalConductanceThreeDimension(
+        DataDualCartesianThermalConductanceThreeDimension
     ),
 
 

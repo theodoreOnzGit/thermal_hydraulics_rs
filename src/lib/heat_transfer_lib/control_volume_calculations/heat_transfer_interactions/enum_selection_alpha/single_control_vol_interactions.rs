@@ -109,7 +109,7 @@ fn calculate_single_cv_node_constant_heat_flux(
                 UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
 
         HeatTransferInteractionType::
-            DualCartesianThermalConductanceThreeDimension() => 
+            DualCartesianThermalConductanceThreeDimension(_) => 
             return Err("please specify interaction type as \n 
                 UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
         // these interaction types are acceptable
