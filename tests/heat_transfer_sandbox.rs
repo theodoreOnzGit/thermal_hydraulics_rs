@@ -2,6 +2,7 @@
 #[macro_use]
 extern crate approx;
 use std::f64::consts::PI;
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -12,7 +13,7 @@ thermophysical_properties::SolidMaterial::SteelSS304L;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea};
+control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
@@ -422,10 +423,23 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             &mut ambient_bc_in_loop, 
             heat_trf_interaction).unwrap();
 
-        // after linking, the reference is dropped
 
+        // let me get the CV out 
+        //
+        let cv_type = match steel_cv_in_loop.deref_mut() {
+            HeatTransferEntity::ControlVolume(cv_type) => cv_type,
+            _ => todo!(),
+        };
 
+        let single_cv: &mut SingleCVNode = match cv_type {
+            CVType::SingleCV(steel_cv) => steel_cv,
+            _ => todo!(),
+        };
 
+        let enthalpy_cv = single_cv.
+        rate_enthalpy_change_vector.clone();
+
+        //panic!("{:?}", enthalpy_cv)
 
 
     };

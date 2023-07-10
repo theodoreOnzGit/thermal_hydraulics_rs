@@ -211,6 +211,10 @@ impl SingleCVNode {
         }
 
     }
+
+    pub fn return_enthalpy_rate_of_chg_vector(&self) -> Vec<Power> {
+        return self.rate_enthalpy_change_vector.clone();
+    }
 }
 
 
