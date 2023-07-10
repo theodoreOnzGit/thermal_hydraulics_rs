@@ -15,6 +15,16 @@ pub enum HeatTransferEntity {
     /// Contains a list of Boundary conditions
     BoundaryConditions(BCType)
 }
+/// placeholder, I'd like to have some associated functions to 
+/// deal with the HeatTransferEntity type
+///
+/// probably one to get the courant number, 
+/// and second, to use a timestep to calculate the new enthalpy 
+/// and update enthalpy
+/// 
+/// last but not least, extract temperatures for sensing purposes
+impl HeatTransferEntity {
+}
 
 /// To determine heat transfer between two control volumes or 
 /// generally, two heat transfer entities, one must determine 
@@ -212,9 +222,6 @@ impl SingleCVNode {
 
     }
 
-    pub fn return_enthalpy_rate_of_chg_vector(&self) -> Vec<Power> {
-        return self.rate_enthalpy_change_vector.clone();
-    }
 }
 
 

@@ -368,7 +368,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     let ambient_temperature: ThermodynamicTemperature = 
     ThermodynamicTemperature::new::<degree_celsius>(25.0);
 
-    let mut ambient_temperature_boundary_condition = 
+    let ambient_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
         UserSpecifiedTemperature(ambient_temperature));
 
@@ -424,7 +424,11 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             heat_trf_interaction).unwrap();
 
 
-        // let me get the CV out 
+        // let me get the enthalpy out, 
+        // there are several nested enums, so it's quite cumbersome 
+        // to do it this way. So don't, you're not meant to
+        //
+        // I might use associated functions or something
         //
         let cv_type = match steel_cv_in_loop.deref_mut() {
             HeatTransferEntity::ControlVolume(cv_type) => cv_type,
@@ -438,6 +442,9 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
         let enthalpy_cv = single_cv.
         rate_enthalpy_change_vector.clone();
+
+        // this enthalpy control volume is okay
+        // now I need to 
 
         //panic!("{:?}", enthalpy_cv)
 

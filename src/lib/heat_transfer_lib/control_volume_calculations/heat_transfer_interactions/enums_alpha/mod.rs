@@ -11,7 +11,8 @@ pub mod data_enum_structs;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::HeatTransferEntity;
 
-use self::data_enum_structs::{DataDualCartesianThermalConductanceThreeDimension, DataUserSpecifiedConvectionResistance};
+use self::data_enum_structs::DataUserSpecifiedConvectionResistance;
+use self::data_enum_structs::DataDualCartesianThermalConductanceThreeDimension;
 /// basically an enum for you to specify 
 /// if the liquid on the inner curved surface of the shell or outer 
 /// curved surface of the shell
@@ -289,3 +290,4 @@ pub enum HeatTransferInteractionType {
     UserSpecifiedConvectionResistance(
         DataUserSpecifiedConvectionResistance),
 }
+
