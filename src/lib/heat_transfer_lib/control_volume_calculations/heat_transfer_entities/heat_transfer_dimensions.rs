@@ -94,18 +94,18 @@ impl Into<Length> for RadialCylindricalThicknessThermalConduction {
 /// layers
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub struct InnerDiameterThermalConduction {
-    thickness: Length,
+    od: Length,
 }
 
 impl From<Length> for InnerDiameterThermalConduction {
-    fn from(thickness: Length) -> Self{
-        Self { thickness }
+    fn from(od: Length) -> Self{
+        Self { od }
     }
 }
 
 impl Into<Length> for InnerDiameterThermalConduction {
     fn into(self) -> Length {
-        self.thickness
+        self.od
     }
 }
 
@@ -114,18 +114,18 @@ impl Into<Length> for InnerDiameterThermalConduction {
 /// layers
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub struct OuterDiameterThermalConduction {
-    thickness: Length,
+    od: Length,
 }
 
 impl From<Length> for OuterDiameterThermalConduction {
-    fn from(thickness: Length) -> Self{
-        Self { thickness }
+    fn from(od: Length) -> Self{
+        Self { od }
     }
 }
 
 impl Into<Length> for OuterDiameterThermalConduction {
     fn into(self) -> Length {
-        self.thickness
+        self.od
     }
 }
 
@@ -133,18 +133,18 @@ impl Into<Length> for OuterDiameterThermalConduction {
 /// ie. axial length for a cylindrical body
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub struct CylinderLengthThermalConduction {
-    thickness: Length,
+    cylinder_length: Length,
 }
 
 impl From<Length> for CylinderLengthThermalConduction {
-    fn from(thickness: Length) -> Self{
-        Self { thickness }
+    fn from(cylinder_length: Length) -> Self{
+        Self { cylinder_length }
     }
 }
 
 impl Into<Length> for CylinderLengthThermalConduction {
     fn into(self) -> Length {
-        self.thickness
+        self.cylinder_length
     }
 }
 
