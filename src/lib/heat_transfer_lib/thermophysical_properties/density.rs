@@ -38,6 +38,7 @@ use super::LiquidMaterial::*;
 ///
 /// 
 /// ```
+#[inline]
 pub fn density(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<MassDensity, String> {

@@ -45,6 +45,7 @@ use peroxide::prelude::*;
 ///     max_relative=0.028);
 ///
 /// ``` 
+#[inline]
 pub fn thermal_conductivity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<ThermalConductivity,String> {

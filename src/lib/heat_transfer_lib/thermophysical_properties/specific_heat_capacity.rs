@@ -44,6 +44,7 @@ use peroxide::prelude::*;
 ///     max_relative=0.005);
 ///
 /// ``` 
+#[inline]
 pub fn specific_heat_capacity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<SpecificHeatCapacity, String> {

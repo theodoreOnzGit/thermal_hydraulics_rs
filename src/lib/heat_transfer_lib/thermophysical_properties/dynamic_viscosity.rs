@@ -42,6 +42,7 @@ use super::LiquidMaterial::*;
 ///     max_relative=0.01);
 /// 
 /// ```
+#[inline]
 pub fn dynamic_viscosity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<DynamicViscosity, String> {

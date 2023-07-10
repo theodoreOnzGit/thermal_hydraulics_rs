@@ -59,3 +59,5 @@ pub mod specific_enthalpy;
 /// properly 
 pub mod error_types;
 
+/// thermal diffusivity 
+pub mod thermal_diffusivity;
