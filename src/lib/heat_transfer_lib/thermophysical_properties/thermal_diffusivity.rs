@@ -10,6 +10,8 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 /// use uom::si::thermodynamic_temperature::degree_celsius;
 /// use thermal_hydraulics_rs::heat_transfer_lib::
 /// thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::thermal_conductivity::thermal_conductivity;
 ///
 /// use thermal_hydraulics_rs::heat_transfer_lib::
 /// thermophysical_properties::SolidMaterial::SteelSS304L;
@@ -23,14 +25,22 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 /// let pressure = Pressure::new::<atmosphere>(1.0);
 ///
 /// let thermal_diffusivity_result = thermal_diffusivity(
-/// steel, temperature, pressure);
+/// steel, temperature, pressure).unwrap();
 ///  
 /// // thermal diffusivity of ss304L is approx 4.13e-6 m^2/s
 /// approx::assert_relative_eq!(
-/// thermal_diffusivity_result.unwrap().value,
+/// thermal_diffusivity_result.value,
 /// 4.13e-6,
 /// epsilon = 0.001);
+///
+/// // conductivity is approx 15.62 W/(m K)
+/// let steel_thermal_cond: ThermalConductivity = 
+/// thermal_conductivity(steel, temperature, pressure).unwrap();
 /// 
+/// approx::assert_relative_eq!(
+/// steel_thermal_cond.value,
+/// 15.62,
+/// epsilon = 0.001);
 /// ```
 pub fn thermal_diffusivity(material: Material, 
     temperature: ThermodynamicTemperature,
