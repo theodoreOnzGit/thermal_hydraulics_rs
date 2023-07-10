@@ -2,23 +2,35 @@
 #[macro_use]
 extern crate approx;
 use std::f64::consts::PI;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::SolidMaterial::SteelSS304L;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction};
+control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use thermal_hydraulics_rs::heat_transfer_lib::
+thermophysical_properties::specific_enthalpy::specific_enthalpy;
+
+
+
 use uom::si::f64::*;
 use uom::si::length::centimeter;
 use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
+use uom::si::time::second;
+
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
+::heat_transfer_entities::BCType::*;
 
 //#[test]
 //pub fn meant_to_fail(){
@@ -350,7 +362,83 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         )
     );
 
+    // next thing is the boundary condition 
+
+    let ambient_temperature: ThermodynamicTemperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(25.0);
+
+    let mut ambient_temperature_boundary_condition = 
+    HeatTransferEntity::BoundaryConditions(
+        UserSpecifiedTemperature(ambient_temperature));
+
+    // we will be running this using async code similar to what 
+    // is used in ciet's opc-ua server
+
+    // make an atomically reference counted pointer with  
+    // mutex
+    let steel_cv_pointer = Arc::new(
+        Mutex::new(
+            steel_control_vol
+        )
+    );
+
+    let ambient_temp_ptr = Arc::new(
+        Mutex::new(ambient_temperature_boundary_condition)
+    );
+
+    let mut timestep: Time = Time::new::<second>(0.1);
+    let timestep_ptr = Arc::new(
+        Mutex::new(timestep)
+    );
+
+    // this is the calculation that runs every loop
+    let calculation_loop = move || {
+
+        // first, I use the mutex lock to lock other threads from 
+        // modifying the steel cv
+        let mut steel_cv_in_loop = steel_cv_pointer.lock().unwrap();
+        let mut ambient_bc_in_loop = ambient_temp_ptr.lock().unwrap();
+        let mut timestep_in_loop = timestep_ptr.lock().unwrap();
+
+        // let me create an interaction between the control vol 
+        // and bc
+
+        let heat_transfer_coeff = HeatTransfer::new::
+            <watt_per_square_meter_kelvin>(20.0);
+
+        let area: Area = 4.0 * PI * steel_ball_radius * steel_ball_radius;
+        let surf_area =  SurfaceArea::from(area);
+
+        let convection_resistance_data: DataUserSpecifiedConvectionResistance 
+        = DataUserSpecifiedConvectionResistance { 
+            surf_area, 
+            heat_transfer_coeff 
+        };
+        
+        let heat_trf_interaction = HeatTransferInteractionType:: 
+            UserSpecifiedConvectionResistance(convection_resistance_data);
+
+        link_heat_transfer_entity(&mut steel_cv_in_loop, 
+            &mut ambient_bc_in_loop, 
+            heat_trf_interaction).unwrap();
+
+        // after linking, the reference is dropped
+
+
+
+
+
+    };
+
+    // I'll probably want to use tokio in future, because the syntax 
+    // is quite similar to opc-ua server API 
+    // but for now, a thread spawn is enough 
+
+    let calculation_thread = thread::spawn(calculation_loop);
+
     // in future, might want to have some associated functions which 
     // help construct higs
+
+    calculation_thread.join().unwrap();
     return Ok(());
 }

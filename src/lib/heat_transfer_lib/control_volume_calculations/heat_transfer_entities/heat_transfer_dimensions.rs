@@ -168,3 +168,20 @@ impl Into<Area> for CrossSectionalArea {
     }
 }
 
+/// This represents an Surface Area
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub struct SurfaceArea {
+    surf_area: Area,
+}
+
+impl From<Area> for SurfaceArea {
+    fn from(surf_area: Area) -> Self{
+        Self { surf_area }
+    }
+}
+
+impl Into<Area> for SurfaceArea {
+    fn into(self) -> Area {
+        self.surf_area
+    }
+}

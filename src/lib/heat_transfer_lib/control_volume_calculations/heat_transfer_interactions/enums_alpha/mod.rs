@@ -4,12 +4,14 @@ use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::*;
 
-mod data_enum_structs;
+/// contains information used to specify interactions 
+/// for the HeatTransferInteractionType enum
+pub mod data_enum_structs;
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::HeatTransferEntity;
 
-use self::data_enum_structs::DataDualCartesianThermalConductanceThreeDimension;
+use self::data_enum_structs::{DataDualCartesianThermalConductanceThreeDimension, DataUserSpecifiedConvectionResistance};
 /// basically an enum for you to specify 
 /// if the liquid on the inner curved surface of the shell or outer 
 /// curved surface of the shell
@@ -276,4 +278,14 @@ pub enum HeatTransferInteractionType {
         CylinderLengthThermalConduction,
         InnerDiameterThermalConduction,
     ),
+
+    
+    /// For convection, the heat flux from solid surface to fluid 
+    /// is:
+    ///
+    /// q = h A(T_s - T_f)
+    /// 
+    /// this interaction calculates power based on a given h and A 
+    UserSpecifiedConvectionResistance(
+        DataUserSpecifiedConvectionResistance),
 }

@@ -137,6 +137,10 @@ fn calculate_single_cv_node_constant_heat_flux(
 
             },
 
+        HeatTransferInteractionType::
+            UserSpecifiedConvectionResistance(_) => 
+            return Err("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
     };
 
     let heat_flowrate_into_control_vol: Power = 

@@ -341,6 +341,18 @@ fn get_thermal_conductance(
                         thickness_2)?
                 },
 
+            HeatTransferInteractionType::
+                UserSpecifiedConvectionResistance(
+                data_convection_resistance) 
+                => {
+
+                    let heat_transfer_coeff: HeatTransfer = 
+                    data_convection_resistance.heat_transfer_coeff;
+                    let surf_area: Area = 
+                    data_convection_resistance.surf_area.into();
+
+                    heat_transfer_coeff * surf_area
+                },
         };
 
     return Ok(conductance);
