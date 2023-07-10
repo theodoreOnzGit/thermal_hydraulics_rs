@@ -4,6 +4,34 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 
 
 /// calculates thermal diffusivity of a material
+/// ```rust
+/// use uom::si::f64::*;
+/// use uom::si::pressure::atmosphere;
+/// use uom::si::thermodynamic_temperature::degree_celsius;
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+///
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::SolidMaterial::SteelSS304L;
+///
+/// use thermal_hydraulics_rs::heat_transfer_lib::
+/// thermophysical_properties::Material;
+///
+/// let steel = Material::Solid(SteelSS304L);
+/// let temperature = ThermodynamicTemperature::new
+/// ::<degree_celsius>(80.0);
+/// let pressure = Pressure::new::<atmosphere>(1.0);
+///
+/// let thermal_diffusivity_result = thermal_diffusivity(
+/// steel, temperature, pressure);
+///  
+/// // thermal diffusivity of ss304L is approx 4.13e-6 m^2/s
+/// approx::assert_relative_eq!(
+/// thermal_diffusivity_result.unwrap().value,
+/// 4.13e-6,
+/// epsilon = 0.001);
+/// 
+/// ```
 pub fn thermal_diffusivity(material: Material, 
     temperature: ThermodynamicTemperature,
     pressure: Pressure) -> Result<DiffusionCoefficient,String> {
@@ -33,3 +61,4 @@ pub fn thermal_diffusivity(material: Material,
 
     return Ok(alpha);
 }
+
