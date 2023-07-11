@@ -13,6 +13,7 @@ categories = ["science"]
 
 [dependencies]
 approx = "0.5.1"
+csv = "1.2.2"
 ndarray = "0.15.6"
 peroxide = "0.34.0"
 roots = "0.0.8"

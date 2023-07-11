@@ -218,7 +218,7 @@ fn calculate_single_cv_node_constant_temperature(
     //
 
     control_vol.rate_enthalpy_change_vector.
-        push(heat_flowrate_from_cv_to_bc);
+        push(-heat_flowrate_from_cv_to_bc);
 
     // and we done!
     return Ok(());

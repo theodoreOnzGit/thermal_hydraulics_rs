@@ -18,7 +18,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::specific_enthalpy;
+thermophysical_properties::specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy};
 
 
 
@@ -388,12 +388,12 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         Mutex::new(ambient_temperature_boundary_condition)
     );
 
-    let mut timestep: Time = Time::new::<second>(0.1);
+    let timestep: Time = Time::new::<second>(50.0);
     let timestep_ptr = Arc::new(
         Mutex::new(timestep)
     );
 
-    let max_time: Time = Time::new::<second>(10.0);
+    let max_time: Time = Time::new::<second>(19200.0);
 
     let max_time_ptr = Arc::new(max_time);
 
@@ -418,8 +418,17 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         // modifying the steel cv
         let mut steel_cv_in_loop = steel_cv_pointer.lock().unwrap();
         let mut ambient_bc_in_loop = ambient_temp_ptr.lock().unwrap();
-        let mut timestep_in_loop = timestep_ptr.lock().unwrap();
+        let timestep_in_loop = timestep_ptr.lock().unwrap();
         let max_time_ptr_in_loop = max_time_ptr;
+
+        // let's make a csv writer too 
+
+        use csv::Writer;
+        let mut wtr = Writer::from_path("air_cooled_steel_sphere.csv")
+            .unwrap();
+
+        wtr.write_record(&["time_seconds","temperature_kelvin"])
+            .unwrap();
 
         // let me create an interaction between the control vol 
         // and bc
@@ -515,11 +524,24 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             single_cv.rate_enthalpy_change_vector.clear();
             // increase timestep (last step)
 
+            let temperature_for_export = 
+            temperature_from_specific_enthalpy(
+                single_cv.material_control_volume, 
+                single_cv.current_timestep_control_volume_specific_enthalpy, 
+                pressure).unwrap();
+
+            let time_string = current_time_simulation_time.value.to_string();
+            let temperature_string = temperature_for_export.value.to_string();
+
+            wtr.write_record(&[time_string,temperature_string])
+                .unwrap();
+
             current_time_simulation_time += *timestep_in_loop.deref();
         }
 
-
-
+        // with csvs being written,
+        // use cargo watch -x test --ignore '*.csv'
+        wtr.flush().unwrap();
         
 
     };
