@@ -24,6 +24,24 @@ use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::*;
 Please refer to crate documentation for more details,
 especially the prelude docuemntation for more examples
 
+# tests 
+If you want to use cargo watch for testing, 
+
+```bash 
+cargo watch -x test --ignore '*.csv'
+```
+
+This will ensure that csv files generated to not mess up with cargo 
+causing tests to restart in an endless loop.
+
+Secondly, if you want to track the csv files eg. 'myfile.csv':
+
+```bash 
+tail -f myfile.csv
+```
+
+This is a classic OpenFOAM tutorial method to track test data.
+
 ## Licensing
 
 I developed this library as part of my PhD thesis and used
