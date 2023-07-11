@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate approx;
 use std::f64::consts::PI;
-use std::ops::DerefMut;
+use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -439,69 +439,82 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         let heat_trf_interaction = HeatTransferInteractionType:: 
             UserSpecifiedConvectionResistance(convection_resistance_data);
 
-        link_heat_transfer_entity(&mut steel_cv_in_loop, 
-            &mut ambient_bc_in_loop, 
-            heat_trf_interaction).unwrap();
-
-
-        // let me get the enthalpy out, 
-        // there are several nested enums, so it's quite cumbersome 
-        // to do it this way. So don't, you're not meant to
-        //
-        // I might use associated functions or something
-        //
-        let cv_type = match steel_cv_in_loop.deref_mut() {
-            HeatTransferEntity::ControlVolume(cv_type) => cv_type,
-            _ => todo!(),
-        };
-
-        let single_cv: &mut SingleCVNode = match cv_type {
-            CVType::SingleCV(steel_cv) => steel_cv,
-            _ => todo!(),
-        };
-        // might want to add a method in future to simplify this 
-        // process
-
-        // let's advance one timestep 
-        // so we're not checking Courant Number yet, but 
-        // we'll just use the timestep as is.
-        // let's sum up enthalpy changes from the vector 
-
-        let mut total_enthalpy_rate_change = 
-        Power::new::<watt>(0.0);
-
-        for enthalpy_chg_rate in 
-            single_cv.rate_enthalpy_change_vector.clone().iter() {
-
-                total_enthalpy_rate_change += *enthalpy_chg_rate;
-            }
-
-        // if addition operations 
-        // correct, we should not have a zero power 
-        // change
-        assert_ne!(total_enthalpy_rate_change, 
-        Power::new::<watt>(0.0));
-
-        // now, add the enthalpy change to the next timestep 
+        // now the time loop begins 
         //
 
-        let enthalpy_next_timestep = total_enthalpy_rate_change * 
-        timestep_in_loop.clone() + 
-        single_cv.current_timestep_control_volume_specific_enthalpy.
-            clone()* single_cv.mass_control_volume.clone();
+        let mut current_time_simulation_time = Time::new::<second>(0.0);
 
-        let specific_enthalpy_next_timestep = 
-        enthalpy_next_timestep/single_cv.mass_control_volume.clone();
+        while current_time_simulation_time <= *max_time_ptr_in_loop {
 
-        single_cv.next_timestep_specific_enthalpy 
-            = specific_enthalpy_next_timestep;
+            link_heat_transfer_entity(&mut steel_cv_in_loop, 
+                &mut ambient_bc_in_loop, 
+                heat_trf_interaction).unwrap();
 
-        // at the end of each timestep, set 
-        // current_timestep_control_volume_specific_enthalpy
-        // to that of the next timestep
 
-        single_cv.current_timestep_control_volume_specific_enthalpy
-        = specific_enthalpy_next_timestep;
+            // let me get the enthalpy out, 
+            // there are several nested enums, so it's quite cumbersome 
+            // to do it this way. So don't, you're not meant to
+            //
+            // I might use associated functions or something
+            //
+            let cv_type = match steel_cv_in_loop.deref_mut() {
+                HeatTransferEntity::ControlVolume(cv_type) => cv_type,
+                _ => todo!(),
+            };
+
+            let single_cv: &mut SingleCVNode = match cv_type {
+                CVType::SingleCV(steel_cv) => steel_cv,
+                _ => todo!(),
+            };
+            // might want to add a method in future to simplify this 
+            // process
+
+            // let's advance one timestep 
+            // so we're not checking Courant Number yet, but 
+            // we'll just use the timestep as is.
+            // let's sum up enthalpy changes from the vector 
+
+            let mut total_enthalpy_rate_change = 
+            Power::new::<watt>(0.0);
+
+            for enthalpy_chg_rate in 
+                single_cv.rate_enthalpy_change_vector.clone().iter() {
+
+                    total_enthalpy_rate_change += *enthalpy_chg_rate;
+                }
+
+            // if addition operations 
+            // correct, we should not have a zero power 
+            // change
+            assert_ne!(total_enthalpy_rate_change, 
+                Power::new::<watt>(0.0));
+
+            // now, add the enthalpy change to the next timestep 
+            //
+
+            let enthalpy_next_timestep = total_enthalpy_rate_change * 
+            timestep_in_loop.clone() +
+            single_cv.current_timestep_control_volume_specific_enthalpy.
+                clone()* single_cv.mass_control_volume.clone();
+
+            let specific_enthalpy_next_timestep = 
+            enthalpy_next_timestep/single_cv.mass_control_volume.clone();
+
+            single_cv.next_timestep_specific_enthalpy 
+                = specific_enthalpy_next_timestep;
+
+            // at the end of each timestep, set 
+            // current_timestep_control_volume_specific_enthalpy
+            // to that of the next timestep
+
+            single_cv.current_timestep_control_volume_specific_enthalpy
+                = specific_enthalpy_next_timestep;
+            // increase timestep
+
+            current_time_simulation_time += *timestep_in_loop.deref();
+        }
+
+
 
         
 

@@ -547,8 +547,23 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
         &mut convergency
     );
 
-    let temperature_from_enthalpy_kelvin = 
-    fluid_temperature_degrees_c_result.unwrap();
+    // we can extract the temperature 
+    // but if this doesn't work, bracket the entire range
+    // 250K to 1000K 
+
+    let upper_limit_full_range: f64 = 1000.0;
+    let lower_limit_full_range: f64 = 250.0;
+
+    let temperature_from_enthalpy_kelvin: f64 = 
+    match fluid_temperature_degrees_c_result {
+        Ok(temperature_val) => temperature_val,
+        Err(_) => panic!("{:?}",h_steel),
+            //find_root_brent(upper_limit_full_range, 
+            //lower_limit_full_range, 
+            //enthalpy_root, 
+            //&mut convergency).unwrap(),
+
+    };
 
     // return temperature
     ThermodynamicTemperature::new::<kelvin>(
