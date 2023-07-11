@@ -392,6 +392,17 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         Mutex::new(timestep)
     );
 
+    // we have to move the Arc pointers into the calculation loop 
+    // essentially, ownership is moved to the calculation loop 
+    // and after that, when the loop goes out of scope, the 
+    // ownership is gone,
+    //
+    // I need a way to get data outside the loop
+    // so i'll use a clone function for the Arc
+    // to create a second pointer
+    let steel_cv_pointer_final = steel_cv_pointer.clone();
+
+
     // this is the calculation that runs every loop
     let calculation_loop = move || {
 
@@ -439,9 +450,9 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             CVType::SingleCV(steel_cv) => steel_cv,
             _ => todo!(),
         };
+        // might want to add a method in future to simplify this 
+        // process
 
-        let enthalpy_cv = single_cv.
-        rate_enthalpy_change_vector.clone();
 
         // this enthalpy control volume is okay
         // now I need to 
@@ -461,5 +472,31 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     // help construct higs
 
     calculation_thread.join().unwrap();
+
+    // after finishing the loop, we can extract the data from the 
+    // second pointer
+
+    let mut steel_cv_final_state = steel_cv_pointer_final
+        .lock().unwrap();
+
+    let cv_type = match steel_cv_final_state.deref_mut() {
+        HeatTransferEntity::ControlVolume(cv_type) => cv_type,
+        _ => todo!(),
+    };
+
+    let single_cv: &mut SingleCVNode = match cv_type {
+        CVType::SingleCV(steel_cv) => steel_cv,
+        _ => todo!(),
+    };
+
+    let enthalpy_vec_final = single_cv.rate_enthalpy_change_vector.
+        clone();
+
+
+    // let's check the final enthalpy vec
+
+    println!("{:?}",enthalpy_vec_final);
+
+
     return Ok(());
 }
