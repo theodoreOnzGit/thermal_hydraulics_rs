@@ -24,6 +24,7 @@ thermophysical_properties::specific_enthalpy::specific_enthalpy;
 
 use uom::si::f64::*;
 use uom::si::length::centimeter;
+use uom::si::power::watt;
 use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
@@ -392,6 +393,10 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         Mutex::new(timestep)
     );
 
+    let max_time: Time = Time::new::<second>(19200.0);
+
+    let max_time_ptr = Arc::new(max_time);
+
     // we have to move the Arc pointers into the calculation loop 
     // essentially, ownership is moved to the calculation loop 
     // and after that, when the loop goes out of scope, the 
@@ -400,6 +405,9 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     // I need a way to get data outside the loop
     // so i'll use a clone function for the Arc
     // to create a second pointer
+    //
+    // the first pointer will be dropped in the calculation_loop
+    // but the second will survive
     let steel_cv_pointer_final = steel_cv_pointer.clone();
 
 
@@ -411,6 +419,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         let mut steel_cv_in_loop = steel_cv_pointer.lock().unwrap();
         let mut ambient_bc_in_loop = ambient_temp_ptr.lock().unwrap();
         let mut timestep_in_loop = timestep_ptr.lock().unwrap();
+        let max_time_ptr_in_loop = max_time_ptr;
 
         // let me create an interaction between the control vol 
         // and bc
@@ -453,12 +462,48 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         // might want to add a method in future to simplify this 
         // process
 
+        // let's advance one timestep 
+        // so we're not checking Courant Number yet, but 
+        // we'll just use the timestep as is.
+        // let's sum up enthalpy changes from the vector 
 
-        // this enthalpy control volume is okay
-        // now I need to 
+        let mut total_enthalpy_rate_change = 
+        Power::new::<watt>(0.0);
 
-        //panic!("{:?}", enthalpy_cv)
+        for enthalpy_chg_rate in 
+            single_cv.rate_enthalpy_change_vector.clone().iter() {
 
+                total_enthalpy_rate_change += *enthalpy_chg_rate;
+            }
+
+        // if addition operations 
+        // correct, we should not have a zero power 
+        // change
+        assert_ne!(total_enthalpy_rate_change, 
+        Power::new::<watt>(0.0));
+
+        // now, add the enthalpy change to the next timestep 
+        //
+
+        let enthalpy_next_timestep = total_enthalpy_rate_change * 
+        timestep_in_loop.clone() + 
+        single_cv.current_timestep_control_volume_specific_enthalpy.
+            clone()* single_cv.mass_control_volume.clone();
+
+        let specific_enthalpy_next_timestep = 
+        enthalpy_next_timestep/single_cv.mass_control_volume.clone();
+
+        single_cv.next_timestep_specific_enthalpy 
+            = specific_enthalpy_next_timestep;
+
+        // at the end of each timestep, set 
+        // current_timestep_control_volume_specific_enthalpy
+        // to that of the next timestep
+
+        single_cv.current_timestep_control_volume_specific_enthalpy
+        = specific_enthalpy_next_timestep;
+
+        
 
     };
 
