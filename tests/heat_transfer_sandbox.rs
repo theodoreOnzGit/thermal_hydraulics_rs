@@ -393,7 +393,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         Mutex::new(timestep)
     );
 
-    let max_time: Time = Time::new::<second>(19200.0);
+    let max_time: Time = Time::new::<second>(10.0);
 
     let max_time_ptr = Arc::new(max_time);
 
@@ -509,7 +509,11 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
             single_cv.current_timestep_control_volume_specific_enthalpy
                 = specific_enthalpy_next_timestep;
-            // increase timestep
+
+            // clear the vector 
+
+            single_cv.rate_enthalpy_change_vector.clear();
+            // increase timestep (last step)
 
             current_time_simulation_time += *timestep_in_loop.deref();
         }
