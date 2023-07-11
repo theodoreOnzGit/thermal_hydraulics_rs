@@ -388,7 +388,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         Mutex::new(ambient_temperature_boundary_condition)
     );
 
-    let timestep: Time = Time::new::<second>(50.0);
+    let timestep: Time = Time::new::<second>(5.0);
     let timestep_ptr = Arc::new(
         Mutex::new(timestep)
     );
@@ -475,6 +475,19 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 CVType::SingleCV(steel_cv) => steel_cv,
                 _ => todo!(),
             };
+
+            let temperature_for_export = 
+            temperature_from_specific_enthalpy(
+                single_cv.material_control_volume, 
+                single_cv.current_timestep_control_volume_specific_enthalpy, 
+                pressure).unwrap();
+
+            let time_string = current_time_simulation_time.value.to_string();
+            let temperature_string = temperature_for_export.value.to_string();
+
+            wtr.write_record(&[time_string,temperature_string])
+                .unwrap();
+
             // might want to add a method in future to simplify this 
             // process
 
@@ -524,17 +537,6 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             single_cv.rate_enthalpy_change_vector.clear();
             // increase timestep (last step)
 
-            let temperature_for_export = 
-            temperature_from_specific_enthalpy(
-                single_cv.material_control_volume, 
-                single_cv.current_timestep_control_volume_specific_enthalpy, 
-                pressure).unwrap();
-
-            let time_string = current_time_simulation_time.value.to_string();
-            let temperature_string = temperature_for_export.value.to_string();
-
-            wtr.write_record(&[time_string,temperature_string])
-                .unwrap();
 
             current_time_simulation_time += *timestep_in_loop.deref();
         }
