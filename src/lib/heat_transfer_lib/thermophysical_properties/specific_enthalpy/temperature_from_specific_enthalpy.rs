@@ -551,8 +551,10 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
     // but if this doesn't work, bracket the entire range
     // 250K to 1000K 
 
-    let upper_limit_full_range: f64 = 1000.0;
-    let lower_limit_full_range: f64 = 250.0;
+    //let upper_limit_full_range: f64 = 1000.0;
+    //let lower_limit_full_range: f64 = 250.0;
+    //
+    // or better yet, just panic the value for steel enthalpy
 
     let temperature_from_enthalpy_kelvin: f64 = 
     match fluid_temperature_degrees_c_result {
