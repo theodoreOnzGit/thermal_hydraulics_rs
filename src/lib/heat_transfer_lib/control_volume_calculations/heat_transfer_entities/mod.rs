@@ -1,8 +1,8 @@
-use uom::si::{f64::*, pressure::atmosphere};
+use uom::si::{f64::*, pressure::atmosphere, power::watt};
 
 use crate::heat_transfer_lib::
 thermophysical_properties::{Material, 
-    specific_enthalpy::specific_enthalpy};
+    specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy}, density::density};
 
 /// Contains entities which transfer heat and interact with each 
 /// other
@@ -24,6 +24,31 @@ pub enum HeatTransferEntity {
 /// 
 /// last but not least, extract temperatures for sensing purposes
 impl HeatTransferEntity {
+    pub fn advance_timestep(entity: HeatTransferEntity,
+    timestep: Time) -> Result<(), String> {
+
+        // first match CV or BC, 
+        // Boundary conditions don't need to advance timestep
+        // so we can leave them be (it should return an Ok(()) value 
+        // rather than an Err() value)
+
+        let control_vol_type = match entity {
+            Self::ControlVolume(cv_type) => cv_type,
+            Self::BoundaryConditions(_) => return Ok(()),
+        };
+
+        // once I have the cv_type enum, match it again
+
+        let cv_advance_result: Result<(), String> = match 
+            control_vol_type {
+                CVType::SingleCV(mut single_cv) => {
+                    single_cv.advance_timestep(timestep)
+                },
+                CVType::ArrayCV => return Err("not implemented".to_string()),
+            };
+
+        return cv_advance_result;
+    }
 }
 
 /// To determine heat transfer between two control volumes or 
@@ -176,6 +201,9 @@ pub struct SingleCVNode {
 
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
+
+    /// volume of the control volume 
+    pub volume: Volume,
 }
 
 impl SingleCVNode {
@@ -183,10 +211,11 @@ impl SingleCVNode {
     /// which means we supply the temperature, material type 
     /// and mass of the CV
     ///
-    /// assumes proeprties are at atmospheric pressure
+    /// assumes properties are at atmospheric pressure
     pub fn new(cv_temperature: ThermodynamicTemperature,
         cv_material: Material,
-        cv_mass: Mass) -> SingleCVNode {
+        cv_mass: Mass,
+        cv_volume: Volume) -> SingleCVNode {
 
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
@@ -218,6 +247,89 @@ impl SingleCVNode {
             cv_material,
             pressure_control_volume:
             atmospheric_pressure,
+            volume: cv_volume,
+        }
+
+    }
+
+    #[inline]
+    fn advance_timestep(&mut self, timestep: Time) -> Result<(), String>{
+
+
+        let mut total_enthalpy_rate_change = 
+        Power::new::<watt>(0.0);
+
+        for enthalpy_chg_rate in 
+            self.rate_enthalpy_change_vector.clone().iter() {
+
+                total_enthalpy_rate_change += *enthalpy_chg_rate;
+            }
+
+        let enthalpy_next_timestep = total_enthalpy_rate_change * 
+        timestep.clone() +
+        self.current_timestep_control_volume_specific_enthalpy.
+            clone()* self.mass_control_volume.clone();
+
+        let specific_enthalpy_next_timestep = 
+        enthalpy_next_timestep/self.mass_control_volume.clone();
+
+
+        self.next_timestep_specific_enthalpy 
+            = specific_enthalpy_next_timestep;
+
+        // at the end of each timestep, set 
+        // current_timestep_control_volume_specific_enthalpy
+        // to that of the next timestep
+
+        self.current_timestep_control_volume_specific_enthalpy
+            = specific_enthalpy_next_timestep;
+
+        // now things get a bit clunky here, I will need to set 
+        // the mass of the control volume by the temperature after 
+        // I calculated it using control volume mass from the last 
+        // timestep. For large changes in density, this may not 
+        // work well (instabilities??) but for liquids, I hope it's 
+        // okay
+
+        self.set_liquid_cv_mass_from_temperature();
+        // clear the enthalpy change vector
+
+        self.rate_enthalpy_change_vector.clear();
+        // increase timestep (last step)
+
+        return Ok(());
+    }
+
+    /// this function takes the temperature of the control volume 
+    /// to find its density and set its mass
+    ///
+    /// only changes mass for liquids, not solids
+    #[inline]
+    fn set_liquid_cv_mass_from_temperature(&mut self) 
+    -> Result<(), String>{
+
+        let cv_temperature = temperature_from_specific_enthalpy(
+            self.material_control_volume, 
+            self.current_timestep_control_volume_specific_enthalpy, 
+            self.pressure_control_volume)?;
+
+        let cv_density = density(
+            self.material_control_volume, 
+            cv_temperature, 
+            self.pressure_control_volume)?;
+
+        // we are going to need a cv_volume
+        let cv_volume = self.volume;
+
+        let new_cv_mass = cv_density * cv_volume;
+
+        match self.material_control_volume {
+            // for solids, do not set anything
+            Material::Solid(_) => return Ok(()),
+            Material::Liquid(_) => {
+                self.mass_control_volume = new_cv_mass;
+                return Ok(());
+            },
         }
 
     }

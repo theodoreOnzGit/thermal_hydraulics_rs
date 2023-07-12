@@ -323,6 +323,10 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     let steel_initial_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(150.0);
 
+    // Programming feature comment 1:
+    // might want a constructor which shortens this process
+    // of making the HeatTransferEntity
+
     let steel_initial_enthalpy = specific_enthalpy(
         steel, 
         steel_initial_temperature, 
@@ -359,12 +363,15 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 vec![], 
                 mass_control_volume: steel_ball_mass, 
                 material_control_volume: steel, 
-                pressure_control_volume: pressure, 
+                pressure_control_volume: pressure,
+                volume: steel_ball_volume, 
             }
         )
     );
 
     // next thing is the boundary condition 
+    // Programming feature comment 2:
+    // might want another constructor here too
 
     let ambient_temperature: ThermodynamicTemperature = 
     ThermodynamicTemperature::new::<degree_celsius>(25.0);
@@ -432,6 +439,8 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
         // let me create an interaction between the control vol 
         // and bc
+        // programming feature comment 3: might want to create 
+        // a constructor for this too
 
         let heat_transfer_coeff = HeatTransfer::new::
             <watt_per_square_meter_kelvin>(20.0);
@@ -466,6 +475,10 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             //
             // I might use associated functions or something
             //
+            // programming feature comment 4: 
+            // create associated function to extract current temperature 
+            // value (return a result)
+
             let cv_type = match steel_cv_in_loop.deref_mut() {
                 HeatTransferEntity::ControlVolume(cv_type) => cv_type,
                 _ => todo!(),
@@ -491,6 +504,16 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             // might want to add a method in future to simplify this 
             // process
 
+            // programming feature comment 5: 
+            // create associated function to 
+            // advance timestep 
+            // probably need to match the heat transfer entity
+            //
+            // Also, for FLUID volumes only, the control volume has 
+            // a fixed volume but varying density. Be sure to check 
+            // that the mass of the CV changes with temperature
+            // (i.e mass disappears)
+            //
             // let's advance one timestep 
             // so we're not checking Courant Number yet, but 
             // we'll just use the timestep as is.
