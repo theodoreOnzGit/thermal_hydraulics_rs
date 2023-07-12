@@ -24,7 +24,15 @@ pub enum HeatTransferEntity {
 /// 
 /// last but not least, extract temperatures for sensing purposes
 impl HeatTransferEntity {
-    pub fn advance_timestep(entity: HeatTransferEntity,
+
+    /// for control volumes, this method allows you to 
+    /// calculate the enthalpy of the next timestep and 
+    /// set the 
+    /// current timestep enthalpy as the enthalpy calculated  
+    /// for the next timestep
+    ///
+    /// you are required to explicitly provide a timestep for this 
+    pub fn advance_timestep(entity: &mut HeatTransferEntity,
     timestep: Time) -> Result<(), String> {
 
         // first match CV or BC, 
@@ -41,7 +49,7 @@ impl HeatTransferEntity {
 
         let cv_advance_result: Result<(), String> = match 
             control_vol_type {
-                CVType::SingleCV(mut single_cv) => {
+                CVType::SingleCV(single_cv) => {
                     single_cv.advance_timestep(timestep)
                 },
                 CVType::ArrayCV => return Err("not implemented".to_string()),
@@ -49,6 +57,33 @@ impl HeatTransferEntity {
 
         return cv_advance_result;
     }
+
+    /// gets the temperature of the HeatTransferEntity 
+    /// usually control volume at the current timestep
+    pub fn temperature(entity: &mut HeatTransferEntity) -> 
+    Result<ThermodynamicTemperature, String> {
+
+        let control_vol_type = match entity {
+            Self::ControlVolume(cv_type) => cv_type,
+            Self::BoundaryConditions(_) => 
+                return Err("getting temperature not \n 
+                    implemented for BoundaryConditions".to_string()),
+        };
+
+        // once I have the cv_type enum, match it again
+
+        let cv_temperature_result: 
+        Result<ThermodynamicTemperature, String> = match 
+            control_vol_type {
+                CVType::SingleCV(single_cv) => {
+                    single_cv.get_temperature()
+                },
+                CVType::ArrayCV => return Err("not implemented".to_string()),
+            };
+
+        return cv_temperature_result;
+    }
+
 }
 
 /// To determine heat transfer between two control volumes or 
@@ -298,6 +333,18 @@ impl SingleCVNode {
         // increase timestep (last step)
 
         return Ok(());
+    }
+
+    #[inline]
+    fn get_temperature(&self) -> 
+    Result<ThermodynamicTemperature, String>{
+
+        let cv_temperature = temperature_from_specific_enthalpy(
+            self.material_control_volume, 
+            self.current_timestep_control_volume_specific_enthalpy, 
+            self.pressure_control_volume);
+
+        return cv_temperature;
     }
 
     /// this function takes the temperature of the control volume 

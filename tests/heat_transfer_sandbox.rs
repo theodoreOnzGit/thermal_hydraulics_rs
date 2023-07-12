@@ -609,3 +609,253 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
     return Ok(());
 }
+
+
+/// test of lumped_heat_capacitance_steel_ball_in_air 
+/// with improved API for conveneince
+#[test]
+fn lumped_heat_capacitance_steel_ball_in_air_improved_api() 
+-> Result<(), String>{
+
+    // first, a steel control vol
+    // determine parameters first
+    let steel = Material::Solid(SteelSS304L);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+    let steel_initial_temperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(150.0);
+
+    // Programming feature comment 1:
+    // might want a constructor which shortens this process
+    // of making the HeatTransferEntity
+
+    let steel_initial_enthalpy = specific_enthalpy(
+        steel, 
+        steel_initial_temperature, 
+        pressure)?;
+
+    let steel_ball_diameter = OuterDiameterThermalConduction::from(
+        Length::new::<centimeter>(2.0));
+    let diameter: Length = steel_ball_diameter.into();
+    let steel_ball_radius: Length = diameter/2.0;
+
+    let steel_ball_volume: Volume = 4.0/3.0 * PI * 
+        steel_ball_radius * steel_ball_radius * steel_ball_radius;
+
+    let steel_ball_density: MassDensity = density(
+        steel,
+        steel_initial_temperature,
+        pressure)?;
+    
+    let steel_ball_mass: Mass = steel_ball_density * steel_ball_volume;
+
+    let steel_control_vol = 
+    HeatTransferEntity::ControlVolume(
+        SingleCV(
+            thermal_hydraulics_rs::
+                heat_transfer_lib::
+                control_volume_calculations::
+                heat_transfer_entities::
+                SingleCVNode { 
+                current_timestep_control_volume_specific_enthalpy: 
+                steel_initial_enthalpy, 
+                next_timestep_specific_enthalpy: 
+                steel_initial_enthalpy, 
+                rate_enthalpy_change_vector: 
+                vec![], 
+                mass_control_volume: steel_ball_mass, 
+                material_control_volume: steel, 
+                pressure_control_volume: pressure,
+                volume: steel_ball_volume, 
+            }
+        )
+    );
+
+    // next thing is the boundary condition 
+    // Programming feature comment 2:
+    // might want another constructor here too
+
+    let ambient_temperature: ThermodynamicTemperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(25.0);
+
+    let ambient_temperature_boundary_condition = 
+    HeatTransferEntity::BoundaryConditions(
+        UserSpecifiedTemperature(ambient_temperature));
+
+    // we will be running this using async code similar to what 
+    // is used in ciet's opc-ua server
+
+    // make an atomically reference counted pointer with  
+    // mutex
+    let steel_cv_pointer = Arc::new(
+        Mutex::new(
+            steel_control_vol
+        )
+    );
+
+    let ambient_temp_ptr = Arc::new(
+        Mutex::new(ambient_temperature_boundary_condition)
+    );
+
+    let timestep: Time = Time::new::<second>(100.0);
+    let timestep_ptr = Arc::new(
+        Mutex::new(timestep)
+    );
+
+    let max_time: Time = Time::new::<second>(19200.0);
+
+    let max_time_ptr = Arc::new(max_time);
+
+    // we have to move the Arc pointers into the calculation loop 
+    // essentially, ownership is moved to the calculation loop 
+    // and after that, when the loop goes out of scope, the 
+    // ownership is gone,
+    //
+    // I need a way to get data outside the loop
+    // so i'll use a clone function for the Arc
+    // to create a second pointer
+    //
+    // the first pointer will be dropped in the calculation_loop
+    // but the second will survive
+    let steel_cv_pointer_final = steel_cv_pointer.clone();
+
+
+    // this is the calculation that runs every loop
+    let calculation_loop = move || {
+
+        // first, I use the mutex lock to lock other threads from 
+        // modifying the steel cv
+        let mut steel_cv_in_loop = steel_cv_pointer.lock().unwrap();
+        let mut ambient_bc_in_loop = ambient_temp_ptr.lock().unwrap();
+        let timestep_in_loop = timestep_ptr.lock().unwrap();
+        let max_time_ptr_in_loop = max_time_ptr;
+
+        // let's make a csv writer too 
+
+        use csv::Writer;
+        let mut wtr = Writer::from_path("air_cooled_steel_sphere_api_test.csv")
+            .unwrap();
+
+        wtr.write_record(&["time_seconds","temperature_kelvin"])
+            .unwrap();
+
+        // let me create an interaction between the control vol 
+        // and bc
+        // programming feature comment 3: might want to create 
+        // a constructor for this too
+
+        let heat_transfer_coeff = HeatTransfer::new::
+            <watt_per_square_meter_kelvin>(20.0);
+
+        let area: Area = 4.0 * PI * steel_ball_radius * steel_ball_radius;
+        let surf_area =  SurfaceArea::from(area);
+
+        let convection_resistance_data: DataUserSpecifiedConvectionResistance 
+        = DataUserSpecifiedConvectionResistance { 
+            surf_area, 
+            heat_transfer_coeff 
+        };
+        
+        let heat_trf_interaction = HeatTransferInteractionType:: 
+            UserSpecifiedConvectionResistance(convection_resistance_data);
+
+        // now the time loop begins 
+        //
+
+        let mut current_time_simulation_time = Time::new::<second>(0.0);
+
+        while current_time_simulation_time <= *max_time_ptr_in_loop {
+
+            link_heat_transfer_entity(&mut steel_cv_in_loop, 
+                &mut ambient_bc_in_loop, 
+                heat_trf_interaction).unwrap();
+
+
+            // let me get the enthalpy out, 
+            // there are several nested enums, so it's quite cumbersome 
+            // to do it this way. So don't, you're not meant to
+            //
+            // I might use associated functions or something
+            //
+            // programming feature comment 4: 
+            // create associated function to extract current temperature 
+            // value (return a result)
+
+            let temperature_for_export = 
+            HeatTransferEntity::temperature(steel_cv_in_loop.deref_mut()) 
+                .unwrap();
+
+            let time_string = current_time_simulation_time.value.to_string();
+            let temperature_string = temperature_for_export.value.to_string();
+
+            wtr.write_record(&[time_string,temperature_string])
+                .unwrap();
+
+            // might want to add a method in future to simplify this 
+            // process
+
+            // programming feature comment 5: 
+            // create associated function to 
+            // advance timestep 
+            // probably need to match the heat transfer entity
+            //
+            // Also, for FLUID volumes only, the control volume has 
+            // a fixed volume but varying density. Be sure to check 
+            // that the mass of the CV changes with temperature
+            // (i.e mass disappears)
+            //
+            // let's advance one timestep 
+            // so we're not checking Courant Number yet, but 
+            // we'll just use the timestep as is.
+            // let's sum up enthalpy changes from the vector 
+
+            HeatTransferEntity::advance_timestep(
+                steel_cv_in_loop.deref_mut(),*timestep_in_loop).unwrap();
+
+            current_time_simulation_time += *timestep_in_loop.deref();
+        }
+
+        // with csvs being written,
+        // use cargo watch -x test --ignore '*.csv'
+        wtr.flush().unwrap();
+        
+
+    };
+
+    // I'll probably want to use tokio in future, because the syntax 
+    // is quite similar to opc-ua server API 
+    // but for now, a thread spawn is enough 
+
+    let calculation_thread = thread::spawn(calculation_loop);
+
+    // in future, might want to have some associated functions which 
+    // help construct higs
+
+    calculation_thread.join().unwrap();
+
+    // after finishing the loop, we can extract the data from the 
+    // second pointer
+
+    let mut steel_cv_final_state = steel_cv_pointer_final
+        .lock().unwrap();
+
+    let cv_type = match steel_cv_final_state.deref_mut() {
+        HeatTransferEntity::ControlVolume(cv_type) => cv_type,
+        _ => todo!(),
+    };
+
+    let single_cv: &mut SingleCVNode = match cv_type {
+        CVType::SingleCV(steel_cv) => steel_cv,
+        _ => todo!(),
+    };
+
+    let enthalpy_vec_final = single_cv.rate_enthalpy_change_vector.
+        clone();
+
+
+    // let's check the final enthalpy vec
+
+    println!("{:?}",enthalpy_vec_final);
+
+
+    return Ok(());
+}
