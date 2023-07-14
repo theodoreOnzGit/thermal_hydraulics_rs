@@ -252,5 +252,9 @@ fn transient_conduction_semi_infinite_copper_medium()
         
     }
 
+    // this setup is meant to be emulated using control volumes with 
+    // some thermal resistances between them
+
+    todo!("need to do 4 control vol and 1 BC for 1d transient conduction");
     Ok(())
 }
