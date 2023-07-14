@@ -1,6 +1,4 @@
 
-#[macro_use]
-extern crate approx;
 use std::f64::consts::PI;
 use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
