@@ -628,47 +628,18 @@ fn lumped_heat_capacitance_steel_ball_in_air_improved_api()
     // might want a constructor which shortens this process
     // of making the HeatTransferEntity
 
-    let steel_initial_enthalpy = specific_enthalpy(
-        steel, 
-        steel_initial_temperature, 
-        pressure)?;
 
     let steel_ball_diameter = OuterDiameterThermalConduction::from(
         Length::new::<centimeter>(2.0));
     let diameter: Length = steel_ball_diameter.into();
-    let steel_ball_radius: Length = diameter/2.0;
+    let steel_ball_radius = diameter * 0.5;
 
-    let steel_ball_volume: Volume = 4.0/3.0 * PI * 
-        steel_ball_radius * steel_ball_radius * steel_ball_radius;
 
-    let steel_ball_density: MassDensity = density(
-        steel,
-        steel_initial_temperature,
-        pressure)?;
-    
-    let steel_ball_mass: Mass = steel_ball_density * steel_ball_volume;
-
+    // instead of manually constructing the control vol you can just 
+    // use this constructor
     let steel_control_vol = 
-    HeatTransferEntity::ControlVolume(
-        SingleCV(
-            thermal_hydraulics_rs::
-                heat_transfer_lib::
-                control_volume_calculations::
-                heat_transfer_entities::
-                SingleCVNode { 
-                current_timestep_control_volume_specific_enthalpy: 
-                steel_initial_enthalpy, 
-                next_timestep_specific_enthalpy: 
-                steel_initial_enthalpy, 
-                rate_enthalpy_change_vector: 
-                vec![], 
-                mass_control_volume: steel_ball_mass, 
-                material_control_volume: steel, 
-                pressure_control_volume: pressure,
-                volume: steel_ball_volume, 
-            }
-        )
-    );
+    SingleCVNode::new_sphere(diameter, steel, steel_initial_temperature, 
+        pressure)?;
 
     // next thing is the boundary condition 
     // Programming feature comment 2:
@@ -696,7 +667,7 @@ fn lumped_heat_capacitance_steel_ball_in_air_improved_api()
         Mutex::new(ambient_temperature_boundary_condition)
     );
 
-    let timestep: Time = Time::new::<second>(100.0);
+    let timestep: Time = Time::new::<second>(20.0);
     let timestep_ptr = Arc::new(
         Mutex::new(timestep)
     );

@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use uom::si::{f64::*, pressure::atmosphere, power::watt};
 
 use crate::heat_transfer_lib::
@@ -326,7 +328,7 @@ impl SingleCVNode {
         // work well (instabilities??) but for liquids, I hope it's 
         // okay
 
-        self.set_liquid_cv_mass_from_temperature();
+        self.set_liquid_cv_mass_from_temperature()?;
         // clear the enthalpy change vector
 
         self.rate_enthalpy_change_vector.clear();
@@ -379,6 +381,57 @@ impl SingleCVNode {
             },
         }
 
+    }
+
+    /// this function constructs control volume based on spherical 
+    /// dimensions,
+    /// it will return a HeatTransferEntity so that you don't have 
+    /// to do all the packaging manually
+    #[inline]
+    pub fn new_sphere(diameter: Length, 
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,String>{
+
+
+        let ball_radius: Length = diameter * 0.5;
+
+        let ball_volume: Volume = 4.0/3.0 * PI * 
+        ball_radius * ball_radius * ball_radius;
+
+        let ball_density: MassDensity = density(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let ball_mass: Mass = ball_density * ball_volume;
+
+
+        let enthalpy = specific_enthalpy(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        let ball_control_vol = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: ball_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: ball_volume, 
+                }
+            )
+        );
+
+
+        return Ok(ball_control_vol);
     }
 
 }
