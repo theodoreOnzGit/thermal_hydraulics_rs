@@ -57,11 +57,23 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 /// In this case, the length scale is x and t is the time.
 ///
+/// How long must the medium be for it to be semi infinite? 
+///
+/// erfc (zeta) can be plotted on a graph 
+/// at erfc(zeta) where zeta >= 2.0,
+/// erfc(zeta) <= 0.005 (0.5\% change)
+///
+/// theta (x,t) = erfc (1 / (2.0 * sqrt{Fo(x,t)}) )
+///
+///
+/// probably use some published reference, better quality
+/// // https://www.unipamplona.edu.co/unipamplona/portalIG/home_34/recursos/01general/21082014/unidad_2_termo_ii.pdf
+///
 ///
 #[test]
 fn transient_conduction_semi_infinite_copper_medium() -> Result<(), String>{
 
-    
+    // let's first do the analytical solution
 
     return Err("not finished".to_string());
 }
