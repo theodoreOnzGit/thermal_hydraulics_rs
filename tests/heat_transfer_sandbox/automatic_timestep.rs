@@ -411,7 +411,7 @@ fn lumped_capacitance_timestep_adjustment()
         let mut wtr = Writer::from_path("air_cooled_steel_sphere_auto_timestep_test.csv")
             .unwrap();
 
-        wtr.write_record(&["time_seconds","temperature_kelvin"])
+        wtr.write_record(&["time_seconds","temperature_kelvin","time_interval"])
             .unwrap();
 
         // let me create an interaction between the control vol 
@@ -439,6 +439,14 @@ fn lumped_capacitance_timestep_adjustment()
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
 
+        // this is more for convenience, the write time interval 
+        // this means I want to write every 500s
+        let timestep_write_interval = Time::new::<second>(500.0);
+
+        let mut time_to_write = Time::new::<second>(0.0);
+
+
+
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             link_heat_transfer_entity(&mut steel_cv_in_loop, 
@@ -463,8 +471,6 @@ fn lumped_capacitance_timestep_adjustment()
             let time_string = current_time_simulation_time.value.to_string();
             let temperature_string = temperature_for_export.value.to_string();
 
-            wtr.write_record(&[time_string,temperature_string])
-                .unwrap();
 
             // autocalculate time step
 
@@ -477,10 +483,37 @@ fn lumped_capacitance_timestep_adjustment()
             let mesh_lengthscale_delta_x = steel_ball_radius.clone();
             // set timestep
 
-            *timestep_in_loop.deref_mut() = max_mesh_fourier_number * 
-                mesh_lengthscale_delta_x *
-                mesh_lengthscale_delta_x / 
-                steel_diffusivity;
+
+            let timestep_raw_value = max_mesh_fourier_number * 
+            mesh_lengthscale_delta_x *
+            mesh_lengthscale_delta_x / 
+            steel_diffusivity;
+
+            // timestep is +/- 6.57s
+            // round timestep to nearest second
+            let timestep_value = timestep_raw_value.round::<second>();
+
+            // pretty small but good enough
+
+            *timestep_in_loop.deref_mut() = timestep_value;
+
+            let timestep_value_string = timestep_value.value.to_string();
+
+            // now, i only want to write if it is in intervals of 500 
+            // approx, probably need to figure this part out later
+            
+            if time_to_write.value <= 0.0 {
+
+                // case 1, we have reached time to write value
+                wtr.write_record(&[time_string,temperature_string, timestep_value_string])
+                    .unwrap();
+
+                time_to_write.value += timestep_write_interval.value;
+            } else {
+
+                // case 2, we haven't reached time to write value
+                time_to_write -= timestep_value;
+            }
 
 
 
