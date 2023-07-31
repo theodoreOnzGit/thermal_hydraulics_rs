@@ -363,6 +363,8 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 material_control_volume: steel, 
                 pressure_control_volume: pressure,
                 volume: steel_ball_volume, 
+                max_timestep_vector: 
+                vec![],
             }
         )
     );

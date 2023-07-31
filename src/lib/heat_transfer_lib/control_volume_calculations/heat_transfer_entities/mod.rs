@@ -241,6 +241,10 @@ pub struct SingleCVNode {
 
     /// volume of the control volume 
     pub volume: Volume,
+
+    /// This vector is meant to house a list of maximum timesteps 
+    /// and is meant for auto time stepping 
+    pub max_timestep_vector: Vec<Time>,
 }
 
 impl SingleCVNode {
@@ -270,6 +274,7 @@ impl SingleCVNode {
         // once courant_number is decided, then we shall decide the 
         // timestep
         let cv_rate_enthalpy_change_vec: Vec<Power> = vec![];
+        let initial_timestep_vector: Vec<Time> = vec![];
 
         return Self{
             current_timestep_control_volume_specific_enthalpy : 
@@ -285,6 +290,8 @@ impl SingleCVNode {
             pressure_control_volume:
             atmospheric_pressure,
             volume: cv_volume,
+            max_timestep_vector:
+            initial_timestep_vector,
         }
 
     }
@@ -426,6 +433,8 @@ impl SingleCVNode {
                     material_control_volume: material, 
                     pressure_control_volume: pressure,
                     volume: ball_volume, 
+                    max_timestep_vector: 
+                    vec![],
                 }
             )
         );
