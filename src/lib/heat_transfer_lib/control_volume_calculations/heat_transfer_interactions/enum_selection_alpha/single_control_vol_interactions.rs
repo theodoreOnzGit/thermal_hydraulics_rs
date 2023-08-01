@@ -15,6 +15,9 @@ heat_transfer_entities::CVType::*;
 use crate::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_interactions::*;
 
+use crate::heat_transfer_lib::thermophysical_properties::Material
+::{Solid,Liquid};
+
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
 /// suppose the control volume interacts with a BC which is 
@@ -55,7 +58,24 @@ fn calculate_single_cv_node_constant_heat_addition(
     control_vol.rate_enthalpy_change_vector.
         push(heat_added_to_control_vol);
 
-    todo!("add auto timestep for heat added to CV");
+    // auto time stepping doesn't work for constant heat flux 
+    // or specified power as well. 
+    // it is best to see at the end of all power calculations what 
+    // is the temperature change
+    //
+    // For liquid CV, still need to calculate time scale based 
+    // on convection flow
+    // match statement is meant to tell that liquid CVs are not quite 
+    // ready for use
+    let cv_material = control_vol.material_control_volume;
+    match cv_material {
+        Solid(_) => {
+            ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
 
     return Ok(());
 }
@@ -151,7 +171,25 @@ fn calculate_single_cv_node_constant_heat_flux(
     control_vol.rate_enthalpy_change_vector.
         push(heat_flowrate_into_control_vol);
 
-    todo!("add auto timestep for heat added for constant heat flux");
+    // auto time stepping doesn't work for constant heat flux 
+    // or specified power as well. 
+    // it is best to see at the end of all power calculations what 
+    // is the temperature change
+
+    // For liquid CV, still need to calculate time scale based 
+    // on convection flow
+    // match statement is meant to tell that liquid CVs are not quite 
+    // ready for use
+    let cv_material = control_vol.material_control_volume;
+    match cv_material {
+        Solid(_) => {
+            ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
+    
     return Ok(());
 
 
@@ -223,8 +261,31 @@ fn calculate_single_cv_node_constant_temperature(
     control_vol.rate_enthalpy_change_vector.
         push(-heat_flowrate_from_cv_to_bc);
 
-    todo!("add auto timestep for heat added for constant temperature");
-    // and we done!
+    // for constant temperature BC in interaction with CV,
+    // we only need take into consideration the CV 
+    // timescale, this is based on the fourier number or Nusselt 
+    // number edited fourier number
+    //
+    // for solids mesh fourier number need only 
+    // be done once, not every time 
+    // an interaction is formed 
+    //
+    // probably the cell stability fourier number will be done in the 
+    // constructor. however, with convection, the time scale must be 
+    // recalculated at every time step. so it really depends whether 
+    // it's solid or fluid control volume
+    // 
+
+    // match statement is meant to tell that liquid CVs are not quite 
+    // ready for use
+    match cv_material {
+        Solid(_) => {
+            ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
     return Ok(());
 }
 
@@ -322,8 +383,37 @@ fn caclulate_between_two_singular_cv_nodes(
     single_cv_2.rate_enthalpy_change_vector.
         push(heat_flowrate_from_cv_1_to_cv_2);
 
-    todo!("add auto timestep for heat added for two cv nodes");
 
+    // for solids mesh fourier number need only 
+    // be done once, not every time 
+    // an interaction is formed 
+    //
+    // probably the cell stability fourier number will be done in the 
+    // constructor. however, with convection, the time scale must be 
+    // recalculated at every time step. so it really depends whether 
+    // it's solid or fluid control volume
+    //
+    // For liquid CV, still need to calculate time scale based 
+    // on convection flow
+    // match statement is meant to tell that liquid CVs are not quite 
+    // ready for use
+    match single_cv_1_material {
+        Solid(_) => {
+            ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
+
+    match single_cv_2_material {
+        Solid(_) => {
+            ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
     return Ok(());
 
 }
