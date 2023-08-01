@@ -1,10 +1,10 @@
 use std::f64::consts::PI;
 
-use uom::si::{f64::*, pressure::atmosphere, power::watt};
+use uom::si::{f64::*, pressure::atmosphere, power::watt, time::second, length::meter};
 
 use crate::heat_transfer_lib::
 thermophysical_properties::{Material, 
-    specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy}, density::density};
+    specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy}, density::density, thermal_diffusivity::thermal_diffusivity};
 
 /// Contains entities which transfer heat and interact with each 
 /// other
@@ -308,6 +308,7 @@ impl SingleCVNode {
     fn advance_timestep(&mut self, timestep: Time) -> Result<(), String>{
 
 
+        // first thing is to sum up all enthalpy changes
         let mut total_enthalpy_rate_change = 
         Power::new::<watt>(0.0);
 
@@ -344,9 +345,10 @@ impl SingleCVNode {
         // okay
 
         self.set_liquid_cv_mass_from_temperature()?;
-        // clear the enthalpy change vector
+        // clear the enthalpy change vector and timestep vector 
 
         self.rate_enthalpy_change_vector.clear();
+        self.max_timestep_vector.clear();
         // increase timestep (last step)
 
         return Ok(());
@@ -465,6 +467,59 @@ impl SingleCVNode {
 
 
         return Ok(ball_control_vol);
+    }
+
+    /// this is a function to determine the relevant time scales 
+    /// dynamically 
+    #[inline]
+    fn calculate_conduction_timestep(&self) -> Result<Time,String>{
+
+        // first let us get relevant length scales 
+        // for shortest time step, we will get the shortest length 
+        // scale
+
+        let lengthscale_stability_vec = 
+        self.mesh_stability_lengthscale_vector.clone();
+
+
+        // initiate a simple loop to find the shortest length scale
+        let mut min_lengthscale = Length::new::<meter>(0.0);
+
+        for length in lengthscale_stability_vec.iter() {
+            if *length > min_lengthscale {
+                min_lengthscale = *length;
+            }
+        }
+
+        // now we can determine the conduction time scale regardless 
+        // of whether it's solid or liquid (no gas implementations yet, 
+        // this is alpha code, probably needs a few rewrites)
+        //
+
+        let max_mesh_fourier_number: f64 = 0.25;
+
+        let control_vol_material = self.material_control_volume.clone();
+        let control_vol_pressure = self.pressure_control_volume.clone();
+        let cv_temperature = temperature_from_specific_enthalpy(
+            self.material_control_volume, 
+            self.current_timestep_control_volume_specific_enthalpy, 
+            self.pressure_control_volume)?;
+
+
+        let thermal_diffusivity_coeff: DiffusionCoefficient = 
+        thermal_diffusivity(control_vol_material, 
+            cv_temperature, 
+            control_vol_pressure)?;
+
+        // now let's obtain the minimum timescale for conduction
+
+        let min_conduction_timescale = max_mesh_fourier_number * 
+        min_lengthscale *
+        min_lengthscale / 
+        thermal_diffusivity_coeff;
+
+
+        return Ok(min_conduction_timescale);
     }
 
 }
