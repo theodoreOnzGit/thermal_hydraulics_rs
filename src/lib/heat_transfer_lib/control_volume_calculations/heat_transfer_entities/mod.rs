@@ -245,6 +245,10 @@ pub struct SingleCVNode {
     /// This vector is meant to house a list of maximum timesteps 
     /// and is meant for auto time stepping 
     pub max_timestep_vector: Vec<Time>,
+
+    /// This vector is meant to house a list of maximum timesteps 
+    /// based on conduction only
+    pub mesh_stability_lengthscale_vector: Vec<Length>,
 }
 
 impl SingleCVNode {
@@ -275,6 +279,8 @@ impl SingleCVNode {
         // timestep
         let cv_rate_enthalpy_change_vec: Vec<Power> = vec![];
         let initial_timestep_vector: Vec<Time> = vec![];
+        let initial_mesh_stability_lengthscale_vector: Vec<Length> 
+        = vec![];
 
         return Self{
             current_timestep_control_volume_specific_enthalpy : 
@@ -292,6 +298,8 @@ impl SingleCVNode {
             volume: cv_volume,
             max_timestep_vector:
             initial_timestep_vector,
+            mesh_stability_lengthscale_vector:
+            initial_mesh_stability_lengthscale_vector,
         }
 
     }
@@ -419,6 +427,20 @@ impl SingleCVNode {
             cv_temperature, 
             pressure)?;
 
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(ball_radius);
+
+
+
         let ball_control_vol = 
         HeatTransferEntity::ControlVolume(
             CVType::SingleCV(
@@ -434,7 +456,9 @@ impl SingleCVNode {
                     pressure_control_volume: pressure,
                     volume: ball_volume, 
                     max_timestep_vector: 
-                    vec![],
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
                 }
             )
         );

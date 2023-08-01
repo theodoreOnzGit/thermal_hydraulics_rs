@@ -67,6 +67,8 @@ fn calculate_single_cv_node_constant_heat_addition(
     // on convection flow
     // match statement is meant to tell that liquid CVs are not quite 
     // ready for use
+    // Actually, for solid CV, I will also need to recalculate time scale 
+    // based on the material thermal thermal_diffusivity
     let cv_material = control_vol.material_control_volume;
     match cv_material {
         Solid(_) => {
@@ -180,6 +182,9 @@ fn calculate_single_cv_node_constant_heat_flux(
     // on convection flow
     // match statement is meant to tell that liquid CVs are not quite 
     // ready for use
+    //
+    // Actually, for solid CV, I will also need to recalculate time scale 
+    // based on the material thermal thermal_diffusivity
     let cv_material = control_vol.material_control_volume;
     match cv_material {
         Solid(_) => {
@@ -276,6 +281,8 @@ fn calculate_single_cv_node_constant_temperature(
     // it's solid or fluid control volume
     // 
 
+    // Actually, for solid CV, I will also need to recalculate time scale 
+    // based on the material thermal thermal_diffusivity
     // match statement is meant to tell that liquid CVs are not quite 
     // ready for use
     match cv_material {
@@ -392,6 +399,8 @@ fn caclulate_between_two_singular_cv_nodes(
     // constructor. however, with convection, the time scale must be 
     // recalculated at every time step. so it really depends whether 
     // it's solid or fluid control volume
+    // Actually, for solid CV, I will also need to recalculate time scale 
+    // based on the material thermal thermal_diffusivity
     //
     // For liquid CV, still need to calculate time scale based 
     // on convection flow
