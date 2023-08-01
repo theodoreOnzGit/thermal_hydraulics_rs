@@ -55,6 +55,8 @@ fn calculate_single_cv_node_constant_heat_addition(
     control_vol.rate_enthalpy_change_vector.
         push(heat_added_to_control_vol);
 
+    todo!("add auto timestep for heat added to CV");
+
     return Ok(());
 }
 
@@ -149,6 +151,7 @@ fn calculate_single_cv_node_constant_heat_flux(
     control_vol.rate_enthalpy_change_vector.
         push(heat_flowrate_into_control_vol);
 
+    todo!("add auto timestep for heat added for constant heat flux");
     return Ok(());
 
 
@@ -220,6 +223,7 @@ fn calculate_single_cv_node_constant_temperature(
     control_vol.rate_enthalpy_change_vector.
         push(-heat_flowrate_from_cv_to_bc);
 
+    todo!("add auto timestep for heat added for constant temperature");
     // and we done!
     return Ok(());
 }
@@ -317,6 +321,8 @@ fn caclulate_between_two_singular_cv_nodes(
         push(-heat_flowrate_from_cv_1_to_cv_2);
     single_cv_2.rate_enthalpy_change_vector.
         push(heat_flowrate_from_cv_1_to_cv_2);
+
+    todo!("add auto timestep for heat added for two cv nodes");
 
     return Ok(());
 
