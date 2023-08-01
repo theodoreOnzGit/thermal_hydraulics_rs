@@ -140,6 +140,11 @@ impl SingleCVNode {
 
     }
 
+    /// this function performs necessary calculations to move 
+    /// the state of the control volume to the next time step
+    ///
+    /// calculates the new enthalpy of the 
+    /// and cleans out the all power vectors and time step vectors
     #[inline]
     pub fn advance_timestep(&mut self, timestep: Time) -> Result<(), String>{
 
@@ -190,6 +195,8 @@ impl SingleCVNode {
         return Ok(());
     }
 
+    /// gets the temperature of the control volume at the 
+    /// CURRENT timestep
     #[inline]
     pub fn get_temperature(&self) -> 
     Result<ThermodynamicTemperature, String>{
