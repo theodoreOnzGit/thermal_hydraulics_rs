@@ -556,7 +556,9 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
             },
 
         HeatTransferInteractionType::
-            CylindricalConductionConvectionLiquidInside(..) => {
+            CylindricalConductionConvectionLiquidInside(
+            (material,radius,
+            temperature,pressure),_) => {
 
                 // for a single node connected to a BC, you're 
                 // not really supposed to have a timescale 
@@ -568,12 +570,31 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // I won't do anything based on this 
                 // or just use the generic timestep
 
+                let alpha_1: DiffusionCoefficient = 
+                thermal_diffusivity(material,
+                    temperature,
+                    pressure)?;
+
+                let length_1: Length =  radius.into();
+
+                let length_1 = length_1*0.5;
+
+                let timestep_1: Time = max_mesh_fourier_number * 
+                length_1 *
+                length_1 / 
+                alpha_1;
+
+                if cv_timestep > timestep_1 {
+                    cv_timestep = timestep_1;
+                }
                 ()
 
             },
 
         HeatTransferInteractionType::
-            CylindricalConductionConvectionLiquidOutside(..) => {
+            CylindricalConductionConvectionLiquidOutside(
+            (material,radius,
+            temperature,pressure),_) => {
 
                 // for a single node connected to a BC, you're 
                 // not really supposed to have a timescale 
@@ -585,6 +606,23 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // I won't do anything based on this 
                 // or just use the generic timestep
 
+                let alpha_1: DiffusionCoefficient = 
+                thermal_diffusivity(material,
+                    temperature,
+                    pressure)?;
+
+                let length_1: Length =  radius.into();
+
+                let length_1 = length_1*0.5;
+
+                let timestep_1: Time = max_mesh_fourier_number * 
+                length_1 *
+                length_1 / 
+                alpha_1;
+
+                if cv_timestep > timestep_1 {
+                    cv_timestep = timestep_1;
+                }
                 ()
 
             },
