@@ -320,7 +320,7 @@ impl SingleCVNode {
     /// for an uneven volume, it will just take the shortest of 
     /// these lengthscales to determine a proper time scale
     #[inline]
-    fn calculate_conduction_timestep(&self) -> Result<Time,String>{
+    pub fn calculate_conduction_timestep(&self) -> Result<Time,String>{
 
         // first let us get relevant length scales 
         // for shortest time step, we will get the shortest length 
@@ -369,6 +369,43 @@ impl SingleCVNode {
 
         return Ok(min_conduction_timescale);
     }
+
+    /// appends timestep constrained to fourier number stability
+    #[inline]
+    pub fn append_conduction_mesh_stability_timestep(&mut self, 
+        lengthscale: Length) -> Result<Time, String> {
+
+        // now we can determine the conduction time scale regardless 
+        // of whether it's solid or liquid (no gas implementations yet, 
+        // this is alpha code, probably needs a few rewrites)
+        //
+
+        let max_mesh_fourier_number: f64 = 0.25;
+
+        let control_vol_material = self.material_control_volume.clone();
+        let control_vol_pressure = self.pressure_control_volume.clone();
+        let cv_temperature = temperature_from_specific_enthalpy(
+            self.material_control_volume, 
+            self.current_timestep_control_volume_specific_enthalpy, 
+            self.pressure_control_volume)?;
+
+
+        let thermal_diffusivity_coeff: DiffusionCoefficient = 
+        thermal_diffusivity(control_vol_material, 
+            cv_temperature, 
+            control_vol_pressure)?;
+
+        // now let's obtain the minimum timescale for conduction
+
+        let min_conduction_timescale = max_mesh_fourier_number * 
+        lengthscale *
+        lengthscale / 
+        thermal_diffusivity_coeff;
+
+
+        return Ok(min_conduction_timescale);
+    }
+    
 
     /// calculates a time scale based on maximum temperature change 
     /// within one time step, 

@@ -69,9 +69,18 @@ fn calculate_single_cv_node_constant_heat_addition(
     // ready for use
     // Actually, for solid CV, I will also need to recalculate time scale 
     // based on the material thermal thermal_diffusivity
+    
+
+
     let cv_material = control_vol.material_control_volume;
     match cv_material {
         Solid(_) => {
+            // in this case, we just have one cv and one bc 
+            // so we only consider thermal inertia of this cv 
+            let cv_timestep:Time = 
+            control_vol.calculate_conduction_timestep()?;
+            control_vol.max_timestep_vector.push(cv_timestep);
+
             ()
         },
         Liquid(_) => {
@@ -188,6 +197,11 @@ fn calculate_single_cv_node_constant_heat_flux(
     let cv_material = control_vol.material_control_volume;
     match cv_material {
         Solid(_) => {
+            // in this case, we just have one cv and one bc 
+            // so we only consider thermal inertia of this cv 
+            let cv_timestep:Time = 
+            control_vol.calculate_conduction_timestep()?;
+            control_vol.max_timestep_vector.push(cv_timestep);
             ()
         },
         Liquid(_) => {
@@ -287,6 +301,11 @@ fn calculate_single_cv_node_constant_temperature(
     // ready for use
     match cv_material {
         Solid(_) => {
+            // in this case, we just have one cv and one bc 
+            // so we only consider thermal inertia of this cv 
+            let cv_timestep:Time = 
+            control_vol.calculate_conduction_timestep()?;
+            control_vol.max_timestep_vector.push(cv_timestep);
             ()
         },
         Liquid(_) => {
@@ -406,6 +425,12 @@ fn caclulate_between_two_singular_cv_nodes(
     // on convection flow
     // match statement is meant to tell that liquid CVs are not quite 
     // ready for use
+
+    // now, to calculate relative time scales, I need to obtain 
+    // thermal inertia ratios and obtain my lengthscales back from 
+    // the time scales, it'd be kind of messy to do it here
+    // but looks like I need a method to deal with it
+
     match single_cv_1_material {
         Solid(_) => {
             ()
