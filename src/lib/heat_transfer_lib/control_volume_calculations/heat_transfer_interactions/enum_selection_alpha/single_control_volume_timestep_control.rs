@@ -285,7 +285,7 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 /// Calculates a time step based on fourier number for a single 
 /// control volume, usually tied to some boundary condition
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
     control_vol: &mut SingleCVNode,
     interaction: HeatTransferInteractionType) -> Result<Time,String> {
 

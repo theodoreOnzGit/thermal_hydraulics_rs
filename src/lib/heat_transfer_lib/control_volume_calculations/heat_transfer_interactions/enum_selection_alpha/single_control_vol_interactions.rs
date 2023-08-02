@@ -77,7 +77,7 @@ fn calculate_single_cv_node_constant_heat_addition(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+            calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 control_vol,
                 interaction)?;
 
@@ -199,7 +199,7 @@ fn calculate_single_cv_node_constant_heat_flux(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+            calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 control_vol,
                 interaction)?;
             ()
@@ -303,7 +303,7 @@ fn calculate_single_cv_node_constant_temperature(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+            calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 control_vol,
                 interaction)?;
             ()
