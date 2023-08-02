@@ -77,9 +77,9 @@ fn calculate_single_cv_node_constant_heat_addition(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            let cv_timestep:Time = 
-            control_vol.calculate_conduction_timestep()?;
-            control_vol.max_timestep_vector.push(cv_timestep);
+            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+                control_vol,
+                interaction)?;
 
             ()
         },
@@ -199,9 +199,9 @@ fn calculate_single_cv_node_constant_heat_flux(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            let cv_timestep:Time = 
-            control_vol.calculate_conduction_timestep()?;
-            control_vol.max_timestep_vector.push(cv_timestep);
+            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+                control_vol,
+                interaction)?;
             ()
         },
         Liquid(_) => {
@@ -303,9 +303,9 @@ fn calculate_single_cv_node_constant_temperature(
         Solid(_) => {
             // in this case, we just have one cv and one bc 
             // so we only consider thermal inertia of this cv 
-            let cv_timestep:Time = 
-            control_vol.calculate_conduction_timestep()?;
-            control_vol.max_timestep_vector.push(cv_timestep);
+            calculate_mesh_stability_conduction_timestep_generically_for_single_node(
+                control_vol,
+                interaction)?;
             ()
         },
         Liquid(_) => {
@@ -451,3 +451,4 @@ fn caclulate_between_two_singular_cv_nodes(
     return Ok(());
 
 }
+
