@@ -494,18 +494,63 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
 
 
         HeatTransferInteractionType::
-            DualCartesianThermalConductanceThreeDimension(_) => {
+            DualCartesianThermalConductanceThreeDimension(
+            data_dual_cartesian_conduction_data) => {
 
+                let material_1 = data_dual_cartesian_conduction_data.
+                    material_1.clone();
+
+                let material_2 = data_dual_cartesian_conduction_data.
+                    material_2.clone();
+
+
+                let length_1 : Length = data_dual_cartesian_conduction_data.
+                    thickness_1.clone().into();
+
+                let length_2 : Length = data_dual_cartesian_conduction_data.
+                    thickness_2.clone().into();
                 // for a single node connected to a BC, you're 
                 // not really supposed to have a timescale 
-                // based on two or more lengths
+                // based on two or more radiuss
                 //
                 // you only have one control volume bascially,
-                // and you should only use dual cylindrical thermal 
+                // and you should only use dual cartesian thermal 
                 // conductance for two control volumes
                 // I won't do anything based on this 
                 // or just use the generic timestep
+                //
+                // the other consideration is to take the shorter of 
+                // the two time steps and put it into the cv timestep 
+                let alpha_1: DiffusionCoefficient = 
+                thermal_diffusivity(material_1,
+                    cv_temperature,
+                    cv_pressure)?;
 
+                let alpha_2: DiffusionCoefficient = 
+                thermal_diffusivity(material_2,
+                    cv_temperature,
+                    cv_pressure)?;
+
+
+                let timestep_1: Time = max_mesh_fourier_number * 
+                length_1 *
+                length_1 / 
+                alpha_1;
+
+                let timestep_2: Time = max_mesh_fourier_number * 
+                length_2 *
+                length_2 / 
+                alpha_2;
+
+                if cv_timestep > timestep_1 {
+                    cv_timestep = timestep_1;
+                }
+
+                if cv_timestep > timestep_2 {
+                    cv_timestep = timestep_2;
+                }
+
+                // done!
                 ()
 
             },
