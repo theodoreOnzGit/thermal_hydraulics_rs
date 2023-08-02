@@ -1,9 +1,11 @@
 use std::f64::consts::PI;
 
 use peroxide::prelude::P;
+use uom::si::length::meter;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib;
+use crate::heat_transfer_lib::thermophysical_properties::density::density;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 
@@ -20,6 +22,7 @@ use crate::heat_transfer_lib::thermophysical_properties::Material
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
+use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
 use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
 
 /// calculates an appropriate time step for two single control volume 
@@ -32,7 +35,7 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
     interaction: HeatTransferInteractionType) 
--> Result<ThermalConductance, String> 
+-> Result<Time, String> 
 {
 
     let temperature_1: ThermodynamicTemperature = 
@@ -47,238 +50,365 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
     let pressure_2: Pressure = 
     single_cv_2.pressure_control_volume.clone();
 
-    let conductance: ThermalConductance = match 
-        interaction {
-            HeatTransferInteractionType::UserSpecifiedThermalConductance(
-                user_specified_conductance) => user_specified_conductance,
-            HeatTransferInteractionType
-                ::SingleCartesianThermalConductanceOneDimension(
-                material,thickness) => get_conductance_single_cartesian_one_dimension(
+    let material_1 = single_cv_1.material_control_volume.clone();
+    let material_2 = single_cv_2.material_control_volume.clone();
+
+    // we use this to get the diffusion coefficient for both control 
+    // volumes
+
+    let alpha_1: DiffusionCoefficient = 
+    thermal_diffusivity(material_1,
+        temperature_1,
+        pressure_1)?;
+
+    let alpha_2: DiffusionCoefficient = 
+    thermal_diffusivity(material_2,
+        temperature_2,
+        pressure_2)?;
+
+    // we also want to get the ratios of the two thermal inertias 
+
+    let cp_1: SpecificHeatCapacity = specific_heat_capacity(
+        material_1,
+        temperature_1,
+        pressure_1)?;
+    let cp_2: SpecificHeatCapacity = specific_heat_capacity(
+        material_2,
+        temperature_2,
+        pressure_2)?;
+
+    let mass_1: Mass = single_cv_1.mass_control_volume.clone();
+    let mass_2: Mass = single_cv_2.mass_control_volume.clone();
+
+    // we get heat capacity 
+
+    let mcp_1: HeatCapacity = mass_1 * cp_1;
+    let mcp_2: HeatCapacity = mass_2 * cp_2;
+
+    // and the ratios of the heat capacities: 
+
+    let heat_capacity_ratio_cv_1 = mcp_1 / (mcp_1 + mcp_2);
+    let heat_capacity_ratio_cv_1: f64 = heat_capacity_ratio_cv_1.value;
+
+    let heat_capacity_ratio_cv_2 = mcp_1 / (mcp_1 + mcp_2);
+    let heat_capacity_ratio_cv_2: f64 = heat_capacity_ratio_cv_2.value;
+
+    // the heat capacity ratios will be used to split up the length 
+    // scales as needed
+
+    // the strategy here is to find the shorter of the two lengthscales 
+    // calculate the time step for each control volume, 
+    // and then find the shortest timestep, then load both control volumes 
+    // with the shortest time step
+    let max_mesh_fourier_number: f64 = 0.25;
+
+    // we'll calculate two baseline time scales
+    let mut cv_1_timestep:Time = 
+    single_cv_1.calculate_conduction_timestep()?;
+
+    let mut cv_2_timestep:Time = 
+    single_cv_2.calculate_conduction_timestep()?;
+
+    match interaction {
+        HeatTransferInteractionType::UserSpecifiedThermalConductance(
+            user_specified_conductance) => {
+
+                let lengthscale_stability_vec_1 = 
+                single_cv_1.mesh_stability_lengthscale_vector.clone();
+                let lengthscale_stability_vec_2 = 
+                single_cv_2.mesh_stability_lengthscale_vector.clone();
+
+                let mut min_lengthscale = Length::new::<meter>(0.0);
+
+                for length in lengthscale_stability_vec_1.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
+                    }
+                }
+                
+                for length in lengthscale_stability_vec_2.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
+                    }
+                }
+
+                // now that we've gotten both length scales and gotten 
+                // the shortest one, we'll need to obtain a timescale 
+                // from the conductance 
+                //
+                // Delta t = Fo * rho * cp * Delta x * resistance
+                //
+                // we'll convert conductance into total resistance first 
+                // 
+
+                let total_resistance = 1.0/user_specified_conductance;
+
+                // then we'll approximate the thermal resistance of 
+                // cv 1 using the ratio of heat capacities 
+                //
+                // This is approximation, not exact, I'll deal with 
+                // the approximation as I need to later.
+
+                let approx_thermal_resistance_1= total_resistance *
+                heat_capacity_ratio_cv_1;
+
+                let approx_thermal_cond_1: ThermalConductance = 
+                1.0/approx_thermal_resistance_1;
+
+                let approx_thermal_resistance_2 = total_resistance *
+                heat_capacity_ratio_cv_2;
+
+                // let's get timescale 1 and 2 estimate 
+
+                let density_1: MassDensity 
+                = density(material_1, temperature_1, pressure_1)?;
+
+                let density_2: MassDensity 
+                = density(material_2, temperature_2, pressure_2)?;
+
+                let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
+                let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
+
+                // have to check units, something is wrong
+                //let timescale_1: Time = max_mesh_fourier_number 
+                //* rho_cp_1 
+                //* approx_thermal_resistance_1 
+                //* min_lengthscale;
+
+                
+                // if the user specifies a conductance, 
+                // we can take that to be k/L
+                user_specified_conductance
+            },
+        HeatTransferInteractionType
+            ::SingleCartesianThermalConductanceOneDimension(
+            material,thickness) => {
+                get_conductance_single_cartesian_one_dimension(
                     material,
                     temperature_1, 
                     temperature_2, 
                     pressure_1, 
                     pressure_2, 
-                    thickness)?,
-            HeatTransferInteractionType::
-                CylindricalConductionConvectionLiquidInside(
-                (solid_material, shell_thickness,
-                solid_temperature, solid_pressure), 
-                (h, inner_diameter, cylinder_length)) => {
-
-                    let id: Length = inner_diameter.clone().into();
-                    let thicnkess: Length = shell_thickness.clone().into();
-
-                    let od: Length = id+thicnkess;
-
-                    let outer_diameter: OuterDiameterThermalConduction = 
-                    OuterDiameterThermalConduction::from(od);
-
-                    // after all the typing conversion, we can 
-                    // get our conductance
-                    get_conductance_single_cylindrical_radial_solid_liquid(
-                        solid_material,
-                        solid_temperature,
-                        solid_pressure,
-                        h,
-                        inner_diameter,
-                        outer_diameter,
-                        cylinder_length,
-                        CylindricalAndSphericalSolidFluidArrangement::
-                        FluidOnInnerSurfaceOfSolidShell ,
-                    )?
-                },
-
-            HeatTransferInteractionType::
-                CylindricalConductionConvectionLiquidOutside(
-                (solid_material, shell_thickness,
-                solid_temperature, solid_pressure), 
-                (h, outer_diameter, cylinder_length)) => {
-
-                    let od: Length = outer_diameter.clone().into();
-                    let thicnkess: Length = shell_thickness.clone().into();
-
-                    let id: Length = od - thicnkess;
-
-                    let inner_diameter: InnerDiameterThermalConduction = 
-                    InnerDiameterThermalConduction::from(id);
-
-                    // after all the typing conversion, we can 
-                    // get our conductance
-                    get_conductance_single_cylindrical_radial_solid_liquid(
-                        solid_material,
-                        solid_temperature,
-                        solid_pressure,
-                        h,
-                        inner_diameter,
-                        outer_diameter,
-                        cylinder_length,
-                        CylindricalAndSphericalSolidFluidArrangement::
-                        FluidOnInnerSurfaceOfSolidShell ,
-                    )?
-                },
-            // note: actually function signatures are a little more 
-            // friendly to use than packing enums with lots of stuff 
-            // so may change stuffing enums with tuples to stuffing 
-            // enums with a single struct
-            HeatTransferInteractionType
-                ::DualCylindricalThermalConductance(
-                (inner_material,inner_shell_thickness),
-                (outer_material,outer_shell_thickness),
-                (inner_diameter,
-                outer_diameter,
-                cylinder_length)
-            ) => {
-                    // first, want to check if inner_diameter + 
-                    // shell thicknesses is outer diameter 
-
-                    let expected_outer_diameter: Length;
-                    let id: Length = inner_diameter.into();
-                    let inner_thickness: Length =  inner_shell_thickness.into();
-                    let outer_thickness: Length =  outer_shell_thickness.into();
-
-                    expected_outer_diameter = 
-                        id + inner_thickness + outer_thickness;
-
-                    let od: Length = outer_diameter.into();
-
-                    // inner diameter and outer diameter values must be 
-                    // equal to within 1 nanometer 1e-9 m
-                    if (od.value - expected_outer_diameter.value).abs() > 1e-9
-                    {
-
-                        let mut error_str: String = "the inner diameter 
-                            plus shell thicknesses do not equate 
-                            to outer diameter".to_string();
-
-                        error_str += "supplied outer diameter (m):";
-                        error_str += &od.value.to_string();
-                        error_str += "expected outer diameter (m):";
-                        error_str += &expected_outer_diameter.value.to_string();
-
-
-                        return Err(error_str
-                        );
-                    }
-
-                    get_conductance_cylindrical_radial_two_materials(
-                        inner_material,
-                        outer_material,
-                        temperature_1, //convention, 1 is inner shell
-                        temperature_2, // convention 2, is outer shell
-                        pressure_1,
-                        pressure_2,
-                        inner_diameter,
-                        inner_shell_thickness,
-                        outer_shell_thickness,
-                        cylinder_length,
-                    )?
-                },
-            HeatTransferInteractionType::UserSpecifiedHeatAddition  
-                => {
-                    return Err("interaction type needs to be \n 
-                        thermal conductance".to_string());
-                },
-
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCustomArea(_) => {
-
-                    return Err("interaction type needs to be \n 
-                        thermal conductance".to_string());
-
-                },
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
-
-                    return Err("interaction type needs to be \n 
-                        thermal conductance".to_string());
-
-                },
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
-
-                    return Err("interaction type needs to be \n 
-                        thermal conductance".to_string());
-
-                },
-            HeatTransferInteractionType::
-                DualCartesianThermalConductance(
-                (material_1, thickness_1),
-                (material_2,thickness_2)) => { 
-                    
-                    let conductnace_layer_1: ThermalConductance 
-                    = get_conductance_single_cartesian_one_dimension(
-                        material_1,
-                        temperature_1, 
-                        temperature_1, 
-                        pressure_1, 
-                        pressure_1, 
-                        thickness_1)?;
-
-                    let conductnace_layer_2: ThermalConductance 
-                    = get_conductance_single_cartesian_one_dimension(
-                        material_2,
-                        temperature_2, 
-                        temperature_2, 
-                        pressure_2, 
-                        pressure_2, 
-                        thickness_2)?;
-
-                    let overall_resistance = 
-                    1.0/conductnace_layer_2 
-                    + 1.0/conductnace_layer_1;
-
-                    // return the conductance or resistnace inverse
-
-                    1.0/overall_resistance
+                    thickness)?
             },
-            HeatTransferInteractionType::
-                DualCartesianThermalConductanceThreeDimension(
-                data_dual_cartesian_conduction) 
-                => {
+        HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidInside(
+            (solid_material, shell_thickness,
+            solid_temperature, solid_pressure), 
+            (h, inner_diameter, cylinder_length)) => {
 
-                    let material_1 = 
-                    data_dual_cartesian_conduction .material_1;
+                let id: Length = inner_diameter.clone().into();
+                let thicnkess: Length = shell_thickness.clone().into();
 
-                    let material_2 = 
-                    data_dual_cartesian_conduction .material_2;
+                let od: Length = id+thicnkess;
 
-                    let thickness_1 = 
-                    data_dual_cartesian_conduction .thickness_1;
+                let outer_diameter: OuterDiameterThermalConduction = 
+                OuterDiameterThermalConduction::from(od);
 
-                    let thickness_2 = 
-                    data_dual_cartesian_conduction .thickness_2;
+                // after all the typing conversion, we can 
+                // get our conductance
+                get_conductance_single_cylindrical_radial_solid_liquid(
+                    solid_material,
+                    solid_temperature,
+                    solid_pressure,
+                    h,
+                    inner_diameter,
+                    outer_diameter,
+                    cylinder_length,
+                    CylindricalAndSphericalSolidFluidArrangement::
+                    FluidOnInnerSurfaceOfSolidShell ,
+                )?
+            },
 
-                    let xs_area = 
-                    data_dual_cartesian_conduction .xs_area;
+        HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidOutside(
+            (solid_material, shell_thickness,
+            solid_temperature, solid_pressure), 
+            (h, outer_diameter, cylinder_length)) => {
 
-                    get_conductance_dual_cartesian_three_dimensions(
-                        material_1, 
-                        material_2, 
-                        temperature_1, 
-                        temperature_2, 
-                        pressure_1, 
-                        pressure_2, 
-                        xs_area, 
-                        thickness_1,
-                        thickness_2)?
-                },
+                let od: Length = outer_diameter.clone().into();
+                let thicnkess: Length = shell_thickness.clone().into();
 
-            HeatTransferInteractionType::
-                UserSpecifiedConvectionResistance(
-                data_convection_resistance) 
-                => {
+                let id: Length = od - thicnkess;
 
-                    let heat_transfer_coeff: HeatTransfer = 
-                    data_convection_resistance.heat_transfer_coeff;
-                    let surf_area: Area = 
-                    data_convection_resistance.surf_area.into();
+                let inner_diameter: InnerDiameterThermalConduction = 
+                InnerDiameterThermalConduction::from(id);
 
-                    heat_transfer_coeff * surf_area
-                },
-        };
+                // after all the typing conversion, we can 
+                // get our conductance
+                get_conductance_single_cylindrical_radial_solid_liquid(
+                    solid_material,
+                    solid_temperature,
+                    solid_pressure,
+                    h,
+                    inner_diameter,
+                    outer_diameter,
+                    cylinder_length,
+                    CylindricalAndSphericalSolidFluidArrangement::
+                    FluidOnInnerSurfaceOfSolidShell ,
+                )?
+            },
+        // note: actually function signatures are a little more 
+        // friendly to use than packing enums with lots of stuff 
+        // so may change stuffing enums with tuples to stuffing 
+        // enums with a single struct
+        HeatTransferInteractionType
+            ::DualCylindricalThermalConductance(
+            (inner_material,inner_shell_thickness),
+            (outer_material,outer_shell_thickness),
+            (inner_diameter,
+            outer_diameter,
+            cylinder_length)
+        ) => {
+                // first, want to check if inner_diameter + 
+                // shell thicknesses is outer diameter 
 
-    return Ok(conductance);
+                let expected_outer_diameter: Length;
+                let id: Length = inner_diameter.into();
+                let inner_thickness: Length =  inner_shell_thickness.into();
+                let outer_thickness: Length =  outer_shell_thickness.into();
+
+                expected_outer_diameter = 
+                    id + inner_thickness + outer_thickness;
+
+                let od: Length = outer_diameter.into();
+
+                // inner diameter and outer diameter values must be 
+                // equal to within 1 nanometer 1e-9 m
+                if (od.value - expected_outer_diameter.value).abs() > 1e-9
+                {
+
+                    let mut error_str: String = "the inner diameter 
+plus shell thicknesses do not equate 
+to outer diameter".to_string();
+
+                    error_str += "supplied outer diameter (m):";
+                    error_str += &od.value.to_string();
+                    error_str += "expected outer diameter (m):";
+                    error_str += &expected_outer_diameter.value.to_string();
+
+
+                    return Err(error_str);
+                }
+
+                get_conductance_cylindrical_radial_two_materials(
+                    inner_material,
+                    outer_material,
+                    temperature_1, //convention, 1 is inner shell
+                    temperature_2, // convention 2, is outer shell
+                    pressure_1,
+                    pressure_2,
+                    inner_diameter,
+                    inner_shell_thickness,
+                    outer_shell_thickness,
+                    cylinder_length,
+                )?
+            },
+        HeatTransferInteractionType::UserSpecifiedHeatAddition  
+            => {
+                return Err("interaction type needs to be \n 
+                    thermal conductance".to_string());
+            },
+
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCustomArea(_) => {
+
+                return Err("interaction type needs to be \n 
+                    thermal conductance".to_string());
+
+            },
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
+
+                return Err("interaction type needs to be \n 
+                    thermal conductance".to_string());
+
+            },
+        HeatTransferInteractionType::
+            UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
+
+                return Err("interaction type needs to be \n 
+                    thermal conductance".to_string());
+
+            },
+        HeatTransferInteractionType::
+            DualCartesianThermalConductance(
+            (material_1, thickness_1),
+            (material_2,thickness_2)) => { 
+
+                let conductnace_layer_1: ThermalConductance 
+                = get_conductance_single_cartesian_one_dimension(
+                    material_1,
+                    temperature_1, 
+                    temperature_1, 
+                    pressure_1, 
+                    pressure_1, 
+                    thickness_1)?;
+
+                let conductnace_layer_2: ThermalConductance 
+                = get_conductance_single_cartesian_one_dimension(
+                    material_2,
+                    temperature_2, 
+                    temperature_2, 
+                    pressure_2, 
+                    pressure_2, 
+                    thickness_2)?;
+
+                let overall_resistance = 
+                1.0/conductnace_layer_2 
+                + 1.0/conductnace_layer_1;
+
+                // return the conductance or resistnace inverse
+
+                1.0/overall_resistance
+            },
+        HeatTransferInteractionType::
+            DualCartesianThermalConductanceThreeDimension(
+            data_dual_cartesian_conduction) 
+            => {
+
+                let material_1 = 
+                data_dual_cartesian_conduction .material_1;
+
+                let material_2 = 
+                data_dual_cartesian_conduction .material_2;
+
+                let thickness_1 = 
+                data_dual_cartesian_conduction .thickness_1;
+
+                let thickness_2 = 
+                data_dual_cartesian_conduction .thickness_2;
+
+                let xs_area = 
+                data_dual_cartesian_conduction .xs_area;
+
+                get_conductance_dual_cartesian_three_dimensions(
+                    material_1, 
+                    material_2, 
+                    temperature_1, 
+                    temperature_2, 
+                    pressure_1, 
+                    pressure_2, 
+                    xs_area, 
+                    thickness_1,
+                    thickness_2)?
+            },
+
+        HeatTransferInteractionType::
+            UserSpecifiedConvectionResistance(
+            data_convection_resistance) 
+            => {
+
+                let heat_transfer_coeff: HeatTransfer = 
+                data_convection_resistance.heat_transfer_coeff;
+                let surf_area: Area = 
+                data_convection_resistance.surf_area.into();
+
+                heat_transfer_coeff * surf_area
+            },
+    };
+
+    return Err("not finished".to_string());
 }
 
 
@@ -588,6 +718,8 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                     cv_timestep = timestep_1;
                 }
                 ()
+                // if the control volume is fluid, we will need 
+                // to introduce another time scale
 
             },
 
@@ -624,6 +756,8 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                     cv_timestep = timestep_1;
                 }
                 ()
+                // if the control volume is fluid, we will need 
+                // to introduce another time scale
 
             },
 
@@ -691,6 +825,8 @@ fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 if cv_timestep > time_step_max_based_on_volume_to_area {
                     cv_timestep = time_step_max_based_on_volume_to_area;
                 }
+
+                
             },
 
         HeatTransferInteractionType::
