@@ -5,6 +5,7 @@ use uom::si::length::meter;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib;
+use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
 use crate::heat_transfer_lib::thermophysical_properties::density::density;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
@@ -23,6 +24,7 @@ use crate::heat_transfer_lib::thermophysical_properties::Material
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
 use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
 use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
 
 /// calculates an appropriate time step for two single control volume 
@@ -245,6 +247,58 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
         HeatTransferInteractionType
             ::SingleCartesianThermalConductanceOneDimension(
             material,thickness) => {
+
+                // let's get the thickness and split it among cv 1 
+                // and cv 2 
+
+                let conduction_thickness: Length = thickness.into();
+
+                let thickness_cv_1: Length = 
+                heat_capacity_ratio_cv_1 * 
+                conduction_thickness;
+
+                let thickness_cv_2: Length = 
+                heat_capacity_ratio_cv_2 * 
+                conduction_thickness;
+
+                // Fo  = alpha * Delta t / Delta x / Delta x 
+                //
+                // Delta t = Fo * Delta x * Delta x / alpha 
+                //
+
+                let timescale_1: Time = max_mesh_fourier_number 
+                * thickness_cv_1 
+                * thickness_cv_1 
+                / alpha_1;
+
+                let timescale_2: Time = max_mesh_fourier_number 
+                * thickness_cv_2 
+                * thickness_cv_2 
+                / alpha_2;
+
+
+                let interaction_minimum_timescale: Time; 
+                
+                if timescale_1 > timescale_2 {
+                    interaction_minimum_timescale = timescale_2;
+                } else {
+                    interaction_minimum_timescale = timescale_1;
+                }
+
+
+                // take minimum of the timescales and assign it to 
+                // the cv 1 or cv 2 timescales
+                //
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+
                 get_conductance_single_cartesian_one_dimension(
                     material,
                     temperature_1, 
@@ -259,7 +313,154 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             solid_temperature, solid_pressure), 
             (h, inner_diameter, cylinder_length)) => {
 
+                // now for this, we are going to have to factor in 
+                // h to get our nusselt number
+                // unfortunately, we don't have a value for liquid 
+                // thermal conductivity
+                // not unless we match try matching the liquid 
+                // material of either cv first 
+                //
+                // I'll just set it to material 1 by default
+
+                let mut liquid_thermal_conductivity: ThermalConductivity
+                = thermal_conductivity(
+                    material_1,
+                    temperature_1,
+                    pressure_1)?;
+
+                // we assume liquid is material 1, solid is material 
+                // 2 
+                // if we are wrong, swop it around
+                let mut alpha_liquid: DiffusionCoefficient = 
+                thermal_diffusivity(
+                    material_1,
+                    temperature_1,
+                    pressure_1)?;
+                
+                let mut alpha_solid: DiffusionCoefficient = 
+                thermal_diffusivity(
+                    material_2,
+                    temperature_2,
+                    pressure_2)?;
+
+                match material_1 {
+                    Solid(_) => {
+                        // if material 1 is solid, then we should obtain 
+                        // liquid thermal conductivity from material 2
+                        liquid_thermal_conductivity = thermal_conductivity(
+                            material_2,
+                            temperature_2,
+                            pressure_2
+                        )?;
+
+                        alpha_solid = thermal_diffusivity(
+                                material_1,
+                                temperature_1,
+                                pressure_1)?;
+
+                        alpha_liquid = thermal_diffusivity(
+                                material_2,
+                                temperature_2,
+                                pressure_2)?;
+                        ()
+                    },
+                    Liquid(_) => {
+                        // if it's liquid material, match it and obtain 
+                        // thermal conductivity 
+                        // if the liquid is in material 1, do nothing
+                        ()
+                    },
+                }
+
+
+
+                // if both material 1 and 2 are solid at the same time 
+                // or liquid at the same time, this is WRONG
+                //
+                // it's a runtime error, not quite ideal
+                // obviously, want a compile time error
+                // but wait till future to debug this
+
+                match (material_1, material_2) {
+                    (Solid(_), Solid(_)) => {
+                        return Err("should have 1 fluid and 1 solid".to_string());
+                    },
+                    (Liquid(_), Liquid(_)) => {
+                        return Err("should have 1 fluid and 1 solid".to_string());
+                    },
+                    _ => (),
+                }
+
+                // todo: probably need to check which lengthscale is 
+                // right for nusselt number 
+
                 let id: Length = inner_diameter.clone().into();
+                let nusselt_number_diameter: Ratio = 
+                h * id / liquid_thermal_conductivity;
+
+                let nusselt_number_diameter: f64 = 
+                nusselt_number_diameter.value;
+
+                // normally time scale is 
+                // Delta t = Fo * Delta x * Delta x / alpha 
+                // 
+                // if convection at boundary is taken into account:
+                // Delta t = Fo * Delta x * Delta x / alpha Nu_(delta x)
+                //
+                //
+                // for cylindrical control vol on inside, 
+                // let the lengthscale be 
+                // the radius
+
+                let liquid_lengthscale: Length = id/2.0;
+
+                let nusselt_number_radius = nusselt_number_diameter/2.0;
+
+                let liquid_timescale: Time = max_mesh_fourier_number * 
+                    liquid_lengthscale * 
+                    liquid_lengthscale / 
+                    alpha_liquid / 
+                    nusselt_number_radius;
+
+                // the solid lengthscale shall be half the thickness 
+                // of the wall tubing 
+
+                let solid_lengthscale: Length = shell_thickness.into();
+
+
+                let solid_lengthscale: Length = id/2.0;
+
+                let solid_timescale: Time = max_mesh_fourier_number * 
+                    solid_lengthscale * 
+                    solid_lengthscale / 
+                    alpha_solid ;
+
+                // we find the minimum timescale and append it 
+                // to both control volumes
+
+                let interaction_minimum_timescale: Time; 
+                
+                if solid_timescale > liquid_timescale {
+                    interaction_minimum_timescale = liquid_timescale;
+                } else {
+                    interaction_minimum_timescale = solid_timescale;
+                }
+
+
+                // take minimum of the timescales and assign it to 
+                // the cv 1 or cv 2 timescales
+                //
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+                // legacy code for conductance
+
                 let thicnkess: Length = shell_thickness.clone().into();
 
                 let od: Length = id+thicnkess;
@@ -287,7 +488,7 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             (solid_material, shell_thickness,
             solid_temperature, solid_pressure), 
             (h, outer_diameter, cylinder_length)) => {
-
+                // todo, get this done
                 let od: Length = outer_diameter.clone().into();
                 let thicnkess: Length = shell_thickness.clone().into();
 
