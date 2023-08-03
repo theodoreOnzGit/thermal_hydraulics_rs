@@ -155,8 +155,33 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let approx_thermal_cond_1: ThermalConductance = 
                 1.0/approx_thermal_resistance_1;
 
+                // do note that thermal conductance is in watts per kelvin 
+                // not watts per m2/K
+                // area is factored in
+                //
+                // qA = H (T_1 - T_2)
+                //
+                // if i want HbyA or HbyV, then divide by the control volume
+                //
+                // H = kA/L for thermal conductivity case
+                //  
+                // bummer, no surface area!
+                // I suppose I'll just use the minimum length scales 
+                // then for conservative-ness
+
+                let approx_thermal_conductivity_1: ThermalConductivity = 
+                approx_thermal_cond_1 / min_lengthscale;
+
+
+
                 let approx_thermal_resistance_2 = total_resistance *
                 heat_capacity_ratio_cv_2;
+
+                let approx_thermal_cond_2: ThermalConductance = 
+                1.0/approx_thermal_resistance_2;
+
+                let approx_thermal_conductivity_2: ThermalConductivity = 
+                approx_thermal_cond_2 / min_lengthscale;
 
                 // let's get timescale 1 and 2 estimate 
 
@@ -169,12 +194,49 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
                 let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
 
-                // have to check units, something is wrong
-                //let timescale_1: Time = max_mesh_fourier_number 
-                //* rho_cp_1 
-                //* approx_thermal_resistance_1 
-                //* min_lengthscale;
+                let approx_alpha_1: DiffusionCoefficient = 
+                approx_thermal_conductivity_1/rho_cp_1;
 
+                let approx_alpha_2: DiffusionCoefficient = 
+                approx_thermal_conductivity_2/rho_cp_2;
+
+
+                // Fo  = alpha * Delta t / Delta x / Delta x 
+                //
+                // Delta t = Fo * Delta x * Delta x / alpha 
+                //
+
+                let timescale_1: Time = max_mesh_fourier_number 
+                * min_lengthscale 
+                * min_lengthscale 
+                / approx_alpha_1;
+
+                let timescale_2: Time = max_mesh_fourier_number 
+                * min_lengthscale 
+                * min_lengthscale 
+                / approx_alpha_2;
+
+                let interaction_minimum_timescale: Time; 
+                
+                if timescale_1 > timescale_2 {
+                    interaction_minimum_timescale = timescale_2;
+                } else {
+                    interaction_minimum_timescale = timescale_1;
+                }
+
+
+                // take minimum of the timescales and assign it to 
+                // the cv 1 or cv 2 timescales
+                //
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+                
                 
                 // if the user specifies a conductance, 
                 // we can take that to be k/L
@@ -278,9 +340,9 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 if (od.value - expected_outer_diameter.value).abs() > 1e-9
                 {
 
-                    let mut error_str: String = "the inner diameter 
-plus shell thicknesses do not equate 
-to outer diameter".to_string();
+                    let mut error_str: String = "the inner diameter  \n
+                        plus shell thicknesses do not equate  \n
+                        to outer diameter".to_string();
 
                     error_str += "supplied outer diameter (m):";
                     error_str += &od.value.to_string();
@@ -407,6 +469,10 @@ to outer diameter".to_string();
                 heat_transfer_coeff * surf_area
             },
     };
+
+    // push the corrected minimum timesteps to cv 1 and cv 2
+    single_cv_1.max_timestep_vector.push(cv_1_timestep);
+    single_cv_2.max_timestep_vector.push(cv_2_timestep);
 
     return Err("not finished".to_string());
 }
