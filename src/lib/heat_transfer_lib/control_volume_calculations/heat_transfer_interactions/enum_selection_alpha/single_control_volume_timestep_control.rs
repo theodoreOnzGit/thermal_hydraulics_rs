@@ -111,6 +111,10 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
     let mut cv_2_timestep:Time = 
     single_cv_2.calculate_conduction_timestep()?;
 
+    // this next step estimates the minimum timestep based 
+    // on the interaction type, and then loads both control volumes 
+    // with this minimum timestep
+
     match interaction {
         HeatTransferInteractionType::UserSpecifiedThermalConductance(
             user_specified_conductance) => {
@@ -240,9 +244,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 }
                 
                 
-                // if the user specifies a conductance, 
-                // we can take that to be k/L
-                user_specified_conductance
             },
         HeatTransferInteractionType
             ::SingleCartesianThermalConductanceOneDimension(
@@ -299,13 +300,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 }
 
 
-                get_conductance_single_cartesian_one_dimension(
-                    material,
-                    temperature_1, 
-                    temperature_2, 
-                    pressure_1, 
-                    pressure_2, 
-                    thickness)?
             },
         HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidInside(
@@ -459,28 +453,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                     cv_2_timestep = interaction_minimum_timescale;
                 }
 
-                // legacy code for conductance
-
-                let thicnkess: Length = shell_thickness.clone().into();
-
-                let od: Length = id+thicnkess;
-
-                let outer_diameter: OuterDiameterThermalConduction = 
-                OuterDiameterThermalConduction::from(od);
-
-                // after all the typing conversion, we can 
-                // get our conductance
-                get_conductance_single_cylindrical_radial_solid_liquid(
-                    solid_material,
-                    solid_temperature,
-                    solid_pressure,
-                    h,
-                    inner_diameter,
-                    outer_diameter,
-                    cylinder_length,
-                    CylindricalAndSphericalSolidFluidArrangement::
-                    FluidOnInnerSurfaceOfSolidShell ,
-                )?
             },
 
         HeatTransferInteractionType::
@@ -573,10 +545,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                     liquid_mcp / 
                     solid_mcp;
 
-                let solid_timescale: Time = max_mesh_fourier_number * 
-                    solid_lengthscale * 
-                    solid_lengthscale / 
-                    alpha_solid ;
 
                 let solid_timescale: Time = max_mesh_fourier_number * 
                     solid_lengthscale * 
@@ -626,24 +594,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                     cv_2_timestep = interaction_minimum_timescale;
                 }
 
-                // redundant, don't really need this
-
-                let inner_diameter: InnerDiameterThermalConduction = 
-                InnerDiameterThermalConduction::from(id);
-
-                // after all the typing conversion, we can 
-                // get our conductance
-                get_conductance_single_cylindrical_radial_solid_liquid(
-                    solid_material,
-                    solid_temperature,
-                    solid_pressure,
-                    h,
-                    inner_diameter,
-                    outer_diameter,
-                    cylinder_length,
-                    CylindricalAndSphericalSolidFluidArrangement::
-                    FluidOnInnerSurfaceOfSolidShell ,
-                )?
             },
         // note: actually function signatures are a little more 
         // friendly to use than packing enums with lots of stuff 
@@ -746,21 +696,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 }
 
 
-                // redundant, remove later
-
-
-                get_conductance_cylindrical_radial_two_materials(
-                    inner_material,
-                    outer_material,
-                    temperature_1, //convention, 1 is inner shell
-                    temperature_2, // convention 2, is outer shell
-                    pressure_1,
-                    pressure_2,
-                    inner_diameter,
-                    inner_shell_thickness,
-                    outer_shell_thickness,
-                    cylinder_length,
-                )?
             },
         HeatTransferInteractionType::UserSpecifiedHeatAddition  
             => {
@@ -802,37 +737,50 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             (material_1, thickness_1),
             (material_2,thickness_2)) => { 
 
-                // probably need to repeat the same analysis as 
-                // the dual cylindrical thermal conductance methods
-                // TODO 
-                // todo
+                let thickness_1_length: Length = thickness_1.into();
+                let thickness_2_length: Length = thickness_2.into();
 
-                // redundant
-                let conductnace_layer_1: ThermalConductance 
-                = get_conductance_single_cartesian_one_dimension(
-                    material_1,
-                    temperature_1, 
-                    temperature_1, 
-                    pressure_1, 
-                    pressure_1, 
-                    thickness_1)?;
 
-                let conductnace_layer_2: ThermalConductance 
-                = get_conductance_single_cartesian_one_dimension(
-                    material_2,
-                    temperature_2, 
-                    temperature_2, 
-                    pressure_2, 
-                    pressure_2, 
-                    thickness_2)?;
+                // now, we are not quite sure which material 
+                // corresponds to which control volume,
+                // though of course, we know both are solids 
+                // 
+                // and that 
+                // Delta t = Fo * Delta x * Delta x  / alpha 
+                //
+                // so to get the minimum delta t, we take the 
+                // shorter of the two lengths, and the larger of 
+                // the two alphas 
+                //
 
-                let overall_resistance = 
-                1.0/conductnace_layer_2 
-                + 1.0/conductnace_layer_1;
+                let mut larger_alpha: DiffusionCoefficient = 
+                alpha_1;
 
-                // return the conductance or resistnace inverse
+                if alpha_1 < alpha_2 {
+                    larger_alpha = alpha_2;
+                }
 
-                1.0/overall_resistance
+
+                let mut smaller_lengthscale: Length = thickness_1.into();
+
+                if thickness_2_length < thickness_1_length {
+                    smaller_lengthscale = thickness_2_length;
+                }
+
+                let interaction_minimum_timescale: Time 
+                = max_mesh_fourier_number * 
+                smaller_lengthscale *
+                smaller_lengthscale / 
+                larger_alpha;
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
             },
         HeatTransferInteractionType::
             DualCartesianThermalConductanceThreeDimension(
@@ -854,16 +802,50 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let xs_area = 
                 data_dual_cartesian_conduction .xs_area;
 
-                get_conductance_dual_cartesian_three_dimensions(
-                    material_1, 
-                    material_2, 
-                    temperature_1, 
-                    temperature_2, 
-                    pressure_1, 
-                    pressure_2, 
-                    xs_area, 
-                    thickness_1,
-                    thickness_2)?
+                let thickness_1_length: Length = thickness_1.into();
+                let thickness_2_length: Length = thickness_2.into();
+
+
+                // now, we are not quite sure which material 
+                // corresponds to which control volume,
+                // though of course, we know both are solids 
+                // 
+                // and that 
+                // Delta t = Fo * Delta x * Delta x  / alpha 
+                //
+                // so to get the minimum delta t, we take the 
+                // shorter of the two lengths, and the larger of 
+                // the two alphas 
+                //
+
+                let mut larger_alpha: DiffusionCoefficient = 
+                alpha_1;
+
+                if alpha_1 < alpha_2 {
+                    larger_alpha = alpha_2;
+                }
+
+
+                let mut smaller_lengthscale: Length = thickness_1.into();
+
+                if thickness_2_length < thickness_1_length {
+                    smaller_lengthscale = thickness_2_length;
+                }
+
+                let interaction_minimum_timescale: Time 
+                = max_mesh_fourier_number * 
+                smaller_lengthscale *
+                smaller_lengthscale / 
+                larger_alpha;
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
             },
 
         HeatTransferInteractionType::
@@ -879,7 +861,134 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let surf_area: Area = 
                 data_convection_resistance.surf_area.into();
 
-                heat_transfer_coeff * surf_area
+                let user_specified_conductance: ThermalConductance = 
+                heat_transfer_coeff * surf_area;
+
+                let lengthscale_stability_vec_1 = 
+                single_cv_1.mesh_stability_lengthscale_vector.clone();
+                let lengthscale_stability_vec_2 = 
+                single_cv_2.mesh_stability_lengthscale_vector.clone();
+
+                let mut min_lengthscale = Length::new::<meter>(0.0);
+
+                for length in lengthscale_stability_vec_1.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
+                    }
+                }
+                
+                for length in lengthscale_stability_vec_2.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
+                    }
+                }
+
+                // now that we've gotten both length scales and gotten 
+                // the shortest one, we'll need to obtain a timescale 
+                // from the conductance 
+                //
+                // Delta t = Fo * rho * cp * Delta x * resistance
+                //
+                // we'll convert conductance into total resistance first 
+                // 
+
+                let total_resistance = 1.0/user_specified_conductance;
+
+                // then we'll approximate the thermal resistance of 
+                // cv 1 using the ratio of heat capacities 
+                //
+                // This is approximation, not exact, I'll deal with 
+                // the approximation as I need to later.
+
+                let approx_thermal_resistance_1= total_resistance *
+                heat_capacity_ratio_cv_1;
+
+                let approx_thermal_cond_1: ThermalConductance = 
+                1.0/approx_thermal_resistance_1;
+
+                // do note that thermal conductance is in watts per kelvin 
+                // not watts per m2/K
+                // area is factored in
+                //
+                // qA = H (T_1 - T_2)
+                //
+                // if i want HbyA or HbyV, then divide by the control volume
+                //
+                // H = kA/L for thermal conductivity case
+                //  
+                // bummer, no surface area!
+                // I suppose I'll just use the minimum length scales 
+                // then for conservative-ness
+
+                let approx_thermal_conductivity_1: ThermalConductivity = 
+                approx_thermal_cond_1 / min_lengthscale;
+
+
+
+                let approx_thermal_resistance_2 = total_resistance *
+                heat_capacity_ratio_cv_2;
+
+                let approx_thermal_cond_2: ThermalConductance = 
+                1.0/approx_thermal_resistance_2;
+
+                let approx_thermal_conductivity_2: ThermalConductivity = 
+                approx_thermal_cond_2 / min_lengthscale;
+
+                // let's get timescale 1 and 2 estimate 
+
+                let density_1: MassDensity 
+                = density(material_1, temperature_1, pressure_1)?;
+
+                let density_2: MassDensity 
+                = density(material_2, temperature_2, pressure_2)?;
+
+                let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
+                let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
+
+                let approx_alpha_1: DiffusionCoefficient = 
+                approx_thermal_conductivity_1/rho_cp_1;
+
+                let approx_alpha_2: DiffusionCoefficient = 
+                approx_thermal_conductivity_2/rho_cp_2;
+
+
+                // Fo  = alpha * Delta t / Delta x / Delta x 
+                //
+                // Delta t = Fo * Delta x * Delta x / alpha 
+                //
+
+                let timescale_1: Time = max_mesh_fourier_number 
+                * min_lengthscale 
+                * min_lengthscale 
+                / approx_alpha_1;
+
+                let timescale_2: Time = max_mesh_fourier_number 
+                * min_lengthscale 
+                * min_lengthscale 
+                / approx_alpha_2;
+
+                let interaction_minimum_timescale: Time; 
+                
+                if timescale_1 > timescale_2 {
+                    interaction_minimum_timescale = timescale_2;
+                } else {
+                    interaction_minimum_timescale = timescale_1;
+                }
+
+
+                // take minimum of the timescales and assign it to 
+                // the cv 1 or cv 2 timescales
+                //
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+
             },
     };
 
