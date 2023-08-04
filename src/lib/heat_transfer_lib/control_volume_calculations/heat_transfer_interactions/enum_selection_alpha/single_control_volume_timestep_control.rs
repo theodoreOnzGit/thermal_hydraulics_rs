@@ -764,6 +764,8 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             },
         HeatTransferInteractionType::UserSpecifiedHeatAddition  
             => {
+                // user specified heat addition does not make sense 
+                // for cv to cv interaction
                 return Err("interaction type needs to be \n 
                     thermal conductance".to_string());
             },
@@ -771,6 +773,8 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
         HeatTransferInteractionType::
             UserSpecifiedHeatFluxCustomArea(_) => {
 
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
                 return Err("interaction type needs to be \n 
                     thermal conductance".to_string());
 
@@ -778,6 +782,8 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
         HeatTransferInteractionType::
             UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
 
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
                 return Err("interaction type needs to be \n 
                     thermal conductance".to_string());
 
@@ -785,6 +791,8 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
         HeatTransferInteractionType::
             UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
 
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
                 return Err("interaction type needs to be \n 
                     thermal conductance".to_string());
 
@@ -794,6 +802,12 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             (material_1, thickness_1),
             (material_2,thickness_2)) => { 
 
+                // probably need to repeat the same analysis as 
+                // the dual cylindrical thermal conductance methods
+                // TODO 
+                // todo
+
+                // redundant
                 let conductnace_layer_1: ThermalConductance 
                 = get_conductance_single_cartesian_one_dimension(
                     material_1,
@@ -856,6 +870,9 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             UserSpecifiedConvectionResistance(
             data_convection_resistance) 
             => {
+
+                // repeat analysis as per user specified thermal 
+                // conductance
 
                 let heat_transfer_coeff: HeatTransfer = 
                 data_convection_resistance.heat_transfer_coeff;
