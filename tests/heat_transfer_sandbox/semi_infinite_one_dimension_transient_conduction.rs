@@ -486,11 +486,11 @@ fn transient_conduction_semi_infinite_copper_medium()
     ];
 
     let length_vector: Vec<Length> = vec![
-        Length::new::<meter>(0.0),
-        Length::new::<meter>(0.05),
+        Length::new::<meter>(0.02),
+        Length::new::<meter>(0.06),
         Length::new::<meter>(0.10),
-        Length::new::<meter>(0.15),
-        Length::new::<meter>(0.20),
+        Length::new::<meter>(0.14),
+        Length::new::<meter>(0.18),
     ];
 
     // let's make the csv writer 
@@ -500,11 +500,11 @@ fn transient_conduction_semi_infinite_copper_medium()
         .unwrap();
 
     wtr.write_record(&["time_seconds",
-        "temp_0_0_meters", 
-        "temp_0_5_meters",
+        "temp_0_02_meters", 
+        "temp_0_06_meters",
         "temp_0_10_meters", 
-        "temp_0_15_meters", 
-        "temp_0_20_meters", 
+        "temp_0_14_meters", 
+        "temp_0_18_meters", 
     ]).unwrap();
 
 
