@@ -11,7 +11,7 @@ thermophysical_properties::SolidMaterial::{SteelSS304L, Copper};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
+control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType, XThicknessThermalConduction};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
@@ -90,19 +90,17 @@ fn transient_conduction_semi_infinite_copper_medium()
     let boundary_condition_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(80.0);
 
+
     // note that diffusivity changes with temperature, but we shall not 
     // assume this is the case, and just obtain an approximate 
     // analytical solution 
 
+    let copper_avg_temperature: ThermodynamicTemperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(45.0);
     let copper_thermal_diffusivity_alpha: DiffusionCoefficient 
-    = thermal_diffusivity(copper, copper_initial_temperature, pressure)?;
+    = thermal_diffusivity(copper, copper_avg_temperature, pressure)?;
 
-    let copper_initial_enthalpy = specific_enthalpy(
-        copper, 
-        copper_initial_temperature, 
-        pressure)?;
-
-    let node_length: Length = Length::new::<centimeter>(4.0);
+    let node_length: Length = Length::new::<centimeter>(2.0);
     // let's make the up to 0.40 m of nodes, 
     // we have 10 nodes in all, so each node has
     // about 4cm of thermal resistance between the nodes
@@ -218,43 +216,50 @@ fn transient_conduction_semi_infinite_copper_medium()
 
         wtr.write_record(&["time_seconds",
             "0cm_temperautre_kelvin",
-            "2cm_temperature_kelvin",
-            "6cm_temperature_kelvin",
-            "10cm_temperature_kelvin",
-            "14cm_temperature_kelvin",
-            "18cm_temperature_kelvin",
-            "22cm_temperature_kelvin",
-            "26cm_temperature_kelvin",
-            "30cm_temperature_kelvin",
-            "34cm_temperature_kelvin",
-            "38cm_temperature_kelvin",
+            "1cm_temperature_kelvin",
+            "3cm_temperature_kelvin",
+            "5cm_temperature_kelvin",
+            "7cm_temperature_kelvin",
+            "9cm_temperature_kelvin",
+            "11cm_temperature_kelvin",
+            "13cm_temperature_kelvin",
+            "15cm_temperature_kelvin",
+            "17cm_temperature_kelvin",
+            "19cm_temperature_kelvin",
         ]).unwrap();
 
         // let's establish interactions between each of the nodes
         //
-        // the first node would have a 2cm thermal resistance as it 
+        // the first node would have a 1cm thermal resistance as it 
         // is closest to the wall 
         //
         //
         // | 
         // | 
-        // | 2cm                4cm                 4cm
+        // | 1cm                2cm                 2cm
         // -------- * ------------------------- * ---------------
         // |        node 1                      node 2 
         // | 
         // | 
         // 
+        //
+
+        let node_half_length: Length = 
+        node_length * 0.5;
+        let node_half_length: XThicknessThermalConduction = 
+        node_half_length.into();
+        let node_length: XThicknessThermalConduction = node_length.into();
 
         let first_node_thermal_resistance = 
         HeatTransferInteractionType::
             SingleCartesianThermalConductanceOneDimension(copper,
-                Length::new::<centimeter>(2.0).into());
+                node_half_length);
 
 
         let subsequent_node_thermal_resistance = 
         HeatTransferInteractionType::
             SingleCartesianThermalConductanceOneDimension(copper,
-                Length::new::<centimeter>(4.0).into());
+                node_length);
 
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
@@ -486,11 +491,11 @@ fn transient_conduction_semi_infinite_copper_medium()
     ];
 
     let length_vector: Vec<Length> = vec![
-        Length::new::<meter>(0.02),
-        Length::new::<meter>(0.06),
+        Length::new::<meter>(0.01),
+        Length::new::<meter>(0.05),
         Length::new::<meter>(0.10),
-        Length::new::<meter>(0.14),
-        Length::new::<meter>(0.18),
+        Length::new::<meter>(0.15),
+        Length::new::<meter>(0.19),
     ];
 
     // let's make the csv writer 
@@ -500,11 +505,11 @@ fn transient_conduction_semi_infinite_copper_medium()
         .unwrap();
 
     wtr.write_record(&["time_seconds",
-        "temp_0_02_meters", 
-        "temp_0_06_meters",
-        "temp_0_10_meters", 
-        "temp_0_14_meters", 
-        "temp_0_18_meters", 
+        "analytical_temp_1cm", 
+        "analytical_temp_5cm",
+        "analytical_temp_10cm", 
+        "analytical_temp_15cm", 
+        "analytical_temp_19cm", 
     ]).unwrap();
 
 
