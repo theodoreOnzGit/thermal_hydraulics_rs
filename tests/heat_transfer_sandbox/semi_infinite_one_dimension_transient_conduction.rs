@@ -493,7 +493,7 @@ fn transient_conduction_semi_infinite_copper_medium()
     let length_vector: Vec<Length> = vec![
         Length::new::<meter>(0.01),
         Length::new::<meter>(0.05),
-        Length::new::<meter>(0.10),
+        Length::new::<meter>(0.11),
         Length::new::<meter>(0.15),
         Length::new::<meter>(0.19),
     ];
@@ -507,7 +507,7 @@ fn transient_conduction_semi_infinite_copper_medium()
     wtr.write_record(&["time_seconds",
         "analytical_temp_1cm", 
         "analytical_temp_5cm",
-        "analytical_temp_10cm", 
+        "analytical_temp_11cm", 
         "analytical_temp_15cm", 
         "analytical_temp_19cm", 
     ]).unwrap();
