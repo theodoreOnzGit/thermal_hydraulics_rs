@@ -379,7 +379,7 @@ fn transient_conduction_semi_infinite_copper_medium()
                 first_node_thermal_resistance).unwrap();
 
 
-            let timestep_value = timestep_from_api.round::<second>();
+            let timestep_value = timestep_from_api;
             // update timestep value
 
             *timestep_in_loop.deref_mut() = timestep_value;
