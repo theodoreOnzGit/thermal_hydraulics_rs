@@ -101,6 +101,8 @@ fn transient_conduction_semi_infinite_copper_medium()
         copper, 
         copper_initial_temperature, 
         pressure)?;
+
+    let node_length: Length = Length::new::<centimeter>(4.0);
     // let's make the up to 0.40 m of nodes, 
     // we have 10 nodes in all, so each node has
     // about 4cm of thermal resistance between the nodes
@@ -113,7 +115,11 @@ fn transient_conduction_semi_infinite_copper_medium()
     // so I'll need to make 1 BC and 10 control volumes
     // simulate the transient temperatures for up to 20s
 
+    let single_cv_node_1 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
 
+    // to be continued...
 
     // then let's do the analytical solution
     let theta_error_fn = |fourier_number_x_t: Ratio| 
