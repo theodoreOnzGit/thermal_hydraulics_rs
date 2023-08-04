@@ -62,6 +62,7 @@ pub use enums_alpha::*;
 ///
 mod enum_selection_alpha;
 use enum_selection_alpha::*;
+use uom::si::f64::*;
 
 
 
@@ -134,6 +135,55 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
    
 }
 
+
+
+/// this function calculates relevant timescales when linking 
+/// two heat transfer entities
+pub fn calculate_timescales_for_heat_transfer_entity(
+    entity_1: &mut HeatTransferEntity,
+    entity_2: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType)-> Result<Time, String>{
+
+    // first thing first, probably want to unpack the enums to obtain 
+    // the underlying control volume and BCs
+    // 
+    // Basically there are four permutations of what the user may choose 
+    // either link two control volumes,
+    // link a control vol and BC  (or BC first then control vol)
+    // lastly, two BCs 
+    // (which is kind of invalid though, 
+    // but i suppose it may make sense for steady state)
+    //
+
+    let heat_transfer_entity_timestep_result = match (entity_1,entity_2) {
+        (HeatTransferEntity::ControlVolume(cv_type_1),
+            HeatTransferEntity::ControlVolume(cv_type_2)) =>
+            calculate_timestep_control_volume_serial(
+                cv_type_1, 
+                cv_type_2, 
+                interaction),
+        (HeatTransferEntity::BoundaryConditions(bc_type),
+            HeatTransferEntity::ControlVolume(cv_type)) =>
+            {
+                calculate_timestep_control_volume_boundary_condition_serial(
+                    cv_type, bc_type, interaction)
+            },
+        (HeatTransferEntity::ControlVolume(cv_type),
+            HeatTransferEntity::BoundaryConditions(bc_type)) =>
+            {
+                calculate_timestep_control_volume_boundary_condition_serial(
+                    cv_type, bc_type, interaction)
+            },
+        (HeatTransferEntity::BoundaryConditions(_bc_type_1),
+            HeatTransferEntity::BoundaryConditions(_bc_type_2)) =>
+            Err("interactions between BCs doesn't \n 
+                need a timescale".to_string())
+    };
+
+
+    return heat_transfer_entity_timestep_result;
+   
+}
 
 
 

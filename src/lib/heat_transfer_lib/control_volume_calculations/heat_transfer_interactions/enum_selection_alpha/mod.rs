@@ -65,6 +65,38 @@ fn calculate_control_volume_serial(
 
 }
 
+/// the job of this function is to calculate time step 
+/// when two control volumes interact, the control volumes can be 
+/// single control volumes or array control volumes
+#[inline]
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_timestep_control_volume_serial(
+    control_vol_1: &mut CVType,
+    control_vol_2: &mut CVType,
+    interaction: HeatTransferInteractionType) -> Result<Time,String>{
+
+    // let me first match my control volumes to their various types
+    // at each matching arm, use those as inputs
+
+    let cv_result = match (control_vol_1, control_vol_2) {
+        (SingleCV(single_cv_1), SingleCV(single_cv_2)) =>
+            calculate_mesh_stability_timestep_for_two_single_cv_nodes(
+                single_cv_1, 
+                single_cv_2, 
+                interaction),
+        (ArrayCV, SingleCV(_)) =>
+            Err("Array CV calcs not yet implemented".to_string()),
+        (SingleCV(_), ArrayCV) =>
+            Err("Array CV calcs not yet implemented".to_string()),
+        (ArrayCV, ArrayCV) =>
+            Err("Array CV calcs not yet implemented".to_string()),
+    };
+
+
+    return cv_result;
+
+}
+
 /// the job of this function is to handle interactions between 
 /// boundary conditions 
 pub (in crate::heat_transfer_lib::control_volume_calculations)
@@ -72,6 +104,19 @@ fn calculate_boundary_condition_serial(
     _boundary_condition_1: &mut BCType,
     _boundary_condition_2: &mut BCType,
     _interaction: HeatTransferInteractionType) -> Result<(),String>{
+
+
+    return Err("interactions between two boundary conditions \n
+        not implemented".to_string());
+}
+
+/// the job of this function is to calcualte timestep between 
+/// boundary conditions 
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_timestep_boundary_condition_serial(
+    _boundary_condition_1: &mut BCType,
+    _boundary_condition_2: &mut BCType,
+    _interaction: HeatTransferInteractionType) -> Result<Time,String>{
 
 
     return Err("interactions between two boundary conditions \n
@@ -112,12 +157,38 @@ fn calculate_control_volume_boundary_condition_serial(
     return cv_bc_result;
 }
 
+// calculates timestep for control voluem and boundary condition 
+// in serial
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_timestep_control_volume_boundary_condition_serial(
+    control_vol: &mut CVType,
+    boundary_condition: &mut BCType,
+    interaction: HeatTransferInteractionType) -> Result<Time,String> {
+
+    let cv_bc_result = match (control_vol, boundary_condition) {
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (ArrayCV,_) => Err("array cv not yet implemented".to_string()),
+    };
+
+    return cv_bc_result;
+}
 
 
-/// this is thermal conductance function 
+/// this is thermal conductance function based on interaction type 
+/// may want to move the calculation bits to the calculation module in 
+/// future
 /// it calculates thermal conductance based on the supplied enum
 ///
 /// TODO: probably want to test this function out
+/// 
 fn get_thermal_conductance(
     temperature_1: ThermodynamicTemperature,
     temperature_2: ThermodynamicTemperature,

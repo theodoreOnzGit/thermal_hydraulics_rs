@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType, calculate_timescales_for_heat_transfer_entity};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::SolidMaterial::SteelSS304L;
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -765,6 +765,12 @@ fn lumped_capacitance_timestep_adjustment_improved_api()
             mesh_lengthscale_delta_x / 
             steel_diffusivity;
 
+            let timestep_from_api = 
+            calculate_timescales_for_heat_transfer_entity(
+                &mut steel_cv_in_loop, 
+                &mut ambient_bc_in_loop, 
+                heat_trf_interaction).unwrap();
+
             // let's get the steel cv timestep 
             // it should be an associated method to the heat transfer 
             // entity
@@ -774,7 +780,7 @@ fn lumped_capacitance_timestep_adjustment_improved_api()
 
             // timestep is +/- 6.57s
             // round timestep to nearest second
-            let timestep_value = timestep_raw_value.round::<second>();
+            let timestep_value = timestep_from_api.round::<second>();
 
             // pretty small but good enough
 
