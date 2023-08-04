@@ -5,7 +5,7 @@ use std::thread;
 
 use peroxide::prelude::erfc;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType, calculate_timescales_for_heat_transfer_entity};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::SolidMaterial::{SteelSS304L, Copper};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -118,8 +118,312 @@ fn transient_conduction_semi_infinite_copper_medium()
     let single_cv_node_1 = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
         pressure)?;
+    let single_cv_node_2 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_3 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_4 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_5 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_6 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_7 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_8 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_9 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
+    let single_cv_node_10 = SingleCVNode::new_one_dimension_volume(
+        node_length, copper, copper_initial_temperature, 
+        pressure)?;
 
-    // to be continued...
+    let single_cv_1_ptr = Arc::new(
+        Mutex::new(single_cv_node_1)
+    );
+    let single_cv_2_ptr = Arc::new(
+        Mutex::new(single_cv_node_2)
+    );
+    let single_cv_3_ptr = Arc::new(
+        Mutex::new(single_cv_node_3)
+    );
+    let single_cv_4_ptr = Arc::new(
+        Mutex::new(single_cv_node_4)
+    );
+    let single_cv_5_ptr = Arc::new(
+        Mutex::new(single_cv_node_5)
+    );
+    let single_cv_6_ptr = Arc::new(
+        Mutex::new(single_cv_node_6)
+    );
+    let single_cv_7_ptr = Arc::new(
+        Mutex::new(single_cv_node_7)
+    );
+    let single_cv_8_ptr = Arc::new(
+        Mutex::new(single_cv_node_8)
+    );
+    let single_cv_9_ptr = Arc::new(
+        Mutex::new(single_cv_node_9)
+    );
+    let single_cv_10_ptr = Arc::new(
+        Mutex::new(single_cv_node_10)
+    );
+
+    let copper_surface_temperature_boundary_condition = 
+    HeatTransferEntity::BoundaryConditions(
+        UserSpecifiedTemperature(boundary_condition_temperature));
+
+    let surf_temp_ptr = Arc::new(
+        Mutex::new(copper_surface_temperature_boundary_condition)
+    );
+
+    // time settings
+    let max_time: Time = Time::new::<second>(20.0);
+
+    let timestep: Time = Time::new::<second>(0.1);
+    let timestep_ptr = Arc::new(
+        Mutex::new(timestep)
+    );
+    let max_time_ptr = Arc::new(max_time);
+
+    let calculation_loop = move || {
+
+        let mut single_cv_1_in_loop = single_cv_1_ptr.lock().unwrap();
+        let mut single_cv_2_in_loop = single_cv_2_ptr.lock().unwrap();
+        let mut single_cv_3_in_loop = single_cv_3_ptr.lock().unwrap();
+        let mut single_cv_4_in_loop = single_cv_4_ptr.lock().unwrap();
+        let mut single_cv_5_in_loop = single_cv_5_ptr.lock().unwrap();
+        let mut single_cv_6_in_loop = single_cv_6_ptr.lock().unwrap();
+        let mut single_cv_7_in_loop = single_cv_7_ptr.lock().unwrap();
+        let mut single_cv_8_in_loop = single_cv_8_ptr.lock().unwrap();
+        let mut single_cv_9_in_loop = single_cv_9_ptr.lock().unwrap();
+        let mut single_cv_10_in_loop = single_cv_10_ptr.lock().unwrap();
+
+        let mut surf_temp_bc_in_loop = surf_temp_ptr.lock().unwrap();
+
+        let mut timestep_in_loop = timestep_ptr.lock().unwrap();
+        let max_time_ptr_in_loop = max_time_ptr;
+
+        use csv::Writer;
+        let mut wtr = Writer::from_path("semi_infinite_simulated_values.csv")
+            .unwrap();
+
+        wtr.write_record(&["time_seconds",
+            "0cm_temperautre_kelvin",
+            "2cm_temperature_kelvin",
+            "6cm_temperature_kelvin",
+            "10cm_temperature_kelvin",
+            "14cm_temperature_kelvin",
+            "18cm_temperature_kelvin",
+            "22cm_temperature_kelvin",
+            "26cm_temperature_kelvin",
+            "30cm_temperature_kelvin",
+            "34cm_temperature_kelvin",
+            "38cm_temperature_kelvin",
+        ]).unwrap();
+
+        // let's establish interactions between each of the nodes
+        //
+        // the first node would have a 2cm thermal resistance as it 
+        // is closest to the wall 
+        //
+        //
+        // | 
+        // | 
+        // | 2cm                4cm                 4cm
+        // -------- * ------------------------- * ---------------
+        // |        node 1                      node 2 
+        // | 
+        // | 
+        // 
+
+        let first_node_thermal_resistance = 
+        HeatTransferInteractionType::
+            SingleCartesianThermalConductanceOneDimension(copper,
+                Length::new::<centimeter>(2.0).into());
+
+
+        let subsequent_node_thermal_resistance = 
+        HeatTransferInteractionType::
+            SingleCartesianThermalConductanceOneDimension(copper,
+                Length::new::<centimeter>(4.0).into());
+
+
+        let mut current_time_simulation_time = Time::new::<second>(0.0);
+
+
+        while current_time_simulation_time <= *max_time_ptr_in_loop {
+
+            // first let's link the heat transfer entities 
+
+
+            // first node is very important, we have BC and CV linkage
+            link_heat_transfer_entity(&mut surf_temp_bc_in_loop,
+                &mut single_cv_1_in_loop,
+                first_node_thermal_resistance).unwrap();
+
+            // subsequent nodes have similar linkages
+            link_heat_transfer_entity(&mut single_cv_1_in_loop,
+                &mut single_cv_2_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_2_in_loop,
+                &mut single_cv_3_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_3_in_loop,
+                &mut single_cv_4_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_4_in_loop,
+                &mut single_cv_5_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_5_in_loop,
+                &mut single_cv_6_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_6_in_loop,
+                &mut single_cv_7_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_7_in_loop,
+                &mut single_cv_8_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_8_in_loop,
+                &mut single_cv_9_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            link_heat_transfer_entity(&mut single_cv_9_in_loop,
+                &mut single_cv_10_in_loop,
+                subsequent_node_thermal_resistance).unwrap();
+
+            // now let's capture the temperature data first 
+
+            let bc_temperature: ThermodynamicTemperature 
+            = boundary_condition_temperature;
+
+            let cv_1_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_1_in_loop.deref_mut()).unwrap();
+
+            let cv_2_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_2_in_loop.deref_mut()).unwrap();
+
+            let cv_3_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_3_in_loop.deref_mut()).unwrap();
+
+            let cv_4_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_4_in_loop.deref_mut()).unwrap();
+
+            let cv_5_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_5_in_loop.deref_mut()).unwrap();
+
+            let cv_6_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_6_in_loop.deref_mut()).unwrap();
+
+            let cv_7_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_7_in_loop.deref_mut()).unwrap();
+
+            let cv_8_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_8_in_loop.deref_mut()).unwrap();
+
+            let cv_9_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_9_in_loop.deref_mut()).unwrap();
+
+            let cv_10_temperature = 
+            HeatTransferEntity::temperature( 
+                single_cv_10_in_loop.deref_mut()).unwrap();
+
+            let time_string = current_time_simulation_time.value.to_string();
+
+            wtr.write_record(&[time_string,
+                bc_temperature.value.to_string(),
+                cv_1_temperature.value.to_string(),
+                cv_2_temperature.value.to_string(),
+                cv_3_temperature.value.to_string(),
+                cv_4_temperature.value.to_string(),
+                cv_5_temperature.value.to_string(),
+                cv_6_temperature.value.to_string(),
+                cv_7_temperature.value.to_string(),
+                cv_8_temperature.value.to_string(),
+                cv_9_temperature.value.to_string(),
+                cv_10_temperature.value.to_string(), ])
+                .unwrap();
+
+            // now we need to update the timestep 
+            // we'll just use the cv-bc timestep because that has 
+            // the smallest lengthscale, should be the shortest
+
+            let timestep_from_api = 
+            calculate_timescales_for_heat_transfer_entity(
+                &mut surf_temp_bc_in_loop,
+                &mut single_cv_1_in_loop,
+                first_node_thermal_resistance).unwrap();
+
+
+            let timestep_value = timestep_from_api.round::<second>();
+            // update timestep value
+
+            *timestep_in_loop.deref_mut() = timestep_value;
+
+            HeatTransferEntity::advance_timestep(
+                single_cv_1_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+
+            HeatTransferEntity::advance_timestep(
+                single_cv_2_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_3_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_4_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_5_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_6_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_7_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_8_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_9_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+            HeatTransferEntity::advance_timestep(
+                single_cv_10_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+
+            current_time_simulation_time += *timestep_in_loop.deref();
+        }
+        wtr.flush().unwrap();
+    };
+
+    let calculation_thread = thread::spawn(calculation_loop);
+
+
 
     // then let's do the analytical solution
     let theta_error_fn = |fourier_number_x_t: Ratio| 
@@ -278,6 +582,7 @@ fn transient_conduction_semi_infinite_copper_medium()
         
     }
 
+    calculation_thread.join().unwrap();
     // this setup is meant to be emulated using control volumes with 
     // some thermal resistances between them
 
