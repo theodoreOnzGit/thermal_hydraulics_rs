@@ -422,8 +422,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let solid_lengthscale: Length = shell_thickness.into();
 
 
-                let solid_lengthscale: Length = id/2.0;
-
                 let solid_timescale: Time = max_mesh_fourier_number * 
                     solid_lengthscale * 
                     solid_lengthscale / 
