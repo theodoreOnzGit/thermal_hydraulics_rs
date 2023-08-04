@@ -303,9 +303,9 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             },
         HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidInside(
-            (solid_material, shell_thickness,
-            solid_temperature, solid_pressure), 
-            (h, inner_diameter, cylinder_length)) => {
+            (_solid_material, shell_thickness,
+            _solid_temperature, _solid_pressure), 
+            (h, inner_diameter, _cylinder_length)) => {
 
                 // now for this, we are going to have to factor in 
                 // h to get our nusselt number
@@ -457,9 +457,9 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 
         HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidOutside(
-            (solid_material, shell_thickness,
-            solid_temperature, solid_pressure), 
-            (h, outer_diameter, cylinder_length)) => {
+            (_solid_material, shell_thickness,
+            _solid_temperature, _solid_pressure), 
+            (h, _outer_diameter, _cylinder_length)) => {
                 // 
                 //
                 // now for liquid on the outside, we really have no idea 
@@ -472,9 +472,7 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // scaling it by the ratio of the thermal inertia of 
                 // the solid to the liquid 
 
-                let od: Length = outer_diameter.clone().into();
                 let thickness: Length = shell_thickness.clone().into();
-                let id: Length = od - thickness;
 
                 let solid_lengthscale = thickness;
 
@@ -605,7 +603,7 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             (outer_material,outer_shell_thickness),
             (inner_diameter,
             outer_diameter,
-            cylinder_length)
+            _cylinder_length)
         ) => {
                 // first, want to check if inner_diameter + 
                 // shell thicknesses is outer diameter 
@@ -734,8 +732,8 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             },
         HeatTransferInteractionType::
             DualCartesianThermalConductance(
-            (material_1, thickness_1),
-            (material_2,thickness_2)) => { 
+            (_material_1, thickness_1),
+            (_material_2,thickness_2)) => { 
 
                 let thickness_1_length: Length = thickness_1.into();
                 let thickness_2_length: Length = thickness_2.into();
@@ -787,11 +785,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             data_dual_cartesian_conduction) 
             => {
 
-                let material_1 = 
-                data_dual_cartesian_conduction .material_1;
-
-                let material_2 = 
-                data_dual_cartesian_conduction .material_2;
 
                 let thickness_1 = 
                 data_dual_cartesian_conduction .thickness_1;
@@ -799,8 +792,6 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 let thickness_2 = 
                 data_dual_cartesian_conduction .thickness_2;
 
-                let xs_area = 
-                data_dual_cartesian_conduction .xs_area;
 
                 let thickness_1_length: Length = thickness_1.into();
                 let thickness_2_length: Length = thickness_2.into();
@@ -996,7 +987,14 @@ fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
     single_cv_1.max_timestep_vector.push(cv_1_timestep);
     single_cv_2.max_timestep_vector.push(cv_2_timestep);
 
-    return Err("not finished".to_string());
+    // load the minimum timestep and return
+    let mut minimum_timestep: Time = cv_1_timestep;
+
+    if cv_1_timestep > cv_2_timestep {
+        minimum_timestep = cv_2_timestep;
+    }
+
+    return Ok(minimum_timestep);
 }
 
 
