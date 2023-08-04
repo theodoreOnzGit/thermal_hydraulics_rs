@@ -77,9 +77,45 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 fn transient_conduction_semi_infinite_copper_medium() 
 -> Result<(), String>{
 
-    // let's first do the analytical solution
+    // let's do the thread spawn for the calculated solution before 
+    // the analytical solution
+
+    // before we start, we need the copper thermal_diffusivity
+
+    let copper = Material::Solid(Copper);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+    let copper_initial_temperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(21.67);
+
+    let boundary_condition_temperature = 
+    ThermodynamicTemperature::new::<degree_celsius>(80.0);
+
+    // note that diffusivity changes with temperature, but we shall not 
+    // assume this is the case, and just obtain an approximate 
+    // analytical solution 
+
+    let copper_thermal_diffusivity_alpha: DiffusionCoefficient 
+    = thermal_diffusivity(copper, copper_initial_temperature, pressure)?;
+
+    let copper_initial_enthalpy = specific_enthalpy(
+        copper, 
+        copper_initial_temperature, 
+        pressure)?;
+    // let's make the up to 0.40 m of nodes, 
+    // we have 10 nodes in all, so each node has
+    // about 4cm of thermal resistance between the nodes
+    //
+    // then specify each node is made of copper, 
+    // it shall be a 1D kind of conduction node
+    // for 1D conduction type nodes, we just take 1m^2 area as a basis 
+    // and apply adiabatic BC to the surface normal 
+    // 
+    // so I'll need to make 1 BC and 10 control volumes
+    // simulate the transient temperatures for up to 20s
 
 
+
+    // then let's do the analytical solution
     let theta_error_fn = |fourier_number_x_t: Ratio| 
     -> Result<Ratio,String> {
 
@@ -163,22 +199,6 @@ fn transient_conduction_semi_infinite_copper_medium()
 
 
     wtr.flush().unwrap();
-    // also the copper thermal_diffusivity
-
-    let copper = Material::Solid(Copper);
-    let pressure = Pressure::new::<atmosphere>(1.0);
-    let copper_initial_temperature = 
-    ThermodynamicTemperature::new::<degree_celsius>(21.67);
-
-    let boundary_condition_temperature = 
-    ThermodynamicTemperature::new::<degree_celsius>(80.0);
-
-    // note that diffusivity changes with temperature, but we shall not 
-    // assume this is the case, and just obtain an approximate 
-    // analytical solution 
-
-    let copper_thermal_diffusivity_alpha: DiffusionCoefficient 
-    = thermal_diffusivity(copper, copper_initial_temperature, pressure)?;
 
     for time in time_vector.iter() {
 

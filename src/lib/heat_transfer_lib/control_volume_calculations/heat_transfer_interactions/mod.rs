@@ -30,8 +30,7 @@ heat_transfer_entities::HeatTransferEntity;
 /// but does not contain the selection logic yet
 ///
 /// Stuff here is not included in the API, so it might change
-pub(in crate::heat_transfer_lib::
-    control_volume_calculations::heat_transfer_interactions)
+pub(in crate::heat_transfer_lib:: control_volume_calculations)
 mod calculations;
 use calculations::*;
 

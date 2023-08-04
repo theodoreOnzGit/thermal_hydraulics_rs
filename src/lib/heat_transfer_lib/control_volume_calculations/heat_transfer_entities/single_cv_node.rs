@@ -1,11 +1,13 @@
 use std::f64::consts::PI;
 
+use uom::si::area::square_meter;
 use uom::si::f64::*;
 use uom::si::length::meter;
 use uom::si::power::watt;
 use uom::si::pressure::atmosphere;
 use uom::si::time::second;
 
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::calculations::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
 use crate::heat_transfer_lib::
@@ -312,6 +314,76 @@ impl SingleCVNode {
         return Ok(ball_control_vol);
     }
 
+    /// this function constructs 1d control volume based on spherical 
+    /// dimensions,
+    /// it will return a HeatTransferEntity so that you don't have 
+    /// to do all the packaging manually
+    #[inline]
+    pub fn new_one_dimension_volume(length: Length, 
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,String>{
+
+
+        let basis_area: Area = Area::new::<square_meter>( 
+            UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS);
+
+        let one_dimension_volume: Volume = 
+        basis_area * length;
+
+        let one_dimension_density: MassDensity = density(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let one_dimension_mass: Mass = 
+        one_dimension_density * one_dimension_volume;
+
+
+        let enthalpy = specific_enthalpy(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(length);
+
+
+
+        let ball_control_vol = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: one_dimension_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: one_dimension_volume, 
+                    max_timestep_vector: 
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
+                }
+            )
+        );
+
+
+        return Ok(ball_control_vol);
+    }
     /// this is a function to determine the relevant time scales 
     /// this one is based on conduction, which calculates timescales 
     /// based on mesh fourier number
