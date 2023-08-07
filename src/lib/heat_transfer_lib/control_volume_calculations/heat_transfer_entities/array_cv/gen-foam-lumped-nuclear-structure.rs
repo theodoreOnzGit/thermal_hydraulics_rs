@@ -1,3 +1,4 @@
+// I'm translating lumpedNuclearStructure.C from GeN-Foam into Rust
 /*---------------------------------------------------------------------------*\
 |       ______          _   __           ______                               |
 |      / ____/  ___    / | / /          / ____/  ____   ____ _   ____ ___     |
@@ -366,5 +367,167 @@ License
 //// ************************************************************************* //
 //
 
+use ndarray::*;
+use ndarray_linalg::*;
+use uom::si::f64::*;
+use uom::si::thermal_conductance::watt_per_kelvin;
+use uom::si::thermodynamic_temperature::kelvin;
+use uom::si::time::second;
+use uom::ConstZero;
 
-fn matrix_construction(){}
+// 
+#[inline]
+#[allow(non_snake_case)]
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn matrix_construction(){
+    // translating:
+    //    scalar dt(mesh_.time().deltaT().value());
+    //    scalar Tcool(HTSumi / max(HSumi,SMALL));
+    //    scalar Hcool(HSumi*iA/this->alpha_[celli]);
+    //
+    //
+    // there is no coolant temperature so i'll just call it boundary 
+    // condition B
+    //
+    // also boundary condition B has a thermal conductance
+    // which I think should be user determined
+
+    let dt: Time = Time::new::<second>(0.1);
+    let boundary_condition_b_temperature: ThermodynamicTemperature = 
+    ThermodynamicTemperature::new::<kelvin>(283.0);
+    let boundary_condition_b_conductance: ThermalConductance = 
+    ThermalConductance::new::<watt_per_kelvin>(0.1);
+
+
+    // translating: 
+    //    if(nodesNumber>1)
+    //    
+    let nodesNumber: usize = 10;
+    if nodesNumber > 1 {
+        //    translating:
+        //    {
+        //        //- Init matrix, source
+        //        SquareMatrix<scalar> M(nodesNumber, nodesNumber, Foam::zero());
+        //        List<scalar> S(nodesNumber, 0.0);
+
+        let M: Array2<ThermalConductance> = 
+        Array::zeros((nodesNumber, nodesNumber));
+        let S: Array1<Power> = Array::zeros(nodesNumber);
+
+        // translating:
+        //        //- Construct matrix, source
+        //        {
+        //            //- Set "zeroGradient" BC at innermost node
+        //            {
+        //                M[0][1] =   -Hs[1];
+        //                M[0][0] =   volFraction[0] * rhoCp[0] / dt + Hs[1];
+        //                S[0] =      q * qFraction[0]  + TOld[0] * volFraction[0] 
+        //                * rhoCp[0] / dt;
+        //            }
+        //
+        // now, Hs is the conductance vector, but in GeN-Foam this is done 
+        // on a per unit volume basis
+        
+
+    } else {
+
+    }
+    //
+    //            // Bulk
+    //            if(nodesNumber>2)
+    //            {
+    //                for (int i = 1; i < nodesNumber-1; i++)
+    //                {
+    //                    M[i][i+1] =     -Hs[i+1];
+    //                    M[i][i-1] =     -Hs[i];
+    //                    M[i][i] =       volFraction[i] * rhoCp[i] / dt + Hs[i+1] + Hs[i];
+    //                    S[i] =          q * qFraction[i] + TOld[i] * volFraction[i] * rhoCp[i] / dt;
+    //                }
+    //            }
+    //
+    //            //- Outer surface, convective BC with fluid(s) wetting the pin
+    //            {
+    //                label i(nodesNumber-1);
+    //                scalar HtoCool(Hs[i+1]*Hcool/(Hs[i+1]+Hcool)); //total H from last node to coolant
+    //                M[i][i-1] =     -Hs[i];
+    //                M[i][i] =       volFraction[i] * rhoCp[i] / dt + Hs[i] + HtoCool;
+    //                S[i] =          q * qFraction[i] 
+    //                                + TOld[i] * volFraction[i] * rhoCp[i] / dt 
+    //                                + HtoCool * Tcool;       
+    //            }
+    //        }
+    //
+    //        //- Solve linear system
+    //        solve(T, M, S);
+    //    }
+    //    else
+    //    {
+    //        scalar HtoCool(Hs[1]*Hcool/(Hs[1]+Hcool)); //total H from last node to coolant
+    //        scalar M(volFraction[0] * rhoCp[0] / dt + HtoCool);
+    //        scalar S
+    //                (
+    //                    q * qFraction[0] 
+    //                    + TOld[0] * volFraction[0] * rhoCp[0] / dt 
+    //                    + HtoCool * Tcool
+    //                );
+    //        T = S/M;
+    //    }
+
+    
+}
+
+#[inline]
+fn solve_conductance_matrix_power_vector(
+    thermal_conductance_matrix: Array2<ThermalConductance>,
+    power_vector: Array1<Power>)
+-> Result<Array1<ThermodynamicTemperature>, error::LinalgError>{
+
+    // I can of course convert it into f64 types 
+    //
+    //
+
+    let get_value_conductance = |conductance: &ThermalConductance| {
+        return conductance.value;
+    };
+
+    let get_value_power = |power: &Power| {
+        return power.value;
+    };
+
+    // i'm allowing non snake case so that the syntax is the same as 
+    // GeN-Foam
+    #[allow(non_snake_case)]
+    let M: Array2<f64> = 
+    thermal_conductance_matrix.map(get_value_conductance);
+
+    #[allow(non_snake_case)]
+    let S: Array1<f64> = power_vector.map(get_value_power);
+
+    // now for the raw temperature matrix 
+
+    #[allow(non_snake_case)]
+    let T: Array1<f64> = M.solve(&S)?;
+
+    // To check for unit safety, I can just perform one calc
+
+    let _unit_check: Power = 
+    power_vector[0] + 
+    thermal_conductance_matrix[[0,0]] 
+    * ThermodynamicTemperature::ZERO;
+
+    // now map T back to a ThermodynamicTemperature
+    // T is already a ThermodynamicTemperature, so don't need to manually 
+    // convert, do it in kelvin 
+    //
+
+    let convert_f64_to_kelvin_temperature = |float: &f64| {
+        return ThermodynamicTemperature::new::<kelvin>(*float);
+    };
+
+
+    // this is the last step
+    let temperature_vector: Array1<ThermodynamicTemperature> 
+    = T.map(convert_f64_to_kelvin_temperature);
+
+    return Ok(temperature_vector);
+}

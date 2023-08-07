@@ -25,16 +25,19 @@
 // so that my results are similar
 
 
-use std::ops::{Add, Mul, Sub, Div, Rem};
 
 use ndarray::*;
 use ndarray_linalg::*;
 use uom::ConstZero;
-use uom::num_traits::Num;
 use uom::si::f64::*;
 use uom::si::power::watt;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::thermal_conductance::watt_per_kelvin;
+
+/// This module contains direct translations of GeN-Foam code 
+/// into rust for the lumped nuclear structure
+#[path = "./gen-foam-lumped-nuclear-structure.rs"]
+pub mod gen_foam_lumped_nuclear_structure;
 
 
 // Solve `Ax=b`
