@@ -370,16 +370,19 @@ License
 use ndarray::*;
 use ndarray_linalg::*;
 use uom::si::f64::*;
+use uom::si::mass::kilogram;
+use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::second;
 use uom::ConstZero;
+use uom::si::volume::cubic_meter;
 
 // 
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn matrix_construction(){
+fn matrix_construction() -> Result<(),error::LinalgError>{
     // translating:
     //    scalar dt(mesh_.time().deltaT().value());
     //    scalar Tcool(HTSumi / max(HSumi,SMALL));
@@ -392,17 +395,67 @@ fn matrix_construction(){
     // also boundary condition B has a thermal conductance
     // which I think should be user determined
 
+    let nodesNumber: usize = 10;
     let dt: Time = Time::new::<second>(0.1);
     let boundary_condition_b_temperature: ThermodynamicTemperature = 
     ThermodynamicTemperature::new::<kelvin>(283.0);
     let boundary_condition_b_conductance: ThermalConductance = 
     ThermalConductance::new::<watt_per_kelvin>(0.1);
 
+    // conductance vector with an array of thermal conductances
+    let Hs: Array1<ThermalConductance> 
+    = Array::zeros(nodesNumber);
+
+    // volume fraction vector 
+    let volFraction: Array1<f64> = Array::zeros(nodesNumber);
+    let total_volume: Volume = Volume::new::<cubic_meter>(1.0);
+
+    // heat capacitance vector
+    // instead of rhoCp I'm going to use mCp
+    let rhoCp: Array1<VolumetricHeatCapacity> = Array::zeros(nodesNumber);
+
+    // here is heat added to CV
+
+    let q: Power = Power::new::<watt>(0.1);
+    let qFraction: Array1<f64> = Array::zeros(nodesNumber);
+    let mut TOld_kelvin: Array1<f64> = Array::zeros(nodesNumber);
+    TOld_kelvin.fill(293.0);
+
+    let TOld: Array1<ThermodynamicTemperature> = TOld_kelvin.map(
+        |temp_kelvin_ptr: &f64| {
+
+            return ThermodynamicTemperature::new::<kelvin>(
+                *temp_kelvin_ptr);
+        }
+        );
+
+    // then we also have the conductance to the coolant 
+    // just setting it to some arbitrary value
+
+    let Hcool: ThermalConductance = 
+    ThermalConductance::new::<watt_per_kelvin>(1.0);
+    let Tcool: ThermodynamicTemperature = 
+    ThermodynamicTemperature::new::<kelvin>(293.0);
+
+    // arrange an empty vector with the correct number of nodes 
+    // this is the easiest, just copy/paste based on the old vectors
+
+    let mut T: Array1<ThermodynamicTemperature> = TOld_kelvin.map (
+        |temp_kelvin_ptr: &f64| {
+
+            return ThermodynamicTemperature::new::<kelvin>(
+                *temp_kelvin_ptr);
+        }
+
+    );
+
+    
+
+    // now we start calculation
 
     // translating: 
     //    if(nodesNumber>1)
     //    
-    let nodesNumber: usize = 10;
     if nodesNumber > 1 {
         //    translating:
         //    {
@@ -410,9 +463,11 @@ fn matrix_construction(){
         //        SquareMatrix<scalar> M(nodesNumber, nodesNumber, Foam::zero());
         //        List<scalar> S(nodesNumber, 0.0);
 
-        let M: Array2<ThermalConductance> = 
+        let mut M: Array2<ThermalConductance> = 
         Array::zeros((nodesNumber, nodesNumber));
-        let S: Array1<Power> = Array::zeros(nodesNumber);
+        let mut S: Array1<Power> = Array::zeros(nodesNumber);
+
+        // for the next step, I'll need a conductance vector Hs
 
         // translating:
         //        //- Construct matrix, source
@@ -426,53 +481,105 @@ fn matrix_construction(){
         //            }
         //
         // now, Hs is the conductance vector, but in GeN-Foam this is done 
-        // on a per unit volume basis
-        
+        // on a per unit volume basis, I'm not quite going to do that 
+        {
+            M[[0,1]] = -Hs[1];
+            M[[0,0]] = volFraction[0] * rhoCp[0] * total_volume 
+                / dt + Hs[1];
+            S[0] = q * qFraction[0] + TOld[0] * total_volume *
+                volFraction[0] * rhoCp[0] /dt;
+        }
+        // Translating:
+        //   // Bulk
+        //   if(nodesNumber>2)
+        //   {
+        //       for (int i = 1; i < nodesNumber-1; i++)
+        //       {
+        //           M[i][i+1] =     -Hs[i+1];
+        //           M[i][i-1] =     -Hs[i];
+        //           M[i][i] =       volFraction[i] * rhoCp[i] / dt 
+        //           + Hs[i+1] + Hs[i];
+        //           S[i] =          
+        //           q * qFraction[i] + TOld[i] * volFraction[i] * rhoCp[i] / dt;
+        //       }
+        //   }
+
+        if nodesNumber > 2 {
+            for i in 1..nodesNumber-1 {
+
+                M[[i,i+1]] = -Hs[i+1];
+                M[[i,i-1]] = -Hs[i];
+                M[[i,i]] = volFraction[i] * rhoCp[i] * total_volume / 
+                    dt + Hs[i+1] + Hs[i];
+                S[i] = q * qFraction[i] + TOld[i] * volFraction[i] * 
+                    total_volume * rhoCp[i] / dt;
+            }
+        }
+
+        // translating:
+        //
+        //            //- Outer surface, convective BC with fluid(s) wetting the pin
+        //            {
+        //                label i(nodesNumber-1);
+        //                scalar HtoCool(Hs[i+1]*Hcool/(Hs[i+1]+Hcool)); //total H from last node to coolant
+        //                M[i][i-1] =     -Hs[i];
+        //                M[i][i] =       volFraction[i] * rhoCp[i] / dt 
+        //                + Hs[i] + HtoCool;
+        //                S[i] =          q * qFraction[i] 
+        //                                + TOld[i] * volFraction[i] * rhoCp[i] / dt 
+        //                                + HtoCool * Tcool;       
+        //            }
+        //        }
+        {
+            let i = nodesNumber-1;
+            // this represents the total conductance to the outer 
+            // node
+            let HtoCool: ThermalConductance = 
+            Hs[i+1]*Hcool/(Hs[i+1]+Hcool);
+            M[[i,i-1]] = volFraction[i] * rhoCp[i] * total_volume / 
+                dt + Hs[i] + HtoCool;
+            M[[i,i]] = volFraction[i] * total_volume * rhoCp[i] / dt 
+                + Hs[i] + HtoCool;
+            S[i] = q * qFraction[i] 
+                + TOld[i] * volFraction[i] * rhoCp[i] * total_volume / dt 
+                + HtoCool * Tcool;       
+        }
+
+        // translating:
+        //        //- Solve linear system
+        //        solve(T, M, S);
+        //    }
+        T = solve_conductance_matrix_power_vector(M,S)?;
+
 
     } else {
+        // Translating:
+        //    else
+        //    {
+        //        scalar HtoCool(Hs[1]*Hcool/(Hs[1]+Hcool)); 
+        //        //total H from last node to coolant
+        //        scalar M(volFraction[0] * rhoCp[0] / dt + HtoCool);
+        //        scalar S
+        //                (
+        //                    q * qFraction[0] 
+        //                    + TOld[0] * volFraction[0] * rhoCp[0] / dt 
+        //                    + HtoCool * Tcool
+        //                );
+        //        T = S/M;
+        //    }
+        let HtoCool: ThermalConductance = Hs[1]*Hcool/(Hs[1]+Hcool);
+        let M = volFraction[0] * total_volume * rhoCp[0] / dt + HtoCool;
+        let S = q * qFraction[0] 
+        + TOld[0] * volFraction[0] * rhoCp[0] * total_volume / dt 
+        + HtoCool * Tcool;
 
+        let temperature: TemperatureInterval = S/M;
+        T[0] = ThermodynamicTemperature::new::<kelvin>( 
+            temperature.value);
     }
-    //
-    //            // Bulk
-    //            if(nodesNumber>2)
-    //            {
-    //                for (int i = 1; i < nodesNumber-1; i++)
-    //                {
-    //                    M[i][i+1] =     -Hs[i+1];
-    //                    M[i][i-1] =     -Hs[i];
-    //                    M[i][i] =       volFraction[i] * rhoCp[i] / dt + Hs[i+1] + Hs[i];
-    //                    S[i] =          q * qFraction[i] + TOld[i] * volFraction[i] * rhoCp[i] / dt;
-    //                }
-    //            }
-    //
-    //            //- Outer surface, convective BC with fluid(s) wetting the pin
-    //            {
-    //                label i(nodesNumber-1);
-    //                scalar HtoCool(Hs[i+1]*Hcool/(Hs[i+1]+Hcool)); //total H from last node to coolant
-    //                M[i][i-1] =     -Hs[i];
-    //                M[i][i] =       volFraction[i] * rhoCp[i] / dt + Hs[i] + HtoCool;
-    //                S[i] =          q * qFraction[i] 
-    //                                + TOld[i] * volFraction[i] * rhoCp[i] / dt 
-    //                                + HtoCool * Tcool;       
-    //            }
-    //        }
-    //
-    //        //- Solve linear system
-    //        solve(T, M, S);
-    //    }
-    //    else
-    //    {
-    //        scalar HtoCool(Hs[1]*Hcool/(Hs[1]+Hcool)); //total H from last node to coolant
-    //        scalar M(volFraction[0] * rhoCp[0] / dt + HtoCool);
-    //        scalar S
-    //                (
-    //                    q * qFraction[0] 
-    //                    + TOld[0] * volFraction[0] * rhoCp[0] / dt 
-    //                    + HtoCool * Tcool
-    //                );
-    //        T = S/M;
-    //    }
+    // okay, code translation is more or less okay, need to review
 
+    return Ok(());
     
 }
 
