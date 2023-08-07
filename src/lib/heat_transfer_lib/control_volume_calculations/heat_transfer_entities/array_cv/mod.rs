@@ -114,6 +114,17 @@ fn sandbox() -> Result<(), error::LinalgError> {
     // this is because ndarray allows you to create non dimensional 
     // arrays of anytime but ndarray-linalg only deals with f64
     // or other numeric types
+    //
+    // one other way is to convert all into f64, and verify the solution 
+    // by mapping it back to its appropriate units 
+    //
+    // so T will be an f64 vector, which should be temperature 
+    // S will be an f64 vector as well 
+    // M will be an f64 matrix 
+    //
+    // so in effect, a custom solve method with appropriate unit 
+    // checks would suffice
+    //
 
     Ok(())
 }
@@ -126,6 +137,9 @@ fn test_linalg(){
 
     sandbox().unwrap();
 }
+
+// can't do this
+//impl<D, U, V> LinalgScalar for uom::si::Quantity<D, U, V> {}
 
 ///// I created an internal version of the power struct 
 ///// that specifically does okay for linalg calculations
