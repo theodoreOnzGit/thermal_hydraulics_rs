@@ -32,6 +32,7 @@ use ndarray_linalg::*;
 use uom::num_traits::Num;
 use uom::si::f64::*;
 use uom::si::power::watt;
+use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::thermal_conductance::watt_per_kelvin;
 
 
@@ -79,26 +80,71 @@ fn sandbox() -> Result<(), error::LinalgError> {
     // surprisingly, we can use thermal conductance as well
     // and hopefully in general, 
 
-    let mut M: Array2<ThermalConductance> = Array::zeros((3,3));
+    let mut thermal_conductance_matrix: Array2<ThermalConductance> = Array::zeros((3,3));
 
-    M[[0,0]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
-    M[[0,1]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
-    M[[0,2]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[0,0]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
+    thermal_conductance_matrix[[0,1]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[0,2]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
 
-    M[[1,0]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
-    M[[1,1]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
-    M[[1,2]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[1,0]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[1,1]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
+    thermal_conductance_matrix[[1,2]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
 
-    M[[2,0]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
-    M[[2,1]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
-    M[[2,2]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
+    thermal_conductance_matrix[[2,0]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[2,1]] = ThermalConductance::new::<watt_per_kelvin>(1.0);
+    thermal_conductance_matrix[[2,2]] = ThermalConductance::new::<watt_per_kelvin>(3.0);
 
     // this is the power vector
-    let mut S: Array1<Power> = Array::zeros(3);
+    let mut power_vector: Array1<Power> = Array::zeros(3);
 
-    S[0] = Power::new::<watt>(1.0);
-    S[1] = Power::new::<watt>(2.0);
-    S[2] = Power::new::<watt>(3.01);
+    power_vector[0] = Power::new::<watt>(1.0);
+    power_vector[1] = Power::new::<watt>(2.0);
+    power_vector[2] = Power::new::<watt>(3.01);
+
+    // I can of course convert it into f64 types 
+    //
+    //
+
+    let get_value_conductance = |conductance: &ThermalConductance| {
+        return conductance.value;
+    };
+
+    let get_value_power = |power: &Power| {
+        return power.value;
+    };
+
+    // i'm allowing non snake case so that the syntax is the same as 
+    // GeN-Foam
+    #[allow(non_snake_case)]
+    let M: Array2<f64> = 
+    thermal_conductance_matrix.map(get_value_conductance);
+
+    #[allow(non_snake_case)]
+    let S: Array1<f64> = power_vector.map(get_value_power);
+    
+    // now for the raw temperature matrix 
+
+    #[allow(non_snake_case)]
+    let T: Array1<f64> = M.solve(&S)?;
+
+    // To check for unit safety, I can just perform one calc
+
+    let _temperature_check: TemperatureInterval = 
+    power_vector[0]/thermal_conductance_matrix[[0,0]];
+    // now map T back to a ThermodynamicTemperature
+    // T is already a ThermodynamicTemperature, so don't need to manually 
+    // convert, do it in kelvin 
+    //
+
+    let convert_f64_to_kelvin_temperature = |float: &f64| {
+        return ThermodynamicTemperature::new::<kelvin>(*float);
+    };
+
+
+    // this is the last step
+    let temperature_vector: Array1<ThermodynamicTemperature> 
+    = T.map(convert_f64_to_kelvin_temperature);
+
 
 
     // now how to solve this? I'll probably have to convert this into 
