@@ -61,3 +61,6 @@ pub mod error_types;
 
 /// thermal diffusivity 
 pub mod thermal_diffusivity;
+
+/// volumetric_heat_capacity 
+pub mod volumetric_heat_capacity;
