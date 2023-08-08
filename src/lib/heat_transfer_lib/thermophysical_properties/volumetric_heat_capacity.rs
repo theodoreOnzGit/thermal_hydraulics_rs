@@ -4,6 +4,7 @@ use super::{Material, density, specific_heat_capacity};
 
 
 /// calculates volumetric_heat_capacity of a material
+#[inline]
 pub fn rho_cp(material: Material, 
     temperature: ThermodynamicTemperature,
     pressure: Pressure) -> Result<VolumetricHeatCapacity,String> {

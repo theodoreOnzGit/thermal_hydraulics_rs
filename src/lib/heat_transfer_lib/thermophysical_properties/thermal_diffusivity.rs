@@ -42,6 +42,7 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 /// 15.62,
 /// epsilon = 0.001);
 /// ```
+#[inline]
 pub fn thermal_diffusivity(material: Material, 
     temperature: ThermodynamicTemperature,
     pressure: Pressure) -> Result<DiffusionCoefficient,String> {

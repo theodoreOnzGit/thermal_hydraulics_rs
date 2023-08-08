@@ -23,6 +23,7 @@ use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
+use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
 
 /// for 1D Cartesian Conduction array,
 /// it is essentially an array control volume of one homogeneous 
@@ -69,9 +70,39 @@ pub struct CartesianConduction1DArray {
 
     // VolumetricHeatCapacity array 
     volumetric_heat_capacity_array: Array1<VolumetricHeatCapacity>,
+
+    /// control volume material 
+    material_control_volume: Material,
+
+    /// control volume pressure 
+    pub pressure_control_volume: Pressure,
 }
 
 impl CartesianConduction1DArray {
+
+    fn get_current_timestep_rho_cp(
+        material: Material,
+        temperature_array_current_timestep: &Array1<ThermodynamicTemperature>,
+        pressure: Pressure,
+    ) -> 
+    Result<Array1<VolumetricHeatCapacity>,String>{
+
+        let rho_cp_array:Array1<VolumetricHeatCapacity> 
+        = temperature_array_current_timestep.map(
+            // here is the closure (function) i shall use
+            |temperature_reference: &ThermodynamicTemperature|{
+                let temperature = *temperature_reference;
+
+                let rho_cp: VolumetricHeatCapacity 
+                = rho_cp( material, temperature, pressure).unwrap();
+
+                return rho_cp;
+            }
+        );
+
+        return Ok(rho_cp_array);
+
+    }
 
     /// calculates the temperature array for the next timestep 
     /// and updates the temperatures and enthalpies of current timestep 
@@ -104,8 +135,16 @@ impl CartesianConduction1DArray {
         &self.temperature_array_current_timestep;
 
         // rhoCp array 
-        let volumetric_heat_capacity_array_reference = 
-        &self.volumetric_heat_capacity_array.clone();
+        // probably get rid of unwrap later
+
+        let material = self.material_control_volume;
+        let pressure = self.pressure_control_volume;
+        let volumetric_heat_capacity_array = 
+        Self::get_current_timestep_rho_cp(
+            material,
+            temperature_array_current_timestep_reference,
+            pressure
+        ).unwrap();
 
         let new_temperature_array: Array1<ThermodynamicTemperature> = 
         advance_timestep_for_specified_conductance_array_cv(
@@ -119,7 +158,7 @@ impl CartesianConduction1DArray {
             temperature_array_current_timestep_reference,
             conductance_array_mut_reference,
             volume_fraction_array_reference,
-            volumetric_heat_capacity_array_reference
+            &volumetric_heat_capacity_array
         ).unwrap();
 
         self.temperature_array_next_timestep = 
