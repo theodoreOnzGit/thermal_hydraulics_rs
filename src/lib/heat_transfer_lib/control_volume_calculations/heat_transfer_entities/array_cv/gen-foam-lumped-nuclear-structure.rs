@@ -605,6 +605,15 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
         T[0] = ThermodynamicTemperature::new::<kelvin>( 
             temperature.value);
     }
+
+    // note that Tmax is set later, now now:
+    ////- Set fields (max and outer)
+    //Tmax_[celli] = T[0] + q * qFraction[0] / Hs[0];
+    //
+    //This isn't quite applicable for interacting with the 
+    // control volumes since it doesn't take into account 
+    // thermal inertia and as such we'll have to adapt it later
+
     // okay, code translation is more or less okay, need to review
 
     return Ok(());
