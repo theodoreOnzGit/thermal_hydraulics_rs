@@ -231,26 +231,32 @@ fn advance_timestep_for_externally_cooled_array_cv_no_insulation(
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn advance_timestep_for_conductance_array_cv(
+fn advance_timestep_for_specified_conductance_array_cv(
     inner_single_cv: &mut SingleCVNode,
     outer_single_cv: &mut SingleCVNode,
-    nodesNumber: usize,
+    inner_nodes: usize, // number of nodes excluding the two CVs
     dt: Time,
     total_volume: Volume,
     q: Power,
+    qFraction: &mut Array1<f64>,
     TOld: &mut Array1<ThermodynamicTemperature>,
-    Hs: &mut Array1<ThermalConductance>, // nodesNumber +1 elements
+    Hs: &mut Array1<ThermalConductance>, // inner_nodes + 3 elements, 
+    // first and last elements of this Hs array are always set to zero
     volFraction: &mut Array1<f64>,
     rhoCp: &mut Array1<VolumetricHeatCapacity>,
-    qFraction: &mut Array1<f64>,
 ) 
 -> Result<Array1<ThermodynamicTemperature>,error::LinalgError>{
+
+    // the user specifies how many inner nodes there are 
+    // nodesNumber is the total number of temperature nodes, 
+    // including the temperatures of the inner_single_cv 
+    // and outer_single_cv
+    let nodesNumber: usize = inner_nodes + 2;
+    
 
     // First things first, we need to set up 
     // how the CV interacts with the internal array
     // here is heat added to CV
-    
-
     let rate_enthalpy_change_vector_inner_node: Vec<Power> = 
     inner_single_cv.rate_enthalpy_change_vector.clone();
     
@@ -323,6 +329,7 @@ fn advance_timestep_for_conductance_array_cv(
         //
         // note that Hs[0] is never used, it may as well be 0
         {
+            Hs[0] = ThermalConductance::new::<watt_per_kelvin>(0.0);
             M[[0,1]] = -Hs[1];
             M[[0,0]] = volFraction[0] * rhoCp[0] * total_volume 
                 / dt + Hs[1];
@@ -358,12 +365,14 @@ fn advance_timestep_for_conductance_array_cv(
             let HtoCool: ThermalConductance = 
             ThermalConductance::new::<watt_per_kelvin>(0.0);
             let Tcool = ThermodynamicTemperature::new::<kelvin>(293.0);
+            Hs[i] = ThermalConductance::new::<watt_per_kelvin>(0.0);
 
             M[[i,i-1]] = volFraction[i] * rhoCp[i] * total_volume / 
                 dt + Hs[i] + HtoCool;
             M[[i,i]] = volFraction[i] * total_volume * rhoCp[i] / dt 
                 + Hs[i] + HtoCool;
             S[i] = q * qFraction[i] 
+                + total_enthalpy_rate_change_outermost_node
                 + TOld[i] * volFraction[i] * rhoCp[i] * total_volume / dt 
                 + HtoCool * Tcool;       
         }
@@ -388,6 +397,9 @@ fn advance_timestep_for_conductance_array_cv(
     }
 
     // Todo: probably need to synchronise error types in future
+    //
+    // I'm calculating the inner and outer CV's new enthalpy
+    // at the current timestep 
     let inner_node_enthalpy_next_timestep: AvailableEnergy = 
     specific_enthalpy(
         inner_single_cv.material_control_volume,
@@ -396,6 +408,16 @@ fn advance_timestep_for_conductance_array_cv(
 
     inner_single_cv.current_timestep_control_volume_specific_enthalpy 
     = inner_node_enthalpy_next_timestep;
+
+    // do the same for the outer node
+    let outer_node_enthalpy_next_timestep: AvailableEnergy = 
+    specific_enthalpy(
+        outer_single_cv.material_control_volume,
+        T[0],
+        outer_single_cv.pressure_control_volume).unwrap();
+
+    outer_single_cv.current_timestep_control_volume_specific_enthalpy 
+    = outer_node_enthalpy_next_timestep;
 
     // I also need to update the TOld vector 
     // This will ensure that the current temperature of the single 
@@ -407,12 +429,18 @@ fn advance_timestep_for_conductance_array_cv(
         }
     );
 
-    // set liquid cv mass 
+    // set liquid cv mass for both cvs,
+    // and clear out both the rate_enthalpy_change_vector  
+    // and the max_timestep_vector
     // probably also need to update error types in future
+    // so I don't keep using unwrap
     inner_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
     inner_single_cv.rate_enthalpy_change_vector.clear();
     inner_single_cv.max_timestep_vector.clear();
 
+    outer_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
+    outer_single_cv.rate_enthalpy_change_vector.clear();
+    outer_single_cv.max_timestep_vector.clear();
 
     return Ok(T);
     
