@@ -39,8 +39,16 @@ use uom::si::thermal_conductance::watt_per_kelvin;
 #[path = "./gen-foam-lumped-nuclear-structure.rs"]
 pub mod gen_foam_lumped_nuclear_structure;
 use gen_foam_lumped_nuclear_structure::solve_conductance_matrix_power_vector;
+/// This module contains adapts the GeN-Foam code for the 
+/// lumped nuclear structure
+/// for the heat transfer module
 pub mod lumped_nuclear_structure_inspired_functions;
 use gen_foam_lumped_nuclear_structure::*;
+
+/// this module contains constructors for an array cv which 
+/// functions as a one dimensional cartesian conduction medium
+pub mod one_dimension_cartesian_conducting_medium;
+pub use one_dimension_cartesian_conducting_medium::*;
 
 
 // Solve `Ax=b`

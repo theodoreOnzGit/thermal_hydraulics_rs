@@ -238,12 +238,12 @@ fn advance_timestep_for_specified_conductance_array_cv(
     dt: Time,
     total_volume: Volume,
     q: Power,
-    qFraction: &mut Array1<f64>,
-    TOld: &mut Array1<ThermodynamicTemperature>,
+    qFraction: &Array1<f64>,
+    TOld: &Array1<ThermodynamicTemperature>,
     Hs: &mut Array1<ThermalConductance>, // inner_nodes + 3 elements, 
     // first and last elements of this Hs array are always set to zero
-    volFraction: &mut Array1<f64>,
-    rhoCp: &mut Array1<VolumetricHeatCapacity>,
+    volFraction: &Array1<f64>,
+    rhoCp: &Array1<VolumetricHeatCapacity>,
 ) 
 -> Result<Array1<ThermodynamicTemperature>,error::LinalgError>{
 
@@ -271,8 +271,6 @@ fn advance_timestep_for_specified_conductance_array_cv(
             total_enthalpy_rate_change_innermost_node += *enthalpy_chg_rate;
         }
 
-    let rate_enthalpy_change_vector_inner_node: Vec<Power> = 
-    inner_single_cv.rate_enthalpy_change_vector.clone();
     
     // do the same for the outermost node
     let rate_enthalpy_change_vector_outer_node: Vec<Power> = 
@@ -289,20 +287,11 @@ fn advance_timestep_for_specified_conductance_array_cv(
             total_enthalpy_rate_change_outermost_node += *enthalpy_chg_rate;
         }
 
-    let rate_enthalpy_change_vector_outer_node: Vec<Power> = 
-    outer_single_cv.rate_enthalpy_change_vector.clone();
 
     // stopped here, need a break
 
 
-    let mut T: Array1<ThermodynamicTemperature> = TOld.map (
-        |temp_kelvin_ptr: &ThermodynamicTemperature| {
-
-            return *temp_kelvin_ptr;
-        }
-
-    );
-
+    let T: Array1<ThermodynamicTemperature>;
     
 
     
@@ -396,51 +385,6 @@ fn advance_timestep_for_specified_conductance_array_cv(
         //    temperature.value);
     }
 
-    // Todo: probably need to synchronise error types in future
-    //
-    // I'm calculating the inner and outer CV's new enthalpy
-    // at the current timestep 
-    let inner_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
-        inner_single_cv.material_control_volume,
-        T[0],
-        inner_single_cv.pressure_control_volume).unwrap();
-
-    inner_single_cv.current_timestep_control_volume_specific_enthalpy 
-    = inner_node_enthalpy_next_timestep;
-
-    // do the same for the outer node
-    let outer_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
-        outer_single_cv.material_control_volume,
-        T[0],
-        outer_single_cv.pressure_control_volume).unwrap();
-
-    outer_single_cv.current_timestep_control_volume_specific_enthalpy 
-    = outer_node_enthalpy_next_timestep;
-
-    // I also need to update the TOld vector 
-    // This will ensure that the current temperature of the single 
-    // cv node is equal to that of the matrix
-
-    *TOld = T.mapv(
-        |temperature_value| {
-            return temperature_value;
-        }
-    );
-
-    // set liquid cv mass for both cvs,
-    // and clear out both the rate_enthalpy_change_vector  
-    // and the max_timestep_vector
-    // probably also need to update error types in future
-    // so I don't keep using unwrap
-    inner_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
-    inner_single_cv.rate_enthalpy_change_vector.clear();
-    inner_single_cv.max_timestep_vector.clear();
-
-    outer_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
-    outer_single_cv.rate_enthalpy_change_vector.clear();
-    outer_single_cv.max_timestep_vector.clear();
 
     return Ok(T);
     
