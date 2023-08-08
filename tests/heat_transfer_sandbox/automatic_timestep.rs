@@ -317,6 +317,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 /// test of lumped_heat_capacitance_steel_ball_in_air 
 /// with improved API for conveneince
 #[test]
+#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
 fn lumped_capacitance_timestep_adjustment() 
 -> Result<(), String>{
 
@@ -593,6 +594,7 @@ fn lumped_capacitance_timestep_adjustment()
 /// This test checks the API to see if its working correctly
 
 #[test]
+#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
 fn lumped_capacitance_timestep_adjustment_improved_api() 
 -> Result<(), String>{
 

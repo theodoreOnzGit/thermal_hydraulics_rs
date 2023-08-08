@@ -378,11 +378,20 @@ use uom::si::time::second;
 use uom::ConstZero;
 use uom::si::volume::cubic_meter;
 
-// 
+/// This is just a direct translation of GeN-Foam code, 
+/// without much thought for adapting it to the module 
+///
+/// The only exception is that unit safe calculations are used
+//
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn matrix_construction() -> Result<(),error::LinalgError>{
+fn translated_matrix_construction() -> Result<(),error::LinalgError>{
+
+    // model as it is performs well for piping insulation cooled by some 
+    // external fluid 
+    // this should be an array cv which represents 
+
     // translating:
     //    scalar dt(mesh_.time().deltaT().value());
     //    scalar Tcool(HTSumi / max(HSumi,SMALL));
@@ -403,8 +412,10 @@ fn matrix_construction() -> Result<(),error::LinalgError>{
     ThermalConductance::new::<watt_per_kelvin>(0.1);
 
     // conductance vector with an array of thermal conductances
-    let Hs: Array1<ThermalConductance> 
-    = Array::zeros(nodesNumber);
+    let mut Hs: Array1<ThermalConductance> 
+    = Array::zeros(nodesNumber+1);
+
+    Hs.fill(ThermalConductance::new::<watt_per_kelvin>(5.0));
 
     // volume fraction vector 
     let volFraction: Array1<f64> = Array::zeros(nodesNumber);
@@ -462,6 +473,11 @@ fn matrix_construction() -> Result<(),error::LinalgError>{
         //        //- Init matrix, source
         //        SquareMatrix<scalar> M(nodesNumber, nodesNumber, Foam::zero());
         //        List<scalar> S(nodesNumber, 0.0);
+        //
+        //        Note here that M is the coefficient matrix in units 
+        //        of thermal conductance
+        //
+        //        S is the source matrix
 
         let mut M: Array2<ThermalConductance> = 
         Array::zeros((nodesNumber, nodesNumber));
@@ -482,6 +498,10 @@ fn matrix_construction() -> Result<(),error::LinalgError>{
         //
         // now, Hs is the conductance vector, but in GeN-Foam this is done 
         // on a per unit volume basis, I'm not quite going to do that 
+        //
+        // second note, the time scheme for this is implicit, not explicit
+        // this makes this scheme quite stable, and larger fourier numbers 
+        // are allowed for timestepping, good news!
         {
             M[[0,1]] = -Hs[1];
             M[[0,0]] = volFraction[0] * rhoCp[0] * total_volume 
@@ -584,6 +604,7 @@ fn matrix_construction() -> Result<(),error::LinalgError>{
 }
 
 #[inline]
+pub (in crate::heat_transfer_lib::control_volume_calculations)
 fn solve_conductance_matrix_power_vector(
     thermal_conductance_matrix: Array2<ThermalConductance>,
     power_vector: Array1<Power>)
@@ -637,4 +658,10 @@ fn solve_conductance_matrix_power_vector(
     = T.map(convert_f64_to_kelvin_temperature);
 
     return Ok(temperature_vector);
+}
+
+#[test]
+fn test_gen_foam_translated_lumped_heat_capacitance() -> 
+Result<(), error::LinalgError>{
+    translated_matrix_construction()
 }
