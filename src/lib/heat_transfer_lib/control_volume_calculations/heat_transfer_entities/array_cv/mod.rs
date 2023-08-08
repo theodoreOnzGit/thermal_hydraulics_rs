@@ -38,8 +38,9 @@ use uom::si::thermal_conductance::watt_per_kelvin;
 /// into rust for the lumped nuclear structure
 #[path = "./gen-foam-lumped-nuclear-structure.rs"]
 pub mod gen_foam_lumped_nuclear_structure;
-use gen_foam_lumped_nuclear_structure::
-solve_conductance_matrix_power_vector;
+use gen_foam_lumped_nuclear_structure::solve_conductance_matrix_power_vector;
+pub mod lumped_nuclear_structure_inspired_functions;
+use gen_foam_lumped_nuclear_structure::*;
 
 
 // Solve `Ax=b`

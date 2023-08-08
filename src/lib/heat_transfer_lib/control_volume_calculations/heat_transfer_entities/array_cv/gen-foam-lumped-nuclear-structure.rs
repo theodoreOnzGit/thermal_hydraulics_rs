@@ -378,11 +378,23 @@ use uom::si::time::second;
 use uom::ConstZero;
 use uom::si::volume::cubic_meter;
 
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
+use crate::heat_transfer_lib::thermophysical_properties::Material;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+
 /// This is just a direct translation of GeN-Foam code, 
-/// without much thought for adapting it to the module 
+/// without much thought for adapting it to the heat transfer module
 ///
 /// The only exception is that unit safe calculations are used
-//
+/// 
+/// Now, this code is meant to calculate the internal temperature 
+/// profile given an innermost temperature node, as well as
+/// an outer cooling boundary condition
+///
+/// Here is the diagram provided from lumpedNuclearStructure.H:
+/// Tmax            T[0]           T[1]          T[n-1]         Tsurface      
+///   | --- H[0] --- | --- H[1] --- | --- H[2] --- |  --- H[n] --- |  
+///
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
@@ -406,10 +418,6 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
 
     let nodesNumber: usize = 10;
     let dt: Time = Time::new::<second>(0.1);
-    let boundary_condition_b_temperature: ThermodynamicTemperature = 
-    ThermodynamicTemperature::new::<kelvin>(283.0);
-    let boundary_condition_b_conductance: ThermalConductance = 
-    ThermalConductance::new::<watt_per_kelvin>(0.1);
 
     // conductance vector with an array of thermal conductances
     let mut Hs: Array1<ThermalConductance> 
@@ -602,6 +610,7 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
     return Ok(());
     
 }
+
 
 #[inline]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
