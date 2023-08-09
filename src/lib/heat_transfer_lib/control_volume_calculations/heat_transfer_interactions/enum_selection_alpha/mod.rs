@@ -178,13 +178,19 @@ fn attach_boundary_condition_to_control_volume_front_serial(
             => calculate_single_cv_node_constant_temperature(
                 single_cv, *bc_temperature, interaction),
         (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_heat_flux_bc_to_front_of_this_cv(
+                *heat_flux,
+                interaction)
         },
         (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_heat_addition_to_front_of_this_cv(
+                *heat_rate,
+                interaction)
         },
         (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_constant_temperature_to_front_of_this_cv(
+                *bc_temperature,
+                interaction)
         },
     };
 
@@ -207,7 +213,7 @@ fn attach_boundary_condition_to_control_volume_front_serial(
 /// for arrayCVs, the boundary condition is attached to the front 
 /// of the control volume
 ///
-/// (back --- cv_1 --- front) ---- (boundary condition)
+/// (boundary condition) ---- (back --- cv_1 --- front) 
 pub (in crate::heat_transfer_lib::control_volume_calculations)
 fn attach_boundary_condition_to_control_volume_back_serial(
     boundary_condition: &mut BCType,
@@ -225,13 +231,20 @@ fn attach_boundary_condition_to_control_volume_back_serial(
             => calculate_single_cv_node_constant_temperature(
                 single_cv, *bc_temperature, interaction),
         (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_heat_flux_bc_to_back_of_this_cv(
+                *heat_flux,
+                interaction)
+
         },
         (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_heat_addition_to_back_of_this_cv(
+                *heat_rate,
+                interaction)
         },
         (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
-            Err("array cv not yet implemented".to_string())
+            cv.link_constant_temperature_to_back_of_this_cv(
+                *bc_temperature,
+                interaction)
         },
     };
 
