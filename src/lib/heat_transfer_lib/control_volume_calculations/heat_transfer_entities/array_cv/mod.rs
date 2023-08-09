@@ -50,6 +50,10 @@ use gen_foam_lumped_nuclear_structure::*;
 pub mod one_dimension_cartesian_conducting_medium;
 pub use one_dimension_cartesian_conducting_medium::*;
 
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+
+use super::{ArrayCVType, SingleCVNode};
+
 
 // Solve `Ax=b`
 fn solve_example_array() -> Result<(), error::LinalgError> {
@@ -151,3 +155,81 @@ fn sandbox() -> Result<(), error::LinalgError> {
     Ok(())
 }
 
+/// contains implementations for arrayCVType 
+impl ArrayCVType {
+
+    /// sets the current temperature vector and other 
+    /// properties based on temperatures calculated
+    /// for the next timestep
+    /// and also other cleanup work
+    pub fn advance_timestep(&mut self) -> Result<(),String>{
+        return Err("not implemented".to_string());
+    }
+    /// gets the bulk temperature for the ArrayCV
+    pub fn get_bulk_temperature(&mut self) -> 
+    Result<ThermodynamicTemperature,String>{
+        return Err("not implemented".to_string());
+    }
+
+    /// gets the maximum timestep for the arrayCV
+    pub fn get_max_timestep(&mut self) -> Result<Time, String>{
+        return Err("not implemented".to_string());
+    }
+
+    /// attaches a single cv to the front,entrance,
+    /// lower or inner side of the 
+    /// array cv
+    /// 
+    ///
+    /// basically in whatever coordinate system, it is the lowest 
+    /// value 
+    ///
+    /// for spheres, the lowest r (inner side)
+    /// for cylinders, the lowest r or z (inner or lower)
+    /// for cartesian, the lowest x, y or z
+    ///
+    /// We use this convention because heat can flow either way 
+    /// and fluid can flow either way. 
+    ///
+    /// So it's better to define higher and lower based upon a coordinate 
+    /// axis
+    pub fn link_single_cv_to_lower_side(&mut self,
+        single_cv_node: &mut SingleCVNode,
+        interaction: HeatTransferInteractionType) -> Result<(), String>{
+        return Err("not implemented".to_string());
+    }
+
+    /// attaches a single cv to the exit,back,
+    /// higher or outer side of the 
+    /// array cv
+    /// 
+    ///
+    /// basically in whatever coordinate system, it is the lowest 
+    /// value 
+    ///
+    /// for spheres, the highest r (outer side)
+    /// for cylinders, the highest r or z (outer or higher)
+    /// for cartesian, the highest x, y or z
+    ///
+    /// We use this convention because heat can flow either way 
+    /// and fluid can flow either way. 
+    ///
+    /// So it's better to define higher and lower based upon a coordinate 
+    /// axis
+    pub fn link_single_cv_to_higher_side(&mut self,
+        single_cv_node: &mut SingleCVNode,
+        interaction: HeatTransferInteractionType) -> Result<(), String>{
+        return Err("not implemented".to_string());
+    }
+
+    /// attaches an array control volume to the front of this 
+    /// array control volume 
+    /// (back --- cv_self --- front) ---- (back --- cv_other --- front)
+    pub fn link_to_the_front_of_this_cv(
+        &mut self,
+        cv_other: &mut ArrayCVType,
+        interaction: HeatTransferInteractionType,) -> Result<(), String>{
+        return Err("not implemented".to_string());
+    }
+
+}

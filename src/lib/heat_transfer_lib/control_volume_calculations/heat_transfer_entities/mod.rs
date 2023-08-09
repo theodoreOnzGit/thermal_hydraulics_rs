@@ -54,7 +54,9 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.advance_timestep(timestep)
                 },
-                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
+                CVType::ArrayCV(cv) => {
+                    cv.advance_timestep()
+                },
             };
 
         return cv_advance_result;
@@ -80,10 +82,9 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.get_temperature()
                 },
-                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
-                //CVType::CartesianConduction1DArray(cv) => {
-                //    cv.get_bulk_temperature()
-                //},
+                CVType::ArrayCV(cv) => {
+                    cv.get_bulk_temperature()
+                },
             };
 
         return cv_temperature_result;
@@ -110,7 +111,9 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.get_max_timestep(max_temperature_change)
                 },
-                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
+                CVType::ArrayCV(cv) => {
+                    cv.get_max_timestep()
+                },
             };
 
         return cv_timestep_result;

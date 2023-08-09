@@ -52,17 +52,32 @@ fn calculate_control_volume_serial(
                 single_cv_1, 
                 single_cv_2, 
                 interaction),
-        (ArrayCV(_), SingleCV(_)) =>
+        // basically like this 
+        //
+        // (array_cv_back -----array_cv --- array_cv_front) --- (single_cv) 
+        (ArrayCV(array_cv), SingleCV(single_cv)) =>
             {
-                Err("Array CV calcs not yet implemented".to_string())
+                array_cv.link_single_cv_to_higher_side(
+                    single_cv,
+                    interaction)
             },
-        (SingleCV(_), ArrayCV(_)) =>
+        // basically like this 
+        //
+        // (single_cv) --- (array_cv_back -----array_cv --- array_cv_front)
+        (SingleCV(single_cv), ArrayCV(array_cv)) =>
             {
-                Err("Array CV calcs not yet implemented".to_string())
+                array_cv.link_single_cv_to_lower_side(
+                    single_cv,
+                    interaction)
             },
-        (ArrayCV(_), ArrayCV(_)) =>
+        // basically like this 
+        //
+        // (back --- cv_1 --- front) ---- (back --- cv_2 --- front)
+        (ArrayCV(array_cv_1), ArrayCV(array_cv_2)) =>
             {
-                Err("Array CV calcs not yet implemented".to_string())
+                array_cv_1.link_to_the_front_of_this_cv(
+                    array_cv_2,
+                    interaction)
             },
     };
 
