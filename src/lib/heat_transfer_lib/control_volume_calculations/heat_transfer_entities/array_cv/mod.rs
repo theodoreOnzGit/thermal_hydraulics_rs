@@ -26,6 +26,8 @@
 
 
 
+use std::f64::consts::PI;
+
 use ndarray::*;
 use ndarray_linalg::*;
 use uom::ConstZero;
@@ -50,7 +52,17 @@ use gen_foam_lumped_nuclear_structure::*;
 pub mod one_dimension_cartesian_conducting_medium;
 pub use one_dimension_cartesian_conducting_medium::*;
 
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::HeatTransferInteractionType;
+
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::
+enum_selection_alpha::
+single_control_volume_timestep_control::
+calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
+
+use crate::heat_transfer_lib::thermophysical_properties::Material::*;
 
 use super::{ArrayCVType, SingleCVNode};
 
@@ -186,7 +198,7 @@ impl ArrayCVType {
     ///
     /// for spheres, the lowest r (inner side)
     /// for cylinders, the lowest r or z (inner or lower)
-    /// for cartesian, the lowest x, y or z
+    /// for cartesian, the lowest x, y or z (back)
     ///
     /// We use this convention because heat can flow either way 
     /// and fluid can flow either way. 
@@ -209,7 +221,7 @@ impl ArrayCVType {
     ///
     /// for spheres, the highest r (outer side)
     /// for cylinders, the highest r or z (outer or higher)
-    /// for cartesian, the highest x, y or z
+    /// for cartesian, the highest x, y or z (front)
     ///
     /// We use this convention because heat can flow either way 
     /// and fluid can flow either way. 
@@ -225,11 +237,124 @@ impl ArrayCVType {
     /// attaches an array control volume to the front of this 
     /// array control volume 
     /// (back --- cv_self --- front) ---- (back --- cv_other --- front)
-    pub fn link_to_the_front_of_this_cv(
+    pub fn link_array_cv_to_the_front_of_this_cv(
         &mut self,
-        cv_other: &mut ArrayCVType,
+        array_cv_other: &mut ArrayCVType,
         interaction: HeatTransferInteractionType,) -> Result<(), String>{
         return Err("not implemented".to_string());
+    }
+
+    pub fn link_heat_flux_bc_to_front_of_this_cv(
+        &mut self,
+        heat_flux_into_control_vol: HeatFluxDensity,
+        interaction: HeatTransferInteractionType) -> Result<(),String>{
+
+        // first, obtain a heat transfer area from the constant heat flux 
+        // BC
+        let heat_transfer_area: Area = match interaction{
+            HeatTransferInteractionType::
+                UserSpecifiedThermalConductance(_) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                SingleCartesianThermalConductanceOneDimension(_, _) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                DualCartesianThermalConductance(_, _) => 
+                return Err("please specify interaction \n 
+                    type as UserSpecifiedHeatFluxCustomArea \n 
+                    or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                DualCylindricalThermalConductance(_, _, _) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or \n
+                    Similar".to_string()),
+
+            HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidOutside(_, _) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidInside(_, _) => 
+                return Err("please specify interaction \n 
+                    type as UserSpecifiedHeatFluxCustomArea \n 
+                    or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                UserSpecifiedHeatAddition => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+
+            HeatTransferInteractionType::
+                DualCartesianThermalConductanceThreeDimension(_) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+            // these interaction types are acceptable
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCustomArea(area) => area,
+
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCylindricalOuterArea(
+                cylinder_length, od) => {
+                    let od: Length = od.into();
+                    let cylinder_length: Length  = cylinder_length.into();
+
+                    let area = PI * od * cylinder_length;
+                    area
+                },
+
+            HeatTransferInteractionType::
+                UserSpecifiedHeatFluxCylindricalInnerArea(
+                cylinder_length, id) => {
+                    let id: Length = id.into();
+                    let cylinder_length: Length  = cylinder_length.into();
+
+                    let area = PI * id * cylinder_length;
+                    area
+
+                },
+
+            HeatTransferInteractionType::
+                UserSpecifiedConvectionResistance(_) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+        };
+
+        // once area is calculated, we can calculate heat flowrate into 
+        // cv
+        let heat_flowrate_into_control_vol: Power = 
+        heat_flux_into_control_vol * heat_transfer_area;
+
+        // then push the power to the front control volume, 
+
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                cartesian_array_cv.
+                    outer_single_cv.rate_enthalpy_change_vector 
+                    .push(heat_flowrate_into_control_vol);
+                let cv_material = cartesian_array_cv.outer_single_cv.material_control_volume;
+                match cv_material {
+                    Solid(_) => {
+                        // in this case, we just have one cv and one bc 
+                        // so we only consider thermal inertia of this cv 
+                        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                            &mut cartesian_array_cv.outer_single_cv,
+                            interaction)?;
+                        ()
+        },
+        Liquid(_) => {
+            todo!("need to calculate convection based time scales")
+        },
+    }
+            },
+        }
+
+        return Ok(());
     }
 
 }

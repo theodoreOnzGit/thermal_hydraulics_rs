@@ -55,8 +55,31 @@ heat_transfer_entities::CVType;
 /// material properties at every timestep
 #[derive(Debug,Clone,PartialEq,Default)]
 pub struct CartesianConduction1DArray {
-    inner_single_cv: SingleCVNode,
-    outer_single_cv: SingleCVNode,
+
+
+    /// represents the inner (lower r) control volume end 
+    /// or back (lower x) control volume
+    /// to think of which is front and back, we think of coordinates 
+    /// imagine a car or train cruising along in a positive x direction
+    ///
+    /// //----------------------------------------------> x 
+    ///
+    /// //            (back --- train/car --- front)
+    /// //            lower x                 higher x
+    ///
+    pub inner_single_cv: SingleCVNode,
+    /// represents the outer (higher r) control volume end 
+    /// or front (higher x) control volume
+    ///
+    /// to think of which is front and back, we think of coordinates 
+    /// imagine a car or train cruising along in a positive x direction
+    ///
+    /// //----------------------------------------------> x 
+    ///
+    /// //            (back --- train/car --- front)
+    /// //            lower x                 higher x
+    ///
+    pub outer_single_cv: SingleCVNode,
 
     // number of ADDITIONAL nodes within the array 
     // in addition to the inner and outer single cvs
