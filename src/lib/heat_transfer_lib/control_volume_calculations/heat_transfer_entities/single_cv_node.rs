@@ -53,7 +53,7 @@ use super::HeatTransferEntity;
 ///
 /// 
 ///
-#[derive(Debug,Clone,PartialEq)]
+#[derive(Debug,Clone,PartialEq,Default)]
 pub struct SingleCVNode {
 
     /// specific enthalpy at present timestep, set using 

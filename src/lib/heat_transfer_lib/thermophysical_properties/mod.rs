@@ -14,6 +14,13 @@ pub enum Material {
     Liquid(LiquidMaterial)
 }
 
+impl Default for Material{
+    fn default() -> Self {
+        // defaults to copper 
+        return Self::Solid(SolidMaterial::Copper);
+    }
+}
+
 
 /// Contains a selection of solids with predefined material properties
 #[derive(Debug,Clone,Copy,PartialEq)]

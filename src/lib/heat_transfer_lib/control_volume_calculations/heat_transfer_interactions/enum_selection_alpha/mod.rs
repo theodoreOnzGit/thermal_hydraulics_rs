@@ -53,11 +53,17 @@ fn calculate_control_volume_serial(
                 single_cv_2, 
                 interaction),
         (ArrayCV, SingleCV(_)) =>
-            Err("Array CV calcs not yet implemented".to_string()),
+            {
+                Err("Array CV calcs not yet implemented".to_string())
+            },
         (SingleCV(_), ArrayCV) =>
-            Err("Array CV calcs not yet implemented".to_string()),
+            {
+                Err("Array CV calcs not yet implemented".to_string())
+            },
         (ArrayCV, ArrayCV) =>
-            Err("Array CV calcs not yet implemented".to_string()),
+            {
+                Err("Array CV calcs not yet implemented".to_string())
+            },
     };
 
 

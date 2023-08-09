@@ -7,9 +7,12 @@ use uom::si::f64::*;
 use uom::si::length::meter;
 use uom::si::power::watt;
 use uom::si::pressure::atmosphere;
+use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::second;
 
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::single_cv_node;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::calculations::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
@@ -25,6 +28,9 @@ thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_entities::CVType;
 
 /// for 1D Cartesian Conduction array,
 /// it is essentially an array control volume of one homogeneous 
@@ -46,7 +52,7 @@ use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacit
 ///
 /// the important methods are to advance timestep, and to update 
 /// material properties at every timestep
-#[derive(Debug,Clone,PartialEq)]
+#[derive(Debug,Clone,PartialEq,Default)]
 pub struct CartesianConduction1DArray {
     inner_single_cv: SingleCVNode,
     outer_single_cv: SingleCVNode,
@@ -75,6 +81,82 @@ pub struct CartesianConduction1DArray {
 }
 
 impl CartesianConduction1DArray {
+
+
+    /// constructs a new instance of the CartesianConduction1DArray
+    pub fn new(material: Material,
+    initial_uniform_temperature: ThermodynamicTemperature,
+    uniform_pressure: Pressure,
+    inner_nodes: usize,
+    total_length: Length) -> Result<HeatTransferEntity, String> {
+        // we start building the 1Darray object by a default first
+        let mut array_to_return = Self::default();
+
+        // set the scalars first, they are the easiest
+        array_to_return.material_control_volume = material;
+        array_to_return.inner_nodes = inner_nodes;
+        array_to_return.pressure_control_volume = uniform_pressure;
+        array_to_return.total_length = total_length;
+
+        // by now, we should be able to set the volume fraction array 
+        let vol_frac_array = 
+            array_to_return.construct_volume_fraction_array().unwrap();
+
+        array_to_return.volume_fraction_array = vol_frac_array.clone();
+
+        // set the temperature arrays
+        let number_of_temperature_nodes: usize = inner_nodes + 2;
+
+        let mut initial_temperature_array: 
+        Array1<ThermodynamicTemperature> = 
+            Array::default(number_of_temperature_nodes);
+
+        initial_temperature_array.fill(initial_uniform_temperature);
+
+        array_to_return.temperature_array_current_timestep = 
+            initial_temperature_array.clone();
+
+        array_to_return.temperature_array_next_timestep = 
+            initial_temperature_array;
+
+        // lets set the remaining control volumes
+        // 
+        // for a 1D volume, the volume fraction is the same 
+        // as the length fraction
+        let boundary_length: Length = vol_frac_array[0] * total_length;
+
+        let boundary_cv_entity: HeatTransferEntity = 
+        SingleCVNode::new_one_dimension_volume(
+            boundary_length,
+            material,
+            initial_uniform_temperature,
+            uniform_pressure)?;
+
+        let boundary_cv: SingleCVNode = match boundary_cv_entity {
+            HeatTransferEntity::ControlVolume(cv) => {
+
+                match cv {
+                    CVType::SingleCV(cv) => {
+                        cv
+                    },
+                    _ => panic!(),
+                }
+
+            },
+            _ => panic!(),
+        };
+
+        array_to_return.inner_single_cv = boundary_cv.clone();
+        array_to_return.outer_single_cv = boundary_cv.clone();
+
+        // now package as an array cv 
+
+
+
+
+
+        todo!();
+    }
 
     fn get_current_timestep_rho_cp(
         material: Material,
@@ -131,6 +213,9 @@ impl CartesianConduction1DArray {
     ///
     /// For example H[1] is contributed to by kA/(0.5L) for T[0] and
     /// kA/(0.5L) for T[1]
+    ///
+    /// The temperatures of T[0] and T[n-1] correspond to surface 
+    /// temperatures
     ///
     ///
     ///
@@ -218,6 +303,74 @@ impl CartesianConduction1DArray {
         }
         // ok done!
         Ok(thermal_conductance_array)
+    }
+
+    /// constructor method which helps set the volume fraction array
+    /// This returns a volume fraction array
+    /// based on the following diagram:
+    ///
+    ///
+    ///
+    /// Tmax            T[0]           T[1]          T[n-1]         T_ambient
+    /// [ignored]       T_innersingleCV             T_outersingleCV [ignored]
+    ///   | --- H[0] --- | --- H[1] --- | --- H[2] --- |  --- H[n] --- |  
+    ///        [ignored]                                    [ignore]
+    /// 
+    ///
+    /// Between each temperature node, there is a thermal resistor 
+    /// each resistor has resistance equivalent to delta x 
+    /// long 
+    ///
+    /// where delta x = total length / number of resistors
+
+    /// the volume fraction rray helps to determine the thermal inertia 
+    /// of each node 
+    /// now each node would have a thermal inertia corresponding to 
+    /// a thickness of delta_x 
+    ///
+    /// However, the nodes at both boundaries would have a length 
+    /// equivalent to half of delta_x because they are at the boundaries
+    /// These would constitute half the thermal inertia of a typical node 
+    fn construct_volume_fraction_array(&mut self) 
+    -> Result<Array1<f64>, String> {
+
+        let number_of_temperature_nodes: usize = 
+        self.inner_nodes + 2;
+
+        let number_of_thermal_resistors: usize = 
+        number_of_temperature_nodes - 1;
+
+        let delta_x: Length = self.total_length/
+        number_of_thermal_resistors as f64;
+
+        // now we can compute the volume fraction based on length 
+        // because the basis cross sectional area is the same 
+        // throughout
+
+        let volume_fraction_per_inner_node: f64 = 
+        (delta_x/self.total_length).value;
+
+        let volume_fraction_boundary_node: f64 
+        = volume_fraction_per_inner_node * 0.5;
+
+        let mut volume_fraction_array: Array1<f64> = 
+        Array::zeros(number_of_temperature_nodes);
+
+        // set all volume fractions to the inner node volume fractions
+        volume_fraction_array.fill(volume_fraction_per_inner_node);
+
+        // set the boundary nodes to half that fraction 
+        volume_fraction_array[0] = volume_fraction_boundary_node;
+        volume_fraction_array[number_of_temperature_nodes-1] = 
+            volume_fraction_boundary_node;
+
+        // assert if they add up to 1.0
+
+        let vol_fraction_sum: f64 = volume_fraction_array.sum();
+        assert_eq!(1.0, vol_fraction_sum);
+
+
+        return Ok(volume_fraction_array);
     }
 
     /// calculates the temperature array for the next timestep 
@@ -351,5 +504,46 @@ impl CartesianConduction1DArray {
 
         self.temperature_array_current_timestep = new_temperature_array;
         Ok(())
+    }
+
+    #[inline]
+    pub fn get_bulk_temperature(&mut self) -> 
+    Result<ThermodynamicTemperature,String>{
+
+        // for now, doing it quick and dirty, i'm going to obtain a volume 
+        // averaged temperature 
+
+        let volume_fraction_array_reference = 
+        &self.volume_fraction_array;
+        let temperature_array_reference = 
+        &self.temperature_array_current_timestep;
+
+        let mut vol_averaged_temperature_array_values: Array1<f64> 
+        = Array::default(temperature_array_reference.len());
+
+        for (idx, temperature_reference) in 
+            temperature_array_reference.iter().enumerate() {
+                //get the vol fraction 
+
+                let vol_fraction: f64 = 
+                volume_fraction_array_reference[idx];
+
+                let vol_avg_temperature_component: f64
+                = vol_fraction * (temperature_reference.get::<kelvin>());
+
+                vol_averaged_temperature_array_values[idx] = 
+                    vol_avg_temperature_component;
+
+            }
+
+        // sum it all up (these are float values) 
+
+        let vol_averaged_temperature_kelvin: f64 
+        = vol_averaged_temperature_array_values.sum();
+
+        return Ok(ThermodynamicTemperature::new
+            ::<kelvin>(vol_averaged_temperature_kelvin));
+
+
     }
 }

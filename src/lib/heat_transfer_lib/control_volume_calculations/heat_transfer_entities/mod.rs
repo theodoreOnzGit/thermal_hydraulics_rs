@@ -55,6 +55,9 @@ impl HeatTransferEntity {
                     single_cv.advance_timestep(timestep)
                 },
                 CVType::ArrayCV => return Err("not implemented".to_string()),
+                //CVType::CartesianConduction1DArray(cv) => {
+                //    cv.advance_timestep(timestep)
+                //},
             };
 
         return cv_advance_result;
@@ -81,6 +84,9 @@ impl HeatTransferEntity {
                     single_cv.get_temperature()
                 },
                 CVType::ArrayCV => return Err("not implemented".to_string()),
+                //CVType::CartesianConduction1DArray(cv) => {
+                //    cv.get_bulk_temperature()
+                //},
             };
 
         return cv_temperature_result;
@@ -169,9 +175,15 @@ pub enum CVType {
     /// This CV is the most basic,  it can be represented by a single 
     /// point or node
     SingleCV(SingleCVNode),
-    /// Array CVs are collections of SingleCVs, but do not require the 
+    /// Array CVs are collections of SingleCVs, 
+    /// or discretised singleCVs
+    /// but do not require the 
     /// user to manually specify the connections between the SingleCVs
     ArrayCV,
+    // This is one type of array CV which contains a 1D 
+    // conduction model with one material type
+    // standby for implementation
+    //CartesianConduction1DArray(CartesianConduction1DArray),
 }
 
 /// Contains all the types of Boundary Conditions (BCs) you can use 
