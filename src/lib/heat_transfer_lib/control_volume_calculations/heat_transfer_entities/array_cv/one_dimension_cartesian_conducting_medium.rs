@@ -338,6 +338,8 @@ impl CartesianConduction1DArray {
     fn construct_volume_fraction_array(&mut self) 
     -> Result<Array1<f64>, String> {
 
+        todo!("recompute thermal inertia for the volumes");
+
         let number_of_temperature_nodes: usize = 
         self.inner_nodes + 2;
 

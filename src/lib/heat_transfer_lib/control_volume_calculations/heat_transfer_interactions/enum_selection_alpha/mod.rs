@@ -172,7 +172,15 @@ fn calculate_control_volume_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_single_cv_node_constant_temperature(
                 single_cv, *bc_temperature, interaction),
-        (ArrayCV(_),_) => Err("array cv not yet implemented".to_string()),
+        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
+            Err("array cv not yet implemented".to_string())
+        },
     };
 
     return cv_bc_result;
@@ -196,7 +204,15 @@ fn calculate_timestep_control_volume_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 single_cv, interaction),
-        (ArrayCV(_),_) => Err("array cv not yet implemented".to_string()),
+        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
+            Err("array cv not yet implemented".to_string())
+        },
     };
 
     return cv_bc_result;
