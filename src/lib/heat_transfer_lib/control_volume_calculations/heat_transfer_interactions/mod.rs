@@ -117,11 +117,11 @@ pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
                 interaction),
         (HeatTransferEntity::BoundaryConditions(bc_type),
             HeatTransferEntity::ControlVolume(cv_type)) =>
-            calculate_control_volume_boundary_condition_serial(
-                cv_type, bc_type, interaction),
+            attach_boundary_condition_to_control_volume_back_serial(
+                bc_type, cv_type, interaction),
         (HeatTransferEntity::ControlVolume(cv_type),
             HeatTransferEntity::BoundaryConditions(bc_type)) =>
-            calculate_control_volume_boundary_condition_serial(
+            attach_boundary_condition_to_control_volume_front_serial(
                 cv_type, bc_type, interaction),
         (HeatTransferEntity::BoundaryConditions(bc_type_1),
             HeatTransferEntity::BoundaryConditions(bc_type_2)) =>
@@ -157,26 +157,32 @@ pub fn calculate_timescales_for_heat_transfer_entity(
     let heat_transfer_entity_timestep_result = match (entity_1,entity_2) {
         (HeatTransferEntity::ControlVolume(cv_type_1),
             HeatTransferEntity::ControlVolume(cv_type_2)) =>
-            calculate_timestep_control_volume_serial(
-                cv_type_1, 
-                cv_type_2, 
-                interaction),
+            {
+                calculate_timestep_control_volume_serial(
+                            cv_type_1, 
+                            cv_type_2, 
+                            interaction)
+            },
         (HeatTransferEntity::BoundaryConditions(bc_type),
             HeatTransferEntity::ControlVolume(cv_type)) =>
             {
-                calculate_timestep_control_volume_boundary_condition_serial(
-                    cv_type, bc_type, interaction)
+                calculate_timestep_control_volume_back_to_boundary_condition_serial(
+                    bc_type, cv_type, interaction)
             },
         (HeatTransferEntity::ControlVolume(cv_type),
             HeatTransferEntity::BoundaryConditions(bc_type)) =>
             {
-                calculate_timestep_control_volume_boundary_condition_serial(
+                calculate_timestep_control_volume_front_to_boundary_condition_serial(
                     cv_type, bc_type, interaction)
             },
-        (HeatTransferEntity::BoundaryConditions(_bc_type_1),
-            HeatTransferEntity::BoundaryConditions(_bc_type_2)) =>
-            Err("interactions between BCs doesn't \n 
-                need a timescale".to_string())
+        (HeatTransferEntity::BoundaryConditions(bc_type_1),
+            HeatTransferEntity::BoundaryConditions(bc_type_2)) =>
+            {
+                calculate_timestep_boundary_condition_serial(
+                    bc_type_1,
+                    bc_type_2,
+                    interaction)
+            }
     };
 
 

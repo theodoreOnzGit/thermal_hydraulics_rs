@@ -155,9 +155,14 @@ fn calculate_timestep_boundary_condition_serial(
 ///
 /// For each case, there should be a function
 /// to handle each case
+/// 
+/// for arrayCVs, the boundary condition is attached to the front 
+/// of the control volume
 ///
+/// (back --- cv_1 --- front) ---- (boundary condition)
+#[inline]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn calculate_control_volume_boundary_condition_serial(
+fn attach_boundary_condition_to_control_volume_front_serial(
     control_vol: &mut CVType,
     boundary_condition: &mut BCType,
     interaction: HeatTransferInteractionType) -> Result<(),String> {
@@ -186,10 +191,62 @@ fn calculate_control_volume_boundary_condition_serial(
     return cv_bc_result;
 }
 
-// calculates timestep for control voluem and boundary condition 
-// in serial
+/// the job of this function is to handle interactions between 
+/// a control_volume and a boundary condition
+///
+/// here we have to handle some BC types, 
+/// these are the most basic:
+/// 1. constant heat flux
+/// 2. constant temperature
+/// 3. constant heat addition
+///
+/// For each case, there should be a function
+/// to handle each case,
+/// for single CVs, it does pretty much the same job
+/// 
+/// for arrayCVs, the boundary condition is attached to the front 
+/// of the control volume
+///
+/// (back --- cv_1 --- front) ---- (boundary condition)
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn calculate_timestep_control_volume_boundary_condition_serial(
+fn attach_boundary_condition_to_control_volume_back_serial(
+    boundary_condition: &mut BCType,
+    control_vol: &mut CVType,
+    interaction: HeatTransferInteractionType) -> Result<(),String> {
+
+    let cv_bc_result = match (control_vol, boundary_condition) {
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
+            => calculate_single_cv_node_constant_heat_addition(
+                single_cv, *heat_rate, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
+            => calculate_single_cv_node_constant_heat_flux(
+                single_cv, *heat_flux, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
+            => calculate_single_cv_node_constant_temperature(
+                single_cv, *bc_temperature, interaction),
+        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+    };
+
+    return cv_bc_result;
+}
+
+
+/// calculates timestep for control voluem and boundary condition 
+/// in serial
+/// for arrayCVs, the boundary condition is attached to the front 
+/// of the control volume
+///
+/// (back --- cv_1 --- front) ---- (boundary condition)
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
     control_vol: &mut CVType,
     boundary_condition: &mut BCType,
     interaction: HeatTransferInteractionType) -> Result<Time,String> {
@@ -218,6 +275,42 @@ fn calculate_timestep_control_volume_boundary_condition_serial(
     return cv_bc_result;
 }
 
+/// calculates timestep for control voluem and boundary condition 
+/// in serial
+/// for arrayCVs, the boundary condition is attached to the back
+/// of the control volume
+///
+/// (boundary condition) ----- (back --- cv_1 --- front) 
+///
+pub (in crate::heat_transfer_lib::control_volume_calculations)
+fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
+    boundary_condition: &mut BCType,
+    control_vol: &mut CVType,
+    interaction: HeatTransferInteractionType) -> Result<Time,String> {
+
+    let cv_bc_result = match (control_vol, boundary_condition) {
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
+            => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                single_cv, interaction),
+        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(heat_rate)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+        (ArrayCV(cv),BCType::UserSpecifiedTemperature(bc_temperature)) => {
+            Err("array cv not yet implemented".to_string())
+        },
+    };
+
+    return cv_bc_result;
+}
 
 /// this is thermal conductance function based on interaction type 
 /// may want to move the calculation bits to the calculation module in 
