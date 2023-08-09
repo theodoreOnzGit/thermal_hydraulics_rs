@@ -264,6 +264,29 @@ fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
     boundary_condition: &mut BCType,
     interaction: HeatTransferInteractionType) -> Result<Time,String> {
 
+    // to prevent myself from too much boiler plate code,
+    // i'm nesting a closure here 
+    //
+    // this will extract the front control volume (or outer control 
+    // volume) and calculate the timestep based on that
+    let match_array_cv_front = |array_cv_type: &mut ArrayCVType|{
+
+        match array_cv_type {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                // get a mutable reference for the front cv 
+
+                let back_cv_reference = 
+                &mut cartesian_array_cv.outer_single_cv;
+
+
+                // once that is done, use the same function
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    back_cv_reference, interaction)
+
+            },
+        }
+    };
+
     let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(_heat_rate)) 
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
@@ -274,14 +297,22 @@ fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(_bc_temperature))
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 single_cv, interaction),
-        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(_heat_flux)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedHeatFlux(_heat_flux)) => {
+            // match the cv to the cv type, extract the back boundary 
+            // condition 
+            match_array_cv_front(array_cv_type)
         },
-        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(_heat_rate)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedHeatAddition(_heat_rate)) => {
+            // match the cv to the cv type, extract the back boundary 
+            // condition 
+
+            match_array_cv_front(array_cv_type)
         },
-        (ArrayCV(cv),BCType::UserSpecifiedTemperature(_bc_temperature)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedTemperature(_bc_temperature)) => {
+            // match the cv to the cv type, extract the back boundary 
+            // condition 
+
+            match_array_cv_front(array_cv_type)
         },
     };
 
@@ -301,6 +332,32 @@ fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
     control_vol: &mut CVType,
     interaction: HeatTransferInteractionType) -> Result<Time,String> {
 
+    // to prevent myself from too much boiler plate code,
+    // i'm nesting a closure here 
+    //
+    // this will extract the back control volume (or outer control 
+    // volume) and calculate the timestep based on that
+    let match_array_cv_back = |array_cv_type: &mut ArrayCVType|{
+
+        // match the cv to the cv type, extract the back boundary 
+        // condition 
+
+        match array_cv_type {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                // get a mutable reference for the back cv 
+
+                let back_cv_reference = 
+                &mut cartesian_array_cv.inner_single_cv;
+
+
+                // once that is done, recycle the condition
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    back_cv_reference, interaction)
+
+            },
+        }
+    };
+
     let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(_heat_rate)) 
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
@@ -311,14 +368,14 @@ fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(_bc_temperature))
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 single_cv, interaction),
-        (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(_heat_flux)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedHeatFlux(_heat_flux)) => {
+            match_array_cv_back(array_cv_type)
         },
-        (ArrayCV(cv),BCType::UserSpecifiedHeatAddition(_heat_rate)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedHeatAddition(_heat_rate)) => {
+            match_array_cv_back(array_cv_type)
         },
-        (ArrayCV(cv),BCType::UserSpecifiedTemperature(_bc_temperature)) => {
-            Err("array cv not yet implemented".to_string())
+        (ArrayCV(array_cv_type),BCType::UserSpecifiedTemperature(_bc_temperature)) => {
+            match_array_cv_back(array_cv_type)
         },
     };
 
