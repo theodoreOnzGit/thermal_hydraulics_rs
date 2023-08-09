@@ -54,7 +54,7 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.advance_timestep(timestep)
                 },
-                CVType::ArrayCV => return Err("not implemented".to_string()),
+                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
                 //CVType::CartesianConduction1DArray(cv) => {
                 //    cv.advance_timestep(timestep)
                 //},
@@ -83,7 +83,7 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.get_temperature()
                 },
-                CVType::ArrayCV => return Err("not implemented".to_string()),
+                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
                 //CVType::CartesianConduction1DArray(cv) => {
                 //    cv.get_bulk_temperature()
                 //},
@@ -113,7 +113,7 @@ impl HeatTransferEntity {
                 CVType::SingleCV(single_cv) => {
                     single_cv.get_max_timestep(max_temperature_change)
                 },
-                CVType::ArrayCV => return Err("not implemented".to_string()),
+                CVType::ArrayCV(_) => return Err("not implemented".to_string()),
             };
 
         return cv_timestep_result;
@@ -179,11 +179,16 @@ pub enum CVType {
     /// or discretised singleCVs
     /// but do not require the 
     /// user to manually specify the connections between the SingleCVs
-    ArrayCV,
-    // This is one type of array CV which contains a 1D 
-    // conduction model with one material type
-    // standby for implementation
-    //CartesianConduction1DArray(CartesianConduction1DArray),
+    ArrayCV(ArrayCVType),
+}
+
+/// Contains types of array control volumes
+#[derive(Debug,Clone,PartialEq)]
+pub enum ArrayCVType {
+    /// This is one type of array CV which contains a 1D 
+    /// conduction model with one material type
+    /// standby for implementation
+    Cartesian1D(CartesianConduction1DArray),
 }
 
 /// Contains all the types of Boundary Conditions (BCs) you can use 

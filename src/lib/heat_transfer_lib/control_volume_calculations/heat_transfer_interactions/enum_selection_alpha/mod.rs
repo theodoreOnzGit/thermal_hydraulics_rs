@@ -52,15 +52,15 @@ fn calculate_control_volume_serial(
                 single_cv_1, 
                 single_cv_2, 
                 interaction),
-        (ArrayCV, SingleCV(_)) =>
+        (ArrayCV(_), SingleCV(_)) =>
             {
                 Err("Array CV calcs not yet implemented".to_string())
             },
-        (SingleCV(_), ArrayCV) =>
+        (SingleCV(_), ArrayCV(_)) =>
             {
                 Err("Array CV calcs not yet implemented".to_string())
             },
-        (ArrayCV, ArrayCV) =>
+        (ArrayCV(_), ArrayCV(_)) =>
             {
                 Err("Array CV calcs not yet implemented".to_string())
             },
@@ -90,11 +90,11 @@ fn calculate_timestep_control_volume_serial(
                 single_cv_1, 
                 single_cv_2, 
                 interaction),
-        (ArrayCV, SingleCV(_)) =>
+        (ArrayCV(_), SingleCV(_)) =>
             Err("Array CV calcs not yet implemented".to_string()),
-        (SingleCV(_), ArrayCV) =>
+        (SingleCV(_), ArrayCV(_)) =>
             Err("Array CV calcs not yet implemented".to_string()),
-        (ArrayCV, ArrayCV) =>
+        (ArrayCV(_), ArrayCV(_)) =>
             Err("Array CV calcs not yet implemented".to_string()),
     };
 
@@ -157,7 +157,7 @@ fn calculate_control_volume_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_single_cv_node_constant_temperature(
                 single_cv, *bc_temperature, interaction),
-        (ArrayCV,_) => Err("array cv not yet implemented".to_string()),
+        (ArrayCV(_),_) => Err("array cv not yet implemented".to_string()),
     };
 
     return cv_bc_result;
@@ -181,7 +181,7 @@ fn calculate_timestep_control_volume_boundary_condition_serial(
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 single_cv, interaction),
-        (ArrayCV,_) => Err("array cv not yet implemented".to_string()),
+        (ArrayCV(_),_) => Err("array cv not yet implemented".to_string()),
     };
 
     return cv_bc_result;
