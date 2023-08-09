@@ -55,9 +55,6 @@ impl HeatTransferEntity {
                     single_cv.advance_timestep(timestep)
                 },
                 CVType::ArrayCV(_) => return Err("not implemented".to_string()),
-                //CVType::CartesianConduction1DArray(cv) => {
-                //    cv.advance_timestep(timestep)
-                //},
             };
 
         return cv_advance_result;

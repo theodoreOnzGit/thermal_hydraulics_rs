@@ -10,6 +10,7 @@ use uom::si::pressure::atmosphere;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::second;
 
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::single_cv_node;
@@ -151,11 +152,14 @@ impl CartesianConduction1DArray {
 
         // now package as an array cv 
 
+        let heat_transfer_entity 
+        = HeatTransferEntity::ControlVolume(
+            CVType::ArrayCV(
+                ArrayCVType::Cartesian1D(array_to_return)
+            )
+        );
 
-
-
-
-        todo!();
+        return Ok(heat_transfer_entity);
     }
 
     fn get_current_timestep_rho_cp(
