@@ -244,6 +244,38 @@ impl CartesianConduction1DArray {
     /// The temperatures of T[0] and T[n-1] correspond to surface 
     /// temperatures
     ///
+    /// The trick is in calculating L, the node to node distance 
+    /// for purposes of calculating thermal resistance 
+    ///
+    /// consider a four node system:
+    ///
+    /// surf1 [0]    [1]     [2]     [3]    surf2
+    /// | --- * ------- x ------ x ------ * --- |
+    ///
+    /// |<----------- total_length ------------>|
+    ///
+    /// Now L would be the full length, however 
+    /// the total length of the thermal resistors 
+    /// would be slightly less than total_length because we are not 
+    /// measuring the full thermal resistance from surface 1 to 
+    /// surface 2 
+    ///
+    /// the full length of the thermal resistors would only account 
+    /// for node [0] to node [3]
+    ///
+    /// so we can find the node to node distance assuming the nodes 
+    /// are spaced equally apart and the distance from the boundary 
+    /// nodes to surfaces are about 0.5L
+    ///
+    /// surf1 [0]    [1]     [2]     [3]    surf2
+    /// | --- * ------- x ------ x ------ * --- |
+    ///  0.5L     L         L        L      0.5L
+    /// |<----------- total_length ------------>|
+    ///
+    /// So the total length is 4L, and 4 is the number of temperature 
+    /// nodes
+    ///
+    /// however, each thermal resistor is connected by a resistance of L
     ///
     ///
     fn get_current_timestep_conductance_array(
@@ -275,11 +307,14 @@ impl CartesianConduction1DArray {
         );
         // now we are dealing with a number of thermal resistors 
 
+        let number_of_temperature_nodes: usize = 
+        thermal_conductivity_array.len();
+
         let number_of_thermal_resistors: usize = 
-        thermal_conductivity_array.len() - 1;
+        number_of_temperature_nodes - 1;
 
         let delta_x: Length = total_length/
-        number_of_thermal_resistors as f64;
+        number_of_temperature_nodes as f64;
 
         let mut thermal_conductance_vector: Vec<ThermalConductance> 
         = vec![];
@@ -355,22 +390,37 @@ impl CartesianConduction1DArray {
     /// now each node would have a thermal inertia corresponding to 
     /// a thickness of delta_x 
     ///
+    ///
     /// However, the nodes at both boundaries would have a length 
     /// equivalent to half of delta_x because they are at the boundaries
-    /// These would constitute half the thermal inertia of a typical node 
+    /// This would only apply to the thermal resistor
+    ///
+    /// In terms of thermal inertia, this would not make a difference 
+    /// because the last node would have the same thermal inertia as 
+    /// any other node. Therefore, length is evenly divided among all 
+    /// nodes
+    ///
+    /// Consider again a four node system with the thermal resistors 
+    /// of length L within the bulk and 0.5L at the boundary
+    ///
+    /// surf1 [0]    [1]     [2]     [3]    surf2
+    /// | --- * ------- x ------ x ------ * --- |
+    ///  0.5L     L         L        L      0.5L
+    /// |<----------- total_length ------------>|
+    ///
+    /// We must account for the full thermal inertia of the system,
+    /// and therefore, the whole length is taken into account. 
+    /// The thermal inertia of each array is represented by length L
+    ///
+    ///
     fn construct_volume_fraction_array(&mut self) 
     -> Result<Array1<f64>, String> {
-
-        todo!("recompute thermal inertia for the volumes");
 
         let number_of_temperature_nodes: usize = 
         self.inner_nodes + 2;
 
-        let number_of_thermal_resistors: usize = 
-        number_of_temperature_nodes - 1;
-
         let delta_x: Length = self.total_length/
-        number_of_thermal_resistors as f64;
+        number_of_temperature_nodes as f64;
 
         // now we can compute the volume fraction based on length 
         // because the basis cross sectional area is the same 
@@ -379,19 +429,11 @@ impl CartesianConduction1DArray {
         let volume_fraction_per_inner_node: f64 = 
         (delta_x/self.total_length).value;
 
-        let volume_fraction_boundary_node: f64 
-        = volume_fraction_per_inner_node * 0.5;
-
         let mut volume_fraction_array: Array1<f64> = 
         Array::zeros(number_of_temperature_nodes);
 
         // set all volume fractions to the inner node volume fractions
         volume_fraction_array.fill(volume_fraction_per_inner_node);
-
-        // set the boundary nodes to half that fraction 
-        volume_fraction_array[0] = volume_fraction_boundary_node;
-        volume_fraction_array[number_of_temperature_nodes-1] = 
-            volume_fraction_boundary_node;
 
         // assert if they add up to 1.0
 
@@ -535,6 +577,11 @@ impl CartesianConduction1DArray {
         Ok(())
     }
 
+    /// gets bulk temperature of the array cv based on volume fraction 
+    /// now, for solid and liquid, that would be sort of 
+    /// a good approximation since the boussinesq approximation
+    /// may work well for liquids
+    ///
     #[inline]
     pub fn get_bulk_temperature(&mut self) -> 
     Result<ThermodynamicTemperature,String>{
