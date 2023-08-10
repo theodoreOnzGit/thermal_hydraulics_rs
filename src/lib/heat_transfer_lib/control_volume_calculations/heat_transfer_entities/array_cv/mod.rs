@@ -526,7 +526,37 @@ impl ArrayCVType {
         Err("array cv not yet implemented".to_string())
     }
 
-    
+    /// calculates timestep for a single cv attached to the front of the 
+    /// array cv
+    /// (back --- cv_self --- front) ---- (single cv)
+    pub fn calculate_timestep_for_single_cv_to_front_of_array_cv(
+        &mut self,
+        single_cv_node: &mut SingleCVNode,
+        interaction: HeatTransferInteractionType) -> Result<Time,String> {
+
+        Err("array cv not yet implemented".to_string())
+    }
+
+    /// calculates timestep for a single cv attached to the back of the 
+    /// array cv
+    /// (single cv) --- (back --- cv_self --- front)
+    pub fn calculate_timestep_for_single_cv_to_back_of_array_cv(
+        &mut self,
+        single_cv_node: &mut SingleCVNode,
+        interaction: HeatTransferInteractionType) -> Result<Time,String> {
+
+        Err("array cv not yet implemented".to_string())
+    }
 
 
+    /// calculates timestep for an array cv attached to the front of the 
+    /// array cv
+    /// (back --- cv_self --- front) ---- (back --- cv_other --- front)
+    pub fn calculate_timestep_for_array_cv_to_front_of_this_array_cv(
+        &mut self,
+        array_cv_other: &mut ArrayCVType,
+        interaction: HeatTransferInteractionType) -> Result<Time,String> {
+
+        Err("array cv not yet implemented".to_string())
+    }
 }

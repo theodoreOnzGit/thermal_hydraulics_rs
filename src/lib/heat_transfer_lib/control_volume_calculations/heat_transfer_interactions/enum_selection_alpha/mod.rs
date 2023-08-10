@@ -28,10 +28,12 @@ heat_transfer_entities::CVType::*;
 use crate::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_interactions::*;
 
-pub mod single_control_vol_interactions;
+pub (in crate::heat_transfer_lib::control_volume_calculations) 
+    mod single_control_vol_interactions;
 use single_control_vol_interactions::*;
 
-pub mod single_control_volume_timestep_control;
+pub (in crate::heat_transfer_lib::control_volume_calculations) 
+    mod single_control_volume_timestep_control;
 use single_control_volume_timestep_control::*;
 
 // the job of this function is to take in a control volume 
@@ -105,12 +107,27 @@ fn calculate_timestep_control_volume_serial(
                 single_cv_1, 
                 single_cv_2, 
                 interaction),
-        (ArrayCV(_), SingleCV(_)) =>
-            Err("Array CV calcs not yet implemented".to_string()),
-        (SingleCV(_), ArrayCV(_)) =>
-            Err("Array CV calcs not yet implemented".to_string()),
-        (ArrayCV(_), ArrayCV(_)) =>
-            Err("Array CV calcs not yet implemented".to_string()),
+        (ArrayCV(array_cv_type), SingleCV(single_cv_node)) =>
+            {
+                array_cv_type.
+                    calculate_timestep_for_single_cv_to_front_of_array_cv(
+                        single_cv_node,
+                        interaction)
+            },
+        (SingleCV(single_cv_node), ArrayCV(array_cv_type)) =>
+            {
+                array_cv_type.
+                    calculate_timestep_for_single_cv_to_back_of_array_cv(
+                        single_cv_node,
+                        interaction)
+            },
+        (ArrayCV(array_cv_type_self), ArrayCV(array_cv_other)) =>
+            {
+                array_cv_type_self.
+                    calculate_timestep_for_array_cv_to_front_of_this_array_cv(
+                        array_cv_other,
+                        interaction)
+            },
     };
 
 
@@ -140,7 +157,7 @@ fn calculate_timestep_boundary_condition_serial(
     _interaction: HeatTransferInteractionType) -> Result<Time,String>{
 
 
-    return Err("interactions between two boundary conditions \n
+    return Err("timesteps between two boundary conditions \n
         not implemented".to_string());
 }
 
@@ -275,13 +292,13 @@ fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 // get a mutable reference for the front cv 
 
-                let back_cv_reference = 
+                let front_cv_reference = 
                 &mut cartesian_array_cv.outer_single_cv;
 
 
                 // once that is done, use the same function
                 calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    back_cv_reference, interaction)
+                    front_cv_reference, interaction)
 
             },
         }
