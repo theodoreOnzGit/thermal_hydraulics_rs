@@ -320,7 +320,7 @@ fn calculate_single_cv_node_constant_temperature(
 // 
 #[inline]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn caclulate_between_two_singular_cv_nodes(
+fn calculate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
     interaction: HeatTransferInteractionType)-> Result<(), String>{

@@ -54,7 +54,7 @@ pub use one_dimension_cartesian_conducting_medium::*;
 
 
 use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_interactions::HeatTransferInteractionType;
+heat_transfer_interactions::{HeatTransferInteractionType, enum_selection_alpha::single_control_vol_interactions::calculate_between_two_singular_cv_nodes};
 
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::
@@ -64,7 +64,10 @@ calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
 
 use crate::heat_transfer_lib::thermophysical_properties::Material::*;
 
+
+
 use super::{ArrayCVType, SingleCVNode};
+
 
 
 // Solve `Ax=b`
@@ -206,9 +209,27 @@ impl ArrayCVType {
     /// So it's better to define higher and lower based upon a coordinate 
     /// axis
     pub fn link_single_cv_to_lower_side(&mut self,
-        single_cv_node: &mut SingleCVNode,
+        single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), String>{
-        return Err("not implemented".to_string());
+
+
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the back cv or inner cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+
+        // now link both cvs or calculate between them
+
+        calculate_between_two_singular_cv_nodes(
+            single_cv_node_other,
+            single_cv_node_self,
+            interaction)
     }
 
     /// attaches a single cv to the exit,back,
@@ -229,9 +250,26 @@ impl ArrayCVType {
     /// So it's better to define higher and lower based upon a coordinate 
     /// axis
     pub fn link_single_cv_to_higher_side(&mut self,
-        single_cv_node: &mut SingleCVNode,
+        single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), String>{
-        return Err("not implemented".to_string());
+
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the front cv or outer cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        // now link both cvs or calculate between them
+
+        calculate_between_two_singular_cv_nodes(
+            single_cv_node_other,
+            single_cv_node_self,
+            interaction)
     }
 
     /// attaches an array control volume to the front of this 
@@ -241,7 +279,27 @@ impl ArrayCVType {
         &mut self,
         array_cv_other: &mut ArrayCVType,
         interaction: HeatTransferInteractionType,) -> Result<(), String>{
-        return Err("not implemented".to_string());
+
+        // basically we need to get the front of the self cv, 
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        // and the back of the other cv
+        let single_cv_node_other: &mut SingleCVNode = 
+        match array_cv_other {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+
+        calculate_between_two_singular_cv_nodes(
+            single_cv_node_other,
+            single_cv_node_self,
+            interaction)
     }
 
     /// attaches an constant heat flux BC to the front of this 

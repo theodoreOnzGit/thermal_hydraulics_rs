@@ -50,7 +50,7 @@ fn calculate_control_volume_serial(
 
     let cv_result = match (control_vol_1, control_vol_2) {
         (SingleCV(single_cv_1), SingleCV(single_cv_2)) =>
-            caclulate_between_two_singular_cv_nodes(
+            calculate_between_two_singular_cv_nodes(
                 single_cv_1, 
                 single_cv_2, 
                 interaction),
