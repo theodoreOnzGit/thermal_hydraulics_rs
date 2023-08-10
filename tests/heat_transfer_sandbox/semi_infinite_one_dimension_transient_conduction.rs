@@ -778,11 +778,22 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
             HeatTransferEntity::temperature_vector(
                 &mut array_cv_in_loop).unwrap();
 
-            let string_array: Array1<String>;
+            let mut string_vector: Vec<String> = vec![];
             // should have a method to get the temperature array easily
+            //
+            // insert time and first temperature 
 
-            //wtr.write_record(&string_array)
-            //    .unwrap();
+            string_vector.push(time_string);
+            string_vector.push(bc_temperature.value.to_string());
+
+            for temp_reference in temperature_vector.iter() {
+                string_vector.push(temp_reference.value.to_string());
+            }
+
+            
+
+
+            wtr.write_record(&string_vector).unwrap();
             // now we need to update the timestep 
             // we'll just use the cv-bc timestep because that has 
             // the smallest lengthscale, should be the shortest
@@ -802,10 +813,20 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
             *timestep_in_loop.deref_mut() = timestep_value;
 
+            HeatTransferEntity::advance_timestep(
+                array_cv_in_loop.deref_mut(),
+                *timestep_in_loop).unwrap();
+
 
             current_time_simulation_time += *timestep_in_loop.deref();
         }
         wtr.flush().unwrap();
+
+        // debugging
+        let temperature_vector = HeatTransferEntity:: 
+            temperature_vector(&mut array_cv_in_loop);
+
+        panic!("{:?}", temperature_vector);
     };
 
     let calculation_thread = thread::spawn(calculation_loop);
