@@ -311,6 +311,8 @@ fn advance_timestep_for_specified_conductance_array_cv(
         // old temperatures, so this doesn't quite work as well 
         // max mesh fourier number should still be 0.25
         //
+        // but for stability, 1.0 will work actually
+        //
         // note that Hs[0] is never used, it may as well be 0
         {
             Hs[0] = ThermalConductance::new::<watt_per_kelvin>(0.0);

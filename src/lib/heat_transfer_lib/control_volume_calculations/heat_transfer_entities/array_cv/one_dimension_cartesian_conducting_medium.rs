@@ -337,11 +337,11 @@ impl CartesianConduction1DArray {
             // get first thermal resistance at the index
             let thermal_conductance_idx: ThermalConductance
             = thermal_conductivity_array[index] * basis_area/
-            delta_x;
+            (0.5*delta_x);
 
             let thermal_conductance_idx_plus_one: ThermalConductance 
             = thermal_conductivity_array[index + 1] * basis_area/
-            delta_x;
+            (0.5*delta_x);
 
             // sum both thermal resistance 
 
