@@ -564,8 +564,7 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
             // node
             let HtoCool: ThermalConductance = 
             Hs[i+1]*Hcool/(Hs[i+1]+Hcool);
-            M[[i,i-1]] = volFraction[i] * rhoCp[i] * total_volume / 
-                dt + Hs[i] + HtoCool;
+            M[[i,i-1]] = -Hs[i];
             M[[i,i]] = volFraction[i] * total_volume * rhoCp[i] / dt 
                 + Hs[i] + HtoCool;
             S[i] = q * qFraction[i] 
@@ -578,7 +577,7 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
         //        solve(T, M, S);
         //    }
         T = solve_conductance_matrix_power_vector(M,S)?;
-
+        let _T = T;
 
     } else {
         // Translating:

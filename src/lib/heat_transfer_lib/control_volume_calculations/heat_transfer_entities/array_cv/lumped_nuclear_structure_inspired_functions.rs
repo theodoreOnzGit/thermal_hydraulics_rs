@@ -351,14 +351,14 @@ fn advance_timestep_for_specified_conductance_array_cv(
             let Tcool = ThermodynamicTemperature::new::<kelvin>(293.0);
             Hs[i] = ThermalConductance::new::<watt_per_kelvin>(0.0);
 
-            M[[i,i-1]] = volFraction[i] * rhoCp[i] * total_volume / 
-                dt + Hs[i] + HtoCool;
+            M[[i,i-1]] = -Hs[i];
             M[[i,i]] = volFraction[i] * total_volume * rhoCp[i] / dt 
                 + Hs[i] + HtoCool;
             S[i] = q * qFraction[i] 
                 + total_enthalpy_rate_change_outermost_node
                 + TOld[i] * volFraction[i] * rhoCp[i] * total_volume / dt 
                 + HtoCool * Tcool;       
+
         }
 
         T = solve_conductance_matrix_power_vector(M,S)?;
