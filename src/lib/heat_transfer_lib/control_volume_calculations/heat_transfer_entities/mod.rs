@@ -55,7 +55,7 @@ impl HeatTransferEntity {
                     single_cv.advance_timestep(timestep)
                 },
                 CVType::ArrayCV(cv) => {
-                    cv.advance_timestep()
+                    cv.advance_timestep(timestep)
                 },
             };
 

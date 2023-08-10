@@ -54,13 +54,16 @@ pub use one_dimension_cartesian_conducting_medium::*;
 
 
 use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::enum_selection_alpha::
+single_control_vol_interactions::*;
+use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::{HeatTransferInteractionType, enum_selection_alpha::single_control_vol_interactions::calculate_between_two_singular_cv_nodes};
 
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::
 enum_selection_alpha::
-single_control_volume_timestep_control::
-calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
+single_control_volume_timestep_control::{
+calculate_mesh_stability_conduction_timestep_for_single_node_and_bc, calculate_mesh_stability_timestep_for_two_single_cv_nodes};
 
 use crate::heat_transfer_lib::thermophysical_properties::Material::*;
 
@@ -177,13 +180,24 @@ impl ArrayCVType {
     /// properties based on temperatures calculated
     /// for the next timestep
     /// and also other cleanup work
-    pub fn advance_timestep(&mut self) -> Result<(),String>{
-        return Err("not implemented".to_string());
+    pub fn advance_timestep(&mut self, timestep: Time) -> Result<(),String>{
+
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_1d_cv) => {
+                cartesian_1d_cv.advance_timestep(timestep)
+            },
+        }
     }
     /// gets the bulk temperature for the ArrayCV
     pub fn get_bulk_temperature(&mut self) -> 
     Result<ThermodynamicTemperature,String>{
-        return Err("not implemented".to_string());
+
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_1d_cv) => {
+                cartesian_1d_cv.get_bulk_temperature()
+            },
+        }
+
     }
 
     /// gets the maximum timestep for the arrayCV
@@ -548,7 +562,26 @@ impl ArrayCVType {
         heat_rate: Power,
         interaction: HeatTransferInteractionType) -> Result<(),String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the front cv or outer cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        // then link it to the other bc as per normal for 
+        // single control volumes
+
+        calculate_single_cv_node_constant_heat_addition(
+            single_cv_node_self,
+            heat_rate,
+            interaction
+        )
+
     }
 
     /// attaches an constant heat rate BC to the front of this 
@@ -559,7 +592,21 @@ impl ArrayCVType {
         heat_rate: Power,
         interaction: HeatTransferInteractionType) -> Result<(),String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the back cv or inner cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+        calculate_single_cv_node_constant_heat_addition(
+            single_cv_node_self,
+            heat_rate,
+            interaction
+        )
     }
 
     /// attaches an constant temperature BC to the front of this 
@@ -569,8 +616,22 @@ impl ArrayCVType {
         &mut self,
         bc_temperature: ThermodynamicTemperature,
         interaction: HeatTransferInteractionType) -> Result<(),String> {
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the front cv or outer cv 
+        //
 
-        Err("array cv not yet implemented".to_string())
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        calculate_single_cv_node_constant_temperature (
+            single_cv_node_self,
+            bc_temperature,
+            interaction
+        )
     }
 
     /// attaches an constant temperature BC to the front of this 
@@ -581,7 +642,21 @@ impl ArrayCVType {
         bc_temperature: ThermodynamicTemperature,
         interaction: HeatTransferInteractionType) -> Result<(),String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the back cv or inner cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+        calculate_single_cv_node_constant_temperature (
+            single_cv_node_self,
+            bc_temperature,
+            interaction
+        )
     }
 
     /// calculates timestep for a single cv attached to the front of the 
@@ -589,10 +664,25 @@ impl ArrayCVType {
     /// (back --- cv_self --- front) ---- (single cv)
     pub fn calculate_timestep_for_single_cv_to_front_of_array_cv(
         &mut self,
-        single_cv_node: &mut SingleCVNode,
+        single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the front cv or outer cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        calculate_mesh_stability_timestep_for_two_single_cv_nodes(
+            single_cv_node_self,
+            single_cv_node_other,
+            interaction)
+
     }
 
     /// calculates timestep for a single cv attached to the back of the 
@@ -600,10 +690,24 @@ impl ArrayCVType {
     /// (single cv) --- (back --- cv_self --- front)
     pub fn calculate_timestep_for_single_cv_to_back_of_array_cv(
         &mut self,
-        single_cv_node: &mut SingleCVNode,
+        single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the back cv or inner cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+
+        calculate_mesh_stability_timestep_for_two_single_cv_nodes(
+            single_cv_node_self,
+            single_cv_node_other,
+            interaction)
     }
 
 
@@ -615,6 +719,31 @@ impl ArrayCVType {
         array_cv_other: &mut ArrayCVType,
         interaction: HeatTransferInteractionType) -> Result<Time,String> {
 
-        Err("array cv not yet implemented".to_string())
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the front cv or outer cv 
+        //
+
+        let single_cv_node_self: &mut SingleCVNode = 
+        match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.outer_single_cv
+            },
+        };
+
+        // we need to obtain the single cv from the array cv first 
+        // and this will be the back cv or inner cv 
+        //
+
+        let single_cv_node_other: &mut SingleCVNode = 
+        match array_cv_other {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                &mut cartesian_array_cv.inner_single_cv
+            },
+        };
+
+        calculate_mesh_stability_timestep_for_two_single_cv_nodes(
+            single_cv_node_self,
+            single_cv_node_other,
+            interaction)
     }
 }
