@@ -91,8 +91,8 @@ pub struct CartesianConduction1DArray {
     // volume fraction array 
     volume_fraction_array: Array1<f64>,
 
-    // temperature array current timestep 
-    temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
+    /// temperature array current timestep 
+    pub temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
 
     // temperature_array_next timestep 
     temperature_array_next_timestep: Array1<ThermodynamicTemperature>,
@@ -621,5 +621,115 @@ impl CartesianConduction1DArray {
             ::<kelvin>(vol_averaged_temperature_kelvin));
 
 
+    }
+
+    /// gets the maximum timestep from the one dimensional 
+    /// control volume for cartesian conduction
+    pub fn get_max_timestep(&mut self, 
+    max_temperature_change: TemperatureInterval) -> Result<Time,String>{
+        
+        // start with an empty timestep vector
+        let mut max_timestep_vector: Vec<Time> = vec![];
+
+        // let's find alpha, 
+        let control_vol_pressure: Pressure = self.pressure_control_volume;
+        let control_vol_material: Material = self.material_control_volume;
+        let control_vol_temperature_array: Array1<ThermodynamicTemperature> 
+        = self.temperature_array_current_timestep.clone();
+
+        // now let's map the alpha 
+        // this is quick and dirty cos i used unwrap
+
+        let thermal_diffusivity_array: Array1<DiffusionCoefficient>
+        = control_vol_temperature_array.map(
+            |temperature_reference| {
+
+                thermal_diffusivity(control_vol_material, 
+                    *temperature_reference, 
+                    control_vol_pressure).unwrap()
+            }
+
+        );
+
+        // let's calculate the internal lengthscale
+        let number_of_temperature_nodes: usize = 
+        self.inner_nodes + 2;
+
+        let delta_x: Length = self.total_length/
+        number_of_temperature_nodes as f64;
+
+        // now for the array CV, implicit schemes are used. Therefore,
+        // the threshold for stability is higher, at 1.0 
+        // out of some caution, let me use 0.8
+        let max_mesh_fourier_number: f64 = 0.8;
+
+        // for the minimum conduction timescale, we need the 
+        // maximum alpha
+        //
+        // I'm using this closure to find the maximum, rather than 
+        // a manual for loop
+        let thermal_diffusivity_coeff_opt 
+        = thermal_diffusivity_array.iter().max_by(
+            |alpha_1, alpha_2| {
+                // a and b represent two typical items in the array 
+                let a = &alpha_1.value;
+                let b = &alpha_2.value;
+                a.total_cmp(b)
+            });
+
+        let thermal_diffusivity_coeff: DiffusionCoefficient = 
+        match thermal_diffusivity_coeff_opt {
+            Some(alpha_reference) => *alpha_reference,
+            None => {
+                // the none case should NOT happen at all, I'm just 
+                // otherwise it means that it's impossible to get thermal 
+                // diffusivity
+                // providing a fallback mechanism
+                let bulk_temp =self.get_bulk_temperature().unwrap();
+
+                thermal_diffusivity(control_vol_material, 
+                    bulk_temp, 
+                    control_vol_pressure).unwrap()
+            },
+        };
+
+        // timescales for conduction of this array
+        let min_conduction_timescale = max_mesh_fourier_number * 
+        delta_x *
+        delta_x / 
+        thermal_diffusivity_coeff;
+
+        max_timestep_vector.push(min_conduction_timescale);
+
+        // we also need to take into account the timescales of each of 
+        // the control volume at the boundaries
+
+        let max_timestep_front_cv: Time = 
+        self.outer_single_cv.get_max_timestep(max_temperature_change)?;
+
+        let max_timestep_back_cv: Time = 
+        self.inner_single_cv.get_max_timestep(max_temperature_change)?;
+
+        max_timestep_vector.push(max_timestep_front_cv);
+        max_timestep_vector.push(max_timestep_back_cv);
+
+        // now we just find the minimum in this max_timestep_vector 
+        //
+        // this would help to find the timestep vector without using 
+        // a manual for loop, though of course, the for loop is more 
+        // readable for rust beginners
+
+        let maximum_timestep: Time = 
+        *max_timestep_vector.iter().min_by(
+            |time_1, time_2| {
+                // a and b represent two typical items in the array 
+                let a = &time_1.value;
+                let b = &time_2.value;
+                a.total_cmp(b)
+            }).unwrap();
+
+        // all right done!
+
+        return Ok(maximum_timestep);
     }
 }

@@ -65,7 +65,8 @@ enum_selection_alpha::
 single_control_volume_timestep_control::{
 calculate_mesh_stability_conduction_timestep_for_single_node_and_bc, calculate_mesh_stability_timestep_for_two_single_cv_nodes};
 
-use crate::heat_transfer_lib::thermophysical_properties::Material::*;
+use crate::heat_transfer_lib::thermophysical_properties::Material::{*, self};
+use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
 
 
 
@@ -201,8 +202,15 @@ impl ArrayCVType {
     }
 
     /// gets the maximum timestep for the arrayCV
-    pub fn get_max_timestep(&mut self) -> Result<Time, String>{
-        return Err("not implemented".to_string());
+    pub fn get_max_timestep(
+        &mut self,
+        max_temperature_change: TemperatureInterval) 
+    -> Result<Time, String>{
+        match self {
+            ArrayCVType::Cartesian1D(cv) => {
+                cv.get_max_timestep(max_temperature_change)
+            },
+        }
     }
 
     /// attaches a single cv to the front,entrance,

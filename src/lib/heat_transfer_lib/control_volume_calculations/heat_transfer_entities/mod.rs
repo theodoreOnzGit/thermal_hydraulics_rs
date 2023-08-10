@@ -112,7 +112,7 @@ impl HeatTransferEntity {
                     single_cv.get_max_timestep(max_temperature_change)
                 },
                 CVType::ArrayCV(cv) => {
-                    cv.get_max_timestep()
+                    cv.get_max_timestep(max_temperature_change)
                 },
             };
 
