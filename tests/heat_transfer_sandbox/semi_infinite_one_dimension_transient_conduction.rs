@@ -212,7 +212,7 @@ fn transient_conduction_semi_infinite_copper_medium()
         let max_time_ptr_in_loop = max_time_ptr;
 
         use csv::Writer;
-        let mut wtr = Writer::from_path("semi_infinite_simulated_values.csv")
+        let mut wtr = Writer::from_path("single_cv_semi_infinite_simulated_values.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -651,13 +651,7 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         Mutex::new(copper_array_cv)
     );
 
-    let single_cv_node_1 = SingleCVNode::new_one_dimension_volume(
-        delta_x, copper, copper_initial_temperature, 
-        pressure)?;
 
-    let single_cv_1_ptr = Arc::new(
-        Mutex::new(single_cv_node_1)
-    );
 
     let copper_surface_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
@@ -678,7 +672,6 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
     let calculation_loop = move || {
 
-        let mut single_cv_1_in_loop = single_cv_1_ptr.lock().unwrap();
         let mut array_cv_in_loop = array_cv_pointer.lock().unwrap();
 
         let mut surf_temp_bc_in_loop = surf_temp_ptr.lock().unwrap();
@@ -756,36 +749,48 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             // first let's link the heat transfer entities 
+            // link heat transfer entities 
+            // the array cv to its two boundary conditions
+            // and calculate their relevant timescales
+            link_heat_transfer_entity(&mut array_cv_in_loop,
+                &mut adiabatic_bc,
+                heat_flow_interaction).unwrap();
+
+            link_heat_transfer_entity(&mut surf_temp_bc_in_loop,
+                &mut array_cv_in_loop,
+                first_node_thermal_resistance).unwrap();
 
 
             // now let's capture the temperature data first 
+            {
 
-            let bc_temperature: ThermodynamicTemperature =
-            HeatTransferEntity::temperature(
-                &mut surf_temp_bc_in_loop).unwrap();
-
-
-            let time_string = current_time_simulation_time.value.to_string();
-
-            // to do, write tempereature
-            let temperature_vector = 
-            HeatTransferEntity::temperature_vector(
-                &mut array_cv_in_loop).unwrap();
-
-            let mut string_vector: Vec<String> = vec![];
-            // should have a method to get the temperature array easily
-            //
-            // insert time and first temperature 
-
-            string_vector.push(time_string);
-            string_vector.push(bc_temperature.value.to_string());
-
-            for temp_reference in temperature_vector.iter() {
-                string_vector.push(temp_reference.value.to_string());
+                let bc_temperature: ThermodynamicTemperature =
+                HeatTransferEntity::temperature(
+                    &mut surf_temp_bc_in_loop).unwrap();
 
 
+                let time_string = current_time_simulation_time.value.to_string();
+
+                // to do, write tempereature
+                let temperature_vector = 
+                HeatTransferEntity::temperature_vector(
+                    &mut array_cv_in_loop).unwrap();
+
+                let mut string_vector: Vec<String> = vec![];
+                // should have a method to get the temperature array easily
+                //
+                // insert time and first temperature 
+
+                string_vector.push(time_string);
+                string_vector.push(bc_temperature.value.to_string());
+
+                for temp_reference in temperature_vector.iter() {
+                    string_vector.push(temp_reference.value.to_string());
+
+
+                }
+                wtr.write_record(&string_vector).unwrap();
             }
-            wtr.write_record(&string_vector).unwrap();
             // now we need to update the timestep 
             // we'll just use the cv-bc timestep because that has 
             // the smallest lengthscale, should be the shortest
@@ -800,16 +805,6 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
             timestep_value = timestep_from_api;
             // update timestep value
 
-            // link heat transfer entities 
-            // the array cv to its two boundary conditions
-            // and calculate their relevant timescales
-            link_heat_transfer_entity(&mut array_cv_in_loop,
-                &mut adiabatic_bc,
-                heat_flow_interaction).unwrap();
-
-            link_heat_transfer_entity(&mut surf_temp_bc_in_loop,
-                &mut array_cv_in_loop,
-                first_node_thermal_resistance).unwrap();
 
             let first_node_timescale: Time = 
             calculate_timescales_for_heat_transfer_entity(
