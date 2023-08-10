@@ -106,13 +106,25 @@ pub struct CartesianConduction1DArray {
 
 impl CartesianConduction1DArray {
 
+    /// returns a clone of the temperature_array_current_timestep
+    pub fn get_temperature_vector(&mut self) -> 
+    Result<Vec<ThermodynamicTemperature>, String> {
+        let temp_array = self.temperature_array_current_timestep.clone();
 
+        let mut temp_vector: Vec<ThermodynamicTemperature> = vec![];
+
+        for temp_reference in temp_array.iter() {
+            temp_vector.push(*temp_reference)
+        }
+
+        Ok(temp_vector)
+    }
     /// constructs a new instance of the CartesianConduction1DArray
     pub fn new(material: Material,
     initial_uniform_temperature: ThermodynamicTemperature,
     uniform_pressure: Pressure,
     inner_nodes: usize,
-    total_length: Length) -> Result<HeatTransferEntity, String> {
+    total_length: Length) -> HeatTransferEntity {
         // we start building the 1Darray object by a default first
         let mut array_to_return = Self::default();
 
@@ -154,7 +166,7 @@ impl CartesianConduction1DArray {
             boundary_length,
             material,
             initial_uniform_temperature,
-            uniform_pressure)?;
+            uniform_pressure).unwrap();
 
         let boundary_cv: SingleCVNode = match boundary_cv_entity {
             HeatTransferEntity::ControlVolume(cv) => {
@@ -182,7 +194,7 @@ impl CartesianConduction1DArray {
             )
         );
 
-        return Ok(heat_transfer_entity);
+        return heat_transfer_entity;
     }
 
     fn get_current_timestep_rho_cp(
