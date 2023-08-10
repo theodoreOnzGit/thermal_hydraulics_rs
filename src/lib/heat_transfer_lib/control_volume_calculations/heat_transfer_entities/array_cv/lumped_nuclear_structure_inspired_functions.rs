@@ -288,13 +288,8 @@ fn advance_timestep_for_specified_conductance_array_cv(
         }
 
 
-    // stopped here, need a break
-
 
     let T: Array1<ThermodynamicTemperature>;
-    
-
-    
 
     // now we start calculation
 

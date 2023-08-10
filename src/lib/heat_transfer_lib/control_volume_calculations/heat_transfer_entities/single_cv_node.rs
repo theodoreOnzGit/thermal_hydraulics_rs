@@ -567,10 +567,13 @@ impl SingleCVNode {
 
         self.max_timestep_vector.push(max_temperature_change_timestep);
 
+        // we still need the timestep changes from the control volumes 
+        // linked to this cv.
+
 
         // initiate a simple loop to find the shortest time scale
         // that is "safe" out of all time steps
-        let mut min_timescale = Time::new::<second>(100_f64);
+        let mut min_timescale = Time::new::<second>(75_f64);
 
         for time in self.max_timestep_vector.iter() {
             if *time < min_timescale {

@@ -585,7 +585,7 @@ fn transient_conduction_semi_infinite_copper_medium()
 
         wtr.flush().unwrap();
 
-        
+
     }
 
     calculation_thread.join().unwrap();
@@ -645,11 +645,11 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         copper_initial_temperature,
         pressure,
         8,
-        Length::new::<meter>(20.0));
+        Length::new::<centimeter>(20.0));
 
     let array_cv_pointer = Arc::new(
         Mutex::new(copper_array_cv)
-        );
+    );
 
     let single_cv_node_1 = SingleCVNode::new_one_dimension_volume(
         delta_x, copper, copper_initial_temperature, 
@@ -734,9 +734,6 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         // so between the array cv and bc, i will attach bc to left 
         // of array cv 
 
-        link_heat_transfer_entity(&mut surf_temp_bc_in_loop,
-            &mut array_cv_in_loop,
-            first_node_thermal_resistance).unwrap();
 
         // the other bit is that I must have an adiabatic BC at the back 
         // otherwise I will have problems 
@@ -751,14 +748,11 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         );
 
         // now link it together 
-        link_heat_transfer_entity(&mut array_cv_in_loop,
-            &mut adiabatic_bc,
-            heat_flow_interaction).unwrap();
 
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
 
-
+        let mut timestep_value = Time::new::<second>(0.0);
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             // first let's link the heat transfer entities 
@@ -788,11 +782,9 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
             for temp_reference in temperature_vector.iter() {
                 string_vector.push(temp_reference.value.to_string());
+
+
             }
-
-            
-
-
             wtr.write_record(&string_vector).unwrap();
             // now we need to update the timestep 
             // we'll just use the cv-bc timestep because that has 
@@ -805,13 +797,34 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
             let timestep_from_api = HeatTransferEntity::get_max_timestep(
                 &mut array_cv_in_loop,
                 max_temperature_change).unwrap();
-
-
-
-            let timestep_value = timestep_from_api;
+            timestep_value = timestep_from_api;
             // update timestep value
 
+            // link heat transfer entities 
+            // the array cv to its two boundary conditions
+            // and calculate their relevant timescales
+            link_heat_transfer_entity(&mut array_cv_in_loop,
+                &mut adiabatic_bc,
+                heat_flow_interaction).unwrap();
+
+            link_heat_transfer_entity(&mut surf_temp_bc_in_loop,
+                &mut array_cv_in_loop,
+                first_node_thermal_resistance).unwrap();
+
+            let first_node_timescale: Time = 
+            calculate_timescales_for_heat_transfer_entity(
+                &mut surf_temp_bc_in_loop,
+                &mut array_cv_in_loop,
+                first_node_thermal_resistance).unwrap();
+
+            // compare timestep for first node timescale and 
+            // existing timestep 
+
+            if timestep_value > first_node_timescale {
+                timestep_value = first_node_timescale;
+            }
             *timestep_in_loop.deref_mut() = timestep_value;
+            // advance timestep
 
             HeatTransferEntity::advance_timestep(
                 array_cv_in_loop.deref_mut(),
@@ -819,14 +832,10 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
 
             current_time_simulation_time += *timestep_in_loop.deref();
+
         }
         wtr.flush().unwrap();
 
-        // debugging
-        let temperature_vector = HeatTransferEntity:: 
-            temperature_vector(&mut array_cv_in_loop);
-
-        panic!("{:?}", temperature_vector);
     };
 
     let calculation_thread = thread::spawn(calculation_loop);
@@ -987,7 +996,7 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
         wtr.flush().unwrap();
 
-        
+
     }
 
     calculation_thread.join().unwrap();

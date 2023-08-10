@@ -1,6 +1,7 @@
 use super::lumped_nuclear_structure_inspired_functions::*;
 use std::f64::consts::PI;
 
+use approx::assert_relative_eq;
 use ndarray::*;
 use uom::si::area::square_meter;
 use uom::si::f64::*;
@@ -450,8 +451,10 @@ impl CartesianConduction1DArray {
         // assert if they add up to 1.0
 
         let vol_fraction_sum: f64 = volume_fraction_array.sum();
-        assert_eq!(1.0, vol_fraction_sum);
-
+        assert_relative_eq!(
+            1.0,
+            vol_fraction_sum,
+            epsilon = 0.001);
 
         return Ok(volume_fraction_array);
     }
@@ -706,12 +709,12 @@ impl CartesianConduction1DArray {
         };
 
         // timescales for conduction of this array
-        let min_conduction_timescale = max_mesh_fourier_number * 
+        let max_conduction_timescale: Time = max_mesh_fourier_number * 
         delta_x *
         delta_x / 
         thermal_diffusivity_coeff;
 
-        max_timestep_vector.push(min_conduction_timescale);
+        max_timestep_vector.push(max_conduction_timescale);
 
         // we also need to take into account the timescales of each of 
         // the control volume at the boundaries
@@ -731,13 +734,23 @@ impl CartesianConduction1DArray {
         // a manual for loop, though of course, the for loop is more 
         // readable for rust beginners
 
+        //let mut maximum_timestep = Time::new::<second>(75_f64);
+
+        //for time in max_timestep_vector.iter() {
+        //    if *time < maximum_timestep {
+        //        maximum_timestep = *time;
+        //    }
+        //} 
+        //
+        // will probably want to watch the edge BC timesteps as well
+
         let maximum_timestep: Time = 
         *max_timestep_vector.iter().min_by(
             |time_1, time_2| {
                 // a and b represent two typical items in the array 
                 let a = &time_1.value;
                 let b = &time_2.value;
-                a.total_cmp(b)
+                a.partial_cmp(b).unwrap()
             }).unwrap();
 
         // all right done!
