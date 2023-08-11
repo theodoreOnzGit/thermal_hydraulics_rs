@@ -11,7 +11,7 @@ use crate::heat_transfer_lib::thermophysical_properties::Material
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
 #[inline]
-pub fn calculate_between_two_singular_cv_nodes(
+pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
     single_cv_2: &mut SingleCVNode,
     interaction: HeatTransferInteractionType)-> Result<(), String>{
@@ -66,7 +66,6 @@ pub fn calculate_between_two_singular_cv_nodes(
     // q = - Htc (T_2 - T_1)
 
     // 
-    // // TODO: probably change the unwrap for later
     let thermal_conductance = get_thermal_conductance(
         single_cv_1_temperature, 
         single_cv_2_temperature,
