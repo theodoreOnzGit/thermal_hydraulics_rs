@@ -1,10 +1,4 @@
-use std::f64::consts::PI;
-
-use uom::si::{f64::*, pressure::atmosphere, power::watt, time::second, length::meter};
-
-use crate::heat_transfer_lib::
-thermophysical_properties::{Material, 
-    specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy}, density::density, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity};
+use uom::si::f64::*;
 
 /// Contains entities which transfer heat and interact with each 
 /// other
@@ -16,175 +10,6 @@ pub enum HeatTransferEntity {
     ControlVolume(CVType),
     /// Contains a list of Boundary conditions
     BoundaryConditions(BCType)
-}
-/// placeholder, I'd like to have some associated functions to 
-/// deal with the HeatTransferEntity type
-///
-/// probably one to get the courant number, 
-/// and second, to use a timestep to calculate the new enthalpy 
-/// and update enthalpy
-/// 
-/// last but not least, extract temperatures for sensing purposes
-impl HeatTransferEntity {
-
-    /// for control volumes, this method allows you to 
-    /// calculate the enthalpy of the next timestep and 
-    /// set the 
-    /// current timestep enthalpy as the enthalpy calculated  
-    /// for the next timestep
-    ///
-    /// you are required to explicitly provide a timestep for this 
-    pub fn advance_timestep(entity: &mut HeatTransferEntity,
-    timestep: Time) -> Result<(), String> {
-
-        // first match CV or BC, 
-        // Boundary conditions don't need to advance timestep
-        // so we can leave them be (it should return an Ok(()) value 
-        // rather than an Err() value)
-
-        let control_vol_type = match entity {
-            Self::ControlVolume(cv_type) => cv_type,
-            Self::BoundaryConditions(_) => return Ok(()),
-        };
-
-        // once I have the cv_type enum, match it again
-
-        let cv_advance_result: Result<(), String> = match 
-            control_vol_type {
-                CVType::SingleCV(single_cv) => {
-                    single_cv.advance_timestep(timestep)
-                },
-                CVType::ArrayCV(cv) => {
-                    cv.advance_timestep(timestep)
-                },
-            };
-
-        return cv_advance_result;
-    }
-
-    /// gets the temperature of the HeatTransferEntity 
-    /// usually control volume at the current timestep
-    pub fn temperature(entity: &mut HeatTransferEntity) -> 
-    Result<ThermodynamicTemperature, String> {
-
-        let cv_temperature_result = match entity {
-            Self::ControlVolume(cv_type) => {
-                match cv_type {
-                    CVType::SingleCV(single_cv) => {
-                        single_cv.get_temperature()
-                    },
-                    CVType::ArrayCV(cv) => {
-                        cv.get_bulk_temperature()
-                    },
-                }
-            },
-            Self::BoundaryConditions(bc_type) => {
-                match bc_type {
-                    BCType::UserSpecifiedTemperature(temperature) => {
-                        Ok(*temperature)
-                    },
-                    BCType::UserSpecifiedHeatFlux(_) | 
-                        BCType::UserSpecifiedHeatAddition(_) => {
-                            return Err("getting temperature not \n 
-                                implemented for BoundaryConditions".to_string())
-                        },
-                }
-            },
-        };
-
-
-        return cv_temperature_result;
-    }
-
-    /// gets a vector of temperatures
-    pub fn temperature_vector(entity: &mut HeatTransferEntity) ->
-    Result<Vec<ThermodynamicTemperature>,String> {
-
-
-        // oof nested matching, kind of ugly but I'll live with it for now
-        let cv_temperature_vector_result: 
-        Result<Vec<ThermodynamicTemperature>, String>
-        = match entity {
-            HeatTransferEntity::ControlVolume(cv_type) => {
-                let temp_vector_result:
-                Result<Vec<ThermodynamicTemperature>, String>
-                = match cv_type{
-                    CVType::SingleCV(single_cv) => {
-                        // the single cv only has one temperature anyway
-                        let temperature = single_cv.get_temperature()?;
-
-                        let mut temp_vector: Vec<ThermodynamicTemperature>
-                        = vec![];
-
-                        temp_vector.push(temperature);
-
-                        Ok(temp_vector)
-                    },
-                    CVType::ArrayCV(array_cv_type) => {
-                        let temp_vector_result:
-                        Result<Vec<ThermodynamicTemperature>, String>;
-
-                        temp_vector_result = match array_cv_type {
-                            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                                cartesian_array_cv.get_temperature_vector()
-                            },
-                        };
-                        temp_vector_result
-                    },
-                };
-                temp_vector_result
-            },
-            Self::BoundaryConditions(bc_type) => {
-                match bc_type {
-                    BCType::UserSpecifiedTemperature(temperature) => {
-
-                        let mut temp_vector: Vec<ThermodynamicTemperature>
-                        = vec![];
-
-                        temp_vector.push(*temperature);
-                        Ok(temp_vector)
-                    },
-                    BCType::UserSpecifiedHeatFlux(_) | 
-                        BCType::UserSpecifiedHeatAddition(_) => {
-                            return Err("getting temperature not \n 
-                                implemented for BoundaryConditions".to_string())
-                        },
-                }
-            },
-        };
-
-        cv_temperature_vector_result
-    }
-
-    /// get maximum timestep 
-    ///
-    /// 
-    pub fn get_max_timestep(
-        entity: &mut HeatTransferEntity,
-        max_temperature_change: TemperatureInterval) 
-    -> Result<Time, String> {
-
-        let control_vol_type = match entity {
-            Self::ControlVolume(cv_type) => cv_type,
-            Self::BoundaryConditions(_) => 
-                return Err("getting timestep not \n 
-                    implemented for BoundaryConditions".to_string()),
-        };
-
-        let cv_timestep_result: 
-        Result<Time, String> = match 
-            control_vol_type {
-                CVType::SingleCV(single_cv) => {
-                    single_cv.get_max_timestep(max_temperature_change)
-                },
-                CVType::ArrayCV(cv) => {
-                    cv.get_max_timestep(max_temperature_change)
-                },
-            };
-
-        return cv_timestep_result;
-    }
-
 }
 
 /// To determine heat transfer between two control volumes or 
@@ -317,3 +142,16 @@ pub mod array_cv;
 ///
 /// Hence, this entire library is licensed under GPL 3.0
 pub use array_cv::*;
+
+/// preprocessing contains auto timestepping and other functions
+pub mod preprocessing;
+pub use preprocessing::*;
+
+/// postprocessing contains functions to obtain temperature profiles 
+/// of the HeatTransferEntity
+pub mod postprocessing;
+pub use postprocessing::*;
+
+/// calculation modules contain methods to advance timestep 
+pub mod calculation;
+pub use calculation::*;
