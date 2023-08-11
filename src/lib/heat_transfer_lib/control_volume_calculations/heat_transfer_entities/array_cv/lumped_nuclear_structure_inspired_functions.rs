@@ -1,19 +1,14 @@
 use ndarray::*;
 use ndarray_linalg::*;
 use uom::si::f64::*;
-use uom::si::mass::kilogram;
 use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
-use uom::si::time::second;
-use uom::ConstZero;
-use uom::si::volume::cubic_meter;
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
-use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 
-use super::solve_conductance_matrix_power_vector;
+use super::calculation::solve_conductance_matrix_power_vector;
 /// This is mostly a direct translation of GeN-Foam code, 
 ///
 /// Now, this code is meant to calculate the internal temperature 

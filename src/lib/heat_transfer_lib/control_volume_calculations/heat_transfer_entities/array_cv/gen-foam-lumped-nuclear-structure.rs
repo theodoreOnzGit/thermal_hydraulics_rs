@@ -370,17 +370,16 @@ License
 use ndarray::*;
 use ndarray_linalg::*;
 use uom::si::f64::*;
-use uom::si::mass::kilogram;
 use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::time::second;
-use uom::ConstZero;
 use uom::si::volume::cubic_meter;
 
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
-use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use super::calculation::solve_conductance_matrix_power_vector;
+
+
+
 
 /// This is just a direct translation of GeN-Foam code, 
 /// without much thought for adapting it to the heat transfer module
@@ -398,7 +397,7 @@ use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::spec
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn translated_matrix_construction() -> Result<(),error::LinalgError>{
+fn _translated_matrix_construction() -> Result<(),error::LinalgError>{
 
     // model as it is performs well for piping insulation cooled by some 
     // external fluid 
@@ -620,65 +619,9 @@ fn translated_matrix_construction() -> Result<(),error::LinalgError>{
 }
 
 
-#[inline]
-pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn solve_conductance_matrix_power_vector(
-    thermal_conductance_matrix: Array2<ThermalConductance>,
-    power_vector: Array1<Power>)
--> Result<Array1<ThermodynamicTemperature>, error::LinalgError>{
-
-    // I can of course convert it into f64 types 
-    //
-    //
-
-    let get_value_conductance = |conductance: &ThermalConductance| {
-        return conductance.value;
-    };
-
-    let get_value_power = |power: &Power| {
-        return power.value;
-    };
-
-    // i'm allowing non snake case so that the syntax is the same as 
-    // GeN-Foam
-    #[allow(non_snake_case)]
-    let M: Array2<f64> = 
-    thermal_conductance_matrix.map(get_value_conductance);
-
-    #[allow(non_snake_case)]
-    let S: Array1<f64> = power_vector.map(get_value_power);
-
-    // now for the raw temperature matrix 
-
-    #[allow(non_snake_case)]
-    let T: Array1<f64> = M.solve(&S)?;
-
-    // To check for unit safety, I can just perform one calc
-
-    let _unit_check: Power = 
-    power_vector[0] + 
-    thermal_conductance_matrix[[0,0]] 
-    * ThermodynamicTemperature::ZERO;
-
-    // now map T back to a ThermodynamicTemperature
-    // T is already a ThermodynamicTemperature, so don't need to manually 
-    // convert, do it in kelvin 
-    //
-
-    let convert_f64_to_kelvin_temperature = |float: &f64| {
-        return ThermodynamicTemperature::new::<kelvin>(*float);
-    };
-
-
-    // this is the last step
-    let temperature_vector: Array1<ThermodynamicTemperature> 
-    = T.map(convert_f64_to_kelvin_temperature);
-
-    return Ok(temperature_vector);
-}
 
 #[test]
-fn test_gen_foam_translated_lumped_heat_capacitance() -> 
+pub fn test_gen_foam_translated_lumped_heat_capacitance() -> 
 Result<(), error::LinalgError>{
-    translated_matrix_construction()
+    _translated_matrix_construction()
 }
