@@ -58,8 +58,8 @@ pub use preprocessing::*;
 
 /// contains functions or methods to get temperature 
 /// and other things 
-pub mod post_processing;
-pub use post_processing::*;
+pub mod postprocessing;
+pub use postprocessing::*;
 
 
 
