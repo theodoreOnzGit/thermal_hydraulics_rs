@@ -8,12 +8,6 @@ use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::CVType::*;
-
-
-use crate::heat_transfer_lib::control_volume_calculations
-::heat_transfer_interactions::*;
 
 use crate::heat_transfer_lib::thermophysical_properties::Material
 ::{Solid,Liquid};

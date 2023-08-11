@@ -29,8 +29,8 @@ use crate::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_interactions::*;
 
 pub (in crate::heat_transfer_lib::control_volume_calculations) 
-    mod single_control_vol_interactions;
-use single_control_vol_interactions::*;
+    mod interactions_single_cv;
+use interactions_single_cv::*;
 
 pub (in crate::heat_transfer_lib::control_volume_calculations) 
     mod timestep_control_single_cv;

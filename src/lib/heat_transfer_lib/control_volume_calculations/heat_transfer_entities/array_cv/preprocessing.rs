@@ -1,12 +1,18 @@
 use std::f64::consts::PI;
 
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{ArrayCVType, SingleCVNode};
+use crate::heat_transfer_lib::
+control_volume_calculations::heat_transfer_entities::ArrayCVType;
+use crate::heat_transfer_lib::
+control_volume_calculations::heat_transfer_entities::SingleCVNode;
 use uom::si::f64::*;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::enum_selection_alpha::
-single_control_vol_interactions::*;
+interactions_single_cv::*;
 use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_interactions::{HeatTransferInteractionType, enum_selection_alpha::single_control_vol_interactions::calculate_between_two_singular_cv_nodes};
+heat_transfer_interactions::HeatTransferInteractionType;
+use crate::heat_transfer_lib::control_volume_calculations::
+heat_transfer_interactions::enum_selection_alpha::
+interactions_single_cv::calculate_between_two_singular_cv_nodes;
 
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::
