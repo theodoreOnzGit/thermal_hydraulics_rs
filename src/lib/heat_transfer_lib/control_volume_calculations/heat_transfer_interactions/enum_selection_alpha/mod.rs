@@ -33,8 +33,8 @@ pub (in crate::heat_transfer_lib::control_volume_calculations)
 use single_control_vol_interactions::*;
 
 pub (in crate::heat_transfer_lib::control_volume_calculations) 
-    mod single_control_volume_timestep_control;
-use single_control_volume_timestep_control::*;
+    mod timestep_control_single_cv;
+use timestep_control_single_cv::*;
 
 // the job of this function is to take in a control volume 
 // and then mutate it by calculating its interaction

@@ -11,11 +11,11 @@ heat_transfer_interactions::{HeatTransferInteractionType, enum_selection_alpha::
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::
 enum_selection_alpha::
-single_control_volume_timestep_control::calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
+timestep_control_single_cv::calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_interactions::
 enum_selection_alpha::
-single_control_volume_timestep_control::calculate_mesh_stability_timestep_for_two_single_cv_nodes;
+timestep_control_single_cv::calculate_mesh_stability_timestep_for_two_single_cv_nodes;
 
 
 use crate::heat_transfer_lib::thermophysical_properties::

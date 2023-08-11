@@ -65,20 +65,20 @@ use uom::si::f64::*;
 
 
 
-/// contains scripts to select enums 
-/// for how heat transfer entities 
-/// ie control volumes and boundary conditions 
-/// interact with each other
-/// and also control volume mutation
-///
-/// multithread calculation only
-///
-/// note that the enum_selection_alpha module 
-/// here are UNSTABLE, I may not preserve the API
-///
-/// alpha here means unstable
-mod enum_selection_parallel_alpha;
-//use enum_selection_parallel_alpha::*;
+///// contains scripts to select enums 
+///// for how heat transfer entities 
+///// ie control volumes and boundary conditions 
+///// interact with each other
+///// and also control volume mutation
+/////
+///// multithread calculation only
+/////
+///// note that the enum_selection_alpha module 
+///// here are UNSTABLE, I may not preserve the API
+/////
+///// alpha here means unstable
+////mod enum_selection_parallel_alpha;
+////use enum_selection_parallel_alpha::*;
 
 
 /// For this part, we determine how heat_transfer_entities interact 
