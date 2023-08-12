@@ -1,4 +1,4 @@
-use uom::si::f64::*;
+use uom::si::{f64::*, mass_rate::kilogram_per_second, available_energy::joule_per_kilogram};
 /// now, advection is quite tricky because for conduction, the 
 /// heat transfer formula is for two control volumes cv_a and cv_b
 /// can be as follows 
@@ -46,3 +46,63 @@ pub fn advection_heat_rate(mass_flow_from_a_to_b: MassRate,
     Ok(heat_rate)
 }
 
+/// this is just a test for me to check if the advection signs work 
+/// correctly
+///
+/// Suppose there is this following scenario:
+///
+/// (cv_a) --------------- (cv_b)
+///  
+///  h_a                    h_b 
+///
+///  mass flow from a to b is 5 kg/s 
+///
+///  h_a = 350 J/kg
+///  h_b = 550 J/kg
+///
+///
+///
+#[test]
+pub fn test_advection_signs(){
+
+    let forward_mass_flow: MassRate = 
+    MassRate::new::<kilogram_per_second>(5.0);
+    let backwards_mass_flow: MassRate = 
+    MassRate::new::<kilogram_per_second>(-5.0);
+
+    let enthalpy_a: AvailableEnergy = 
+    AvailableEnergy::new::<joule_per_kilogram>(350.0);
+    let enthalpy_b: AvailableEnergy = 
+    AvailableEnergy::new::<joule_per_kilogram>(550.0);
+
+    // if forward flow from a to b, then expected power in forward 
+    // flow is
+    let expected_forward_flow_enthalpy_a_to_b: Power 
+    = forward_mass_flow * enthalpy_a;
+
+    let test_forward_flow_enthalpy_rate: Power 
+    = advection_heat_rate(forward_mass_flow,
+        enthalpy_a,
+        enthalpy_b).unwrap();
+
+    assert_eq!(test_forward_flow_enthalpy_rate, 
+        expected_forward_flow_enthalpy_a_to_b);
+
+    // if backward flow from b to a, expected power in backward flow is:
+    let expected_forward_flow_enthalpy_a_to_b: Power 
+    = backwards_mass_flow * enthalpy_b;
+
+    let test_backward_flow_enthalpy_rate: Power 
+    = advection_heat_rate(backwards_mass_flow,
+        enthalpy_a,
+        enthalpy_b).unwrap();
+
+    // check if flows are different, for forward and backward 
+    // and check if flows are correct
+    // 
+    assert_ne!(test_forward_flow_enthalpy_rate, 
+        expected_forward_flow_enthalpy_a_to_b);
+    assert_eq!(test_backward_flow_enthalpy_rate, 
+        expected_forward_flow_enthalpy_a_to_b);
+
+}
