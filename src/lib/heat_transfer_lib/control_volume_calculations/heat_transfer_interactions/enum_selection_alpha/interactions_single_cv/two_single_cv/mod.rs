@@ -3,10 +3,18 @@
 pub mod conductance_interactions;
 pub (in crate) use conductance_interactions::*;
 
+/// handles cases where two cvs have heat transfer governed by 
+/// advection or fluid flow 
+pub mod advection;
+pub (in crate) use advection::*;
+
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
 
 /// this is mostly a wrapper function
+///
+/// which calls other functions depending on whether the 
+/// heat transfer interaction is conductance based on advection based
 #[inline]
 pub fn calculate_between_two_singular_cv_nodes(
     single_cv_1: &mut SingleCVNode,
