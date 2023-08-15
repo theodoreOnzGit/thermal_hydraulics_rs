@@ -6,3 +6,6 @@ mod semi_infinite_one_dimension_transient_conduction;
 
 /// Contains test for automatic time step adjustment
 mod automatic_timestep;
+
+/// Contains tests for conjugate heat transfer 
+mod conjugate_heat_transfer_tests;

@@ -31,7 +31,10 @@ pub struct DataDualCartesianThermalConductanceThreeDimension{
 /// on
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub struct DataUserSpecifiedConvectionResistance{
+
+    /// surface area for heat convection
     pub surf_area: SurfaceArea,
+    /// heat transfer coefficient in watts per meter per kelvin
     pub heat_transfer_coeff: HeatTransfer,
 
 }
