@@ -368,6 +368,8 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 vec![],
                 mesh_stability_lengthscale_vector:
                 vec![],
+                mass_flowrate_vector:
+                vec![],
             }
         )
     );
