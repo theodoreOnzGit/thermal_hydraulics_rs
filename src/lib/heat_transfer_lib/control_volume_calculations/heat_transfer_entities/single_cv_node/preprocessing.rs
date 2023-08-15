@@ -1,7 +1,7 @@
 use crate::{heat_transfer_lib::thermophysical_properties::{specific_enthalpy::temperature_from_specific_enthalpy, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity, Material, density::density}, thermal_hydraulics_error::ThermalHydraulicsError};
 
 use super::SingleCVNode;
-use uom::si::{f64::*, length::meter, power::watt, time::second, volume_rate::cubic_meter_per_second};
+use uom::si::{f64::*, length::meter, power::watt, time::second, volume_rate::cubic_meter_per_second, ratio::ratio};
 
 
 impl SingleCVNode {
@@ -216,7 +216,8 @@ impl SingleCVNode {
     }
 
     /// compiles a list of time steps based on various criteria, 
-    ///
+    /// such as temperature change, courant number, fourier number 
+    /// and so on
     ///
     #[inline]
     pub fn get_max_timestep(&mut self, 
@@ -230,14 +231,6 @@ impl SingleCVNode {
 
         self.max_timestep_vector.push(conduction_timestep);
 
-        // let's match the material to solid or liquid 
-
-        let cv_material = self.material_control_volume.clone();
-
-        match cv_material {
-            Material::Solid(_) => (),
-            Material::Liquid(_) => todo!("need to calculate liquid timestep"),
-        }
 
         // last but not least, check if temperature changes exceed a 
         // certain mount, recommend 0.5 C or 1 C for max temperature 
@@ -254,6 +247,34 @@ impl SingleCVNode {
         // we still need the timestep changes from the control volumes 
         // linked to this cv.
 
+        // now, we can also get the courant number based timestep
+        // our max Co is 1 
+
+        let max_courant_number: Ratio = Ratio::new::<ratio>(1.0);
+
+        let courant_number_timestep_result = 
+        self.caclculate_courant_number_timestep(max_courant_number);
+
+        let courant_number_timescale: Time = match courant_number_timestep_result {
+            Ok(timescale) => timescale,
+            Err(error) => {
+                match error {
+                    ThermalHydraulicsError::CourantMassFlowVectorEmpty => {
+
+                        // just return a large timestep for an empty
+                        // vector
+                        Time::new::<second>(80_f64)
+                    },
+                    _ => {
+                        return Err(error.into());
+                    }
+                }
+
+            }
+        };
+
+        self.max_timestep_vector.push(courant_number_timescale);
+        
 
         // initiate a simple loop to find the shortest time scale
         // that is "safe" out of all time steps
