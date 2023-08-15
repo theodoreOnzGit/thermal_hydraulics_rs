@@ -1,7 +1,7 @@
-use crate::heat_transfer_lib::thermophysical_properties::{specific_enthalpy::temperature_from_specific_enthalpy, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity, Material};
+use crate::{heat_transfer_lib::thermophysical_properties::{specific_enthalpy::temperature_from_specific_enthalpy, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity, Material, density::density}, thermal_hydraulics_error::ThermalHydraulicsError};
 
 use super::SingleCVNode;
-use uom::si::{f64::*, length::meter, power::watt, time::second};
+use uom::si::{f64::*, length::meter, power::watt, time::second, volume_rate::cubic_meter_per_second};
 
 
 impl SingleCVNode {
@@ -63,6 +63,69 @@ impl SingleCVNode {
 
         return Ok(min_conduction_timescale);
     }
+
+
+    
+    /// calculates timestep based on courant number 
+    #[inline]
+    pub fn caclculate_courant_number_timestep(&mut self,
+        max_courant_number: Ratio) 
+        -> Result<Time, ThermalHydraulicsError>{
+
+
+        // then let's calculate the dot product
+        // it has units of volumetric flowrate
+        let mut absolute_sum_of_volumetric_flowrate: VolumeRate
+        = VolumeRate::new::<cubic_meter_per_second>(0.0);
+
+        let volume_flowrate_vector = &self.volumetric_flowrate_vector;
+
+        // now if the vector is empty, end the calculation or return 
+        // some obscenely high time value
+
+        if volume_flowrate_vector.is_empty() {
+            return Err(ThermalHydraulicsError::CourantMassFlowVectorEmpty);
+        }
+
+
+        for vol_flowrate_ptr in volume_flowrate_vector.iter() {
+
+            absolute_sum_of_volumetric_flowrate += vol_flowrate_ptr.abs();
+
+        }
+
+        // let's get the volume of this control volume 
+
+        let cv_material_reference = &self.material_control_volume;
+        let cv_temperature = self.get_temperature()?;
+        let cv_pressure_reference = &self.pressure_control_volume;
+
+        let cv_density: MassDensity = 
+        density(*cv_material_reference,
+            cv_temperature,
+            *cv_pressure_reference,
+        )?;
+
+        let cv_mass_reference = &self.mass_control_volume;
+
+        let cv_volume: Volume = *cv_mass_reference/cv_density;
+
+        // using the OpenFOAM formulation:
+        //
+        // Co = 0.5 * timestep * vol_flow_sum / cv_volume
+        //
+        
+        // timestep = Co/0.5 * cv_vol / vol_flow_sum
+
+        let timestep: Time = max_courant_number * 2.0 * cv_volume / 
+        absolute_sum_of_volumetric_flowrate;
+
+        Ok(timestep)
+
+    }
+
+    
+
 
     /// appends timestep constrained to fourier number stability
     #[inline]

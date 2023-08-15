@@ -205,7 +205,7 @@ pub fn get_fluid_courant_number_one_dimension(
 //
 //
 //// ************************************************************************* //
-pub fn courant_number_3d_openfoam_algorithm(
+pub fn courant_number_3d_openfoam_algorithm_velocity(
     // pardon the naming convention,
     // control_volume_volume
     // 
@@ -290,6 +290,45 @@ pub fn courant_number_3d_openfoam_algorithm(
 
 }
 
+/// similar algorithm based on volumetric flowrates in and out
+pub fn courant_number_3d_openfoam_algorithm_vol_flowrate(
+    // pardon the naming convention,
+    // control_volume_volume
+    // 
+    // means how much volume the control volume occupies
+    control_volume_volume: Volume,
+    timestep: Time,
+    volume_flowrate_vector: Vec<VolumeRate>
+    ) -> Result<f64,f64> {
+
+
+    // then let's calculate the dot product
+    // it has units of volumetric flowrate
+    let mut absolute_sum_of_volumetric_flowrate: VolumeRate
+        = VolumeRate::new::<cubic_meter_per_second>(0.0);
+
+    for vol_flowrate_ptr in volume_flowrate_vector.iter() {
+
+        absolute_sum_of_volumetric_flowrate += vol_flowrate_ptr.abs();
+
+    }
+
+    // Co =  0.5 * timestep / volume *  
+    // (summation (dot product of U and normal vector).abs()*Area_magnitude)
+    let courant_number: Ratio = 
+        0.5 
+        * timestep
+        / control_volume_volume
+        * absolute_sum_of_volumetric_flowrate;
+
+    // i'll return an error value if the courant number is below zero
+    if courant_number.value > 1_f64 {
+        return Err(courant_number.value);
+    }
+
+    return Ok(courant_number.value);
+
+}
 // courant number for energy?
 //
 // the timescale for such things is the time needed
@@ -306,7 +345,7 @@ pub fn courant_number_3d_openfoam_algorithm(
 //
 // 
 //
-/// Courant number for conduction heat transfer
+/// Courant number equivalent for conduction heat transfer
 ///
 /// For conduction based heat transfer,
 /// Courant number is just the fourier number
@@ -318,7 +357,7 @@ pub fn courant_number_3d_openfoam_algorithm(
 ///
 /// will return an error if value is more than 0.25
 ///
-pub fn courant_number_heat_conduction(
+pub fn fourier_number_heat_conduction(
     alpha_thermal_diffusivity: DiffusionCoefficient,
     timestep: Time,
     mesh_length: Length) -> Result<f64, f64>{
@@ -337,12 +376,12 @@ pub fn courant_number_heat_conduction(
 
 }
 
-/// Courant number for convection heat transfer
+/// Courant number equivalent for convection heat transfer
 /// essentially calculates Co = Bi Fo
 ///
 /// will return an error if value is more than 0.25
 ///
-pub fn courant_number_heat_convection(
+pub fn fourier_number_heat_convection(
     heat_transfer_coeffcient_for_external_fluid: HeatTransfer,
     control_volume_thermal_conductivity: ThermalConductivity,
     volume_cv_to_surface_area_cv_ratio: Length,

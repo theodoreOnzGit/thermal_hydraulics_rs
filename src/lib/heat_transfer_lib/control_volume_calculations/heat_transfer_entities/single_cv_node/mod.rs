@@ -82,11 +82,11 @@ pub struct SingleCVNode {
     /// based on conduction only
     pub mesh_stability_lengthscale_vector: Vec<Length>,
 
-    /// This vector houses a list of mass flowrates coming into 
+    /// This vector houses a list of volumetric flowrates coming into 
     /// and out of the control volume 
     /// by convention, positive flowrates mean going into the 
     /// cv, negative flowrates mean flowing out of the cv 
-    pub mass_flowrate_vector: Vec<MassRate>
+    pub volumetric_flowrate_vector: Vec<VolumeRate>
 }
 
 /// here, we have mostly constructors
@@ -139,7 +139,7 @@ impl SingleCVNode {
             initial_timestep_vector,
             mesh_stability_lengthscale_vector:
             initial_mesh_stability_lengthscale_vector,
-            mass_flowrate_vector:
+            volumetric_flowrate_vector:
             vec![],
         }
 
@@ -256,7 +256,7 @@ impl SingleCVNode {
                     initial_timestep_vector,
                     mesh_stability_lengthscale_vector:
                     conduction_stability_lengthscale_vector,
-                    mass_flowrate_vector:
+                    volumetric_flowrate_vector:
                     vec![],
                 }
             )
@@ -329,7 +329,7 @@ impl SingleCVNode {
                     initial_timestep_vector,
                     mesh_stability_lengthscale_vector:
                     conduction_stability_lengthscale_vector,
-                    mass_flowrate_vector:
+                    volumetric_flowrate_vector:
                     vec![],
                 }
             )

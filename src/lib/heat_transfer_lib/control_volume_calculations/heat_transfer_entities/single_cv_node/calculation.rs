@@ -49,9 +49,11 @@ impl SingleCVNode {
 
         self.set_liquid_cv_mass_from_temperature()?;
         // clear the enthalpy change vector and timestep vector 
+        // also the mass flowrate vector
 
         self.rate_enthalpy_change_vector.clear();
         self.max_timestep_vector.clear();
+        self.volumetric_flowrate_vector.clear();
         // increase timestep (last step)
 
         return Ok(());
