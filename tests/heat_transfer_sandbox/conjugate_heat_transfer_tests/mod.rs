@@ -82,6 +82,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 ///
 #[test]
+#[ignore = "takes about 20min, only use for data collection"]
 pub fn one_dimension_ciet_heater_v_1_0_test(){
 
     // okay, let's make two control volumes 
@@ -181,7 +182,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     // timestep settings
 
 
-    let max_time: Time = Time::new::<second>(2000.0);
+    let max_time: Time = Time::new::<second>(20000.0);
     let max_time_ptr = Arc::new(max_time);
 
     // this is the calculation loop
@@ -620,7 +621,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
 
             // (4) electrical heat to solid shell 
             // (todo)
-            // will need to use the mfbs signal 
+            // will need to use the analog signal 
 
             let heater_power = analog_poresky_2017_power_signal(
                 current_time_simulation_time);
