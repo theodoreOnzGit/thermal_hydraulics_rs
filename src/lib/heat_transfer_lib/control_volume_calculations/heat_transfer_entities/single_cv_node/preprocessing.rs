@@ -191,6 +191,11 @@ impl SingleCVNode {
         //
         // time = m c_p Delta T / power 
         // for small temperature changes, assume cp constant
+        //
+        // algorithm is okay if the enthalpy change is positive ,
+        // but if negative, then we need to take the absolute value 
+
+        total_enthalpy_rate_change = total_enthalpy_rate_change.abs();
 
         let cv_mass_clone = self.mass_control_volume.clone();
         let cv_material = self.material_control_volume.clone();
