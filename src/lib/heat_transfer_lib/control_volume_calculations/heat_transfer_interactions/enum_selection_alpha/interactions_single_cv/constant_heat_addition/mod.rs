@@ -25,7 +25,7 @@ use advection::*;
 ///
 /// the heat addition is at the front, the cv is at the back
 #[inline]
-pub fn calculate_constant_head_addition_front_single_cv_node_back(
+pub fn calculate_constant_heat_addition_front_single_cv_back(
     control_vol: &mut SingleCVNode,
     heat_added_to_control_vol: Power,
     interaction: HeatTransferInteractionType

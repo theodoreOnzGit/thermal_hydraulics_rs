@@ -420,7 +420,7 @@ impl ArrayCVType {
         // then link it to the other bc as per normal for 
         // single control volumes
 
-        calculate_constant_head_addition_front_single_cv_node_back(
+        calculate_constant_heat_addition_front_single_cv_back(
             single_cv_node_self,
             heat_rate,
             interaction
@@ -446,9 +446,9 @@ impl ArrayCVType {
                 &mut cartesian_array_cv.inner_single_cv
             },
         };
-        calculate_constant_head_addition_front_single_cv_node_back(
-            single_cv_node_self,
+        calculate_single_cv_front_constant_heat_addition_back(
             heat_rate,
+            single_cv_node_self,
             interaction
         )
     }

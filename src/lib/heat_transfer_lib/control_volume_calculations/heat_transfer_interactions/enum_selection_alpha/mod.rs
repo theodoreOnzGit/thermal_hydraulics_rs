@@ -186,7 +186,7 @@ fn attach_boundary_condition_to_control_volume_front_serial(
 
     let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
-            => calculate_constant_head_addition_front_single_cv_node_back(
+            => calculate_constant_heat_addition_front_single_cv_back(
                 single_cv, *heat_rate, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
             => calculate_single_cv_node_constant_heat_flux(
@@ -239,8 +239,8 @@ fn attach_boundary_condition_to_control_volume_back_serial(
 
     let cv_bc_result = match (control_vol, boundary_condition) {
         (SingleCV(single_cv), BCType::UserSpecifiedHeatAddition(heat_rate)) 
-            => calculate_constant_head_addition_front_single_cv_node_back(
-                single_cv, *heat_rate, interaction),
+            => calculate_single_cv_front_constant_heat_addition_back(
+                *heat_rate, single_cv, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
             => calculate_single_cv_node_constant_heat_flux(
                 single_cv, *heat_flux, interaction),

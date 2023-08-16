@@ -8,6 +8,10 @@ use crate::heat_transfer_lib::thermophysical_properties::Material
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
+
+mod advection;
+use advection::*;
+
 pub fn calculate_single_cv_node_constant_heat_flux(
     control_vol: &mut SingleCVNode,
     heat_flux_into_control_vol: HeatFluxDensity,
