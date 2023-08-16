@@ -14,11 +14,14 @@ use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
 
 use super::CVType;
 use super::HeatTransferEntity;
+use super::InnerDiameterThermalConduction;
+use super::OuterDiameterThermalConduction;
 
 /// SingleCVNode (single control volume node) represents 
 /// the control volume with a fixed point
@@ -311,7 +314,7 @@ impl SingleCVNode {
 
 
 
-        let ball_control_vol = 
+        let one_dimension_cv = 
         HeatTransferEntity::ControlVolume(
             CVType::SingleCV(
                     SingleCVNode { 
@@ -336,7 +339,175 @@ impl SingleCVNode {
         );
 
 
-        return Ok(ball_control_vol);
+        return Ok(one_dimension_cv);
+    }
+
+    /// this function constructs cylinder based on length 
+    /// dimensions, d and z 
+    ///
+    /// z is cylinder length
+    ///
+    /// d (diameter) is 2r (r is radius)
+    #[inline]
+    pub fn new_cylinder(z: Length, 
+        diameter: Length,
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,
+    ThermalHydraulicsLibError>{
+
+
+        // diameter is pi D^2/4
+        let cross_sectional_area: Area = diameter * diameter 
+        * 0.25 
+        * PI;
+
+        let cylinder_vol: Volume = 
+        cross_sectional_area * z;
+
+        let cylinder_density: MassDensity = density(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let one_dimension_mass: Mass = 
+        cylinder_density * cylinder_vol;
+
+
+        let enthalpy = specific_enthalpy(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(z);
+
+
+
+        let cylinder = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: one_dimension_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: cylinder_vol, 
+                    max_timestep_vector: 
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
+                    volumetric_flowrate_vector:
+                    vec![],
+                }
+            )
+        );
+
+
+        return Ok(cylinder);
+    }
+
+    /// this function constructs a cylindrical shell based on length 
+    /// dimensions, id, od and z 
+    ///
+    /// z is cylinder length
+    ///
+    /// id (diameter) is 2r (r is radius)
+    #[inline]
+    pub fn new_cylindrical_shell(z: Length, 
+        id: InnerDiameterThermalConduction,
+        od: OuterDiameterThermalConduction,
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,
+    ThermalHydraulicsLibError>{
+
+        let id: Length = id.into();
+        let od: Length = od.into();
+
+        // diameter is pi D^2/4
+        let inner_cross_sectional_area: Area = id * id 
+        * 0.25 
+        * PI;
+
+        let outer_cross_sectional_area: Area = od * od
+        * 0.25 
+        * PI;
+        
+        let cross_sectional_area = outer_cross_sectional_area - 
+            inner_cross_sectional_area;
+
+        let cylinder_vol: Volume = 
+        cross_sectional_area * z;
+
+        let cylinder_density: MassDensity = density(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let one_dimension_mass: Mass = 
+        cylinder_density * cylinder_vol;
+
+
+        let enthalpy = specific_enthalpy(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(z);
+
+
+
+        let cylinder = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: one_dimension_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: cylinder_vol, 
+                    max_timestep_vector: 
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
+                    volumetric_flowrate_vector:
+                    vec![],
+                }
+            )
+        );
+
+
+        return Ok(cylinder);
     }
 
 }

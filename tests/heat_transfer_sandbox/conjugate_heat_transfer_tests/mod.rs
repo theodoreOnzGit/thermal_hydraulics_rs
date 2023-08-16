@@ -4,10 +4,10 @@ use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::{DataUserSpecifiedConvectionResistance, DataAdvection};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::SteelSS304L;
+thermophysical_properties::SolidMaterial::{SteelSS304L, self};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -24,7 +24,8 @@ use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_centimeter;
 use uom::si::f64::*;
-use uom::si::length::centimeter;
+use uom::si::length::{centimeter, meter};
+use uom::si::mass_rate::kilogram_per_second;
 use uom::si::power::{watt, kilowatt};
 use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
@@ -87,20 +88,73 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     //
     // cylinder needs diameter and z 
     // shell needs id, od and z
-    
-    let therminol_cylinder: HeatTransferEntity;
-    let steel_shell: HeatTransferEntity;
+    let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
+    let id = Length::new::<meter>(0.0381);
+    let od = Length::new::<meter>(0.04);
+    // z is heated length
+    let heated_length = Length::new::<meter>(1.676);
+    let total_length = Length::new::<meter>(1.983333);
+    let initial_temperature = ThermodynamicTemperature::new::
+        <degree_celsius>(80.0);
+    let atmospheric_pressure = 
+    Pressure::new::<atmosphere>(1.0);
+
+    let therminol_mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
+
+    // construct the objects
+
+    let therminol_cylinder: HeatTransferEntity = 
+    SingleCVNode::new_cylinder(
+        total_length,
+        id,
+        therminol,
+        initial_temperature,
+        atmospheric_pressure
+    ).unwrap();
+
+    let steel_shell: HeatTransferEntity = 
+    SingleCVNode::new_cylindrical_shell(
+        heated_length,
+        id.into(),
+        od.into(),
+        steel,
+        initial_temperature,
+        atmospheric_pressure
+    ).unwrap();
+
+    // now, let me make mutex locks and Arc pointers
+
+    let therminol_cylinder_ptr = Arc::new(
+        Mutex::new(
+            therminol_cylinder
+        ));
+
+    let steel_shell_ptr = Arc::new(
+        Mutex::new(
+            steel_shell
+        ));
+
+
 
     // need two boundary conditions 
 
-    let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
+    let mut inlet_const_temp = HeatTransferEntity::BoundaryConditions(
         UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(80.0)
         ));
 
-    let outlet_zero_heat_flux = HeatTransferEntity::BoundaryConditions(
+    let mut outlet_zero_heat_flux = HeatTransferEntity::BoundaryConditions(
         BCType::UserSpecifiedHeatAddition(Power::new::<watt>(0.0))
     );
+
+    let inlet_const_temp_ptr = Arc::new(Mutex::new(
+        inlet_const_temp
+    ));
+
+    let outlet_zero_heat_flux_ptr = Arc::new(Mutex::new(
+        outlet_zero_heat_flux
+    ));
 
     // the two types of HeatTransferInteractionType are 
     // advection and convection resistance
@@ -143,15 +197,21 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             // todo calculation steps
 
-            // advection bc, so at boundary condition, therminol flows in at 
-            // 0.18 kg/s at 80 c 
+            let mut therminol_cylinder_in_loop = 
+            therminol_cylinder_ptr.lock().unwrap();
+            let mut steel_shell_in_loop = 
+            steel_shell_ptr.lock().unwrap();
+            let mut inlet_const_temp_in_loop = 
+            inlet_const_temp_ptr.lock().unwrap();
+            let mut outlet_zero_heat_flux_in_loop = 
+            outlet_zero_heat_flux_ptr.lock().unwrap();
 
-            let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+            // advection bc, so at boundary condition, therminol flows in at 
+            // 0.18 kg/s at 80C
+
 
             let therminol_inlet_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            let atmospheric_pressure = 
-            Pressure::new::<atmosphere>(1.0);
 
             let therminol_inlet_density = density(
                 therminol,
@@ -161,6 +221,68 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             // i can also calculate the densities of each cv
 
+            let therminol_cv_density_vec = 
+            HeatTransferEntity::density_vector( 
+                therminol_cylinder_in_loop.deref_mut()).unwrap();
+
+            let heater_fluid_cv_density: MassDensity = 
+            therminol_cv_density_vec[0];
+
+            // now crate the dataset 
+            //
+            // the diagram is like so 
+            //
+            // (inlet) -------------> cv --------------> (outlet)
+            //
+            //          inlet_interaction   outlet_interaction 
+            //
+            // the arguments are placed in order of left to right:
+            //
+            // inlet_advection_interaction(inlet,cv)
+            // outlet_advection_interaction(cv,outlet)
+
+            let inlet_advection_dataset = DataAdvection {
+                mass_flowrate: therminol_mass_flowrate,
+                fluid_density_cv1: therminol_inlet_density,
+                fluid_density_cv2: heater_fluid_cv_density,
+            };
+
+            let outlet_advection_dataset = DataAdvection {
+                mass_flowrate: therminol_mass_flowrate,
+                fluid_density_cv1: heater_fluid_cv_density,
+                // cv2 doesn't really matter here,
+                fluid_density_cv2: therminol_inlet_density,
+            };
+
+            let inlet_interaction = HeatTransferInteractionType::
+                Advection(inlet_advection_dataset);
+            let outlet_interaction = HeatTransferInteractionType::
+                Advection(outlet_advection_dataset);
+
+            // now let's link the cv 
+
+
+            link_heat_transfer_entity(&mut inlet_const_temp_in_loop, 
+                &mut therminol_cylinder_in_loop, 
+                inlet_interaction).unwrap();
+            link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
+                &mut outlet_zero_heat_flux_in_loop, 
+                outlet_interaction).unwrap();
+
+            // then link the therminol cylinder and steel shell cv
+
+            link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
+                &mut steel_shell_in_loop, 
+                convection_resistance).unwrap();
+
+            // advance timestep for steel shell and therminol cylinder
+            HeatTransferEntity::advance_timestep(
+                &mut therminol_cylinder_in_loop,
+                timestep_value).unwrap();
+
+            HeatTransferEntity::advance_timestep(
+                &mut steel_shell_in_loop,
+                timestep_value).unwrap();
 
 
             // todo csv data writing

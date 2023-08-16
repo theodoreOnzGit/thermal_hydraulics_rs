@@ -1,4 +1,4 @@
-use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::density::density};
 
 use super::{HeatTransferEntity, CVType, BCType, ArrayCVType};
 
@@ -156,11 +156,21 @@ impl HeatTransferEntity {
 
         // get density 
 
+        let mut density_vector: Vec<MassDensity> = vec![];
 
-        Err(
-        ThermalHydraulicsLibError::GenericStringError(
-                "not implemented yet".to_string()
-            ))
+        for temperature in temperature_vector {
+            let density = density(
+                material,
+                temperature,
+                pressure
+            )?;
+
+            density_vector.push(density);
+
+        }
+
+        // return density vector
+        Ok(density_vector)
 
 
     }
