@@ -95,6 +95,13 @@ pub fn calculate_between_two_singular_cv_nodes(
                 single_cv_2,
                 interaction)
         },
+
+        HeatTransferInteractionType::Advection(advection_data) => {
+            calculate_advection_interaction_between_two_singular_cv_nodes(
+                single_cv_1,
+                single_cv_2,
+                advection_data)
+        },
     }
 
 }

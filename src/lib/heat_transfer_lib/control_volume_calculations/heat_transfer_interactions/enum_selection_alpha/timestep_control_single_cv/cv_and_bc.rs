@@ -430,6 +430,12 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
 
                 ()
             },
+        HeatTransferInteractionType::Advection(_) => {
+            // advection has nothing to do with conduction timestep 
+            // do nothing
+
+            ()
+        },
 
     }
 

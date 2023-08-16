@@ -11,6 +11,7 @@ pub mod data_enum_structs;
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::HeatTransferEntity;
 
+use self::data_enum_structs::DataAdvection;
 use self::data_enum_structs::DataUserSpecifiedConvectionResistance;
 use self::data_enum_structs::DataDualCartesianThermalConductanceThreeDimension;
 /// basically an enum for you to specify 
@@ -281,7 +282,8 @@ pub enum HeatTransferInteractionType {
     ),
 
     
-    /// For convection, the heat flux from solid surface to fluid 
+    /// For convection between solid and fluid, 
+    /// the heat flux from solid surface to fluid 
     /// is:
     ///
     /// q = h A(T_s - T_f)
@@ -289,5 +291,10 @@ pub enum HeatTransferInteractionType {
     /// this interaction calculates power based on a given h and A 
     UserSpecifiedConvectionResistance(
         DataUserSpecifiedConvectionResistance),
+
+
+    /// For advection one would only specify the mass flowrate 
+    /// from one control volume to another
+    Advection(DataAdvection),
 }
 

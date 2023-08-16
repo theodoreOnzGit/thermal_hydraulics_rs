@@ -38,3 +38,37 @@ pub struct DataUserSpecifiedConvectionResistance{
     pub heat_transfer_coeff: HeatTransfer,
 
 }
+
+/// here we have a useful for necessary advection information 
+
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub struct DataAdvection{
+
+    /// mass flowrate
+    pub mass_flowrate: MassRate,
+    /// fluid density of control volume on left
+    ///
+    /// which means when you link control volumes or boundary 
+    /// link(cv1, cv2, interaction)
+    ///
+    /// the picture is like this 
+    ///
+    /// (cv1) ----> advection ---> (cv2)
+    ///
+    /// cv1 is the left control volume 
+    /// cv2 is the right control volume
+    pub fluid_density_cv1: MassDensity,
+    /// fluid density of control volume on left
+    ///
+    /// which means when you link control volumes or boundary 
+    /// link(cv1, cv2, interaction)
+    ///
+    /// the picture is like this 
+    ///
+    /// (cv1) ----> advection ---> (cv2)
+    ///
+    /// cv1 is the left control volume 
+    /// cv2 is the right control volume
+    pub fluid_density_cv2: MassDensity
+
+}

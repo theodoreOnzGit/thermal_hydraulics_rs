@@ -644,6 +644,12 @@ fn get_thermal_conductance(
 
                     heat_transfer_coeff * surf_area
                 },
+
+            HeatTransferInteractionType::Advection(_) => {
+                return Err("advection interaction types \n 
+                do not correspond to conductance".to_string());
+            },
+
         };
 
     return Ok(conductance);

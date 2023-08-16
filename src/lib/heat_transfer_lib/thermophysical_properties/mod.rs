@@ -64,6 +64,9 @@ pub mod specific_enthalpy;
 
 /// (hopefully) useful information in case a function fails to behave 
 /// properly 
+///
+/// probably going to deprecate or integrate with existing 
+/// thermal_hydraulics_error
 pub mod error_types;
 
 /// thermal diffusivity 

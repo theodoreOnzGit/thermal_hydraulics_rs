@@ -970,6 +970,15 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 
 
             },
+        HeatTransferInteractionType::Advection(_) => {
+            // advection has nothing to do with mesh stability timestep 
+            // do nothing
+            //
+            // it can only be calculated after the total mass flowrates 
+            // in and out of the control volumes are calculated
+
+            ()
+        },
     };
 
     // push the corrected minimum timesteps to cv 1 and cv 2

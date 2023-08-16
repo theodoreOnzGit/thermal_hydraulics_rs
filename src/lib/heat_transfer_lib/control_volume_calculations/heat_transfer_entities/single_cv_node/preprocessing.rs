@@ -1,4 +1,4 @@
-use crate::{heat_transfer_lib::thermophysical_properties::{specific_enthalpy::temperature_from_specific_enthalpy, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity, Material, density::density}, thermal_hydraulics_error::ThermalHydraulicsError};
+use crate::{heat_transfer_lib::thermophysical_properties::{specific_enthalpy::temperature_from_specific_enthalpy, thermal_diffusivity::thermal_diffusivity, specific_heat_capacity::specific_heat_capacity, Material, density::density}, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
 use super::SingleCVNode;
 use uom::si::{f64::*, length::meter, power::watt, time::second, volume_rate::cubic_meter_per_second, ratio::ratio};
@@ -70,7 +70,7 @@ impl SingleCVNode {
     #[inline]
     pub fn caclculate_courant_number_timestep(&mut self,
         max_courant_number: Ratio) 
-        -> Result<Time, ThermalHydraulicsError>{
+        -> Result<Time, ThermalHydraulicsLibError>{
 
 
         // then let's calculate the dot product
@@ -84,7 +84,7 @@ impl SingleCVNode {
         // some obscenely high time value
 
         if volume_flowrate_vector.is_empty() {
-            return Err(ThermalHydraulicsError::CourantMassFlowVectorEmpty);
+            return Err(ThermalHydraulicsLibError::CourantMassFlowVectorEmpty);
         }
 
 
@@ -259,7 +259,7 @@ impl SingleCVNode {
             Ok(timescale) => timescale,
             Err(error) => {
                 match error {
-                    ThermalHydraulicsError::CourantMassFlowVectorEmpty => {
+                    ThermalHydraulicsLibError::CourantMassFlowVectorEmpty => {
 
                         // just return a large timestep for an empty
                         // vector

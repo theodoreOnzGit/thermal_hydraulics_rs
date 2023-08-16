@@ -234,6 +234,10 @@ impl ArrayCVType {
                 UserSpecifiedConvectionResistance(_) => 
                 return Err("please specify interaction type as \n 
                     UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+            HeatTransferInteractionType::
+                Advection(_) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
         };
 
         // once area is calculated, we can calculate heat flowrate into 
@@ -351,6 +355,10 @@ impl ArrayCVType {
 
             HeatTransferInteractionType::
                 UserSpecifiedConvectionResistance(_) => 
+                return Err("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
+            HeatTransferInteractionType::
+                Advection(_) => 
                 return Err("please specify interaction type as \n 
                     UserSpecifiedHeatFluxCustomArea or Similar".to_string()),
         };
