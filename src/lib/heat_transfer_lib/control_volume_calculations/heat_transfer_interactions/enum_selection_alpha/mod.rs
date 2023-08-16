@@ -192,8 +192,8 @@ fn attach_boundary_condition_to_control_volume_front_serial(
             => calculate_single_cv_node_constant_heat_flux(
                 single_cv, *heat_flux, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
-            => calculate_single_cv_node_front_constant_temperature_back(
-                *bc_temperature, single_cv, interaction),
+            => calculate_constant_temperature_front_single_cv_back(
+                single_cv, *bc_temperature, interaction),
         (ArrayCV(cv),BCType::UserSpecifiedHeatFlux(heat_flux)) => {
             cv.link_heat_flux_bc_to_front_of_this_cv(
                 *heat_flux,

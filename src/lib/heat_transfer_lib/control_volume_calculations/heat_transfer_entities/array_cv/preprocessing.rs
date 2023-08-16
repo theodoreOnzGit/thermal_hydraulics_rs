@@ -471,9 +471,9 @@ impl ArrayCVType {
             },
         };
 
-        calculate_single_cv_node_front_constant_temperature_back (
-            bc_temperature,
+        calculate_constant_temperature_front_single_cv_back (
             single_cv_node_self,
+            bc_temperature,
             interaction
         )
     }
