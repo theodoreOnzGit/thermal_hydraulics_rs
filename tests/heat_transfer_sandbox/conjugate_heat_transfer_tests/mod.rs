@@ -9,7 +9,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::SolidMaterial::SteelSS304L;
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::Material;
+thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType, BCType};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -121,7 +121,6 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             convection_data
         );
 
-    // advection bc 
 
 
     // timestep settings
@@ -143,6 +142,25 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             // todo calculation steps
+
+            // advection bc, so at boundary condition, therminol flows in at 
+            // 0.18 kg/s at 80 c 
+
+            let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+
+            let therminol_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(80.0);
+            let atmospheric_pressure = 
+            Pressure::new::<atmosphere>(1.0);
+
+            let therminol_inlet_density = density(
+                therminol,
+                therminol_inlet_temperature,
+                atmospheric_pressure
+            ).unwrap();
+
+            // i can also calculate the densities of each cv
+
 
 
             // todo csv data writing

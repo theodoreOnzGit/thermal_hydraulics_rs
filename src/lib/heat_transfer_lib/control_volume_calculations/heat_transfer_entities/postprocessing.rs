@@ -1,3 +1,5 @@
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
 use super::{HeatTransferEntity, CVType, BCType, ArrayCVType};
 
 use uom::si::{f64::*, pressure::atmosphere, power::watt, time::second, length::meter};
@@ -96,5 +98,70 @@ impl HeatTransferEntity {
         };
 
         cv_temperature_vector_result
+    }
+
+    /// density vector 
+    /// attempts to get a vector of densities
+    pub fn density_vector(entity: &mut HeatTransferEntity) ->
+    Result<Vec<MassDensity>,ThermalHydraulicsLibError> {
+
+        let temperature_vector = Self::temperature_vector(entity)?;
+
+        let material = match entity {
+            HeatTransferEntity::ControlVolume(cv) => {
+                match cv {
+                    CVType::SingleCV(single_cv) => {
+                        single_cv.material_control_volume.clone()
+                    },
+                    CVType::ArrayCV(array_cv) => {
+                        match array_cv {
+                            ArrayCVType::Cartesian1D(cv) => {
+                                cv.material_control_volume.clone()
+                            },
+                        }
+                    },
+                }
+            },
+            HeatTransferEntity::BoundaryConditions(_) => {
+                return Err(ThermalHydraulicsLibError::
+                    NotImplementedForBoundaryConditions(
+                        "density not implemented for BC".to_string()
+                    ));
+            },
+        };
+
+        let pressure = match entity {
+            HeatTransferEntity::ControlVolume(cv) => {
+                match cv {
+                    CVType::SingleCV(single_cv) => {
+                        single_cv.pressure_control_volume
+                    },
+                    CVType::ArrayCV(array_cv) => {
+                        match array_cv {
+                            ArrayCVType::Cartesian1D(cv) => {
+                                cv.pressure_control_volume
+                            },
+                        }
+                    },
+                }
+            },
+            HeatTransferEntity::BoundaryConditions(_) => {
+                return Err(ThermalHydraulicsLibError::
+                    NotImplementedForBoundaryConditions(
+                        "density not implemented for BC".to_string()
+                    ));
+            },
+
+        };
+
+        // get density 
+
+
+        Err(
+        ThermalHydraulicsLibError::GenericStringError(
+                "not implemented yet".to_string()
+            ))
+
+
     }
 }

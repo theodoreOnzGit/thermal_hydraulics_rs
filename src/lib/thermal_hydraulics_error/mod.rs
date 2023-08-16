@@ -24,7 +24,9 @@ pub enum ThermalHydraulicsLibError {
     #[error("Placeholder Error Type for Strings{0} ")]
     GenericStringError(String),
 
-
+    /// error to indicate that function is not implemented for BC 
+    #[error("{0}")]
+    NotImplementedForBoundaryConditions(String),
 }
 
 /// 
@@ -46,6 +48,10 @@ impl Into<String> for ThermalHydraulicsLibError {
             ThermalHydraulicsLibError::GenericStringError(string) => {
                 string
             },
+            ThermalHydraulicsLibError::
+                NotImplementedForBoundaryConditions(string) => {
+                    string
+                },
         }
     }
 }

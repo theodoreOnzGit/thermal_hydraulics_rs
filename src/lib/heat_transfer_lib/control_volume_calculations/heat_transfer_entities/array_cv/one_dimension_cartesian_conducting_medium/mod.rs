@@ -78,7 +78,7 @@ pub struct CartesianConduction1DArray {
     temperature_array_next_timestep: Array1<ThermodynamicTemperature>,
 
     /// control volume material 
-    material_control_volume: Material,
+    pub material_control_volume: Material,
 
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
