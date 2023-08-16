@@ -246,15 +246,15 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             let inlet_advection_dataset = DataAdvection {
                 mass_flowrate: therminol_mass_flowrate,
-                fluid_density_cv1: therminol_inlet_density,
-                fluid_density_cv2: heater_fluid_cv_density,
+                fluid_density_heat_transfer_entity_1: therminol_inlet_density,
+                fluid_density_heat_transfer_entity_2: heater_fluid_cv_density,
             };
 
             let outlet_advection_dataset = DataAdvection {
                 mass_flowrate: therminol_mass_flowrate,
-                fluid_density_cv1: heater_fluid_cv_density,
+                fluid_density_heat_transfer_entity_1: heater_fluid_cv_density,
                 // cv2 doesn't really matter here,
-                fluid_density_cv2: therminol_inlet_density,
+                fluid_density_heat_transfer_entity_2: therminol_inlet_density,
             };
 
             let inlet_interaction = HeatTransferInteractionType::

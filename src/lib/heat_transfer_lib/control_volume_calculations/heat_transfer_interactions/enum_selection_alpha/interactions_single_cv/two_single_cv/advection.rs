@@ -61,8 +61,8 @@ pub fn calculate_advection_interaction_between_two_singular_cv_nodes(
     //
     // I'll need a density for the flow first
 
-    let density_cv1 = advection_data.fluid_density_cv1;
-    let density_cv2 = advection_data.fluid_density_cv2;
+    let density_cv1 = advection_data.fluid_density_heat_transfer_entity_1;
+    let density_cv2 = advection_data.fluid_density_heat_transfer_entity_2;
 
     let volumetric_flowrate: VolumeRate;
 

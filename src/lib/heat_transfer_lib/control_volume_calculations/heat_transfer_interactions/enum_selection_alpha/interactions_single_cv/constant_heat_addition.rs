@@ -65,7 +65,10 @@ pub fn calculate_single_cv_node_constant_heat_addition(
             ()
         },
         Liquid(_) => {
-            todo!("need to calculate convection based time scales")
+            // liquid time scales should be calculated using courant 
+            // number at the end of each timestep after volumetric flows 
+            // in and out of the cv are calculated
+            ()
         },
     }
 

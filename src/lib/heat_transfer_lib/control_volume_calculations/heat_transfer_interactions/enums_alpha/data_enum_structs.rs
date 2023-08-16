@@ -57,7 +57,10 @@ pub struct DataAdvection{
     ///
     /// cv1 is the left control volume 
     /// cv2 is the right control volume
-    pub fluid_density_cv1: MassDensity,
+    ///
+    /// now, the cv is not always a cv, it could be any heat
+    /// transfer entity
+    pub fluid_density_heat_transfer_entity_1: MassDensity,
     /// fluid density of control volume on left
     ///
     /// which means when you link control volumes or boundary 
@@ -69,6 +72,8 @@ pub struct DataAdvection{
     ///
     /// cv1 is the left control volume 
     /// cv2 is the right control volume
-    pub fluid_density_cv2: MassDensity
+    /// now, the cv is not always a cv, it could be any heat
+    /// transfer entity
+    pub fluid_density_heat_transfer_entity_2: MassDensity
 
 }

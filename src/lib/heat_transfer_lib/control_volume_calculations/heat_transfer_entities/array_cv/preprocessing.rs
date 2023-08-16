@@ -471,7 +471,7 @@ impl ArrayCVType {
             },
         };
 
-        calculate_single_cv_node_constant_temperature (
+        calculate_single_cv_node_front_constant_temperature_back (
             single_cv_node_self,
             bc_temperature,
             interaction
@@ -496,7 +496,7 @@ impl ArrayCVType {
                 &mut cartesian_array_cv.inner_single_cv
             },
         };
-        calculate_single_cv_node_constant_temperature (
+        calculate_single_cv_node_front_constant_temperature_back (
             single_cv_node_self,
             bc_temperature,
             interaction
