@@ -212,9 +212,8 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             let therminol_inlet_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // actually will need to use the mfbs signal 
-            let heater_power = mfbs_poresky_2017_power_signal(
-                current_time_simulation_time);
+
+
 
             let therminol_inlet_density = density(
                 therminol,
@@ -264,19 +263,50 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             // now let's link the cv 
 
+            // Electrical Heat
+            // -------------> (solid shell) 
+            //                     | 
+            //                     | 
+            //                     |  (thermal resistance)
+            //                     | 
+            //
+            // --------> (well mixed fluid volume) ----------->
+            //                 T_fluid
+            // Fluid in                                Fluid out 
+            // T_in                                    T_fluid
 
+            // (1) inlet to fluid
             link_heat_transfer_entity(&mut inlet_const_temp_in_loop, 
                 &mut therminol_cylinder_in_loop, 
                 inlet_interaction).unwrap();
+            // (2) fluid to outlet
             link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
                 &mut outlet_zero_heat_flux_in_loop, 
                 outlet_interaction).unwrap();
 
-            // then link the therminol cylinder and steel shell cv
-
+            // (3) therminol cylinder and steel shell cv
             link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
                 &mut steel_shell_in_loop, 
                 convection_resistance).unwrap();
+
+            // (4) electrical heat to solid shell 
+            // (todo)
+            // will need to use the mfbs signal 
+            let heater_power = mfbs_poresky_2017_power_signal(
+                current_time_simulation_time);
+
+            let mut electrical_heat_bc: HeatTransferEntity = 
+            BCType::new_const_heat_addition(heater_power);
+
+            let heat_addition_interaction = 
+            HeatTransferInteractionType::UserSpecifiedHeatAddition;
+
+            link_heat_transfer_entity(
+                &mut steel_shell_in_loop,
+                &mut electrical_heat_bc,
+                heat_addition_interaction,
+            ).unwrap();
+
 
             // advance timestep for steel shell and therminol cylinder
             HeatTransferEntity::advance_timestep(

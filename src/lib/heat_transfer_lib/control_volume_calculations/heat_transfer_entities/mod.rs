@@ -95,6 +95,30 @@ pub enum BCType {
     UserSpecifiedHeatAddition(Power),
 }
 
+impl BCType {
+    /// creates a new constant temperature BC
+    pub fn new_const_temperature(temperature:ThermodynamicTemperature)
+        -> HeatTransferEntity {
+        return HeatTransferEntity::BoundaryConditions(
+        BCType::UserSpecifiedTemperature(temperature));
+    }
+
+    /// creates a new constant heat flux bc
+    pub fn new_const_heat_flux(heat_flux: HeatFluxDensity)
+        -> HeatTransferEntity {
+        return HeatTransferEntity::BoundaryConditions(
+        BCType::UserSpecifiedHeatFlux(heat_flux));
+    }
+
+    /// creates a new constant heat addition bc
+    pub fn new_const_heat_addition(heat_addition: Power)
+        -> HeatTransferEntity {
+        return HeatTransferEntity::BoundaryConditions(
+        BCType::UserSpecifiedHeatAddition(heat_addition));
+    }
+
+}
+
 
 
 /// Contains different length types for use in defining interactions 
