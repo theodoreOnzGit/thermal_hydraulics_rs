@@ -189,7 +189,7 @@ fn attach_boundary_condition_to_control_volume_front_serial(
             => calculate_constant_heat_addition_front_single_cv_back(
                 single_cv, *heat_rate, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
-            => calculate_single_cv_node_constant_heat_flux(
+            => calculate_constant_heat_flux_front_single_cv_back(
                 single_cv, *heat_flux, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_constant_temperature_front_single_cv_back(
@@ -242,8 +242,8 @@ fn attach_boundary_condition_to_control_volume_back_serial(
             => calculate_single_cv_front_constant_heat_addition_back(
                 *heat_rate, single_cv, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedHeatFlux(heat_flux))
-            => calculate_single_cv_node_constant_heat_flux(
-                single_cv, *heat_flux, interaction),
+            => calculate_single_cv_front_heat_flux_back(
+                *heat_flux,single_cv, interaction),
         (SingleCV(single_cv), BCType::UserSpecifiedTemperature(bc_temperature))
             => calculate_single_cv_node_front_constant_temperature_back(
                 *bc_temperature, single_cv, interaction),
