@@ -1,3 +1,4 @@
+
 use enums_alpha::data_enum_structs::DataAdvection;
 use uom::num_traits::Zero;
 use uom::si::f64::*;
@@ -8,11 +9,22 @@ heat_transfer_interactions::enum_selection_alpha::*;
 use crate::heat_transfer_lib::thermophysical_properties::density::density;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
+
+/// for advection calculations with heat flux or heat addition BC,
+/// the temperature of flows flowing in and out of the BC will be 
+/// determined by that of the control volume
+///
+/// it will be the same temperature as that of the control volume 
+/// at that current timestep
+///
+/// this will be quite similar to how OpenFOAM treats inflows and outflows 
+/// at zero gradient BCs
+/// 
 #[inline]
 pub (in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions
-::enum_selection_alpha::interactions_single_cv::constant_temperature)
+::enum_selection_alpha::interactions_single_cv::constant_heat_addition)
 fn calculate_cv_front_bc_back_advection(
-    boundary_condition_temperature: ThermodynamicTemperature,
     control_vol: &mut SingleCVNode,
     advection_data: DataAdvection
 ) -> Result<(), ThermalHydraulicsLibError>{
@@ -30,17 +42,18 @@ fn calculate_cv_front_bc_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
+    let control_vol_temperature = control_vol.get_temperature()?;
 
-    let specific_enthalpy_bc: AvailableEnergy = specific_enthalpy(
+    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = specific_enthalpy(
         control_vol_material,
-        boundary_condition_temperature,
+        control_vol_temperature,
         control_vol_pressure
     )?;
     // calculate heat rate 
 
     let heat_flowrate_from_bc_to_cv: Power 
     = advection_heat_rate(mass_flow_from_bc_to_cv,
-        specific_enthalpy_bc,
+        specific_enthalpy_bc_zero_gradient,
         specific_enthalpy_cv,)?;
 
     // push to cv
@@ -56,7 +69,7 @@ fn calculate_cv_front_bc_back_advection(
 
     let density_bc: MassDensity = density(
         control_vol_material,
-        boundary_condition_temperature,
+        control_vol_temperature,
         control_vol_pressure
     )?;
 
@@ -86,12 +99,20 @@ fn calculate_cv_front_bc_back_advection(
     Ok(())
 }
 
+/// for advection calculations with heat flux or heat addition BC,
+/// the temperature of flows flowing in and out of the BC will be 
+/// determined by that of the control volume
+///
+/// it will be the same temperature as that of the control volume 
+/// at that current timestep
+/// 
+/// this will be quite similar to how OpenFOAM treats inflows and outflows 
+/// at zero gradient BCs
 #[inline]
 pub (in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions
-::enum_selection_alpha::interactions_single_cv::constant_temperature)
+::enum_selection_alpha::interactions_single_cv::constant_heat_addition)
 fn calculate_bc_front_cv_back_advection(
     control_vol: &mut SingleCVNode,
-    boundary_condition_temperature: ThermodynamicTemperature,
     advection_data: DataAdvection
 ) -> Result<(), ThermalHydraulicsLibError>{
 
@@ -108,10 +129,11 @@ fn calculate_bc_front_cv_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
+    let control_vol_temperature = control_vol.get_temperature()?;
 
-    let specific_enthalpy_bc: AvailableEnergy = specific_enthalpy(
+    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = specific_enthalpy(
         control_vol_material,
-        boundary_condition_temperature,
+        control_vol_temperature,
         control_vol_pressure
     )?;
     // calculate heat rate 
@@ -119,7 +141,7 @@ fn calculate_bc_front_cv_back_advection(
     let heat_flowrate_from_bc_to_cv: Power 
     = advection_heat_rate(mass_flow_from_cv_to_bc,
         specific_enthalpy_cv,
-        specific_enthalpy_bc,)?;
+        specific_enthalpy_bc_zero_gradient,)?;
 
     // push to cv
     control_vol.rate_enthalpy_change_vector.
@@ -134,7 +156,7 @@ fn calculate_bc_front_cv_back_advection(
 
     let density_bc: MassDensity = density(
         control_vol_material,
-        boundary_condition_temperature,
+        control_vol_temperature,
         control_vol_pressure
     )?;
 

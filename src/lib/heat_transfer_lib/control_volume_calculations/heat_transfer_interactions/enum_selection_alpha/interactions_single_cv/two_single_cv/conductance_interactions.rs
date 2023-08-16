@@ -115,29 +115,12 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     // on convection flow
     // match statement is meant to tell that liquid CVs are not quite 
     // ready for use
+    //
+    // but the liquid timescales are calculated at the cv level only 
+    // after all volumetric flowrates are calculated
+    //
+    // so don't really need any new timescale calculations
 
-    // now, to calculate relative time scales, I need to obtain 
-    // thermal inertia ratios and obtain my lengthscales back from 
-    // the time scales, it'd be kind of messy to do it here
-    // but looks like I need a method to deal with it
-
-    match single_cv_1_material {
-        Solid(_) => {
-            ()
-        },
-        Liquid(_) => {
-            todo!("need to calculate convection based time scales")
-        },
-    }
-
-    match single_cv_2_material {
-        Solid(_) => {
-            ()
-        },
-        Liquid(_) => {
-            todo!("need to calculate convection based time scales")
-        },
-    }
     return Ok(());
 
 }
