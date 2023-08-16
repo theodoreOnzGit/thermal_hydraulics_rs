@@ -212,6 +212,9 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
             let therminol_inlet_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(80.0);
+            // actually will need to use the mfbs signal 
+            let heater_power = mfbs_poresky_2017_power_signal(
+                current_time_simulation_time);
 
             let therminol_inlet_density = density(
                 therminol,

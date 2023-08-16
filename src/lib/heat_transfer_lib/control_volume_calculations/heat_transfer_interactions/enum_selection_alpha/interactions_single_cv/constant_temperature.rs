@@ -34,9 +34,22 @@ pub fn calculate_single_cv_node_constant_temperature(
     // specified or anything
 
     let bc_pressure = cv_pressure.clone();
-    
-    // we'll need thermal conductance 
 
+    // this code is pretty crappy but I'll match advection first
+
+    match interaction {
+        HeatTransferInteractionType::Advection(
+        advection_dataset) => {
+                todo!("need to calculate advection cv and bc");
+
+                ()
+            },
+        _ => (),
+    }
+
+
+    
+    // we'll need thermal conductance otherwise 
     let cv_bc_conductance: ThermalConductance = 
     get_thermal_conductance(
         cv_temperature, 
