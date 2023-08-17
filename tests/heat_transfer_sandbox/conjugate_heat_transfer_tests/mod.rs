@@ -28,6 +28,7 @@ use uom::si::f64::*;
 use uom::si::length::{centimeter, meter};
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::power::{watt, kilowatt};
+use uom::si::ratio::ratio;
 use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
@@ -85,6 +86,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 #[ignore = "takes about 20min, only use for data collection"]
 pub fn one_dimension_ciet_heater_v_1_0_test(){
 
+
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
     //
@@ -94,6 +96,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);
+    let inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
     let heated_length = Length::new::<meter>(1.676);
     let total_length = Length::new::<meter>(1.983333);
@@ -107,9 +110,10 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     // construct the objects
 
     let therminol_cylinder: HeatTransferEntity = 
-    SingleCVNode::new_cylinder(
+    SingleCVNode::new_cylindrical_shell(
         total_length,
-        id,
+        inner_tube_od.into(),
+        id.into(),
         therminol,
         initial_temperature,
         atmospheric_pressure
@@ -190,7 +194,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         // csv writer, for post processing 
 
 
-        let mut wtr = Writer::from_path("one_dimension_ciet_cht.csv")
+        let mut wtr = Writer::from_path("one_dimension_ciet_cht_functional_test.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -358,6 +362,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             auto_calculated_timestep.get::<second>().to_string();
 
 
+
             wtr.write_record(&[current_time_string,
                 heater_power_kilowatt_string,
                 therminol_celsius_string,
@@ -391,6 +396,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     return ();
 }
 
+
 /// this is a one dimension heater test, and we only test the functionality 
 /// of the API
 
@@ -406,6 +412,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);
+    let inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
     let heated_length = Length::new::<meter>(1.676);
     let total_length = Length::new::<meter>(1.983333);
@@ -419,9 +426,10 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
     // construct the objects
 
     let therminol_cylinder: HeatTransferEntity = 
-    SingleCVNode::new_cylinder(
+    SingleCVNode::new_cylindrical_shell(
         total_length,
-        id,
+        inner_tube_od.into(),
+        id.into(),
         therminol,
         initial_temperature,
         atmospheric_pressure
@@ -668,6 +676,35 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
 
             let auto_calculated_timestep_string = 
             auto_calculated_timestep.get::<second>().to_string();
+
+            // used for debugging
+            let _number_of_mass_flows = 
+            match &mut therminol_cylinder_in_loop.clone() {
+                HeatTransferEntity::ControlVolume(single_cv) => {
+                    match single_cv {
+                        SingleCV(single_cv) => {
+                            single_cv.volumetric_flowrate_vector.len()
+                        },
+                        CVType::ArrayCV(_) => todo!(),
+                    }
+                },
+                HeatTransferEntity::BoundaryConditions(_) => todo!(),
+            };
+
+            let _courant_number_timestep = 
+            match &mut therminol_cylinder_in_loop.clone() {
+                HeatTransferEntity::ControlVolume(single_cv) => {
+                    match single_cv {
+                        SingleCV(single_cv) => {
+                            single_cv.calculate_courant_number_timestep(
+                            Ratio::new::<ratio>(1.0)).unwrap()
+                                .get::<second>()
+                        },
+                        CVType::ArrayCV(_) => todo!(),
+                    }
+                },
+                HeatTransferEntity::BoundaryConditions(_) => todo!(),
+            };
 
 
             wtr.write_record(&[current_time_string,

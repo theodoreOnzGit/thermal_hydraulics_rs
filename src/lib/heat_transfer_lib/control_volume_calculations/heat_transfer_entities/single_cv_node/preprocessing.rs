@@ -68,7 +68,7 @@ impl SingleCVNode {
     
     /// calculates timestep based on courant number 
     #[inline]
-    pub fn caclculate_courant_number_timestep(&mut self,
+    pub fn calculate_courant_number_timestep(&mut self,
         max_courant_number: Ratio) 
         -> Result<Time, ThermalHydraulicsLibError>{
 
@@ -258,7 +258,7 @@ impl SingleCVNode {
         let max_courant_number: Ratio = Ratio::new::<ratio>(1.0);
 
         let courant_number_timestep_result = 
-        self.caclculate_courant_number_timestep(max_courant_number);
+        self.calculate_courant_number_timestep(max_courant_number);
 
         let courant_number_timescale: Time = match courant_number_timestep_result {
             Ok(timescale) => timescale,
