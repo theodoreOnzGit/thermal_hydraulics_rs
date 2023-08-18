@@ -83,7 +83,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 ///
 #[test]
-#[ignore = "takes about 20min, only use for data collection"]
+//#[ignore = "takes about 20min, only use for data collection"]
 pub fn one_dimension_ciet_heater_v_1_0_test(){
 
 
@@ -194,7 +194,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         // csv writer, for post processing 
 
 
-        let mut wtr = Writer::from_path("one_dimension_ciet_cht_functional_test.csv")
+        let mut wtr = Writer::from_path("one_dimension_ciet_cht.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -315,7 +315,10 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             // (todo)
             // will need to use the mfbs signal 
 
-            let heater_power = mfbs_poresky_2017_power_signal(
+            let _heater_power = mfbs_poresky_2017_power_signal(
+                current_time_simulation_time);
+
+            let heater_power = mfbs_power_signal_logspace_custom(
                 current_time_simulation_time);
 
             let mut electrical_heat_bc: HeatTransferEntity = 
@@ -397,6 +400,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 }
 
 #[test]
+#[ignore = "already collected auto timestep test data"]
 pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
 
