@@ -14,7 +14,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SurfaceArea, SingleCVNode, CVType, BCType};
+    SurfaceArea, SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
@@ -45,7 +45,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 ///
 #[test]
-#[ignore = "takes about 20min, only use for data collection"]
+//#[ignore = "takes about 20min, only use for data collection"]
 pub fn ciet_heater_v_1_0_test_steady_state(){
 
 
@@ -67,13 +67,132 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
     let flow_area = Area::new::<square_meter>(0.00105);
+    let number_of_nodes: usize = 8;
 
     
     
 
     let therminol_mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
 
-    // construct the objects
+    // construct the objects,
+    // I'm going to use a function 
+
+    fn construct_heated_section_fluid_nodes(therminol: Material,
+        cross_sectional_area: Area,
+        total_length: Length,
+        initial_temperature: ThermodynamicTemperature,
+        pressure: Pressure,
+        number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
+
+        // I'm going to make a vector of mutable heat transfer 
+        // entities
+
+        let mut fluid_node_vec: Vec<HeatTransferEntity> = vec![];
+
+        // now let's get individual length of each node 
+
+        let node_length: Length = total_length/number_of_nodes as f64;
+
+        for _index in 0..number_of_nodes {
+            let therminol_node: HeatTransferEntity = 
+            SingleCVNode::new_odd_shaped_pipe(
+                node_length,
+                cross_sectional_area,
+                therminol,
+                initial_temperature,
+                pressure,
+            ).unwrap();
+
+            fluid_node_vec.push(therminol_node);
+        }
+
+        return fluid_node_vec;
+    }
+
+    let mut fluid_node_vec: Vec<HeatTransferEntity> 
+    = construct_heated_section_fluid_nodes(
+        therminol,
+        flow_area,
+        heated_length,
+        initial_temperature,
+        atmospheric_pressure,
+        number_of_nodes);
+    
+    // then construct two layers of steel shells
+    
+    fn construct_steel_shell_nodes(steel: Material,
+        id: Length, 
+        od: Length,
+        total_length: Length,
+        initial_temperature: ThermodynamicTemperature,
+        pressure: Pressure,
+        number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
+
+        // I'm going to make a vector of mutable heat transfer 
+        // entities
+
+        let id: InnerDiameterThermalConduction = id.into();
+        let od: OuterDiameterThermalConduction = od.into();
+
+        let mut steel_shell_node_vec: Vec<HeatTransferEntity> = vec![];
+
+        // now let's get individual length of each node 
+
+        let node_length: Length = total_length/number_of_nodes as f64;
+
+        for _index in 0..number_of_nodes {
+
+            let steel_shell_node = SingleCVNode::new_cylindrical_shell(
+                node_length,
+                id, od,
+                steel, 
+                initial_temperature,
+                pressure,
+            ).unwrap();
+
+            steel_shell_node_vec.push(steel_shell_node);
+        }
+
+        return steel_shell_node_vec;
+    }
+
+    // inner layer of steel shell I will just assume 0.0392 m is the 
+    // midway point
+    // the inner node should be thicker anyway 
+
+    let midway_point_steel_shell: Length = 
+    Length::new::<meter>(0.0392);
+
+    let mut steel_shell_inner_node_vec: Vec<HeatTransferEntity> = 
+    construct_steel_shell_nodes(
+        steel,
+        id, midway_point_steel_shell, total_length,
+        initial_temperature,
+        atmospheric_pressure,
+        number_of_nodes);
+
+    let mut steel_shell_outer_node_vec: Vec<HeatTransferEntity> = 
+    construct_steel_shell_nodes(
+        steel,
+        midway_point_steel_shell, od, total_length,
+        initial_temperature,
+        atmospheric_pressure,
+        number_of_nodes);
+
+    // create mutex locks for them 
+
+    let fluid_node_vec_ptr = Arc::new(Mutex::new(
+        fluid_node_vec
+    ));
+
+    let steel_shell_inner_node_vec_ptr = Arc::new(Mutex::new(
+        steel_shell_inner_node_vec
+    ));
+
+    let steel_shell_outer_node_vec_ptr = Arc::new(Mutex::new(
+        steel_shell_outer_node_vec
+    ));
+    
 
     let therminol_cylinder: HeatTransferEntity = 
     SingleCVNode::new_cylindrical_shell(
@@ -134,25 +253,12 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     // 2007 square_centimeter
     // and 607 watt_per_square_meter_kelvin
 
-    let convection_data = DataUserSpecifiedConvectionResistance { 
-        surf_area: SurfaceArea::from(
-            Area::new::<square_centimeter>(2007_f64)
-        ),
-        heat_transfer_coeff: 
-        HeatTransfer::new::<watt_per_square_meter_kelvin>(607_f64),
-    };
-
-    let convection_resistance = HeatTransferInteractionType::
-        UserSpecifiedConvectionResistance(
-            convection_data
-        );
-
 
 
     // timestep settings
 
 
-    let max_time: Time = Time::new::<second>(20000.0);
+    let max_time: Time = Time::new::<second>(2.0);
     let max_time_ptr = Arc::new(max_time);
 
     // this is the calculation loop
@@ -181,7 +287,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
-            // todo calculation steps
+            // calculation steps
 
             let mut therminol_cylinder_in_loop = 
             therminol_cylinder_ptr.lock().unwrap();
@@ -191,6 +297,34 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             inlet_const_temp_ptr.lock().unwrap();
             let mut outlet_zero_heat_flux_in_loop = 
             outlet_zero_heat_flux_ptr.lock().unwrap();
+
+            let mut fluid_vec_in_loop = 
+            fluid_node_vec_ptr.lock().unwrap();
+
+            let mut steel_shell_inner_node_vec_in_loop = 
+            steel_shell_inner_node_vec_ptr.lock().unwrap();
+
+            let mut steel_shell_outer_node_vec_in_loop = 
+            steel_shell_outer_node_vec_ptr.lock().unwrap();
+
+            // calculate convection, 
+            // this time we need a vector
+
+            todo!("convection heat transfer coeff between inner shell \n 
+            and fluid");
+
+            let convection_data = DataUserSpecifiedConvectionResistance { 
+                surf_area: SurfaceArea::from(
+                    Area::new::<square_centimeter>(2007_f64)
+                ),
+                heat_transfer_coeff: 
+                HeatTransfer::new::<watt_per_square_meter_kelvin>(607_f64),
+            };
+
+            let convection_resistance = HeatTransferInteractionType::
+                UserSpecifiedConvectionResistance(
+                    convection_data
+                );
 
 
 

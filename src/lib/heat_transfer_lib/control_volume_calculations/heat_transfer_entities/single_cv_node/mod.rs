@@ -510,6 +510,77 @@ impl SingleCVNode {
         return Ok(cylinder);
     }
 
+    /// not all fluid elements are shaped like a cylinder
+    ///
+    /// fluid may be forced to flow through some odd shaped pipe
+    /// This would be defined by a length and a cross sectional area
+    #[inline]
+    pub fn new_odd_shaped_pipe(z: Length, 
+        cross_sectional_area: Area,
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,
+    ThermalHydraulicsLibError>{
+
+
+        let cylinder_vol: Volume = 
+        cross_sectional_area * z;
+
+        let cylinder_density: MassDensity = density(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let one_dimension_mass: Mass = 
+        cylinder_density * cylinder_vol;
+
+
+        let enthalpy = specific_enthalpy(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(z);
+
+
+
+        let cylinder = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: one_dimension_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: cylinder_vol, 
+                    max_timestep_vector: 
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
+                    volumetric_flowrate_vector:
+                    vec![],
+                }
+            )
+        );
+
+
+        return Ok(cylinder);
+    }
 }
 
 
