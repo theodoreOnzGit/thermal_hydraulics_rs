@@ -130,7 +130,12 @@ pub enum HeatTransferInteractionType {
     ///
     /// one also needs to determine the 
     /// inner diameter, outer diameter and length of the tube 
-    /// 
+    ///  
+    /// the first material and thickness argument represents 
+    /// cv_1 to cv_2 (the inner shell)
+    ///
+    /// and the second entry pertains to the outer shell 
+    /// cv_2 to cv_3, or the outer shell
     ///
     /// 
     ///

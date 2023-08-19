@@ -343,8 +343,12 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 fluid_vec_in_loop.iter_mut().enumerate(){
 
                     // conduction material, properties
+
+                    // radial thickness needs to be half of the 
+                    // shell thickness, because it links to the shell 
+                    // center
                     let radial_thickness: Length = 
-                    midway_point_steel_shell - id;
+                    (midway_point_steel_shell - id) *0.5;
 
                     let radial_thickness: RadialCylindricalThicknessThermalConduction
                     = radial_thickness.into();
@@ -397,7 +401,65 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 }
 
             // second, link inner shell to outer shell 
+            for (index, inner_shell_ptr) in steel_shell_inner_node_vec_in_loop.
+                iter_mut().enumerate(){
+                    let outer_shell_ptr: &mut HeatTransferEntity = 
+                    &mut steel_shell_outer_node_vec_in_loop[index];
 
+
+                    // remember, the inner diameter and outer diameter 
+                    // of the shells are at the midpoints of both shells 
+                    //
+                    // so the radial thicknesses are halved.
+                    let inner_radial_thickness: Length = 
+                    0.5*(midway_point_steel_shell - id);
+
+                    let outer_radial_thickness: Length = 
+                    0.5*(od - midway_point_steel_shell);
+
+                    let inner_radial_thickness: RadialCylindricalThicknessThermalConduction 
+                    = inner_radial_thickness.into();
+
+                    let outer_radial_thickness: RadialCylindricalThicknessThermalConduction 
+                    = outer_radial_thickness.into();
+
+                    // remember, the inner diameter and outer diameter 
+                    // of the shells are at the midpoints of both shells 
+                    //
+                    // thats why you see all this subtraction
+
+                    let id_mid_inner_shell: Length = 
+                    id + inner_radial_thickness.into();
+
+                    let id_mid_inner_shell: InnerDiameterThermalConduction 
+                    = id_mid_inner_shell.into();
+
+                    let od_mid_inner_shell: Length = 
+                    od - outer_radial_thickness.into();
+
+                    let od_mid_inner_shell: OuterDiameterThermalConduction 
+                    = od_mid_inner_shell.into();
+
+                    let node_length: Length = 
+                    total_length/(number_of_nodes as f64);
+
+                    let node_length: CylinderLengthThermalConduction = 
+                    node_length.into();
+
+                    // create the interaction 
+
+                    let interaction = HeatTransferInteractionType::
+                        DualCylindricalThermalConductance(
+                            (steel, inner_radial_thickness),
+                            (steel, outer_radial_thickness),
+                            (id_mid_inner_shell, od_mid_inner_shell, node_length),
+                        );
+
+                    // link them together
+                    link_heat_transfer_entity(inner_shell_ptr, 
+                        outer_shell_ptr, 
+                        interaction).unwrap();
+                }
 
             // third, link outer shell to ambient temperature
             
