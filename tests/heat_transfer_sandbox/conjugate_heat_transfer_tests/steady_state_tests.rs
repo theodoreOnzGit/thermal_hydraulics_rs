@@ -14,7 +14,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SurfaceArea, SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction};
+    SurfaceArea, SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
@@ -307,11 +307,107 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             let mut steel_shell_outer_node_vec_in_loop = 
             steel_shell_outer_node_vec_ptr.lock().unwrap();
 
-            // calculate convection, 
-            // this time we need a vector
+            // we need to conenct a few things 
+            //
+            // to simplify, we also ignore axial conduction 
+            // in all materials
+            // 
+            // in the radial direction:
+            //
+            // (ambient temp)
+            // |
+            // | --  convection/conduction
+            // |
+            // (outer steel shell nodes)
+            // |
+            // | -- conduction (cylindrical)
+            // |
+            // (inner steel shell nodes) 
+            // | 
+            // | -- conduction/convection
+            // | 
+            // (fluid nodes) 
+            //
+            // 
+            // in the axial direction: 
+            //
+            // (inlet) --- (fluid nodes) --- (outlet)
 
-            todo!("convection heat transfer coeff between inner shell \n 
-            and fluid");
+            // calculate convection interactions
+            // first, we need to connect the 
+
+
+            // radial heat transfer interactions
+            // this one is fluid to inner steel cylinder
+            for (index, fluid_node_heat_trf_entity_ptr) in 
+                fluid_vec_in_loop.iter_mut().enumerate(){
+
+                    // conduction material, properties
+                    let radial_thickness: Length = 
+                    midway_point_steel_shell - id;
+
+                    let radial_thickness: RadialCylindricalThicknessThermalConduction
+                    = radial_thickness.into();
+
+                    let steel_inner_cylindrical_node_temp: ThermodynamicTemperature 
+                    = HeatTransferEntity::temperature(
+                        &mut steel_shell_inner_node_vec_in_loop[index]).unwrap();
+
+                    let pressure = atmospheric_pressure;
+
+                    // now need to get heat transfer coeff
+
+                    let therminol_temp: ThermodynamicTemperature 
+                    = HeatTransferEntity::temperature(
+                        fluid_node_heat_trf_entity_ptr).unwrap();
+
+                    let heat_trf_coeff: HeatTransfer = 
+                    heat_transfer_coefficient_ciet_v_2_0(
+                        therminol_mass_flowrate,
+                        therminol_temp,
+                        pressure,
+                    );
+
+                    let inner_diameter: InnerDiameterThermalConduction = 
+                    id.clone().into();
+
+                    let node_length: Length = 
+                    total_length/(number_of_nodes as f64);
+
+                    let node_length: CylinderLengthThermalConduction = 
+                    node_length.into();
+
+                    // construct the interaction 
+
+                    let interaction: HeatTransferInteractionType = 
+                    HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside
+                        ((steel,radial_thickness,
+                            steel_inner_cylindrical_node_temp,
+                            pressure),
+                            (heat_trf_coeff,
+                                inner_diameter,
+                                node_length));
+
+                    // link the entities,
+                    // this is the fluid to the inner shell
+                    link_heat_transfer_entity(fluid_node_heat_trf_entity_ptr, 
+                        &mut steel_shell_inner_node_vec_in_loop[index], 
+                        interaction).unwrap();
+
+                }
+
+            // second, link inner shell to outer shell 
+
+
+            // third, link outer shell to ambient temperature
+            
+
+            // fourth, link fluid nodes axially with advection 
+
+            // fifth, link fluid boundary nodes with the boundary 
+            // conditions
+
+
 
             let convection_data = DataUserSpecifiedConvectionResistance { 
                 surf_area: SurfaceArea::from(
