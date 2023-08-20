@@ -662,6 +662,83 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             // fifth, link fluid boundary nodes with the boundary 
             // conditions
 
+            {
+                // inlet link
+                let therminol_inlet_temperature = 
+                ThermodynamicTemperature::new::<degree_celsius>(80.0);
+
+                let therminol_inlet_density = density(
+                    therminol,
+                    therminol_inlet_temperature,
+                    atmospheric_pressure
+                ).unwrap();
+
+                // i need to borrow the first and last indexed vector 
+                // mutably, so I split again
+
+                let (vec_slice_one, vec_slice_two) = 
+                fluid_vec_in_loop.split_at_mut(1);
+
+                let mut inlet_node: &mut HeatTransferEntity = 
+                vec_slice_one.first_mut().unwrap();
+
+                let mut outlet_node: &mut HeatTransferEntity = 
+                vec_slice_two.last_mut().unwrap();
+
+                // we now need inlet and outlet node densities
+
+                let inlet_node_density_vec = 
+                HeatTransferEntity::density_vector( 
+                    inlet_node.deref_mut()).unwrap();
+
+                let inlet_node_density: MassDensity = 
+                inlet_node_density_vec[0];
+
+                let outlet_node_density_vec = 
+                HeatTransferEntity::density_vector( 
+                    outlet_node.deref_mut()).unwrap();
+
+                let outlet_node_density: MassDensity = 
+                outlet_node_density_vec[0];
+
+                // construct the interaction objects to say we 
+                // have an advection going on between the nodes and the 
+                // BCs
+                // then we can make the interactions work
+
+                let inlet_advection_dataset = DataAdvection {
+                    mass_flowrate: therminol_mass_flowrate,
+                    fluid_density_heat_transfer_entity_1: therminol_inlet_density,
+                    fluid_density_heat_transfer_entity_2: inlet_node_density,
+                };
+
+                let outlet_advection_dataset = DataAdvection {
+                    mass_flowrate: therminol_mass_flowrate,
+                    fluid_density_heat_transfer_entity_1: outlet_node_density,
+                    // cv2 doesn't really matter here,
+                    fluid_density_heat_transfer_entity_2: outlet_node_density,
+                };
+
+
+                let inlet_interaction = HeatTransferInteractionType::
+                    Advection(inlet_advection_dataset);
+                let outlet_interaction = HeatTransferInteractionType::
+                    Advection(outlet_advection_dataset);
+
+
+                // link the inlet and outlet with their respective BCs 
+                //
+                // (inlet bc) --- (inlet node) --- ... --- (outlet node) --- (outlet bc)
+
+                link_heat_transfer_entity(&mut inlet_const_temp_in_loop, 
+                    &mut inlet_node, 
+                    inlet_interaction).unwrap();
+
+                link_heat_transfer_entity(&mut outlet_node, 
+                    &mut outlet_zero_heat_flux_in_loop, 
+                    outlet_interaction).unwrap();
+
+            }
 
 
             let convection_data = DataUserSpecifiedConvectionResistance { 
