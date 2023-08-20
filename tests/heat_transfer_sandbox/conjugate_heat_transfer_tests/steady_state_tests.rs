@@ -71,6 +71,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let ambient_air_temp = ThermodynamicTemperature::new::<
         degree_celsius>(21.67);
 
+    let heater_steady_state_power = Power::new::<kilowatt>(8.0);
+
     
     
 
@@ -477,11 +479,13 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                         outer_shell_ptr, 
                         interaction).unwrap();
 
-                    // now for heater power 
+                    // now for heater power, can swap between 
+                    // mfbs signal or steady state signal at your choice
 
-
-                    let heater_power = mfbs_power_signal_logspace_custom(
+                    let _heater_power = mfbs_power_signal_logspace_custom(
                         current_time_simulation_time);
+
+                    let heater_power = heater_steady_state_power;
 
                     // each node would have roughly the same power 
                     // I should of course average it volumetrically 
@@ -741,6 +745,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             }
 
 
+
             let convection_data = DataUserSpecifiedConvectionResistance { 
                 surf_area: SurfaceArea::from(
                     Area::new::<square_centimeter>(2007_f64)
@@ -900,6 +905,16 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 shell_celsius_string,
                 auto_calculated_timestep_string])
                 .unwrap();
+            // todo:
+            {
+                // code block for recording temperature profiles
+            }
+
+            // todo:
+            {
+                // code block for recording inlet, shell and outlet 
+                // temperatures
+            }
 
             // advance timestep for steel shell and therminol cylinder
             HeatTransferEntity::advance_timestep(
@@ -909,6 +924,13 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             HeatTransferEntity::advance_timestep(
                 &mut steel_shell_in_loop,
                 timestep_value).unwrap();
+
+            // todo:
+            {
+                // code block for advancing timestep over all control 
+                // volumes, that is inner shell, outer shell and 
+                // fluid volumes
+            }
 
 
             // add the timestep
