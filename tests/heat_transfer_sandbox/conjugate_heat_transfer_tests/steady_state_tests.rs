@@ -68,6 +68,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
     let flow_area = Area::new::<square_meter>(0.00105);
     let number_of_nodes: usize = 8;
+    let ambient_air_temp = ThermodynamicTemperature::new::<
+        degree_celsius>(21.67);
 
     
     
@@ -239,12 +241,21 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         BCType::UserSpecifiedHeatAddition(Power::new::<watt>(0.0))
     );
 
+    let ambient_temperature_bc = HeatTransferEntity::BoundaryConditions(
+        UserSpecifiedTemperature(
+            ambient_air_temp
+        ));
+
     let inlet_const_temp_ptr = Arc::new(Mutex::new(
         inlet_const_temp
     ));
 
     let outlet_zero_heat_flux_ptr = Arc::new(Mutex::new(
         outlet_zero_heat_flux
+    ));
+
+    let ambient_air_temp_bc_ptr = Arc::new(Mutex::new(
+        ambient_temperature_bc
     ));
 
     // the two types of HeatTransferInteractionType are 
@@ -297,6 +308,9 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             inlet_const_temp_ptr.lock().unwrap();
             let mut outlet_zero_heat_flux_in_loop = 
             outlet_zero_heat_flux_ptr.lock().unwrap();
+            
+            let mut ambient_air_temp_bc_in_loop = 
+            ambient_air_temp_bc_ptr.lock().unwrap();
 
             let mut fluid_vec_in_loop = 
             fluid_node_vec_ptr.lock().unwrap();
@@ -401,6 +415,9 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 }
 
             // second, link inner shell to outer shell 
+            //
+            // both inner and outer shell will have power as well
+            // roughly evenly distributed
             for (index, inner_shell_ptr) in steel_shell_inner_node_vec_in_loop.
                 iter_mut().enumerate(){
                     let outer_shell_ptr: &mut HeatTransferEntity = 
@@ -459,12 +476,188 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                     link_heat_transfer_entity(inner_shell_ptr, 
                         outer_shell_ptr, 
                         interaction).unwrap();
+
+                    // now for heater power 
+
+
+                    let heater_power = mfbs_power_signal_logspace_custom(
+                        current_time_simulation_time);
+
+                    // each node would have roughly the same power 
+                    // I should of course average it volumetrically 
+                    // but I'm not going to
+                    // 
+                    // I'll divide it by the number of nodes, 
+                    // for the number of nodes in each shell layer 
+                    // and then divide by the number of layers
+                    //
+                    // I'll have to immutably borrow the fluid_vec_in_loop
+                    // ptr because the borrowing rules make it hard 
+                    // to borrow outer shell or inner shell
+                    let node_heater_power: Power;
+                    {
+                        node_heater_power = 
+                        heater_power / 2 as f64  
+                        / fluid_vec_in_loop.len() as f64;
+                    }
+
+                    let mut electrical_heat_bc: HeatTransferEntity = 
+                    BCType::new_const_heat_addition(node_heater_power);
+
+                    let heat_addition_interaction = 
+                    HeatTransferInteractionType::UserSpecifiedHeatAddition;
+
+                    // link the power BC to the inner shell
+                    link_heat_transfer_entity(inner_shell_ptr, 
+                        &mut electrical_heat_bc, 
+                        heat_addition_interaction).unwrap();
+
+                    // link them together
+                    link_heat_transfer_entity(outer_shell_ptr, 
+                        &mut electrical_heat_bc, 
+                        heat_addition_interaction).unwrap();
+
                 }
 
             // third, link outer shell to ambient temperature
-            
 
-            // fourth, link fluid nodes axially with advection 
+            for (index,outer_shell_ptr) in 
+                steel_shell_outer_node_vec_in_loop.iter_mut().enumerate(){
+
+                    // conduction material, properties
+
+                    // radial thickness needs to be half of the 
+                    // shell thickness, because it links to the shell 
+                    // center
+                    //
+                    // (outer shell) ----- (outer shell surface) ---- (fluid)
+                    // 
+                    //          R_{shell} (half length)    R_{conv}
+                    //
+                    //
+                    //  for convection, h = 20 W/(m^2 K)
+                    //
+                    let radial_thickness: Length = 
+                    (od - midway_point_steel_shell) *0.5;
+
+                    let radial_thickness: RadialCylindricalThicknessThermalConduction
+                    = radial_thickness.into();
+
+                    let steel_outer_cylindrical_node_temp: ThermodynamicTemperature 
+                    = HeatTransferEntity::temperature(
+                        &mut steel_shell_inner_node_vec_in_loop[index]).unwrap();
+
+                    let pressure = atmospheric_pressure;
+
+                    // now need to get heat transfer coeff
+                    //
+                    // 20 W/(m^2 K)
+
+                    let heat_trf_coeff: HeatTransfer = 
+                    HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+
+
+                    let outer_diameter: OuterDiameterThermalConduction = 
+                    od.clone().into();
+
+                    let node_length: Length = 
+                    total_length/(number_of_nodes as f64);
+
+                    let node_length: CylinderLengthThermalConduction = 
+                    node_length.into();
+
+                    // construct the interaction 
+
+                    let interaction: HeatTransferInteractionType = 
+                    HeatTransferInteractionType::CylindricalConductionConvectionLiquidOutside
+                        ((steel,radial_thickness,
+                            steel_outer_cylindrical_node_temp,
+                            pressure),
+                            (heat_trf_coeff,
+                                outer_diameter,
+                                node_length));
+
+                    // link the entities,
+                    // this is the fluid to the inner shell
+                    link_heat_transfer_entity(&mut ambient_air_temp_bc_in_loop, 
+                        outer_shell_ptr, 
+                        interaction).unwrap();
+
+                    
+
+
+                }
+            
+            // fourth, link adjacent fluid nodes axially with advection 
+
+            for index in 0..fluid_vec_in_loop.len()-1 {
+
+                // (heater node i) ----- (heater node 2) ----- .... 
+                //
+                //
+                //
+                // to borrow two elements mutably is tricky, 
+                // so we need to split the vector into two vectors first 
+                // then borrow each node mutably
+                //
+                // it will be the last element of the first slice 
+                // and first element of the second slice
+
+                let (vec_slice_one, vec_slice_two) = 
+                fluid_vec_in_loop.split_at_mut(index+1);
+
+                let fluid_node_idx: &mut HeatTransferEntity = 
+                vec_slice_one.last_mut().unwrap();
+
+                let fluid_node_idx_plus_one: &mut HeatTransferEntity = 
+                vec_slice_two.first_mut().unwrap();
+
+                // after doing all the acrobatics to borrow two vectors, 
+                // then we get the densities
+
+                let fluid_node_idx_temperature: ThermodynamicTemperature = 
+                HeatTransferEntity::temperature(
+                    fluid_node_idx
+                ).unwrap();
+
+                let fluid_node_idx_plus_one_temperature: 
+                ThermodynamicTemperature = 
+                HeatTransferEntity::temperature(
+                    fluid_node_idx_plus_one
+                ).unwrap();
+
+
+                let fluid_node_idx_density = density(
+                    therminol,
+                    fluid_node_idx_temperature,
+                    atmospheric_pressure
+                ).unwrap();
+
+                let fluid_node_idx_plus_one_density = density(
+                    therminol,
+                    fluid_node_idx_plus_one_temperature,
+                    atmospheric_pressure
+                ).unwrap();
+
+                // construct the advection interaction
+
+                let mid_heater_advection_dataset = DataAdvection {
+                    mass_flowrate: therminol_mass_flowrate,
+                    fluid_density_heat_transfer_entity_1: fluid_node_idx_density,
+                    fluid_density_heat_transfer_entity_2: fluid_node_idx_plus_one_density,
+                };
+
+
+                let mid_heater_advection_interaction = HeatTransferInteractionType::
+                    Advection(mid_heater_advection_dataset);
+                
+                // link the nodes with advection
+
+                link_heat_transfer_entity(fluid_node_idx, 
+                    fluid_node_idx_plus_one, 
+                    mid_heater_advection_interaction).unwrap();
+
+            }
 
             // fifth, link fluid boundary nodes with the boundary 
             // conditions
