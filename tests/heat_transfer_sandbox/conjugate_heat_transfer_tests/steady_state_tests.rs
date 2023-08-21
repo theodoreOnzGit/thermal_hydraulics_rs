@@ -37,6 +37,8 @@ use uom::si::time::second;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_entities::BCType::*;
 
+use rayon::prelude::*;
+
 /// In this test, we have a nodalised representation of the 
 /// this is 8 nodes in the axial direction and 2 nodes for metal 
 /// in the radial direction
@@ -881,7 +883,11 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             }
 
 
-            // todo:
+            // advancing timestep, 
+            // this part is extremely sluggish. However, it is paralellisable 
+            // need to use Rayon here, otherwise, it will take forever
+            //
+            // or else some other parallelism here
             {
                 // code block for advancing timestep over all control 
                 // volumes, that is inner shell, outer shell and 
