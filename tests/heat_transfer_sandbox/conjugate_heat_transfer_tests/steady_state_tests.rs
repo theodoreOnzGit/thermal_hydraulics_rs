@@ -248,6 +248,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let max_time: Time = Time::new::<second>(2.0);
     let max_time_ptr = Arc::new(max_time);
 
+    let calculation_time_elapsed = SystemTime::now();
+
     // this is the calculation loop
     let calculation_loop = move || {
 
@@ -278,6 +280,55 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             "data_record_frac",
             "timestep_advance_frac",])
             .unwrap();
+
+        // now i want a writer for temperature profile over n nodes 
+        // it needs a simulation time, computation time elapsed, 
+        // and a temperature for the outer surface temperature node 
+        // for all nodes 
+
+        let mut temp_profile_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_temp_profile.csv")
+            .unwrap();
+
+        // this is code for writing the array of required temperatures
+        {
+
+            // I want the mid node length of this temperature
+
+            let node_length: Length = total_length/number_of_nodes as f64;
+
+            let half_node_length: Length = 0.5 * node_length;
+
+            let mut header_vec: Vec<String> = vec![];
+
+            header_vec.push("simulation_time_seconds".to_string());
+            header_vec.push("elapsed_time_seconds".to_string());
+
+            for index in 0..number_of_nodes {
+
+                let mid_node_length: Length = 
+                index as f64 * node_length + half_node_length;
+
+                let prefix: String = "heater_temp_celsius_at_".to_string();
+
+                let suffix: String = "_cm".to_string();
+
+                let mid_node_length_cm: f64 = 
+                mid_node_length.get::<centimeter>();
+
+                let mid_node_length_string: String = 
+                mid_node_length_cm.to_string();
+
+                let header: String = prefix + &mid_node_length_string + &suffix;
+
+                header_vec.push(header);
+
+
+            }
+
+            temp_profile_wtr.write_record(&header_vec).unwrap();
+
+        }
+
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
 
@@ -743,8 +794,45 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
             // todo:
             {
+
+                let mut temp_profile_data_vec: Vec<String> = vec![];
                 // code block for recording temperature profiles
                 // across node surfaces
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                // next simulation time string 
+                let elapsed_calc_time_seconds_string = 
+                calculation_time_elapsed.elapsed().unwrap().as_secs().to_string();
+
+                temp_profile_data_vec.push(current_time_string);
+                temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
+
+                for outer_shell_ptr in steel_shell_outer_node_vec_in_loop.iter_mut(){
+
+                    // get temperature first 
+                    
+                    let node_temp: ThermodynamicTemperature = 
+                    HeatTransferEntity::temperature( 
+                        outer_shell_ptr).unwrap();
+
+                    // get it in degc 
+
+                    let node_temp_deg_c: f64 = 
+                    node_temp.get::<degree_celsius>();
+
+                    // convert to string and push to vector 
+
+                    let node_temp_c_string: String = 
+                    node_temp_deg_c.to_string();
+
+                    temp_profile_data_vec.push(node_temp_c_string);
+
+                }
+
+                // now write 
+                temp_profile_wtr.write_record(&temp_profile_data_vec).unwrap();
+                
 
             }
             
@@ -990,6 +1078,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         // use cargo watch -x test --ignore '*.csv'
         wtr.flush().unwrap();
         time_wtr.flush().unwrap();
+        temp_profile_wtr.flush().unwrap();
     };
 
     let calculation_thread = thread::spawn(calculation_loop);
