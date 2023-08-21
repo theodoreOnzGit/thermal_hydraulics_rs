@@ -25,7 +25,7 @@ use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::{square_centimeter, square_meter};
 use uom::si::f64::*;
-use uom::si::length::{centimeter, meter};
+use uom::si::length::{centimeter, meter, inch};
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::power::{watt, kilowatt};
 use uom::si::ratio::ratio;
@@ -113,7 +113,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         return fluid_node_vec;
     }
 
-    let mut fluid_node_vec: Vec<HeatTransferEntity> 
+    let fluid_node_vec: Vec<HeatTransferEntity> 
     = construct_heated_section_fluid_nodes(
         therminol,
         flow_area,
@@ -167,7 +167,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let midway_point_steel_shell: Length = 
     Length::new::<meter>(0.0392);
 
-    let mut steel_shell_inner_node_vec: Vec<HeatTransferEntity> = 
+    let steel_shell_inner_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
         id, midway_point_steel_shell, total_length,
@@ -175,7 +175,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         atmospheric_pressure,
         number_of_nodes);
 
-    let mut steel_shell_outer_node_vec: Vec<HeatTransferEntity> = 
+    let steel_shell_outer_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
         midway_point_steel_shell, od, total_length,
@@ -183,7 +183,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         atmospheric_pressure,
         number_of_nodes);
 
-    // create mutex locks for them 
+    // now, let me make mutex locks and Arc pointers
 
     let fluid_node_vec_ptr = Arc::new(Mutex::new(
         fluid_node_vec
@@ -198,37 +198,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     ));
     
 
-    let therminol_cylinder: HeatTransferEntity = 
-    SingleCVNode::new_cylindrical_shell(
-        total_length,
-        inner_tube_od.into(),
-        id.into(),
-        therminol,
-        initial_temperature,
-        atmospheric_pressure
-    ).unwrap();
 
-    let steel_shell: HeatTransferEntity = 
-    SingleCVNode::new_cylindrical_shell(
-        heated_length,
-        id.into(),
-        od.into(),
-        steel,
-        initial_temperature,
-        atmospheric_pressure
-    ).unwrap();
 
-    // now, let me make mutex locks and Arc pointers
-
-    let therminol_cylinder_ptr = Arc::new(
-        Mutex::new(
-            therminol_cylinder
-        ));
-
-    let steel_shell_ptr = Arc::new(
-        Mutex::new(
-            steel_shell
-        ));
 
 
 
@@ -278,8 +249,12 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let calculation_loop = move || {
         // csv writer, for post processing 
 
+        // now for heater power, can swap between 
 
-        let mut wtr = Writer::from_path("one_dimension_ciet_cht.csv")
+        let heater_power = heater_steady_state_power;
+
+
+        let mut wtr = Writer::from_path("ciet_heater_v_2_0_steady_state.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -296,16 +271,11 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         // we are sampling at about 10 Hz
         // so the nyquist frequency is about 5 Hz 
         // this is because the highest frequency is about 3.66 Hz
-        let timestep_value = Time::new::<second>(0.1);
         
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             // calculation steps
 
-            let mut therminol_cylinder_in_loop = 
-            therminol_cylinder_ptr.lock().unwrap();
-            let mut steel_shell_in_loop = 
-            steel_shell_ptr.lock().unwrap();
             let mut inlet_const_temp_in_loop = 
             inlet_const_temp_ptr.lock().unwrap();
             let mut outlet_zero_heat_flux_in_loop = 
@@ -478,14 +448,6 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                     link_heat_transfer_entity(inner_shell_ptr, 
                         outer_shell_ptr, 
                         interaction).unwrap();
-
-                    // now for heater power, can swap between 
-                    // mfbs signal or steady state signal at your choice
-
-                    let _heater_power = mfbs_power_signal_logspace_custom(
-                        current_time_simulation_time);
-
-                    let heater_power = heater_steady_state_power;
 
                     // each node would have roughly the same power 
                     // I should of course average it volumetrically 
@@ -746,195 +708,212 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
 
 
-            let convection_data = DataUserSpecifiedConvectionResistance { 
-                surf_area: SurfaceArea::from(
-                    Area::new::<square_centimeter>(2007_f64)
-                ),
-                heat_transfer_coeff: 
-                HeatTransfer::new::<watt_per_square_meter_kelvin>(607_f64),
-            };
-
-            let convection_resistance = HeatTransferInteractionType::
-                UserSpecifiedConvectionResistance(
-                    convection_data
-                );
-
-
-
-            // advection bc, so at boundary condition, therminol flows in at 
-            // 0.18 kg/s at 80C
-
-
-            let therminol_inlet_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(80.0);
-
-
-
-            let therminol_inlet_density = density(
-                therminol,
-                therminol_inlet_temperature,
-                atmospheric_pressure
-            ).unwrap();
-
-            // i can also calculate the densities of each cv
-
-            let therminol_cv_density_vec = 
-            HeatTransferEntity::density_vector( 
-                therminol_cylinder_in_loop.deref_mut()).unwrap();
-
-            let heater_fluid_cv_density: MassDensity = 
-            therminol_cv_density_vec[0];
-
-            // now crate the dataset 
-            //
-            // the diagram is like so 
-            //
-            // (inlet) -------------> cv --------------> (outlet)
-            //
-            //          inlet_interaction   outlet_interaction 
-            //
-            // the arguments are placed in order of left to right:
-            //
-            // inlet_advection_interaction(inlet,cv)
-            // outlet_advection_interaction(cv,outlet)
-
-            let inlet_advection_dataset = DataAdvection {
-                mass_flowrate: therminol_mass_flowrate,
-                fluid_density_heat_transfer_entity_1: therminol_inlet_density,
-                fluid_density_heat_transfer_entity_2: heater_fluid_cv_density,
-            };
-
-            let outlet_advection_dataset = DataAdvection {
-                mass_flowrate: therminol_mass_flowrate,
-                fluid_density_heat_transfer_entity_1: heater_fluid_cv_density,
-                // cv2 doesn't really matter here,
-                fluid_density_heat_transfer_entity_2: therminol_inlet_density,
-            };
-
-            let inlet_interaction = HeatTransferInteractionType::
-                Advection(inlet_advection_dataset);
-            let outlet_interaction = HeatTransferInteractionType::
-                Advection(outlet_advection_dataset);
-
-            // now let's link the cv 
-
-            // Electrical Heat
-            // -------------> (solid shell) 
-            //                     | 
-            //                     | 
-            //                     |  (thermal resistance)
-            //                     | 
-            //
-            // --------> (well mixed fluid volume) ----------->
-            //                 T_fluid
-            // Fluid in                                Fluid out 
-            // T_in                                    T_fluid
-
-            // (1) inlet to fluid
-            link_heat_transfer_entity(&mut inlet_const_temp_in_loop, 
-                &mut therminol_cylinder_in_loop, 
-                inlet_interaction).unwrap();
-            // (2) fluid to outlet
-            link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
-                &mut outlet_zero_heat_flux_in_loop, 
-                outlet_interaction).unwrap();
-
-            // (3) therminol cylinder and steel shell cv
-            link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
-                &mut steel_shell_in_loop, 
-                convection_resistance).unwrap();
-
-            // (4) electrical heat to solid shell 
-            // (todo)
-            // will need to use the mfbs signal 
-
-            let _heater_power = mfbs_poresky_2017_power_signal(
-                current_time_simulation_time);
-
-            let heater_power = mfbs_power_signal_logspace_custom(
-                current_time_simulation_time);
-
-            let mut electrical_heat_bc: HeatTransferEntity = 
-            BCType::new_const_heat_addition(heater_power);
-
-            let heat_addition_interaction = 
-            HeatTransferInteractionType::UserSpecifiedHeatAddition;
-
-            link_heat_transfer_entity(
-                &mut steel_shell_in_loop,
-                &mut electrical_heat_bc,
-                heat_addition_interaction,
-            ).unwrap();
-
 
             // I also want to see what the automatic timestepping 
             // is 
 
-            let auto_calculated_timestep = HeatTransferEntity::
-                get_max_timestep(&mut therminol_cylinder_in_loop,
-                TemperatureInterval::new::<
-                        uom::si::temperature_interval::kelvin>(20.0))
-                .unwrap();
 
-            // csv data writing
-            let current_time_string = 
-            current_time_simulation_time.get::<second>().to_string();
-
-            let heater_power_kilowatt_string = 
-            heater_power.get::<kilowatt>().to_string();
-
-            let therminol_celsius_string = 
-            HeatTransferEntity::temperature(
-                &mut therminol_cylinder_in_loop).unwrap()
-                .get::<degree_celsius>().to_string();
-
-            let shell_celsius_string = 
-            HeatTransferEntity::temperature(
-                &mut steel_shell_in_loop).unwrap()
-                .get::<degree_celsius>().to_string();
-
-
-            let auto_calculated_timestep_string = 
-            auto_calculated_timestep.get::<second>().to_string();
-
-
-
-            wtr.write_record(&[current_time_string,
-                heater_power_kilowatt_string,
-                therminol_celsius_string,
-                shell_celsius_string,
-                auto_calculated_timestep_string])
-                .unwrap();
             // todo:
             {
                 // code block for recording temperature profiles
+                // across node surfaces
+
             }
 
+            let mut auto_calculated_timestep: Time = Time::new::<second>(100.0);
             // todo:
             {
                 // code block for recording inlet, shell and outlet 
                 // temperatures
+                //
+                // now for shell temperatures, we are going to assume that 
+                // ST-11 is used. 
+                //
+                // ST-11 is the thermocouple measuring surface temperature 
+                // roughly 19 inches from the bottom of the heater 
+                // The entire heated length excluding heater top and 
+                // bottom heads is about 64 inches 
+                //
+                // So 19/64 is about 0.30 of the way through
+                let st_11_length: Length = Length::new::<inch>(19_f64);
+
+
+                // now I want to find out which node it is,
+                // so i need the node length first 
+                //
+                
+                let node_length: Length = total_length/number_of_nodes as f64;
+
+                // then use st_11 divide by node length 
+
+                let st_11_rough_node_number: Ratio = st_11_length / node_length;
+
+                // now, st_11 is about 19 inches, out of 64, and we have 
+                // 8 equal nodes, each node is 
+                // 12.5% of the heated length
+                //
+                // so this is about 30% of the way through
+                //
+                // so this is node three. 
+                //
+                // if we take st_11_length/node_length 
+                // we would get about 2.375 for this ratio 
+                //
+                // we need to round up to get 3 
+                // but the third node is the 2nd index in the matrix 
+                // because the index starts from zero
+                //
+                //
+                // so round it up and then minus 1 
+                // most of the time, round down is ok, but rounding up 
+                // makes more logical sense given this derivation
+
+                let st_11_node_number: usize = 
+                st_11_rough_node_number.get::<ratio>().ceil() as usize;
+
+                let st_11_index_number: usize = st_11_node_number - 1;
+
+                // now that we got the index number, we can get the 
+                // outer surface temperature 
+
+                let st_11_node: &mut HeatTransferEntity = 
+                &mut steel_shell_outer_node_vec_in_loop[st_11_index_number];
+
+                // now i also want the therminol outlet temperature 
+
+                let thermoinol_outlet_node: &mut HeatTransferEntity = 
+                fluid_vec_in_loop.last_mut().unwrap();
+
+                let therminol_outlet_temp_string = 
+                HeatTransferEntity::temperature(
+                    thermoinol_outlet_node).unwrap()
+                    .get::<degree_celsius>().to_string();
+
+                let shell_celsius_string = 
+                HeatTransferEntity::temperature(
+                    st_11_node).unwrap()
+                    .get::<degree_celsius>().to_string();
+
+                // drop the mutable references manually
+
+                drop(thermoinol_outlet_node);
+                drop(st_11_node);
+
+                // then I want to get the max timestep
+                //
+                // 
+                // get max timestep with 5 C max temp change 
+                // this will usually ensure that max timestep change is 
+                // dependent on Co and Fo, 
+                //
+                // I'll need to loop over all values to get the correct 
+                // timestep
+
+
+                // now loop over all nodes, get its temperature 
+
+                for therminol_node in fluid_vec_in_loop.iter_mut() {
+
+
+                    let local_timestep: Time = HeatTransferEntity::
+                        get_max_timestep(therminol_node,
+                            TemperatureInterval::new::<
+                                uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                }
+
+                for steel_inner_node in steel_shell_inner_node_vec_in_loop.iter_mut() {
+
+
+                    let local_timestep: Time = HeatTransferEntity::
+                        get_max_timestep(steel_inner_node,
+                            TemperatureInterval::new::<
+                                uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                }
+
+
+                for steel_outer_node in steel_shell_outer_node_vec_in_loop.iter_mut() {
+
+
+                    let local_timestep: Time = HeatTransferEntity::
+                        get_max_timestep(steel_outer_node,
+                            TemperatureInterval::new::<
+                                uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                }
+
+                
+                let auto_calculated_timestep_string = 
+                auto_calculated_timestep.get::<second>().to_string();
+
+
+                // csv data writing
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                let heater_power_kilowatt_string = 
+                heater_power.get::<kilowatt>().to_string();
+
+                wtr.write_record(&[current_time_string,
+                    heater_power_kilowatt_string,
+                    therminol_outlet_temp_string,
+                    shell_celsius_string,
+                    auto_calculated_timestep_string])
+                    .unwrap();
+
+
             }
 
-            // advance timestep for steel shell and therminol cylinder
-            HeatTransferEntity::advance_timestep(
-                &mut therminol_cylinder_in_loop,
-                timestep_value).unwrap();
-
-            HeatTransferEntity::advance_timestep(
-                &mut steel_shell_in_loop,
-                timestep_value).unwrap();
 
             // todo:
             {
                 // code block for advancing timestep over all control 
                 // volumes, that is inner shell, outer shell and 
                 // fluid volumes
+                for therminol_node in fluid_vec_in_loop.iter_mut() {
+                    HeatTransferEntity::advance_timestep(
+                        therminol_node,
+                        auto_calculated_timestep).unwrap();
+
+                }
+
+                for steel_inner_node in steel_shell_inner_node_vec_in_loop.iter_mut() {
+
+                    HeatTransferEntity::advance_timestep(
+                        steel_inner_node,
+                        auto_calculated_timestep).unwrap();
+
+                }
+
+
+                for steel_outer_node in steel_shell_outer_node_vec_in_loop.iter_mut() {
+
+                    HeatTransferEntity::advance_timestep(
+                        steel_outer_node,
+                        auto_calculated_timestep).unwrap();
+
+                }
             }
 
 
             // add the timestep
-            current_time_simulation_time += timestep_value;
+            current_time_simulation_time += auto_calculated_timestep;
         }
         // with csvs being written,
         // use cargo watch -x test --ignore '*.csv'
