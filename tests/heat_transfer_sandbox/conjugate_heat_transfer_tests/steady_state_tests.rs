@@ -1,6 +1,7 @@
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::SystemTime;
 
 use csv::Writer;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::{DataUserSpecifiedConvectionResistance, DataAdvection};
@@ -249,6 +250,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
     // this is the calculation loop
     let calculation_loop = move || {
+
+
         // csv writer, for post processing 
 
         // now for heater power, can swap between 
@@ -266,6 +269,15 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             "auto_timestep_calculated_seconds",])
             .unwrap();
 
+        let mut time_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_time.csv")
+            .unwrap();
+
+        time_wtr.write_record(&["loop_calculation_time_ms",
+            "mutex_lock_frac",
+            "node_connection_frac",
+            "data_record_frac",
+            "timestep_advance_frac",])
+            .unwrap();
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
 
@@ -275,6 +287,10 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
         // this is because the highest frequency is about 3.66 Hz
         
         while current_time_simulation_time <= *max_time_ptr_in_loop {
+
+            // timer for timekeeping purposes 
+
+            let arc_mutex_lock_start = SystemTime::now();
 
             // calculation steps
 
@@ -294,6 +310,12 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
             let mut steel_shell_outer_node_vec_in_loop = 
             steel_shell_outer_node_vec_ptr.lock().unwrap();
+
+            let arc_mutex_lock_end = SystemTime::now();
+
+            let arc_mutex_lock_elapsed_ms = 
+            arc_mutex_lock_start.elapsed().unwrap().as_millis()
+            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
 
             // we need to conenct a few things 
             //
@@ -323,6 +345,9 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
             // calculate convection interactions
             // first, we need to connect the 
+            //
+
+            let node_connection_start = SystemTime::now();
 
 
             // radial heat transfer interactions
@@ -708,7 +733,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
             }
 
-
+            let node_connection_end_ms = 
+            node_connection_start.elapsed().unwrap().as_millis();
 
 
             // I also want to see what the automatic timestepping 
@@ -721,7 +747,11 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 // across node surfaces
 
             }
+            
+            let data_recording_time_start = SystemTime::now();
 
+
+            
             let mut auto_calculated_timestep: Time = Time::new::<second>(100.0);
             // todo:
             {
@@ -881,7 +911,11 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
 
             }
+            let data_recording_time_end_ms = 
+            data_recording_time_start.elapsed().unwrap().as_millis();
 
+            let timestep_advance_start = 
+            SystemTime::now();
 
             // advancing timestep, 
             // this part is extremely sluggish. However, it is paralellisable 
@@ -918,12 +952,44 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
             }
 
 
+            let timestep_advance_end_ms = 
+            timestep_advance_start.elapsed().unwrap().as_millis();
+
+            // write timestep diagnostics
+
+            let total_time_ms = 
+            arc_mutex_lock_elapsed_ms 
+            + node_connection_end_ms 
+            + data_recording_time_end_ms 
+            + timestep_advance_end_ms;
+
+            let mutex_lock_frac: f64 = arc_mutex_lock_elapsed_ms as f64 / 
+            total_time_ms as f64;
+
+            let node_connection_frac: f64 = node_connection_end_ms as f64 / 
+            total_time_ms as f64;
+
+            let data_record_frac: f64 = data_recording_time_end_ms as f64 / 
+            total_time_ms as f64; 
+
+            let timestep_advance_frac: f64 = timestep_advance_end_ms as f64 / 
+            total_time_ms as f64;
+
+            time_wtr.write_record(&[total_time_ms.to_string(),
+                mutex_lock_frac.to_string(),
+                node_connection_frac.to_string(),
+                data_record_frac.to_string(),
+                timestep_advance_frac.to_string()])
+                .unwrap();
+            
+
             // add the timestep
             current_time_simulation_time += auto_calculated_timestep;
         }
         // with csvs being written,
         // use cargo watch -x test --ignore '*.csv'
         wtr.flush().unwrap();
+        time_wtr.flush().unwrap();
     };
 
     let calculation_thread = thread::spawn(calculation_loop);
