@@ -173,7 +173,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let steel_shell_inner_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
-        id, midway_point_steel_shell, total_length,
+        id, midway_point_steel_shell, heated_length,
         initial_temperature,
         atmospheric_pressure,
         number_of_nodes);
@@ -181,7 +181,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let steel_shell_outer_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
-        midway_point_steel_shell, od, total_length,
+        midway_point_steel_shell, od, heated_length,
         initial_temperature,
         atmospheric_pressure,
         number_of_nodes);
@@ -210,7 +210,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
         UserSpecifiedTemperature(
-            ThermodynamicTemperature::new::<degree_celsius>(80.0)
+            ThermodynamicTemperature::new::<degree_celsius>(79.12)
         ));
 
     let outlet_zero_heat_flux = HeatTransferEntity::BoundaryConditions(
@@ -245,7 +245,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     // timestep settings
 
 
-    let max_time: Time = Time::new::<second>(2000.0);
+    let max_time: Time = Time::new::<second>(200.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
@@ -294,7 +294,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
             // I want the mid node length of this temperature
 
-            let node_length: Length = total_length/number_of_nodes as f64;
+            let node_length: Length = heated_length/number_of_nodes as f64;
 
             let half_node_length: Length = 0.5 * node_length;
 
@@ -1014,6 +1014,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 // code block for advancing timestep over all control 
                 // volumes, that is inner shell, outer shell and 
                 // fluid volumes
+
                 for therminol_node in fluid_vec_in_loop.iter_mut() {
                     HeatTransferEntity::advance_timestep(
                         therminol_node,
@@ -1217,7 +1218,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
     let steel_shell_inner_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
-        id, midway_point_steel_shell, total_length,
+        id, midway_point_steel_shell, heated_length,
         initial_temperature,
         atmospheric_pressure,
         number_of_nodes);
@@ -1225,7 +1226,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
     let steel_shell_outer_node_vec: Vec<HeatTransferEntity> = 
     construct_steel_shell_nodes(
         steel,
-        midway_point_steel_shell, od, total_length,
+        midway_point_steel_shell, od, heated_length,
         initial_temperature,
         atmospheric_pressure,
         number_of_nodes);
@@ -1254,7 +1255,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
         UserSpecifiedTemperature(
-            ThermodynamicTemperature::new::<degree_celsius>(80.0)
+            ThermodynamicTemperature::new::<degree_celsius>(79.12)
         ));
 
     let outlet_zero_heat_flux = HeatTransferEntity::BoundaryConditions(
@@ -1278,10 +1279,18 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
         ambient_temperature_bc
     ));
 
-    // functional test timestep settings
+    // the two types of HeatTransferInteractionType are 
+    // advection and convection resistance
+    //
+    // 2007 square_centimeter
+    // and 607 watt_per_square_meter_kelvin
 
 
-    let max_time: Time = Time::new::<second>(0.02);
+
+    // timestep settings
+
+
+    let max_time: Time = Time::new::<second>(0.2);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
@@ -1297,7 +1306,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
         let heater_power = heater_steady_state_power;
 
 
-        let mut wtr = Writer::from_path("functional_ciet_heater_v_2_0_steady_state.csv")
+        let mut wtr = Writer::from_path("ciet_heater_v_2_0_steady_state.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -1307,7 +1316,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
             "auto_timestep_calculated_seconds",])
             .unwrap();
 
-        let mut time_wtr = Writer::from_path("functional_ciet_heater_v_2_0_steady_state_time.csv")
+        let mut time_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_time.csv")
             .unwrap();
 
         time_wtr.write_record(&["loop_calculation_time_ms",
@@ -1322,7 +1331,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
         // and a temperature for the outer surface temperature node 
         // for all nodes 
 
-        let mut temp_profile_wtr = Writer::from_path("functional_ciet_heater_v_2_0_steady_state_temp_profile.csv")
+        let mut temp_profile_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_temp_profile.csv")
             .unwrap();
 
         // this is code for writing the array of required temperatures
@@ -1330,7 +1339,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
 
             // I want the mid node length of this temperature
 
-            let node_length: Length = total_length/number_of_nodes as f64;
+            let node_length: Length = heated_length/number_of_nodes as f64;
 
             let half_node_length: Length = 0.5 * node_length;
 
