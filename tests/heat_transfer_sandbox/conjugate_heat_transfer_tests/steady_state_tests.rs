@@ -63,8 +63,8 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     let od = Length::new::<meter>(0.04);
     let inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
+    let _total_length = Length::new::<meter>(1.983333);
     let heated_length = Length::new::<meter>(1.676);
-    let total_length = Length::new::<meter>(1.983333);
     let initial_temperature = ThermodynamicTemperature::new::
         <degree_celsius>(80.0);
     let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
@@ -86,7 +86,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
     fn construct_heated_section_fluid_nodes(therminol: Material,
         cross_sectional_area: Area,
-        total_length: Length,
+        heated_length: Length,
         initial_temperature: ThermodynamicTemperature,
         pressure: Pressure,
         number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
@@ -98,7 +98,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
         // now let's get individual length of each node 
 
-        let node_length: Length = total_length/number_of_nodes as f64;
+        let node_length: Length = heated_length/number_of_nodes as f64;
 
         for _index in 0..number_of_nodes {
             let therminol_node: HeatTransferEntity = 
@@ -130,7 +130,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
     fn construct_steel_shell_nodes(steel: Material,
         id: Length, 
         od: Length,
-        total_length: Length,
+        heated_length: Length,
         initial_temperature: ThermodynamicTemperature,
         pressure: Pressure,
         number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
@@ -145,7 +145,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 
         // now let's get individual length of each node 
 
-        let node_length: Length = total_length/number_of_nodes as f64;
+        let node_length: Length = heated_length/number_of_nodes as f64;
 
         for _index in 0..number_of_nodes {
 
@@ -440,7 +440,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                     id.clone().into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -508,7 +508,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                     = od_mid_inner_shell.into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -605,7 +605,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                     od.clone().into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -862,7 +862,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
                 // so i need the node length first 
                 //
                 
-                let node_length: Length = total_length/number_of_nodes as f64;
+                let node_length: Length = heated_length/number_of_nodes as f64;
 
                 // then use st_11 divide by node length 
 
@@ -1108,8 +1108,8 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
     let od = Length::new::<meter>(0.04);
     let inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
+    let _total_length = Length::new::<meter>(1.983333);
     let heated_length = Length::new::<meter>(1.676);
-    let total_length = Length::new::<meter>(1.983333);
     let initial_temperature = ThermodynamicTemperature::new::
         <degree_celsius>(80.0);
     let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
@@ -1131,7 +1131,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
 
     fn construct_heated_section_fluid_nodes(therminol: Material,
         cross_sectional_area: Area,
-        total_length: Length,
+        heated_length: Length,
         initial_temperature: ThermodynamicTemperature,
         pressure: Pressure,
         number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
@@ -1143,7 +1143,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
 
         // now let's get individual length of each node 
 
-        let node_length: Length = total_length/number_of_nodes as f64;
+        let node_length: Length = heated_length/number_of_nodes as f64;
 
         for _index in 0..number_of_nodes {
             let therminol_node: HeatTransferEntity = 
@@ -1175,7 +1175,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
     fn construct_steel_shell_nodes(steel: Material,
         id: Length, 
         od: Length,
-        total_length: Length,
+        heated_length: Length,
         initial_temperature: ThermodynamicTemperature,
         pressure: Pressure,
         number_of_nodes: usize,) -> Vec<HeatTransferEntity>{
@@ -1190,7 +1190,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
 
         // now let's get individual length of each node 
 
-        let node_length: Length = total_length/number_of_nodes as f64;
+        let node_length: Length = heated_length/number_of_nodes as f64;
 
         for _index in 0..number_of_nodes {
 
@@ -1485,7 +1485,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
                     id.clone().into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -1553,7 +1553,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
                     = od_mid_inner_shell.into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -1650,7 +1650,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
                     od.clone().into();
 
                     let node_length: Length = 
-                    total_length/(number_of_nodes as f64);
+                    heated_length/(number_of_nodes as f64);
 
                     let node_length: CylinderLengthThermalConduction = 
                     node_length.into();
@@ -1907,7 +1907,7 @@ pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
                 // so i need the node length first 
                 //
                 
-                let node_length: Length = total_length/number_of_nodes as f64;
+                let node_length: Length = heated_length/number_of_nodes as f64;
 
                 // then use st_11 divide by node length 
 
