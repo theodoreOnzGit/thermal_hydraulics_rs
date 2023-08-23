@@ -48,8 +48,8 @@ use rayon::prelude::*;
 ///
 ///
 #[test]
-//#[ignore = "takes about 20min, only use for data collection"]
-pub fn ciet_heater_v_1_0_test_steady_state(){
+#[ignore = "data collected"]
+pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
 
 
     // okay, let's make two control volumes 
@@ -1094,7 +1094,7 @@ pub fn ciet_heater_v_1_0_test_steady_state(){
 /// shorterned version of the heater test with control volumes 
 /// to test runtime functionality
 #[test]
-pub fn ciet_heater_v_1_0_test_steady_state_functional_test(){
+pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
 
 
     // okay, let's make two control volumes 
