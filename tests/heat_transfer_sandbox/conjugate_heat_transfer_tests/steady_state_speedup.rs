@@ -403,8 +403,18 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
             // this connection is slow, I can probably make a vector of 
             // tasks and then execute each using a thread spawn 
             // and then join
+            //
+            // so basically I store closures on the heap, and the pointers 
+            // are stored on the stack
             
+            let mut fluid_steel_task_vec: Vec<Arc<dyn FnOnce()>> = vec![];
 
+            let closure_one = move || {
+                println!("hello there");
+            };
+
+            // you have to push smart pointers up
+            fluid_steel_task_vec.push(Arc::new(closure_one));
 
             // radial heat transfer interactions
             // this one is fluid to inner steel cylinder
@@ -416,6 +426,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     // radial thickness needs to be half of the 
                     // shell thickness, because it links to the shell 
                     // center
+                    // 
                     let radial_thickness: Length = 
                     (midway_point_steel_shell - id) *0.5;
 
