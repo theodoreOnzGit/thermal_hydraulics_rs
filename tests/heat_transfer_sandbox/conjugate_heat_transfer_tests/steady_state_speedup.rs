@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::SystemTime;
@@ -1474,24 +1474,79 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
             // or else, I'll clone both vectors and extract individual 
             // elements 
 
-            let mut fluid_node_0 = fluid_vec_in_loop[0].clone();
-            let mut fluid_node_1 = fluid_vec_in_loop[1].clone();
-            let mut fluid_node_2 = fluid_vec_in_loop[2].clone();
-            let mut fluid_node_3 = fluid_vec_in_loop[3].clone();
-            let mut fluid_node_4 = fluid_vec_in_loop[4].clone();
-            let mut fluid_node_5 = fluid_vec_in_loop[5].clone();
-            let mut fluid_node_6 = fluid_vec_in_loop[6].clone();
-            let mut fluid_node_7 = fluid_vec_in_loop[7].clone();
+            // make clones of fluid nodes 
 
+            let fluid_node_0_clone = fluid_vec_in_loop[0].clone();
+            let fluid_node_1_clone = fluid_vec_in_loop[1].clone();
+            let fluid_node_2_clone = fluid_vec_in_loop[2].clone();
+            let fluid_node_3_clone = fluid_vec_in_loop[3].clone();
+            let fluid_node_4_clone = fluid_vec_in_loop[4].clone();
+            let fluid_node_5_clone = fluid_vec_in_loop[5].clone();
+            let fluid_node_6_clone = fluid_vec_in_loop[6].clone();
+            let fluid_node_7_clone = fluid_vec_in_loop[7].clone();
 
-            let mut steel_inner_node_0 = steel_shell_inner_node_vec_in_loop[0].clone();
-            let mut steel_inner_node_1 = steel_shell_inner_node_vec_in_loop[1].clone();
-            let mut steel_inner_node_2 = steel_shell_inner_node_vec_in_loop[2].clone();
-            let mut steel_inner_node_3 = steel_shell_inner_node_vec_in_loop[3].clone();
-            let mut steel_inner_node_4 = steel_shell_inner_node_vec_in_loop[4].clone();
-            let mut steel_inner_node_5 = steel_shell_inner_node_vec_in_loop[5].clone();
-            let mut steel_inner_node_6 = steel_shell_inner_node_vec_in_loop[6].clone();
-            let mut steel_inner_node_7 = steel_shell_inner_node_vec_in_loop[7].clone();
+            // make two mutex refs per clone
+            let fluid_node_0_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_0_clone));
+            let fluid_node_1_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_1_clone));
+            let fluid_node_2_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_2_clone));
+            let fluid_node_3_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_3_clone));
+            let fluid_node_4_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_4_clone));
+            let fluid_node_5_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_5_clone));
+            let fluid_node_6_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_6_clone));
+            let fluid_node_7_ref_parallel = Arc::new(
+                Mutex::new(fluid_node_7_clone));
+
+            // ensure that there is a second pointer to the same 
+            // data
+            let fluid_node_0_ref_to_obtain_data = 
+            fluid_node_0_ref_parallel.clone();
+
+            let fluid_node_1_ref_to_obtain_data = 
+            fluid_node_1_ref_parallel.clone();
+
+            let fluid_node_2_ref_to_obtain_data = 
+            fluid_node_2_ref_parallel.clone();
+
+            let fluid_node_3_ref_to_obtain_data = 
+            fluid_node_3_ref_parallel.clone();
+
+            let fluid_node_4_ref_to_obtain_data = 
+            fluid_node_4_ref_parallel.clone();
+
+            let fluid_node_5_ref_to_obtain_data = 
+            fluid_node_5_ref_parallel.clone();
+            
+            let fluid_node_6_ref_to_obtain_data = 
+            fluid_node_6_ref_parallel.clone();
+
+            let fluid_node_7_ref_to_obtain_data = 
+            fluid_node_7_ref_parallel.clone();
+
+            // repeat for the steel inner nodes
+            let steel_inner_node_0_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[0].clone()));
+            let steel_inner_node_1_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[1].clone()));
+            let steel_inner_node_2_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[2].clone()));
+            let steel_inner_node_3_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[3].clone()));
+            let steel_inner_node_4_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[4].clone()));
+            let steel_inner_node_5_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[5].clone()));
+            let steel_inner_node_6_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[6].clone()));
+            let steel_inner_node_7_ref = Arc::new(
+                Mutex::new(steel_shell_inner_node_vec_in_loop[7].clone()));
+
 
             fn connect_fluid_and_steel_inner_node(
                 fluid_node: &mut HeatTransferEntity,
@@ -1560,8 +1615,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_0,
-                    &mut steel_inner_node_0,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1570,8 +1626,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_1,
-                    &mut steel_inner_node_1,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_1_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1580,8 +1637,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_2,
-                    &mut steel_inner_node_2,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_2_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1598,8 +1656,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_3,
-                    &mut steel_inner_node_3,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1608,8 +1667,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_4,
-                    &mut steel_inner_node_4,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1618,8 +1678,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(&mut fluid_node_5,
-                    &mut steel_inner_node_5,
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1628,74 +1689,78 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     number_of_nodes,
                     steel);
             });
+
+            let thread_3 = thread::spawn( move || { 
+
+                // thread 3 connects nodes at 6 and 7
+
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+                
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+            });
             
             thread_1.join().unwrap();
             thread_2.join().unwrap();
+            thread_3.join().unwrap();
 
+            // now I want to replace all nodes in 
+            // steel_shell_inner_node_vec_in_loop 
+            // with the newer versions 
 
-            // radial heat transfer interactions
-            // this one is fluid to inner steel cylinder
-            for (index, fluid_node_heat_trf_entity_ptr) in 
-                fluid_vec_in_loop.iter_mut().enumerate(){
+            {
+                fluid_vec_in_loop[0] = fluid_node_0_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[1] = fluid_node_1_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[2] = fluid_node_2_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[3] = fluid_node_3_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[4] = fluid_node_4_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[5] = fluid_node_5_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[6] = fluid_node_6_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
+                fluid_vec_in_loop[7] = fluid_node_7_ref_to_obtain_data.
+                    lock().unwrap().deref().clone();
 
-                    // conduction material, properties
+                // dispose of old references once done
+                drop(fluid_node_0_ref_to_obtain_data);
+                drop(fluid_node_1_ref_to_obtain_data);
+                drop(fluid_node_2_ref_to_obtain_data);
+                drop(fluid_node_3_ref_to_obtain_data);
+                drop(fluid_node_4_ref_to_obtain_data);
+                drop(fluid_node_5_ref_to_obtain_data);
+                drop(fluid_node_6_ref_to_obtain_data);
+                drop(fluid_node_7_ref_to_obtain_data);
+            }
 
-                    // radial thickness needs to be half of the 
-                    // shell thickness, because it links to the shell 
-                    // center
-                    // 
-                    let radial_thickness: Length = 
-                    (midway_point_steel_shell - id) *0.5;
+            // after this, we should have gotten our radial heat transfer 
+            // interactions between fluid and inner nodes
 
-                    let radial_thickness: RadialCylindricalThicknessThermalConduction
-                    = radial_thickness.into();
-
-                    let steel_inner_cylindrical_node_temp: ThermodynamicTemperature 
-                    = HeatTransferEntity::temperature(
-                        &mut steel_shell_inner_node_vec_in_loop[index]).unwrap();
-
-                    let pressure = atmospheric_pressure;
-
-                    // now need to get heat transfer coeff
-
-                    let therminol_temp: ThermodynamicTemperature 
-                    = HeatTransferEntity::temperature(
-                        fluid_node_heat_trf_entity_ptr).unwrap();
-
-                    let heat_trf_coeff: HeatTransfer = 
-                    heat_transfer_coefficient_ciet_v_2_0(
-                        therminol_mass_flowrate,
-                        therminol_temp,
-                        pressure,
-                    );
-
-                    let inner_diameter: InnerDiameterThermalConduction = 
-                    id.clone().into();
-
-                    let node_length: Length = 
-                    heated_length/(number_of_nodes as f64);
-
-                    let node_length: CylinderLengthThermalConduction = 
-                    node_length.into();
-
-                    // construct the interaction 
-
-                    let interaction: HeatTransferInteractionType = 
-                    HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside
-                        ((steel,radial_thickness,
-                            steel_inner_cylindrical_node_temp,
-                            pressure),
-                            (heat_trf_coeff,
-                                inner_diameter,
-                                node_length));
-
-                    // link the entities,
-                    // this is the fluid to the inner shell
-                    link_heat_transfer_entity(fluid_node_heat_trf_entity_ptr, 
-                        &mut steel_shell_inner_node_vec_in_loop[index], 
-                        interaction).unwrap();
-
-                }
 
             // second, link inner shell to outer shell 
             //
