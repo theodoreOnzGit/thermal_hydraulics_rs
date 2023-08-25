@@ -1290,7 +1290,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
     // timestep settings
 
 
-    let max_time: Time = Time::new::<second>(0.2);
+    let max_time: Time = Time::new::<second>(0.02);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();

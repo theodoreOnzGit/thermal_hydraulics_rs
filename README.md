@@ -1,4 +1,5 @@
 # thermal_hydraulics_rs
+
 A thermal hydraulics library primarily for the Compact 
 Integral Effects Test (CIET) and the Fluoride Salt 
 Cooled High Temperature Reactor (FHR).
@@ -21,14 +22,26 @@ extern crate thermal_hydraulics_rs;
 use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::*;
 ```
 
+Do note that the API is still highly unstable and subject to change.
+
 Please refer to crate documentation for more details,
 especially the prelude docuemntation for more examples
 
 # tests 
 If you want to use cargo watch for testing, 
+this is because you will likely run into csv files. When Rust 
+produces csv files, cargo watch catches those new csv files and thinks 
+you've produced new code. Therefore, cargo watch will re run the tests,
+resulting in an infinite loop.
 
 ```bash 
 cargo watch -x test --ignore '*.csv'
+```
+
+To test in release mode (for faster performance):
+
+```bash 
+cargo watch -x "test --release" --ignore '*.csv'
 ```
 
 This will ensure that csv files generated to not mess up with cargo 

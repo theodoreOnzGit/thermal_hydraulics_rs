@@ -1,5 +1,5 @@
 //! License
-//!    This is file is part of a thermal hydraulics library written 
+//!    This file is part of a thermal hydraulics library written 
 //!    in rust meant to help with the
 //!    fluid mechanics and heat transfer aspects of the calculations
 //!    for the Compact Integral Effects Tests (CIET) and hopefully 
