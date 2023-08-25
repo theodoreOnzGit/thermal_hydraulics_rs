@@ -46,6 +46,84 @@ use rayon::prelude::*;
 ///
 /// This is for heater v2.0
 ///
+/// I realised that we needed a major speedup because in debug mode 
+/// a 2.3ms timestep was taking ~ 602 ms to calculate
+///
+/// This was unacceptable
+///
+/// Now, I introduced partial parallelism in this test, because 
+/// it was quite cumbersome to do. This is of course experimental 
+///
+/// I spawned 3 threads to connect the fluid nodes to the inner nodes 
+/// and the time per timestep in debug mode went from 602 ms to about 
+/// 562 ms
+///
+/// When 4 threads were used, it reduced to about 560 ms 
+/// this was on an intel i7-10875H with 32GB ram, linux system
+/// In this case, the thread::spawn is expected to use some overhead 
+/// and therefore, it will be somewhat slow
+///
+/// we can either minimise the overhead by spawning a rayon threadpool
+/// (ie spawn a persistent thread ONCE at process start, not in the 
+/// while loop)
+/// or just live with it. Which means minimise thread spawning in Rust,
+/// maybe three or four threads, at most in each while loop
+///
+/// The former means we don't need the extra dependency
+/// so we can just rely on the std library. It's also easier to understand,
+/// but much more cumbersome to code 
+///
+/// However, with thread spawning, one must be aware of how to 
+/// handle this 
+///
+/// This is because mutable vectors can only mutate one element at a time.
+/// The best is to use Arc Mutex pointers and clone each individual heat 
+/// transfer entity, and make at least two of those pointers in one go. 
+/// One pointer gets absorbed in the thread, and is destroyed because it 
+/// is moved there, the other remains outside the loop and should be 
+/// derferenced at the last part to update the vectors
+///
+/// Now for this, I only parallelised the fluid node to first layer 
+/// of shell connection 
+/// 
+/// (ambient air)
+///
+/// | 
+/// | 
+/// | 
+/// 
+/// (steel outer shell)  ---- (heater power)
+///
+/// | 
+/// | 
+/// | 
+///
+/// (steel inner shell) ---- (heater power)
+///
+/// | 
+/// |  <---- parallelised, rest is serial calculation
+/// | 
+///
+/// (fluid node)  --- (subsequent nodes, advection)
+///
+///
+///
+/// so one out of six interactions is parallelised, it saved 40ms out 
+/// of roughly 400 ms of calculation time, roughly 10%.
+///
+/// If we extrapolate all this, we can expect to save perhaps 50% of the 
+/// simulation time here.
+///
+/// However, for individual heat transfer elements, it's kind of cumbersome 
+/// to do things like this. However, you still got to connect roughly 
+/// 30 or so components together in CIET, and using thread spawn for 
+/// parallel joining will be useful in that area.
+///
+/// If we parallelise all the node connections with thread spawn, maybe 
+/// we can expect 50% time saving? So it's good but not a cure all.
+/// Nevertheless, tool is indispensable, an we are still using slow cloning 
+/// processes, and not using Rayon. 
+/// 
 ///
 #[test]
 //#[ignore = "data collected"]
@@ -245,7 +323,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
     // timestep settings
 
 
-    let max_time: Time = Time::new::<second>(200.0);
+    let max_time: Time = Time::new::<second>(100.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
