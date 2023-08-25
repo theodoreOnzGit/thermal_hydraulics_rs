@@ -469,22 +469,60 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
             fluid_node_7_ref_parallel.clone();
 
             // repeat for the steel inner nodes
+            
+            let steel_inner_node_0_clone = 
+            steel_shell_inner_node_vec_in_loop[0].clone();
+            let steel_inner_node_1_clone = 
+            steel_shell_inner_node_vec_in_loop[1].clone();
+            let steel_inner_node_2_clone = 
+            steel_shell_inner_node_vec_in_loop[2].clone();
+            let steel_inner_node_3_clone = 
+            steel_shell_inner_node_vec_in_loop[3].clone();
+            let steel_inner_node_4_clone = 
+            steel_shell_inner_node_vec_in_loop[4].clone();
+            let steel_inner_node_5_clone = 
+            steel_shell_inner_node_vec_in_loop[5].clone();
+            let steel_inner_node_6_clone = 
+            steel_shell_inner_node_vec_in_loop[6].clone();
+            let steel_inner_node_7_clone = 
+            steel_shell_inner_node_vec_in_loop[7].clone();
+
             let steel_inner_node_0_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[0].clone()));
+                Mutex::new(steel_inner_node_0_clone));
             let steel_inner_node_1_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[1].clone()));
+                Mutex::new(steel_inner_node_1_clone));
             let steel_inner_node_2_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[2].clone()));
+                Mutex::new(steel_inner_node_2_clone));
             let steel_inner_node_3_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[3].clone()));
+                Mutex::new(steel_inner_node_3_clone));
             let steel_inner_node_4_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[4].clone()));
+                Mutex::new(steel_inner_node_4_clone));
             let steel_inner_node_5_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[5].clone()));
+                Mutex::new(steel_inner_node_5_clone));
             let steel_inner_node_6_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[6].clone()));
+                Mutex::new(steel_inner_node_6_clone));
             let steel_inner_node_7_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[7].clone()));
+                Mutex::new(steel_inner_node_7_clone));
+
+            // create clone references for use in parallelism
+
+            let steel_inner_node_0_ref_for_parallel = 
+            steel_inner_node_0_ref.clone();
+            let steel_inner_node_1_ref_for_parallel = 
+            steel_inner_node_1_ref.clone();
+            let steel_inner_node_2_ref_for_parallel = 
+            steel_inner_node_2_ref.clone();
+            let steel_inner_node_3_ref_for_parallel = 
+            steel_inner_node_3_ref.clone();
+            let steel_inner_node_4_ref_for_parallel = 
+            steel_inner_node_4_ref.clone();
+            let steel_inner_node_5_ref_for_parallel = 
+            steel_inner_node_5_ref.clone();
+            let steel_inner_node_6_ref_for_parallel = 
+            steel_inner_node_6_ref.clone();
+            let steel_inner_node_7_ref_for_parallel = 
+            steel_inner_node_7_ref.clone();
+
 
 
             fn connect_fluid_and_steel_inner_node(
@@ -549,14 +587,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
             let thread_1 = thread::spawn( move || { 
 
-                // thread 1 connects nodes at 0, 1 and 2
+                // thread 1 connects nodes at 0 and 1
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_0_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -567,7 +605,27 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_1_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+            });
+
+            let thread_2 = thread::spawn( move || { 
+
+                // thread 2 connects nodes at 2, 3
+
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+                
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -578,7 +636,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_2_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -586,29 +644,20 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes,
                     steel);
+
             });
 
-            let thread_2 = thread::spawn( move || { 
+            let thread_3 = thread::spawn( move || { 
 
-                // thread 2 connects nodes at 3, 4 and 5
+                // thread 3 connects nodes at 4,5
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
-                connect_fluid_and_steel_inner_node(
-                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_3_ref.lock().unwrap().deref_mut(),
-                    radial_thickness,
-                    therminol_mass_flowrate,
-                    atmospheric_pressure,
-                    id,
-                    heated_length,
-                    number_of_nodes,
-                    steel);
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_4_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -619,7 +668,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_5_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -629,16 +678,18 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     steel);
             });
 
-            let thread_3 = thread::spawn( move || { 
 
-                // thread 3 connects nodes at 6 and 7
+
+            let thread_4 = thread::spawn( move || { 
+
+                // thread 4 connects nodes at 6 and 7
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_6_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -649,7 +700,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_7_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -663,6 +714,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
             thread_1.join().unwrap();
             thread_2.join().unwrap();
             thread_3.join().unwrap();
+            thread_4.join().unwrap();
 
             // now I want to replace all nodes in 
             // steel_shell_inner_node_vec_in_loop 
@@ -695,6 +747,35 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                 drop(fluid_node_5_ref_to_obtain_data);
                 drop(fluid_node_6_ref_to_obtain_data);
                 drop(fluid_node_7_ref_to_obtain_data);
+
+                // same for steel nodes
+
+                steel_shell_inner_node_vec_in_loop[0] = 
+                    steel_inner_node_0_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[1] = 
+                    steel_inner_node_1_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[2] = 
+                    steel_inner_node_2_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[3] = 
+                    steel_inner_node_3_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[4] = 
+                    steel_inner_node_4_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[5] = 
+                    steel_inner_node_5_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[6] = 
+                    steel_inner_node_6_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[7] = 
+                    steel_inner_node_7_ref.lock().unwrap().deref().clone();
+                // dispose of old references once done
+                drop(steel_inner_node_0_ref);
+                drop(steel_inner_node_1_ref);
+                drop(steel_inner_node_2_ref);
+                drop(steel_inner_node_3_ref);
+                drop(steel_inner_node_4_ref);
+                drop(steel_inner_node_5_ref);
+                drop(steel_inner_node_6_ref);
+                drop(steel_inner_node_7_ref);
+
             }
 
             // after this, we should have gotten our radial heat transfer 
@@ -1752,22 +1833,60 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
             fluid_node_7_ref_parallel.clone();
 
             // repeat for the steel inner nodes
+            
+            let steel_inner_node_0_clone = 
+            steel_shell_inner_node_vec_in_loop[0].clone();
+            let steel_inner_node_1_clone = 
+            steel_shell_inner_node_vec_in_loop[1].clone();
+            let steel_inner_node_2_clone = 
+            steel_shell_inner_node_vec_in_loop[2].clone();
+            let steel_inner_node_3_clone = 
+            steel_shell_inner_node_vec_in_loop[3].clone();
+            let steel_inner_node_4_clone = 
+            steel_shell_inner_node_vec_in_loop[4].clone();
+            let steel_inner_node_5_clone = 
+            steel_shell_inner_node_vec_in_loop[5].clone();
+            let steel_inner_node_6_clone = 
+            steel_shell_inner_node_vec_in_loop[6].clone();
+            let steel_inner_node_7_clone = 
+            steel_shell_inner_node_vec_in_loop[7].clone();
+
             let steel_inner_node_0_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[0].clone()));
+                Mutex::new(steel_inner_node_0_clone));
             let steel_inner_node_1_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[1].clone()));
+                Mutex::new(steel_inner_node_1_clone));
             let steel_inner_node_2_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[2].clone()));
+                Mutex::new(steel_inner_node_2_clone));
             let steel_inner_node_3_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[3].clone()));
+                Mutex::new(steel_inner_node_3_clone));
             let steel_inner_node_4_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[4].clone()));
+                Mutex::new(steel_inner_node_4_clone));
             let steel_inner_node_5_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[5].clone()));
+                Mutex::new(steel_inner_node_5_clone));
             let steel_inner_node_6_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[6].clone()));
+                Mutex::new(steel_inner_node_6_clone));
             let steel_inner_node_7_ref = Arc::new(
-                Mutex::new(steel_shell_inner_node_vec_in_loop[7].clone()));
+                Mutex::new(steel_inner_node_7_clone));
+
+            // create clone references for use in parallelism
+
+            let steel_inner_node_0_ref_for_parallel = 
+            steel_inner_node_0_ref.clone();
+            let steel_inner_node_1_ref_for_parallel = 
+            steel_inner_node_1_ref.clone();
+            let steel_inner_node_2_ref_for_parallel = 
+            steel_inner_node_2_ref.clone();
+            let steel_inner_node_3_ref_for_parallel = 
+            steel_inner_node_3_ref.clone();
+            let steel_inner_node_4_ref_for_parallel = 
+            steel_inner_node_4_ref.clone();
+            let steel_inner_node_5_ref_for_parallel = 
+            steel_inner_node_5_ref.clone();
+            let steel_inner_node_6_ref_for_parallel = 
+            steel_inner_node_6_ref.clone();
+            let steel_inner_node_7_ref_for_parallel = 
+            steel_inner_node_7_ref.clone();
+
 
 
             fn connect_fluid_and_steel_inner_node(
@@ -1839,7 +1958,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_0_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1850,7 +1969,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_1_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1870,7 +1989,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_3_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1881,7 +2000,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_2_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1902,7 +2021,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_4_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1913,7 +2032,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_5_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1934,7 +2053,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_6_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1945,7 +2064,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
 
                 connect_fluid_and_steel_inner_node(
                     fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_7_ref.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -1992,6 +2111,35 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                 drop(fluid_node_5_ref_to_obtain_data);
                 drop(fluid_node_6_ref_to_obtain_data);
                 drop(fluid_node_7_ref_to_obtain_data);
+
+                // same for steel nodes
+
+                steel_shell_inner_node_vec_in_loop[0] = 
+                    steel_inner_node_0_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[1] = 
+                    steel_inner_node_1_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[2] = 
+                    steel_inner_node_2_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[3] = 
+                    steel_inner_node_3_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[4] = 
+                    steel_inner_node_4_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[5] = 
+                    steel_inner_node_5_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[6] = 
+                    steel_inner_node_6_ref.lock().unwrap().deref().clone();
+                steel_shell_inner_node_vec_in_loop[7] = 
+                    steel_inner_node_7_ref.lock().unwrap().deref().clone();
+                // dispose of old references once done
+                drop(steel_inner_node_0_ref);
+                drop(steel_inner_node_1_ref);
+                drop(steel_inner_node_2_ref);
+                drop(steel_inner_node_3_ref);
+                drop(steel_inner_node_4_ref);
+                drop(steel_inner_node_5_ref);
+                drop(steel_inner_node_6_ref);
+                drop(steel_inner_node_7_ref);
+
             }
 
             // after this, we should have gotten our radial heat transfer 
