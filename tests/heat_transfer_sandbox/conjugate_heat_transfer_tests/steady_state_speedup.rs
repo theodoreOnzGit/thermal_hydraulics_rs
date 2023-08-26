@@ -601,66 +601,67 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
             let steel_inner_node_7_ref_for_parallel = 
             steel_inner_node_7_ref.clone();
 
+            // and finally for the outer shell, do the same 
 
+            let steel_outer_node_0_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[0].clone()
+            ));
+            let steel_outer_node_1_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[1].clone()
+            ));
+            let steel_outer_node_2_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[2].clone()
+            ));
+            let steel_outer_node_3_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[3].clone()
+            ));
+            let steel_outer_node_4_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[4].clone()
+            ));
+            let steel_outer_node_5_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[5].clone()
+            ));
+            let steel_outer_node_6_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[6].clone()
+            ));
+            let steel_outer_node_7_ref = 
+            Arc::new(Mutex::new(
+                steel_shell_outer_node_vec_in_loop[7].clone()
+            ));
 
-            fn connect_fluid_and_steel_inner_node(
-                fluid_node: &mut HeatTransferEntity,
-                steel_inner_node: &mut HeatTransferEntity,
-                radial_thickness: Length,
-                therminol_mass_flowrate: MassRate,
-                pressure: Pressure,
-                id: Length,
-                heated_length: Length,
-                number_of_nodes: usize,
-                steel: Material){
+            // now create references for the parallel threads 
 
+            let steel_outer_node_0_ref_for_parallel =
+            steel_outer_node_0_ref.clone();
+            let steel_outer_node_1_ref_for_parallel =
+            steel_outer_node_1_ref.clone();
+            let steel_outer_node_2_ref_for_parallel =
+            steel_outer_node_2_ref.clone();
+            let steel_outer_node_3_ref_for_parallel =
+            steel_outer_node_3_ref.clone();
+            let steel_outer_node_4_ref_for_parallel =
+            steel_outer_node_4_ref.clone();
+            let steel_outer_node_5_ref_for_parallel =
+            steel_outer_node_5_ref.clone();
+            let steel_outer_node_6_ref_for_parallel =
+            steel_outer_node_6_ref.clone();
+            let steel_outer_node_7_ref_for_parallel =
+            steel_outer_node_7_ref.clone();
 
-                let radial_thickness: RadialCylindricalThicknessThermalConduction
-                = radial_thickness.into();
+            // heater power 
 
-                let steel_inner_cylindrical_node_temp: ThermodynamicTemperature 
-                = HeatTransferEntity::temperature(
-                    steel_inner_node).unwrap();
-                // now need to get heat transfer coeff
-
-                let therminol_temp: ThermodynamicTemperature 
-                = HeatTransferEntity::temperature(
-                    fluid_node).unwrap();
-
-                let heat_trf_coeff: HeatTransfer = 
-                heat_transfer_coefficient_ciet_v_2_0(
-                    therminol_mass_flowrate,
-                    therminol_temp,
-                    pressure,
-                );
-
-
-                let inner_diameter: InnerDiameterThermalConduction = 
-                id.clone().into();
-
-                let node_length: Length = 
-                heated_length/(number_of_nodes as f64);
-
-                let node_length: CylinderLengthThermalConduction = 
-                node_length.into();
-
-                // construct the interaction 
-
-                let interaction: HeatTransferInteractionType = 
-                HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside
-                    ((steel,radial_thickness,
-                        steel_inner_cylindrical_node_temp,
-                        pressure),
-                        (heat_trf_coeff,
-                            inner_diameter,
-                            node_length));
-
-                // link the entities,
-                // this is the fluid to the inner shell
-                link_heat_transfer_entity(fluid_node, 
-                    steel_inner_node, 
-                    interaction).unwrap();
-
+            let node_heater_power: Power;
+            {
+                node_heater_power = 
+                    heater_power / 2 as f64  
+                    / fluid_vec_in_loop.len() as f64;
             }
 
             let thread_1 = thread::spawn( move || { 
@@ -669,7 +670,8 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
-                
+
+                // links fluid to steel
                 connect_fluid_and_steel_inner_node(
                     fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -691,6 +693,40 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes,
                     steel);
+
+                // links inner and outer shell
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // adds power to inner and outer shell
+
+                add_heater_power_to_shell(
+                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+                add_heater_power_to_shell(
+                    steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+
 
             });
 
@@ -722,6 +758,38 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes,
                     steel);
+                // links inner and outer shell
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // adds power to inner and outer shell
+
+                add_heater_power_to_shell(
+                    steel_outer_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+                add_heater_power_to_shell(
+                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
 
             });
 
@@ -754,6 +822,38 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes,
                     steel);
+                // links inner and outer shell
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // adds power to inner and outer shell
+
+                add_heater_power_to_shell(
+                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+                add_heater_power_to_shell(
+                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
             });
 
 
@@ -787,6 +887,38 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel);
 
+                // links inner and outer shell
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // adds power to inner and outer shell
+
+                add_heater_power_to_shell(
+                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+                add_heater_power_to_shell(
+                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
             });
             
             thread_1.join().unwrap();
@@ -853,111 +985,38 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                 drop(steel_inner_node_5_ref);
                 drop(steel_inner_node_6_ref);
                 drop(steel_inner_node_7_ref);
+                // same for steel nodes
+
+                steel_shell_outer_node_vec_in_loop[0] = 
+                    steel_outer_node_0_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[1] = 
+                    steel_outer_node_1_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[2] = 
+                    steel_outer_node_2_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[3] = 
+                    steel_outer_node_3_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[4] = 
+                    steel_outer_node_4_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[5] = 
+                    steel_outer_node_5_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[6] = 
+                    steel_outer_node_6_ref.lock().unwrap().deref().clone();
+                steel_shell_outer_node_vec_in_loop[7] = 
+                    steel_outer_node_7_ref.lock().unwrap().deref().clone();
+                // dispose of old references once done
+                drop(steel_outer_node_0_ref);
+                drop(steel_outer_node_1_ref);
+                drop(steel_outer_node_2_ref);
+                drop(steel_outer_node_3_ref);
+                drop(steel_outer_node_4_ref);
+                drop(steel_outer_node_5_ref);
+                drop(steel_outer_node_6_ref);
+                drop(steel_outer_node_7_ref);
 
             }
 
             // after this, we should have gotten our radial heat transfer 
             // interactions between fluid and inner nodes
-
-
-            // second, link inner shell to outer shell 
-            //
-            // both inner and outer shell will have power as well
-            // roughly evenly distributed
-            for (index, inner_shell_ptr) in steel_shell_inner_node_vec_in_loop.
-                iter_mut().enumerate(){
-                    let outer_shell_ptr: &mut HeatTransferEntity = 
-                    &mut steel_shell_outer_node_vec_in_loop[index];
-
-
-                    // remember, the inner diameter and outer diameter 
-                    // of the shells are at the midpoints of both shells 
-                    //
-                    // so the radial thicknesses are halved.
-                    let inner_radial_thickness: Length = 
-                    0.5*(midway_point_steel_shell - id);
-
-                    let outer_radial_thickness: Length = 
-                    0.5*(od - midway_point_steel_shell);
-
-                    let inner_radial_thickness: RadialCylindricalThicknessThermalConduction 
-                    = inner_radial_thickness.into();
-
-                    let outer_radial_thickness: RadialCylindricalThicknessThermalConduction 
-                    = outer_radial_thickness.into();
-
-                    // remember, the inner diameter and outer diameter 
-                    // of the shells are at the midpoints of both shells 
-                    //
-                    // thats why you see all this subtraction
-
-                    let id_mid_inner_shell: Length = 
-                    id + inner_radial_thickness.into();
-
-                    let id_mid_inner_shell: InnerDiameterThermalConduction 
-                    = id_mid_inner_shell.into();
-
-                    let od_mid_inner_shell: Length = 
-                    od - outer_radial_thickness.into();
-
-                    let od_mid_inner_shell: OuterDiameterThermalConduction 
-                    = od_mid_inner_shell.into();
-
-                    let node_length: Length = 
-                    heated_length/(number_of_nodes as f64);
-
-                    let node_length: CylinderLengthThermalConduction = 
-                    node_length.into();
-
-                    // create the interaction 
-
-                    let interaction = HeatTransferInteractionType::
-                        DualCylindricalThermalConductance(
-                            (steel, inner_radial_thickness),
-                            (steel, outer_radial_thickness),
-                            (id_mid_inner_shell, od_mid_inner_shell, node_length),
-                        );
-
-                    // link them together
-                    link_heat_transfer_entity(inner_shell_ptr, 
-                        outer_shell_ptr, 
-                        interaction).unwrap();
-
-                    // each node would have roughly the same power 
-                    // I should of course average it volumetrically 
-                    // but I'm not going to
-                    // 
-                    // I'll divide it by the number of nodes, 
-                    // for the number of nodes in each shell layer 
-                    // and then divide by the number of layers
-                    //
-                    // I'll have to immutably borrow the fluid_vec_in_loop
-                    // ptr because the borrowing rules make it hard 
-                    // to borrow outer shell or inner shell
-                    let node_heater_power: Power;
-                    {
-                        node_heater_power = 
-                        heater_power / 2 as f64  
-                        / fluid_vec_in_loop.len() as f64;
-                    }
-
-                    let mut electrical_heat_bc: HeatTransferEntity = 
-                    BCType::new_const_heat_addition(node_heater_power);
-
-                    let heat_addition_interaction = 
-                    HeatTransferInteractionType::UserSpecifiedHeatAddition;
-
-                    // link the power BC to the inner shell
-                    link_heat_transfer_entity(inner_shell_ptr, 
-                        &mut electrical_heat_bc, 
-                        heat_addition_interaction).unwrap();
-
-                    // link them together
-                    link_heat_transfer_entity(outer_shell_ptr, 
-                        &mut electrical_heat_bc, 
-                        heat_addition_interaction).unwrap();
-
-                }
 
             // third, link outer shell to ambient temperature
 
@@ -3027,5 +3086,149 @@ fn heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     nusselt * k / hydraulic_diameter;
 
     heat_transfer_coeff
+
+}
+fn link_inner_shell_to_outer_shell(
+    outer_shell_ptr: &mut HeatTransferEntity,
+    inner_shell_ptr: &mut HeatTransferEntity,
+    midway_point_steel_shell: Length,
+    id: Length, 
+    od: Length,
+    steel: Material,
+    heated_length: Length, 
+    number_of_nodes: usize){
+    // remember, the inner diameter and outer diameter 
+    // of the shells are at the midpoints of both shells 
+    //
+    // so the radial thicknesses are halved.
+    let inner_radial_thickness: Length = 
+    0.5*(midway_point_steel_shell - id);
+
+    let outer_radial_thickness: Length = 
+    0.5*(od - midway_point_steel_shell);
+
+    let inner_radial_thickness: RadialCylindricalThicknessThermalConduction 
+    = inner_radial_thickness.into();
+
+    let outer_radial_thickness: RadialCylindricalThicknessThermalConduction 
+    = outer_radial_thickness.into();
+
+    // remember, the inner diameter and outer diameter 
+    // of the shells are at the midpoints of both shells 
+    //
+    // thats why you see all this subtraction
+
+    let id_mid_inner_shell: Length = 
+    id + inner_radial_thickness.into();
+
+    let id_mid_inner_shell: InnerDiameterThermalConduction 
+    = id_mid_inner_shell.into();
+
+    let od_mid_inner_shell: Length = 
+    od - outer_radial_thickness.into();
+
+    let od_mid_inner_shell: OuterDiameterThermalConduction 
+    = od_mid_inner_shell.into();
+
+    let node_length: Length = 
+    heated_length/(number_of_nodes as f64);
+
+    let node_length: CylinderLengthThermalConduction = 
+    node_length.into();
+
+    // create the interaction 
+
+    let interaction = HeatTransferInteractionType::
+        DualCylindricalThermalConductance(
+            (steel, inner_radial_thickness),
+            (steel, outer_radial_thickness),
+            (id_mid_inner_shell, od_mid_inner_shell, node_length),
+        );
+
+    // link them together
+    link_heat_transfer_entity(inner_shell_ptr, 
+        outer_shell_ptr, 
+        interaction).unwrap();
+}
+
+fn add_heater_power_to_shell(
+    outer_shell_ptr: &mut HeatTransferEntity,
+    inner_shell_ptr: &mut HeatTransferEntity,
+    node_heater_power: Power,
+){
+
+    let mut electrical_heat_bc: HeatTransferEntity = 
+    BCType::new_const_heat_addition(node_heater_power);
+
+    let heat_addition_interaction = 
+    HeatTransferInteractionType::UserSpecifiedHeatAddition;
+
+    // link the power BC to the inner shell
+    link_heat_transfer_entity(inner_shell_ptr, 
+        &mut electrical_heat_bc, 
+        heat_addition_interaction).unwrap();
+
+    // link them together
+    link_heat_transfer_entity(outer_shell_ptr, 
+        &mut electrical_heat_bc, 
+        heat_addition_interaction).unwrap();
+}
+fn connect_fluid_and_steel_inner_node(
+    fluid_node: &mut HeatTransferEntity,
+    steel_inner_node: &mut HeatTransferEntity,
+    radial_thickness: Length,
+    therminol_mass_flowrate: MassRate,
+    pressure: Pressure,
+    id: Length,
+    heated_length: Length,
+    number_of_nodes: usize,
+    steel: Material){
+
+
+    let radial_thickness: RadialCylindricalThicknessThermalConduction
+    = radial_thickness.into();
+
+    let steel_inner_cylindrical_node_temp: ThermodynamicTemperature 
+    = HeatTransferEntity::temperature(
+        steel_inner_node).unwrap();
+    // now need to get heat transfer coeff
+
+    let therminol_temp: ThermodynamicTemperature 
+    = HeatTransferEntity::temperature(
+        fluid_node).unwrap();
+
+    let heat_trf_coeff: HeatTransfer = 
+    heat_transfer_coefficient_ciet_v_2_0(
+        therminol_mass_flowrate,
+        therminol_temp,
+        pressure,
+    );
+
+
+    let inner_diameter: InnerDiameterThermalConduction = 
+    id.clone().into();
+
+    let node_length: Length = 
+    heated_length/(number_of_nodes as f64);
+
+    let node_length: CylinderLengthThermalConduction = 
+    node_length.into();
+
+    // construct the interaction 
+
+    let interaction: HeatTransferInteractionType = 
+    HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside
+        ((steel,radial_thickness,
+            steel_inner_cylindrical_node_temp,
+            pressure),
+            (heat_trf_coeff,
+                inner_diameter,
+                node_length));
+
+    // link the entities,
+    // this is the fluid to the inner shell
+    link_heat_transfer_entity(fluid_node, 
+        steel_inner_node, 
+        interaction).unwrap();
 
 }
