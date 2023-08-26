@@ -664,6 +664,8 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
             // ambient air bc, 4 clones to make 
             // one needed for each thread
+            let ambient_air_temp_bc_ptr_for_parallel_0 = 
+            ambient_air_temp_bc_ptr.clone();
             let ambient_air_temp_bc_ptr_for_parallel_1 = 
             ambient_air_temp_bc_ptr.clone();
             let ambient_air_temp_bc_ptr_for_parallel_2 = 
@@ -672,15 +674,19 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
             ambient_air_temp_bc_ptr.clone();
             let ambient_air_temp_bc_ptr_for_parallel_4 = 
             ambient_air_temp_bc_ptr.clone();
+            let ambient_air_temp_bc_ptr_for_parallel_5 = 
+            ambient_air_temp_bc_ptr.clone();
+            let ambient_air_temp_bc_ptr_for_parallel_6 = 
+            ambient_air_temp_bc_ptr.clone();
+            let ambient_air_temp_bc_ptr_for_parallel_7 = 
+            ambient_air_temp_bc_ptr.clone();
 
-            let thread_1 = thread::spawn( move || { 
-
-                // thread 1 connects nodes at 0 and 1
-
+            let thread_0 = thread::spawn( move || {
+                // thread 0 connects nodes at node 0
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
 
-                // links fluid to steel
+                // fluid to inner shell
                 connect_fluid_and_steel_inner_node(
                     fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -692,6 +698,45 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel);
 
+                // inner shell to outer shell
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // heater power for inner shell and outer shell
+                add_heater_power_to_shell(
+                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+
+                // ambient temperature
+                link_outer_shell_to_ambient_temperature(
+                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
+                    ambient_air_temp_bc_ptr_for_parallel_0.lock().unwrap().deref_mut(),
+                    od,
+                    midway_point_steel_shell,
+                    atmospheric_pressure,
+                    heated_length,
+                    number_of_nodes,
+                    steel
+                );
+
+            });
+
+            let thread_1 = thread::spawn( move || { 
+
+                // thread 1 connects nodes at node 1
+
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+
+                // links fluid to steel
                 connect_fluid_and_steel_inner_node(
                     fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -705,15 +750,6 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
                 // links inner and outer shell
 
-                link_inner_shell_to_outer_shell(
-                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
-                    midway_point_steel_shell,
-                    id,
-                    od, 
-                    steel,
-                    heated_length,
-                    number_of_nodes);
 
                 link_inner_shell_to_outer_shell(
                     steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -728,35 +764,12 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                 // adds power to inner and outer shell
 
                 add_heater_power_to_shell(
-                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
-                    node_heater_power);
-                add_heater_power_to_shell(
                     steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
-                // advection linkage 
-
-                link_mid_heater_nodes_via_advection(
-                    fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
-                    fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
-                    therminol,
-                    atmospheric_pressure,
-                    therminol_mass_flowrate
-                );
 
                 // link outer shell to ambient temperature 
 
-                link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_0_ref_for_parallel.lock().unwrap().deref_mut(),
-                    ambient_air_temp_bc_ptr_for_parallel_1.lock().unwrap().deref_mut(),
-                    od,
-                    midway_point_steel_shell,
-                    atmospheric_pressure,
-                    heated_length,
-                    number_of_nodes,
-                    steel
-                );
                 link_outer_shell_to_ambient_temperature(
                     steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     ambient_air_temp_bc_ptr_for_parallel_1.lock().unwrap().deref_mut(),
@@ -774,22 +787,12 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
             let thread_2 = thread::spawn( move || { 
 
-                // thread 2 connects nodes at 2, 3
+                // thread 2 connects nodes at 2
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
-                connect_fluid_and_steel_inner_node(
-                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    radial_thickness,
-                    therminol_mass_flowrate,
-                    atmospheric_pressure,
-                    id,
-                    heated_length,
-                    number_of_nodes,
-                    steel);
-
+                // fluid to inner shell
                 connect_fluid_and_steel_inner_node(
                     fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -800,8 +803,8 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes,
                     steel);
-                // links inner and outer shell
 
+                // inner shell to outer shell
                 link_inner_shell_to_outer_shell(
                     steel_outer_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
@@ -812,37 +815,13 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes);
 
-                link_inner_shell_to_outer_shell(
-                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    midway_point_steel_shell,
-                    id,
-                    od, 
-                    steel,
-                    heated_length,
-                    number_of_nodes);
-
-                // adds power to inner and outer shell
-
+                // heater power for inner shell and outer shell
                 add_heater_power_to_shell(
                     steel_outer_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
-                add_heater_power_to_shell(
-                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    node_heater_power);
-                // advection_linkage
-                link_mid_heater_nodes_via_advection(
-                    fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
-                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
-                    therminol,
-                    atmospheric_pressure,
-                    therminol_mass_flowrate
-                );
 
-                // link outer shell to ambient temperature 
-
+                // ambient temperature
                 link_outer_shell_to_ambient_temperature(
                     steel_outer_node_2_ref_for_parallel.lock().unwrap().deref_mut(),
                     ambient_air_temp_bc_ptr_for_parallel_2.lock().unwrap().deref_mut(),
@@ -853,31 +832,21 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel
                 );
-                link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
-                    ambient_air_temp_bc_ptr_for_parallel_2.lock().unwrap().deref_mut(),
-                    od,
-                    midway_point_steel_shell,
-                    atmospheric_pressure,
-                    heated_length,
-                    number_of_nodes,
-                    steel
-                );
-
 
             });
 
             let thread_3 = thread::spawn( move || { 
 
-                // thread 3 connects nodes at 4,5
+                // thread 3 connects nodes at 3
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
 
+                // fluid to inner shell
                 connect_fluid_and_steel_inner_node(
-                    fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -886,21 +855,10 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(
-                    fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
-                    radial_thickness,
-                    therminol_mass_flowrate,
-                    atmospheric_pressure,
-                    id,
-                    heated_length,
-                    number_of_nodes,
-                    steel);
-                // links inner and outer shell
-
+                // inner shell to outer shell
                 link_inner_shell_to_outer_shell(
-                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     midway_point_steel_shell,
                     id,
                     od, 
@@ -908,49 +866,15 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes);
 
-                link_inner_shell_to_outer_shell(
-                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
-                    midway_point_steel_shell,
-                    id,
-                    od, 
-                    steel,
-                    heated_length,
-                    number_of_nodes);
-
-                // adds power to inner and outer shell
-
+                // heater power for inner shell and outer shell
                 add_heater_power_to_shell(
-                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
-                add_heater_power_to_shell(
-                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
-                    node_heater_power);
-                // advection_linkage
-                link_mid_heater_nodes_via_advection(
-                    fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
-                    fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
-                    therminol,
-                    atmospheric_pressure,
-                    therminol_mass_flowrate
-                );
 
-                // link outer shell to ambient temperature 
-
+                // ambient temperature
                 link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
-                    ambient_air_temp_bc_ptr_for_parallel_3.lock().unwrap().deref_mut(),
-                    od,
-                    midway_point_steel_shell,
-                    atmospheric_pressure,
-                    heated_length,
-                    number_of_nodes,
-                    steel
-                );
-                link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     ambient_air_temp_bc_ptr_for_parallel_3.lock().unwrap().deref_mut(),
                     od,
                     midway_point_steel_shell,
@@ -966,14 +890,15 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
             let thread_4 = thread::spawn( move || { 
 
-                // thread 4 connects nodes at 6 and 7
+                // thread 4 connects nodes at 4
 
                 let radial_thickness: Length = 
                 (midway_point_steel_shell - id) *0.5;
                 
+                // fluid to inner shell
                 connect_fluid_and_steel_inner_node(
-                    fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     radial_thickness,
                     therminol_mass_flowrate,
                     atmospheric_pressure,
@@ -982,22 +907,10 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel);
 
-                connect_fluid_and_steel_inner_node(
-                    fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
-                    radial_thickness,
-                    therminol_mass_flowrate,
-                    atmospheric_pressure,
-                    id,
-                    heated_length,
-                    number_of_nodes,
-                    steel);
-
-                // links inner and outer shell
-
+                // inner shell to outer shell
                 link_inner_shell_to_outer_shell(
-                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     midway_point_steel_shell,
                     id,
                     od, 
@@ -1005,48 +918,15 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     heated_length,
                     number_of_nodes);
 
-                link_inner_shell_to_outer_shell(
-                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
-                    midway_point_steel_shell,
-                    id,
-                    od, 
-                    steel,
-                    heated_length,
-                    number_of_nodes);
-
-                // adds power to inner and outer shell
-
+                // heater power for inner shell and outer shell
                 add_heater_power_to_shell(
-                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
-                add_heater_power_to_shell(
-                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
-                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
-                    node_heater_power);
-                // advection_linkage
-                link_mid_heater_nodes_via_advection(
-                    fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
-                    fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
-                    therminol,
-                    atmospheric_pressure,
-                    therminol_mass_flowrate
-                );
-                // link outer shell to ambient temperature 
 
+                // ambient temperature
                 link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
-                    ambient_air_temp_bc_ptr_for_parallel_4.lock().unwrap().deref_mut(),
-                    od,
-                    midway_point_steel_shell,
-                    atmospheric_pressure,
-                    heated_length,
-                    number_of_nodes,
-                    steel
-                );
-                link_outer_shell_to_ambient_temperature(
-                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_outer_node_4_ref_for_parallel.lock().unwrap().deref_mut(),
                     ambient_air_temp_bc_ptr_for_parallel_4.lock().unwrap().deref_mut(),
                     od,
                     midway_point_steel_shell,
@@ -1057,11 +937,163 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                 );
                 
             });
-            
+            let thread_5 = thread::spawn( move || {
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+
+                // fluid to inner shell
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+                // inner shell to outer shell
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // heater power for inner shell and outer shell
+                add_heater_power_to_shell(
+                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+
+                // ambient temperature
+                link_outer_shell_to_ambient_temperature(
+                    steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
+                    ambient_air_temp_bc_ptr_for_parallel_5.lock().unwrap().deref_mut(),
+                    od,
+                    midway_point_steel_shell,
+                    atmospheric_pressure,
+                    heated_length,
+                    number_of_nodes,
+                    steel
+                );
+
+            });
+            let thread_6 = thread::spawn( move || {
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+                // fluid to inner shell
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+                // inner shell to outer shell
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // heater power for inner shell and outer shell
+                add_heater_power_to_shell(
+                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+
+                // ambient temperature
+                link_outer_shell_to_ambient_temperature(
+                    steel_outer_node_6_ref_for_parallel.lock().unwrap().deref_mut(),
+                    ambient_air_temp_bc_ptr_for_parallel_6.lock().unwrap().deref_mut(),
+                    od,
+                    midway_point_steel_shell,
+                    atmospheric_pressure,
+                    heated_length,
+                    number_of_nodes,
+                    steel
+                );
+            });
+            let thread_7 = thread::spawn( move || {
+                let radial_thickness: Length = 
+                (midway_point_steel_shell - id) *0.5;
+                // fluid to inner shell
+                connect_fluid_and_steel_inner_node(
+                    fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    radial_thickness,
+                    therminol_mass_flowrate,
+                    atmospheric_pressure,
+                    id,
+                    heated_length,
+                    number_of_nodes,
+                    steel);
+
+                // inner shell to outer shell
+                link_inner_shell_to_outer_shell(
+                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    midway_point_steel_shell,
+                    id,
+                    od, 
+                    steel,
+                    heated_length,
+                    number_of_nodes);
+
+                // heater power for inner shell and outer shell
+                add_heater_power_to_shell(
+                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    node_heater_power);
+
+                // ambient temperature
+                link_outer_shell_to_ambient_temperature(
+                    steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
+                    ambient_air_temp_bc_ptr_for_parallel_7.lock().unwrap().deref_mut(),
+                    od,
+                    midway_point_steel_shell,
+                    atmospheric_pressure,
+                    heated_length,
+                    number_of_nodes,
+                    steel
+                );
+            });
+
+            // note: spawning 8 threads for connection as compared 
+            // to 4, reduced time from about 404 ms to 373 ms
+            //
+            // in total, using 8 threads, I've reduced the time taken 
+            // for joining and calculation from 602 ms to 373 ms
+            // 60% decrease for joining nodes
+            //
+            // Using 4 threads, I reduced from 602 to 404
+            //
+            // I realised most of the calculation comes from the 
+            // convective boundary conditions between fluid and solid 
+            // These take the most time
+            //
+            // i'm beginning to hit some diminishing returns
+            thread_0.join().unwrap();
             thread_1.join().unwrap();
             thread_2.join().unwrap();
             thread_3.join().unwrap();
             thread_4.join().unwrap();
+            thread_5.join().unwrap();
+            thread_6.join().unwrap();
+            thread_7.join().unwrap();
 
 
             // after this, we should have gotten our radial heat transfer 
@@ -1094,8 +1126,23 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                 // difference
 
                 link_mid_heater_nodes_via_advection(
+                    fluid_node_0_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_1_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+
+                link_mid_heater_nodes_via_advection(
                     fluid_node_1_ref_to_obtain_data.lock().unwrap().deref_mut(),
                     fluid_node_2_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_2_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_3_ref_to_obtain_data.lock().unwrap().deref_mut(),
                     therminol,
                     atmospheric_pressure,
                     therminol_mass_flowrate
@@ -1108,8 +1155,22 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     therminol_mass_flowrate
                 );
                 link_mid_heater_nodes_via_advection(
+                    fluid_node_4_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_5_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+                link_mid_heater_nodes_via_advection(
                     fluid_node_5_ref_to_obtain_data.lock().unwrap().deref_mut(),
                     fluid_node_6_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_6_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_7_ref_to_obtain_data.lock().unwrap().deref_mut(),
                     therminol,
                     atmospheric_pressure,
                     therminol_mass_flowrate
