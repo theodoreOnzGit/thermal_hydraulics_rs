@@ -735,6 +735,15 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     steel_outer_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_1_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
+                // advection linkage 
+
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_0_ref_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_1_ref_parallel.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
 
                 // link outer shell to ambient temperature 
 
@@ -758,6 +767,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel
                 );
+
 
 
             });
@@ -822,6 +832,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     steel_outer_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_3_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
+                // advection_linkage
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_2_ref_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_3_ref_parallel.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
 
                 // link outer shell to ambient temperature 
 
@@ -845,6 +863,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel
                 );
+
 
             });
 
@@ -909,6 +928,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     steel_outer_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_5_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
+                // advection_linkage
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_4_ref_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_5_ref_parallel.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
 
                 // link outer shell to ambient temperature 
 
@@ -932,6 +959,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel
                 );
+
             });
 
 
@@ -997,6 +1025,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     steel_outer_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
                     steel_inner_node_7_ref_for_parallel.lock().unwrap().deref_mut(),
                     node_heater_power);
+                // advection_linkage
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_6_ref_parallel.lock().unwrap().deref_mut(),
+                    fluid_node_7_ref_parallel.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
                 // link outer shell to ambient temperature 
 
                 link_outer_shell_to_ambient_temperature(
@@ -1019,12 +1055,67 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     number_of_nodes,
                     steel
                 );
+                
             });
             
             thread_1.join().unwrap();
             thread_2.join().unwrap();
             thread_3.join().unwrap();
             thread_4.join().unwrap();
+
+
+            // after this, we should have gotten our radial heat transfer 
+            // interactions between fluid and inner nodes as well as 
+            // inner and outer nodes, and then temperature
+
+            // also we have linked outer shell to ambient temperature
+            //
+
+            
+            // fourth, link adjacent fluid nodes axially with advection 
+            // needs to be.
+            // We already have:
+            // 
+            // (0 - 1) 
+            // (2 - 3)
+            // (4 - 5)
+            // (6 - 7)
+            //
+            // will need to link:
+            // 
+            // 1 to 2 
+            // 3 to 4 
+            // 5 to 6 
+
+            {
+
+                // experimental note, moving advection BCs, or about 
+                // half of them to the parallel solvers barely makes for any 
+                // difference
+
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_1_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_2_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_3_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_4_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+                link_mid_heater_nodes_via_advection(
+                    fluid_node_5_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    fluid_node_6_ref_to_obtain_data.lock().unwrap().deref_mut(),
+                    therminol,
+                    atmospheric_pressure,
+                    therminol_mass_flowrate
+                );
+            }
+
 
             // now I want to replace all nodes in 
             // steel_shell_inner_node_vec_in_loop 
@@ -1115,84 +1206,6 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
             }
 
-            // after this, we should have gotten our radial heat transfer 
-            // interactions between fluid and inner nodes as well as 
-            // inner and outer nodes, and then temperature
-
-            // also we have linked outer shell to ambient temperature
-            //
-
-            
-            // fourth, link adjacent fluid nodes axially with advection 
-
-            for index in 0..fluid_vec_in_loop.len()-1 {
-
-                // (heater node i) ----- (heater node 2) ----- .... 
-                //
-                //
-                //
-                // to borrow two elements mutably is tricky, 
-                // so we need to split the vector into two vectors first 
-                // then borrow each node mutably
-                //
-                // it will be the last element of the first slice 
-                // and first element of the second slice
-
-                let (vec_slice_one, vec_slice_two) = 
-                fluid_vec_in_loop.split_at_mut(index+1);
-
-                let fluid_node_idx: &mut HeatTransferEntity = 
-                vec_slice_one.last_mut().unwrap();
-
-                let fluid_node_idx_plus_one: &mut HeatTransferEntity = 
-                vec_slice_two.first_mut().unwrap();
-
-                // after doing all the acrobatics to borrow two vectors, 
-                // then we get the densities
-
-                let fluid_node_idx_temperature: ThermodynamicTemperature = 
-                HeatTransferEntity::temperature(
-                    fluid_node_idx
-                ).unwrap();
-
-                let fluid_node_idx_plus_one_temperature: 
-                ThermodynamicTemperature = 
-                HeatTransferEntity::temperature(
-                    fluid_node_idx_plus_one
-                ).unwrap();
-
-
-                let fluid_node_idx_density = density(
-                    therminol,
-                    fluid_node_idx_temperature,
-                    atmospheric_pressure
-                ).unwrap();
-
-                let fluid_node_idx_plus_one_density = density(
-                    therminol,
-                    fluid_node_idx_plus_one_temperature,
-                    atmospheric_pressure
-                ).unwrap();
-
-                // construct the advection interaction
-
-                let mid_heater_advection_dataset = DataAdvection {
-                    mass_flowrate: therminol_mass_flowrate,
-                    fluid_density_heat_transfer_entity_1: fluid_node_idx_density,
-                    fluid_density_heat_transfer_entity_2: fluid_node_idx_plus_one_density,
-                };
-
-
-                let mid_heater_advection_interaction = HeatTransferInteractionType::
-                    Advection(mid_heater_advection_dataset);
-                
-                // link the nodes with advection
-
-                link_heat_transfer_entity(fluid_node_idx, 
-                    fluid_node_idx_plus_one, 
-                    mid_heater_advection_interaction).unwrap();
-
-            }
 
             // fifth, link fluid boundary nodes with the boundary 
             // conditions
@@ -3336,5 +3349,57 @@ fn link_outer_shell_to_ambient_temperature(
     link_heat_transfer_entity(ambient_air_temp_bc_in_loop, 
         outer_shell_ptr, 
         interaction).unwrap();
+
+}
+fn link_mid_heater_nodes_via_advection(
+    fluid_node_left: &mut HeatTransferEntity,
+    fluid_node_right: &mut HeatTransferEntity,
+    therminol: Material,
+    atmospheric_pressure: Pressure, 
+    therminol_mass_flowrate: MassRate){
+    // after doing all the acrobatics to borrow two vectors, 
+    // then we get the densities
+
+    let fluid_node_idx_temperature: ThermodynamicTemperature = 
+    HeatTransferEntity::temperature(
+        fluid_node_left
+    ).unwrap();
+
+    let fluid_node_idx_plus_one_temperature: 
+    ThermodynamicTemperature = 
+    HeatTransferEntity::temperature(
+        fluid_node_right
+    ).unwrap();
+
+
+    let fluid_node_idx_density = density(
+        therminol,
+        fluid_node_idx_temperature,
+        atmospheric_pressure
+    ).unwrap();
+
+    let fluid_node_idx_plus_one_density = density(
+        therminol,
+        fluid_node_idx_plus_one_temperature,
+        atmospheric_pressure
+    ).unwrap();
+
+    // construct the advection interaction
+
+    let mid_heater_advection_dataset = DataAdvection {
+        mass_flowrate: therminol_mass_flowrate,
+        fluid_density_heat_transfer_entity_1: fluid_node_idx_density,
+        fluid_density_heat_transfer_entity_2: fluid_node_idx_plus_one_density,
+    };
+
+
+    let mid_heater_advection_interaction = HeatTransferInteractionType::
+        Advection(mid_heater_advection_dataset);
+
+    // link the nodes with advection
+
+    link_heat_transfer_entity(fluid_node_left, 
+        fluid_node_right, 
+        mid_heater_advection_interaction).unwrap();
 
 }
