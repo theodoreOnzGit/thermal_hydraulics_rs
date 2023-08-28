@@ -128,6 +128,7 @@ use rayon::prelude::*;
 /// This tests how reducing to one radial steel node reduces required 
 /// time step
 #[test]
+#[ignore = "data collected"]
 pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_2_one_steel_node(){
 
 

@@ -65,3 +65,7 @@ pub use postprocessing::*;
 
 /// sandbox, for miscellaneous testing of code
 mod sandbox;
+
+/// contains matrix calculations specific to fluid nodes
+/// arranged in a straight array
+pub mod fluid_nodes;

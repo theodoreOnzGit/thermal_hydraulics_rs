@@ -74,7 +74,7 @@ fn advance_timestep_for_externally_cooled_array_cv_no_insulation(
     // this innermost node will be an extra term added to the 
     // heat source vector S
     //
-    // The new temperature will need to be used to calculate 
+    // The old temperature will need to be used to calculate 
     // new specific enthalpy for the system
 
     let mut T: Array1<ThermodynamicTemperature> = TOld.map (

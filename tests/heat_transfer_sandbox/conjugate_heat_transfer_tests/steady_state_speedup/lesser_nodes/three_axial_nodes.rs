@@ -126,7 +126,7 @@ use rayon::prelude::*;
 /// 
 ///
 #[test]
-//#[ignore = "data collected"]
+#[ignore = "data collected"]
 pub fn ciet_heater_v_2_0_test_steady_state_v_1_2_three_nodes(){
 
 
