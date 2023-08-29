@@ -867,3 +867,490 @@ fn fluid_node_calculation_initial_test(){
     return ();
 
 }
+
+#[test]
+fn fluid_node_backflow_calculation_initial_test(){
+
+
+    // okay, let's make two control volumes 
+    // one cylinder and then the other a shell
+    //
+    // cylinder needs diameter and z 
+    // shell needs id, od and z
+    let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
+    let id = Length::new::<meter>(0.0381);
+    let od = Length::new::<meter>(0.04);
+    let inner_tube_od = Length::new::<centimeter>(3.175);
+    // z is heated length
+    let _total_length = Length::new::<meter>(1.983333);
+    let heated_length = Length::new::<meter>(1.676);
+    let initial_temperature = ThermodynamicTemperature::new::
+        <degree_celsius>(80.0);
+    let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+
+    let flow_area = Area::new::<square_meter>(0.00105);
+    let number_of_nodes: usize = 8;
+    let ambient_air_temp = ThermodynamicTemperature::new::<
+        degree_celsius>(21.67);
+
+    let heater_steady_state_power = Power::new::<kilowatt>(8.0);
+    let therminol_mass_flowrate = 
+    MassRate::new::<kilogram_per_second>(-0.18);
+
+    let inlet_temperature = ThermodynamicTemperature::new::<degree_celsius>
+        (79.12);
+    // now, to construct the heater
+    // solid fluid interactions, we use a row of 
+    // temperature vectors, a front CV and a back CV to 
+    // The front and back CV should be identical 
+    //
+    // the 
+    let node_length: Length = heated_length/number_of_nodes as f64;
+
+    let fluid_back_entity: HeatTransferEntity = 
+    SingleCVNode::new_odd_shaped_pipe(
+        node_length,
+        flow_area,
+        therminol,
+        initial_temperature,
+        atmospheric_pressure,
+    ).unwrap();
+
+    // get the cv inside, 
+    // real ugly match statement, but whatever.
+
+    let fluid_back_cv: SingleCVNode = match fluid_back_entity {
+        HeatTransferEntity::ControlVolume(cv_type) => {
+            match cv_type {
+                SingleCV(cv) => {
+                    cv
+                },
+                ArrayCV(_) => {
+                    panic!()
+                },
+            }
+        },
+        HeatTransferEntity::BoundaryConditions(_) => {
+            panic!()
+        },
+    };
+
+    let fluid_front_cv: SingleCVNode = fluid_back_cv.clone();
+    let timestep_placeholder = Time::new::<second>(0.01);
+    let total_volume = flow_area * heated_length;
+
+
+    let mut initial_temperature_array: Array1<ThermodynamicTemperature> = 
+    Array::default(number_of_nodes);
+    initial_temperature_array.fill(initial_temperature);
+
+    let fluid_temperature_array = initial_temperature_array.clone();
+
+    let mut steel_temperature_array: Array1<ThermodynamicTemperature> = 
+    Array::default(number_of_nodes);
+
+    steel_temperature_array.fill(ambient_air_temp);
+
+
+
+
+    // we'll need solid fluid conductance array, volume fraction array 
+    // rho_cp array and q_fraction array 
+    //
+    // for conductance, what I'd like to do is 
+    // take an average temperature for both solid and fluid 
+    // and then based on that, obtain a conductance value, thus 
+    // reducing the number of times we calculate with conductance
+    //
+    // however, the solid fluid conductance is periodically updated, 
+    // so do it in a while loop, same for rhocp
+
+    let mut q_fraction: Array1<f64> = Array::zeros(number_of_nodes);
+    q_fraction.fill(1.0/number_of_nodes as f64);
+
+    let vol_fraction_equal_split: f64 = 1.0/number_of_nodes as f64;
+    let mut volume_fraction_array: Array1<f64> = Array::zeros(number_of_nodes);
+    volume_fraction_array.fill(vol_fraction_equal_split);
+
+    // move the fluid temp arrays into arc ptrs with mutex lock 
+    // as well as the single cvs and such 
+
+    let back_cv_ptr = Arc::new(Mutex::new(
+        fluid_back_cv
+    ));
+    let front_cv_ptr = Arc::new(Mutex::new(
+        fluid_front_cv
+    ));
+    let fluid_temp_at_present_timestep_ptr = Arc::new(Mutex::new(
+        fluid_temperature_array
+    ));
+    let steel_temp_at_present_timestep_ptr = Arc::new(Mutex::new(
+        steel_temperature_array
+    ));
+    let q_fraction_ptr = Arc::new(Mutex::new(
+        q_fraction
+    ));
+    let fluid_vol_fraction_ptr = Arc::new(Mutex::new(
+        volume_fraction_array.clone()
+    ));
+    let solid_vol_fraction_ptr = Arc::new(Mutex::new(
+        volume_fraction_array
+    ));
+
+    // clone the ptrs for the loop
+    let back_cv_ptr_clone_for_loop = back_cv_ptr.clone();
+    let front_cv_ptr_clone_for_loop = front_cv_ptr.clone();
+    let fluid_temp_vec_ptr_for_loop = fluid_temp_at_present_timestep_ptr.clone();
+    let steel_temp_at_present_timestep_ptr_for_loop = 
+    steel_temp_at_present_timestep_ptr.clone();
+    let q_fraction_ptr_for_loop = q_fraction_ptr.clone();
+    let fluid_vol_fraction_ptr_for_loop = fluid_vol_fraction_ptr.clone();
+    let solid_vol_fraction_ptr_for_loop = solid_vol_fraction_ptr.clone();
+
+    // time settings
+    let max_time: Time = Time::new::<second>(10.0);
+    let max_time_ptr = Arc::new(max_time);
+
+    let calculation_time_elapsed = SystemTime::now();
+    let calculation_loop = move || {
+        // derference ptrs 
+
+        let mut current_time_simulation_time = Time::new::<second>(0.0);
+        let timestep = Time::new::<second>(0.01);
+
+        // csv writer 
+
+        let mut time_wtr = Writer::from_path("fluid_node_backflow_calc_time_profile.csv")
+            .unwrap();
+
+        time_wtr.write_record(&["loop_calculation_time_nanoseconds",
+            "mutex_lock_time_ns",
+            "node_connection_time_ns",
+            "data_record_time_ns",
+            "timestep_advance_time_ns",])
+            .unwrap();
+
+        let mut temp_profile_wtr = Writer::from_path(
+            "fluid_node_backflow_temp_profile.csv")
+            .unwrap();
+
+        // this is code for writing the array of required temperatures
+        {
+
+            // I want the mid node length of this temperature
+
+            let node_length: Length = heated_length/number_of_nodes as f64;
+
+            let half_node_length: Length = 0.5 * node_length;
+
+            let mut header_vec: Vec<String> = vec![];
+
+            header_vec.push("simulation_time_seconds".to_string());
+            header_vec.push("elapsed_time_seconds".to_string());
+
+            for index in 0..number_of_nodes {
+
+                let mid_node_length: Length = 
+                index as f64 * node_length + half_node_length;
+
+                let prefix: String = "heater_temp_celsius_at_".to_string();
+
+                let suffix: String = "_cm".to_string();
+
+                let mid_node_length_cm: f64 = 
+                mid_node_length.get::<centimeter>();
+
+                let mid_node_length_string: String = 
+                mid_node_length_cm.to_string();
+
+                let header: String = prefix + &mid_node_length_string + &suffix;
+
+                header_vec.push(header);
+
+
+            }
+
+            temp_profile_wtr.write_record(&header_vec).unwrap();
+
+        }
+
+
+        while current_time_simulation_time <= *max_time_ptr.deref(){
+
+            let arc_mutex_lock_start = SystemTime::now();
+            // obtain arc mutex locks 
+
+            let mut back_cv_ptr_in_loop = 
+            back_cv_ptr_clone_for_loop.lock().unwrap();
+            let mut front_cv_ptr_in_loop = 
+            front_cv_ptr_clone_for_loop.lock().unwrap();
+            let mut fluid_temp_vec_ptr_in_loop
+            = fluid_temp_vec_ptr_for_loop.lock().unwrap();
+            let mut steel_temp_at_present_timestep_ptr_in_loop
+            = steel_temp_at_present_timestep_ptr_for_loop.lock().unwrap();
+            let mut q_fraction_ptr_in_loop 
+            = q_fraction_ptr_for_loop.lock().unwrap();
+            let mut fluid_vol_fraction_ptr_in_loop 
+            = fluid_vol_fraction_ptr_for_loop.lock().unwrap();
+            let solid_vol_fraction_ptr_in_loop 
+            = solid_vol_fraction_ptr_for_loop.lock().unwrap();
+
+            
+            // time for arc mutex derefs
+            let arc_mutex_lock_end = SystemTime::now();
+
+            let arc_mutex_lock_elapsed_ns = 
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
+            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
+            
+            // next, obtain average temperature 
+            // average by volume for both fluid and solid vec
+            //
+
+            let node_connection_start = SystemTime::now();
+            let mut fluid_temp_kelvin_times_vol_frac_average: 
+            Vec<f64> = vec![];
+            
+            for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
+
+                let fluid_temp_times_vol_frac = 
+                fluid_vol_fraction_ptr_in_loop[index] *
+                (*fluid_temp);
+
+                fluid_temp_kelvin_times_vol_frac_average.push(
+                    fluid_temp_times_vol_frac.get::<kelvin>());
+
+            }
+
+            // find average in kelvin, convert back to correct units 
+
+            let fluid_avg_temp_kelvin: f64 = 
+            fluid_temp_kelvin_times_vol_frac_average.iter().sum();
+
+            let fluid_avg_temp = ThermodynamicTemperature::new::
+                <kelvin>(fluid_avg_temp_kelvin);
+
+            // we do the same for solid temp
+            //
+            //
+
+            let mut steel_temp_kelvin_times_vol_frac_average: 
+            Vec<f64> = vec![];
+            
+            for (index,steel_temp) in 
+                steel_temp_at_present_timestep_ptr_in_loop.iter().enumerate() {
+
+                let steel_temp_times_vol_frac = 
+                solid_vol_fraction_ptr_in_loop[index] *
+                (*steel_temp);
+
+                steel_temp_kelvin_times_vol_frac_average.push(
+                    steel_temp_times_vol_frac.get::<kelvin>());
+
+            }
+
+            // find average in kelvin, convert back to correct units 
+
+            let steel_avg_temp_kelvin: f64 = 
+            steel_temp_kelvin_times_vol_frac_average.iter().sum();
+
+            let steel_avg_temp = ThermodynamicTemperature::new::
+                <kelvin>(steel_avg_temp_kelvin);
+
+            // given these two, we can calculate an average conductance 
+            // value across all solid-fluid boundaries. 
+            //
+            // This is a time saving measure, rather than calculating 
+            // all the conductances node by node
+
+            // now, we make a cylindrical conductance interaction with 
+            // fluid inside
+
+            // we'll need the thickness 
+
+            let radial_thickness_thermal_conduction = 0.5*(od - id);
+            let radial_thickness_thermal_conduction: 
+            RadialCylindricalThicknessThermalConduction = 
+            radial_thickness_thermal_conduction.into();
+
+            let inner_diameter_thermal_conduction: InnerDiameterThermalConduction 
+            = id.into();
+
+            let h: HeatTransfer = 
+            HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
+
+            let conductance_interaction: HeatTransferInteractionType
+            = HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidInside(
+                    (steel, 
+                    radial_thickness_thermal_conduction,
+                    steel_avg_temp,
+                    atmospheric_pressure),
+                    (h,
+                    inner_diameter_thermal_conduction,
+                    node_length.clone().into())
+            );
+
+            // now based on conductance interaction, 
+            // we can obtain thermal conductance, the temperatures 
+            // and pressures don't really matter
+            //
+            // this is because all the thermal conductance data 
+            // has already been loaded into the thermal conductance 
+            // interaction object
+
+            let nodal_thermal_conductance: ThermalConductance = 
+            get_thermal_conductance_based_on_interaction(
+                fluid_avg_temp,
+                steel_avg_temp,
+                atmospheric_pressure,
+                atmospheric_pressure,
+                conductance_interaction,
+            ).unwrap();
+
+            // now, create conductance vector 
+
+            let mut conductance_vector: Array1<ThermalConductance> = 
+            Array::zeros(number_of_nodes);
+
+            conductance_vector.fill(nodal_thermal_conductance);
+
+            // next is rho_cp vector for the fluid 
+            // it has to be calculated based on each node temperature 
+            // and should not be like the conductance bit
+            //
+            // hopefully it isn't too computationally expensive
+
+            let mut fluid_rho_cp_array: Array1<VolumetricHeatCapacity> 
+            = Array::zeros(number_of_nodes);
+
+            for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
+
+                let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                    steel,
+                    *fluid_temp,
+                    atmospheric_pressure
+                ).unwrap();
+
+                fluid_rho_cp_array[index] = fluid_nodal_rho_cp;
+
+            }
+
+            // now I'm going to manually make enthalpy inflows and 
+            // outflows 
+
+            let enthalpy_inflow_in_back_cv: Power 
+            = therminol_mass_flowrate * specific_enthalpy(
+                therminol,
+                inlet_temperature,
+                atmospheric_pressure,
+            ).unwrap();
+
+            let enthalpy_outflow_in_front_cv: Power 
+            = therminol_mass_flowrate * 
+            front_cv_ptr_in_loop.deref().
+            current_timestep_control_volume_specific_enthalpy;
+
+            // add these to the power vectors inside each cv 
+
+            back_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
+            .push(enthalpy_inflow_in_back_cv);
+
+            front_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
+            .push(-enthalpy_outflow_in_front_cv);
+
+            let node_connection_end_ns = 
+            node_connection_start.elapsed().unwrap().as_nanos();
+
+            // auto calculate timestep (not done)
+            //
+            // and also writing temperature profile 
+            let data_recording_time_start = SystemTime::now();
+
+
+            // record current fluid temperature profile
+            {
+                let mut temp_profile_data_vec: Vec<String> = vec![];
+
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                // next simulation time string 
+                let elapsed_calc_time_seconds_string = 
+                calculation_time_elapsed.elapsed().unwrap().as_secs().to_string();
+                temp_profile_data_vec.push(current_time_string);
+                temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
+
+                for node_temp in fluid_temp_vec_ptr_in_loop.deref_mut().iter() {
+
+                    let node_temp_deg_c: f64 = 
+                    node_temp.get::<degree_celsius>();
+
+                    let node_temp_c_string: String = 
+                    node_temp_deg_c.to_string();
+
+                    temp_profile_data_vec.push(node_temp_c_string);
+                }
+
+                temp_profile_wtr.write_record(&temp_profile_data_vec).unwrap();
+            }
+
+
+            let data_recording_time_end_ns = 
+            data_recording_time_start.elapsed().unwrap().as_nanos();
+            // now we are ready to start
+
+            let timestep_advance_start = 
+            SystemTime::now();
+            let new_temperature_vec = 
+            advance_timestep_fluid_node_array_pipe_high_peclet_number(
+                back_cv_ptr_in_loop.deref_mut(),
+                front_cv_ptr_in_loop.deref_mut(),
+                number_of_nodes,
+                timestep,
+                total_volume,
+                heater_steady_state_power,
+                steel_temp_at_present_timestep_ptr_in_loop.deref_mut(),
+                &mut conductance_vector,
+                fluid_temp_vec_ptr_in_loop.deref_mut(),
+                therminol_mass_flowrate,
+                fluid_vol_fraction_ptr_in_loop.deref_mut(),
+                &mut fluid_rho_cp_array,
+                q_fraction_ptr_in_loop.deref_mut(),
+            ).unwrap();
+            
+            let timestep_advance_end_ns = 
+            timestep_advance_start.elapsed().unwrap().as_nanos();
+
+            // write timestep diagnostics
+
+            let total_time_ns = 
+            arc_mutex_lock_elapsed_ns 
+            + node_connection_end_ns 
+            + data_recording_time_end_ns 
+            + timestep_advance_end_ns;
+
+            time_wtr.write_record(&[total_time_ns.to_string(),
+                arc_mutex_lock_elapsed_ns.to_string(),
+                node_connection_end_ns.to_string(),
+                data_recording_time_end_ns.to_string(),
+                timestep_advance_end_ns.to_string()])
+                .unwrap();
+            // timestep addition to current simulation time
+            current_time_simulation_time += timestep;
+        }
+        // with csvs being written,
+        // use cargo watch -x test --ignore '*.csv'
+        time_wtr.flush().unwrap();
+        temp_profile_wtr.flush().unwrap();
+    };
+
+    let main_thread_handle = thread::spawn(calculation_loop);
+
+    main_thread_handle.join().unwrap();
+
+
+    return ();
+
+}
