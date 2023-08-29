@@ -197,6 +197,13 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 power_source_vector[0] += 
                 mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
 
+                // additionally, in backflow situations, the mass 
+                // flow out of this cv is already accounted for 
+                // so don't double count 
+
+                power_source_vector[0] += 
+                mass_flowrate * h_fluid_last_timestep;
+
 
 
             }
@@ -226,7 +233,7 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 // basically, all the power terms remain 
                 power_source_vector[i] = solid_fluid_conductance_array[i] *
                     last_timestep_temperature_solid[i] 
-                    - mass_flowrate * h_fluid_last_timestep 
+                    - mass_flowrate.abs() * h_fluid_last_timestep 
                     + last_timestep_temperature_fluid[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + q * q_fraction[i];
@@ -289,8 +296,6 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
             // for in total_enthalpy_rate_change_front_node
             //
             // so i shouldn't double count
-            //let h_fluid_last_timestep: AvailableEnergy = 
-            //front_single_cv.current_timestep_control_volume_specific_enthalpy;
 
             power_source_vector[i] = solid_fluid_conductance_array[i] *
                 last_timestep_temperature_solid[i] 
@@ -327,9 +332,19 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 power_source_vector[i] += 
                 mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
 
-                // if there's backflow, there's no further enthalpy 
-                // inflow 
 
+            } else {
+                // if there's backflow, 
+                // the front cv (last node) will receive enthalpy from 
+                // outside based on the enthalpy rate change vector in the 
+                // front node, 
+                // however it must also lose enthalpy, this is no 
+                // longer accounted for in the 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                front_single_cv.current_timestep_control_volume_specific_enthalpy;
+
+                power_source_vector[i] -= 
+                mass_flowrate.abs() * h_fluid_last_timestep;
             }
         }
 
@@ -1239,26 +1254,34 @@ fn fluid_node_backflow_calculation_initial_test(){
 
             // now I'm going to manually make enthalpy inflows and 
             // outflows 
+            //
+            // in backflow situation, we have flow going into the 
+            // front cv 
+            // and 
+            // flow leaving the back cv
 
-            let enthalpy_inflow_in_back_cv: Power 
-            = therminol_mass_flowrate * specific_enthalpy(
+            let enthalpy_inflow_from_bc: Power 
+            = therminol_mass_flowrate.abs() * specific_enthalpy(
                 therminol,
                 inlet_temperature,
                 atmospheric_pressure,
             ).unwrap();
 
-            let enthalpy_outflow_in_front_cv: Power 
-            = therminol_mass_flowrate * 
-            front_cv_ptr_in_loop.deref().
+            front_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
+            .push(enthalpy_inflow_from_bc);
+
+            // flow leaves the back cv, carrying away enthalpy
+
+            let enthalpy_outflow_to_bc: Power 
+            = therminol_mass_flowrate.abs() * 
+            back_cv_ptr_in_loop.deref().
             current_timestep_control_volume_specific_enthalpy;
 
             // add these to the power vectors inside each cv 
 
             back_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
-            .push(enthalpy_inflow_in_back_cv);
+            .push(-enthalpy_outflow_to_bc);
 
-            front_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
-            .push(-enthalpy_outflow_in_front_cv);
 
             let node_connection_end_ns = 
             node_connection_start.elapsed().unwrap().as_nanos();
