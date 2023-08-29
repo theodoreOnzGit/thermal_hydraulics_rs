@@ -406,7 +406,8 @@ fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
 ///
 /// TODO: probably want to test this function out
 /// 
-fn get_thermal_conductance(
+pub (in crate) 
+fn get_thermal_conductance_based_on_interaction(
     temperature_1: ThermodynamicTemperature,
     temperature_2: ThermodynamicTemperature,
     pressure_1: Pressure,
@@ -818,7 +819,7 @@ fn thermal_conductance_test_convection_conduction_boundary(){
             );
 
     let inner_convection_boundary_conductance: ThermalConductance = 
-    get_thermal_conductance(
+    get_thermal_conductance_based_on_interaction(
         copper_temperature, 
         copper_temperature, 
         copper_pressure, //these don't really need to be defined, 
@@ -847,7 +848,7 @@ fn thermal_conductance_test_convection_conduction_boundary(){
         );
 
     let outer_convection_boundary_conductance: ThermalConductance = 
-    get_thermal_conductance(
+    get_thermal_conductance_based_on_interaction(
         copper_temperature, 
         copper_temperature, 
         copper_pressure, //these don't really need to be defined, 
@@ -877,7 +878,7 @@ fn thermal_conductance_test_convection_conduction_boundary(){
         );
 
     let copper_shell_inside_thermal_conductance: ThermalConductance = 
-    get_thermal_conductance(
+    get_thermal_conductance_based_on_interaction(
         copper_temperature, 
         copper_temperature, 
         copper_pressure, 

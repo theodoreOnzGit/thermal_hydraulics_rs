@@ -60,7 +60,7 @@ pub use enums_alpha::*;
 ///
 ///
 pub mod enum_selection_alpha;
-use enum_selection_alpha::*;
+pub (in crate) use enum_selection_alpha::*;
 use uom::si::f64::*;
 
 

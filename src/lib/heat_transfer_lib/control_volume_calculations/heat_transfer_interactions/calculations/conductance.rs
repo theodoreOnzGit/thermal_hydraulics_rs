@@ -323,7 +323,7 @@ fn get_conductance_cylindrical_radial_two_materials(
 /// CylindricalAndSphericalSolidFluidArrangement
 ///
 ///
-pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
+pub(in crate)
 fn get_conductance_single_cylindrical_radial_solid_liquid(
     solid: Material,
     solid_temperature: ThermodynamicTemperature,

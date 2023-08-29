@@ -66,7 +66,7 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     // q = - Htc (T_2 - T_1)
 
     // 
-    let thermal_conductance = get_thermal_conductance(
+    let thermal_conductance = get_thermal_conductance_based_on_interaction(
         single_cv_1_temperature, 
         single_cv_2_temperature,
         single_cv_1_pressure, 

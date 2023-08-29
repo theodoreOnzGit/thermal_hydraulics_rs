@@ -46,7 +46,7 @@ fn calculate_single_cv_node_constant_temperature_conductance(
     
     // we'll need thermal conductance otherwise 
     let cv_bc_conductance: ThermalConductance = 
-    get_thermal_conductance(
+    get_thermal_conductance_based_on_interaction(
         cv_temperature, 
         boundary_condition_temperature, 
         cv_pressure, 
