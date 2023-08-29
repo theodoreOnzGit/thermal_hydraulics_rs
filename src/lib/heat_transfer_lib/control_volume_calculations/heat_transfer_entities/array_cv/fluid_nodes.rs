@@ -280,14 +280,21 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
             // the first part of the source term deals with 
             // the flow direction independent terms
 
-            let h_fluid_last_timestep: AvailableEnergy = 
-            front_single_cv.current_timestep_control_volume_specific_enthalpy;
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
+            //
+            // now I should subtract the enthalpy outflow from the 
+            // power source vector here, 
+            // but if done correctly, it should already be accounted 
+            // for in total_enthalpy_rate_change_front_node
+            //
+            // so i shouldn't double count
+            //let h_fluid_last_timestep: AvailableEnergy = 
+            //front_single_cv.current_timestep_control_volume_specific_enthalpy;
 
             power_source_vector[i] = solid_fluid_conductance_array[i] *
                 last_timestep_temperature_solid[i] 
-                - mass_flowrate * h_fluid_last_timestep 
+                //- mass_flowrate * h_fluid_last_timestep 
                 + last_timestep_temperature_fluid[i] * total_volume * 
                 volume_fraction_array[i] * rho_cp[i] / dt 
                 + q * q_fraction[i] 
@@ -537,6 +544,51 @@ fn fluid_node_calculation_initial_test(){
             "timestep_advance_time_ns",])
             .unwrap();
 
+        let mut temp_profile_wtr = Writer::from_path(
+            "fluid_node_temp_profile.csv")
+            .unwrap();
+
+        // this is code for writing the array of required temperatures
+        {
+
+            // I want the mid node length of this temperature
+
+            let node_length: Length = heated_length/number_of_nodes as f64;
+
+            let half_node_length: Length = 0.5 * node_length;
+
+            let mut header_vec: Vec<String> = vec![];
+
+            header_vec.push("simulation_time_seconds".to_string());
+            header_vec.push("elapsed_time_seconds".to_string());
+
+            for index in 0..number_of_nodes {
+
+                let mid_node_length: Length = 
+                index as f64 * node_length + half_node_length;
+
+                let prefix: String = "heater_temp_celsius_at_".to_string();
+
+                let suffix: String = "_cm".to_string();
+
+                let mid_node_length_cm: f64 = 
+                mid_node_length.get::<centimeter>();
+
+                let mid_node_length_string: String = 
+                mid_node_length_cm.to_string();
+
+                let header: String = prefix + &mid_node_length_string + &suffix;
+
+                header_vec.push(header);
+
+
+            }
+
+            temp_profile_wtr.write_record(&header_vec).unwrap();
+
+        }
+
+
         while current_time_simulation_time <= *max_time_ptr.deref(){
 
             let arc_mutex_lock_start = SystemTime::now();
@@ -725,7 +777,38 @@ fn fluid_node_calculation_initial_test(){
             node_connection_start.elapsed().unwrap().as_nanos();
 
             // auto calculate timestep (not done)
+            //
+            // and also writing temperature profile 
             let data_recording_time_start = SystemTime::now();
+
+
+            // record current fluid temperature profile
+            {
+                let mut temp_profile_data_vec: Vec<String> = vec![];
+
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                // next simulation time string 
+                let elapsed_calc_time_seconds_string = 
+                calculation_time_elapsed.elapsed().unwrap().as_secs().to_string();
+                temp_profile_data_vec.push(current_time_string);
+                temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
+
+                for node_temp in fluid_temp_vec_ptr_in_loop.deref_mut().iter() {
+
+                    let node_temp_deg_c: f64 = 
+                    node_temp.get::<degree_celsius>();
+
+                    let node_temp_c_string: String = 
+                    node_temp_deg_c.to_string();
+
+                    temp_profile_data_vec.push(node_temp_c_string);
+                }
+
+                temp_profile_wtr.write_record(&temp_profile_data_vec).unwrap();
+            }
+
 
             let data_recording_time_end_ns = 
             data_recording_time_start.elapsed().unwrap().as_nanos();
@@ -770,6 +853,10 @@ fn fluid_node_calculation_initial_test(){
             // timestep addition to current simulation time
             current_time_simulation_time += timestep;
         }
+        // with csvs being written,
+        // use cargo watch -x test --ignore '*.csv'
+        time_wtr.flush().unwrap();
+        temp_profile_wtr.flush().unwrap();
     };
 
     let main_thread_handle = thread::spawn(calculation_loop);
