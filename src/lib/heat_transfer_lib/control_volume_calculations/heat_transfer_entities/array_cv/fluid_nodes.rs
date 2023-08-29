@@ -2,7 +2,7 @@ use ndarray::*;
 use ndarray_linalg::{*, error::LinalgError};
 use uom::{si::{f64::*, power::watt}, num_traits::Zero};
 
-use crate::heat_transfer_lib::{control_volume_calculations::heat_transfer_entities::SingleCVNode, thermophysical_properties::{Material, specific_enthalpy::specific_enthalpy}};
+use crate::heat_transfer_lib::{control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector}, thermophysical_properties::{Material, specific_enthalpy::specific_enthalpy}};
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction
@@ -171,7 +171,7 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
             if !forward_flow {
                 // first, get enthalpy of the node in front 
 
-                let enthalpy_of_front_node: AvailableEnergy = 
+                let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
                 specific_enthalpy(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[1],
@@ -186,7 +186,7 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 //
 
                 power_source_vector[0] += 
-                mass_flowrate.abs() * enthalpy_of_front_node;
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
 
 
 
@@ -258,9 +258,110 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
 
         // front node (last node) calculation 
         {
-        }
-    } 
+            // we still follow the same guideline
+            // m cp T / dt + HT = 
+            //
+            // HT_solid - m_flow h_fluid(T_old) 
+            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
+            // + q
+            let i = number_of_nodes-1;
 
-    todo!()
+            coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
+            * total_volume / dt + solid_fluid_conductance_array[i];
+            // the first part of the source term deals with 
+            // the flow direction independent terms
+
+            let h_fluid_last_timestep: AvailableEnergy = 
+            front_single_cv.current_timestep_control_volume_specific_enthalpy;
+            // now this makes the scheme semi implicit, and we should then 
+            // treat the scheme as explicit
+
+            power_source_vector[i] = solid_fluid_conductance_array[i] *
+                last_timestep_temperature_solid[i] 
+                - mass_flowrate * h_fluid_last_timestep 
+                + last_timestep_temperature_fluid[i] * total_volume * 
+                volume_fraction_array[i] * rho_cp[i] / dt 
+                + q * q_fraction[i] 
+                + total_enthalpy_rate_change_front_node ;
+
+            // now advection causing heat transfer between the frontal 
+            // node and some other single cv has already been accounted 
+            // for in total_enthalpy_rate_change_front_node 
+            // If flow is forward facing though, then enthalpy will 
+            // be coming in from the i-1 th node
+
+            if forward_flow {
+                // first, get enthalpy of the adjacent node to the 
+                // back
+
+                let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
+                specific_enthalpy(
+                    back_single_cv.material_control_volume,
+                    last_timestep_temperature_fluid[i-1],
+                    back_single_cv.pressure_control_volume).unwrap();
+
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
+                //
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
+                //
+
+                power_source_vector[i] += 
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
+
+                // if there's backflow, there's no further enthalpy 
+                // inflow 
+
+            }
+        }
+
+        // solve for new temperature 
+
+        temperature_vector = 
+            solve_conductance_matrix_power_vector(
+                coefficient_matrix,power_source_vector)?;
+    } 
+    // update the single cvs at the front and back with new enthalpies 
+
+    // Todo: probably need to synchronise error types in future
+    let back_node_enthalpy_next_timestep: AvailableEnergy = 
+    specific_enthalpy(
+        back_single_cv.material_control_volume,
+        temperature_vector[0],
+        back_single_cv.pressure_control_volume).unwrap();
+
+    back_single_cv.current_timestep_control_volume_specific_enthalpy 
+    = back_node_enthalpy_next_timestep;
+
+    let front_node_enthalpy_next_timestep: AvailableEnergy = 
+    specific_enthalpy(
+        front_single_cv.material_control_volume,
+        temperature_vector[number_of_nodes-1],
+        front_single_cv.pressure_control_volume).unwrap();
+
+    front_single_cv.current_timestep_control_volume_specific_enthalpy 
+    = front_node_enthalpy_next_timestep;
+
+    // let's also update the previous temperature vector 
+
+    *last_timestep_temperature_fluid = temperature_vector.mapv(
+        |temperature_value| {
+            return temperature_value;
+        }
+    );
+
+    // set liquid cv mass 
+    // probably also need to update error types in future
+    back_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
+    back_single_cv.rate_enthalpy_change_vector.clear();
+    back_single_cv.max_timestep_vector.clear();
+
+    front_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
+    front_single_cv.rate_enthalpy_change_vector.clear();
+    front_single_cv.max_timestep_vector.clear();
+
+    return Ok(temperature_vector);
 
 }
