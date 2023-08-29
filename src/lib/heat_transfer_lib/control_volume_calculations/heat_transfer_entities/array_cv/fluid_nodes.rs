@@ -1,5 +1,6 @@
 use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
 
+use csv::Writer;
 use ndarray::*;
 use ndarray_linalg::{*, error::LinalgError};
 use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin}, num_traits::Zero};
@@ -514,7 +515,7 @@ fn fluid_node_calculation_initial_test(){
     let solid_vol_fraction_ptr_for_loop = solid_vol_fraction_ptr.clone();
 
     // time settings
-    let max_time: Time = Time::new::<second>(0.02);
+    let max_time: Time = Time::new::<second>(10.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
@@ -523,6 +524,18 @@ fn fluid_node_calculation_initial_test(){
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
         let timestep = Time::new::<second>(0.01);
+
+        // csv writer 
+
+        let mut time_wtr = Writer::from_path("fluid_node_calc_time_profile.csv")
+            .unwrap();
+
+        time_wtr.write_record(&["loop_calculation_time_nanoseconds",
+            "mutex_lock_time_ns",
+            "node_connection_time_ns",
+            "data_record_time_ns",
+            "timestep_advance_time_ns",])
+            .unwrap();
 
         while current_time_simulation_time <= *max_time_ptr.deref(){
 
@@ -541,21 +554,22 @@ fn fluid_node_calculation_initial_test(){
             = q_fraction_ptr_for_loop.lock().unwrap();
             let mut fluid_vol_fraction_ptr_in_loop 
             = fluid_vol_fraction_ptr_for_loop.lock().unwrap();
-            let mut solid_vol_fraction_ptr_in_loop 
+            let solid_vol_fraction_ptr_in_loop 
             = solid_vol_fraction_ptr_for_loop.lock().unwrap();
 
             
             // time for arc mutex derefs
             let arc_mutex_lock_end = SystemTime::now();
 
-            let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            let arc_mutex_lock_elapsed_ns = 
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
+            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
             
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
             //
 
+            let node_connection_start = SystemTime::now();
             let mut fluid_temp_kelvin_times_vol_frac_average: 
             Vec<f64> = vec![];
             
@@ -707,9 +721,18 @@ fn fluid_node_calculation_initial_test(){
             front_cv_ptr_in_loop.deref_mut().rate_enthalpy_change_vector
             .push(-enthalpy_outflow_in_front_cv);
 
+            let node_connection_end_ns = 
+            node_connection_start.elapsed().unwrap().as_nanos();
+
+            // auto calculate timestep (not done)
+            let data_recording_time_start = SystemTime::now();
+
+            let data_recording_time_end_ns = 
+            data_recording_time_start.elapsed().unwrap().as_nanos();
             // now we are ready to start
 
-
+            let timestep_advance_start = 
+            SystemTime::now();
             let new_temperature_vec = 
             advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
@@ -727,6 +750,23 @@ fn fluid_node_calculation_initial_test(){
                 q_fraction_ptr_in_loop.deref_mut(),
             ).unwrap();
             
+            let timestep_advance_end_ns = 
+            timestep_advance_start.elapsed().unwrap().as_nanos();
+
+            // write timestep diagnostics
+
+            let total_time_ns = 
+            arc_mutex_lock_elapsed_ns 
+            + node_connection_end_ns 
+            + data_recording_time_end_ns 
+            + timestep_advance_end_ns;
+
+            time_wtr.write_record(&[total_time_ns.to_string(),
+                arc_mutex_lock_elapsed_ns.to_string(),
+                node_connection_end_ns.to_string(),
+                data_recording_time_end_ns.to_string(),
+                timestep_advance_end_ns.to_string()])
+                .unwrap();
             // timestep addition to current simulation time
             current_time_simulation_time += timestep;
         }
