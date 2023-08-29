@@ -103,11 +103,16 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 ErrorKind::OutOfBounds
             )));
     } else if number_of_nodes > 1 {
+
         let mut coefficient_matrix: Array2<ThermalConductance> = 
         Array::zeros((number_of_nodes, number_of_nodes));
 
         let mut power_source_vector: 
         Array1<Power> = Array::zeros(number_of_nodes);
+
+        // ascertain if we have forward flow 
+
+        let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
 
         // back node calculation (first node)
         {
@@ -162,7 +167,8 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
-            if mass_flowrate.le(&MassRate::zero()) {
+
+            if !forward_flow {
                 // first, get enthalpy of the node in front 
 
                 let enthalpy_of_front_node: AvailableEnergy = 
@@ -216,7 +222,37 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + q * q_fraction[i];
 
-                // todo: account for enthalpy inflow
+                // account for enthalpy inflow
+
+                if forward_flow {
+
+                    // enthalpy must be based on the the cv at i-1
+
+                    let h_fluid_adjacent_node: AvailableEnergy = 
+                    specific_enthalpy(
+                        back_single_cv.material_control_volume,
+                        last_timestep_temperature_fluid[i-1],
+                        back_single_cv.pressure_control_volume).unwrap();
+
+                    
+                    power_source_vector[i] += 
+                    h_fluid_adjacent_node * mass_flowrate.abs();
+
+                } else {
+
+                    // enthalpy must be based on cv at i+1
+                    let h_fluid_adjacent_node: AvailableEnergy = 
+                    specific_enthalpy(
+                        back_single_cv.material_control_volume,
+                        last_timestep_temperature_fluid[i+1],
+                        back_single_cv.pressure_control_volume).unwrap();
+
+                    
+                    power_source_vector[i] += 
+                    h_fluid_adjacent_node * mass_flowrate.abs();
+
+                }
+
             }
         }
 
