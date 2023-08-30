@@ -966,7 +966,7 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
 
         // csv writer (heater 2.0)
 
-        let mut wtr = Writer::from_path("par_trial_ciet_heater_v_2_0_steady_state.csv")
+        let mut wtr = Writer::from_path("matrix_solve_trial_ciet_heater_v_2_0_steady_state.csv")
             .unwrap();
 
         wtr.write_record(&["time_seconds",
@@ -976,7 +976,8 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
             "timestep_seconds",])
             .unwrap();
 
-        let mut time_wtr = Writer::from_path("cht_nodes_calc_time_profile.csv")
+        let mut time_wtr = Writer::from_path(
+            "matrix_solve_trial_ciet_heater_v_2_0_steady_state_time.csv")
             .unwrap();
 
         time_wtr.write_record(&["loop_calculation_time_nanoseconds",
@@ -987,7 +988,7 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
             .unwrap();
 
         let mut temp_profile_wtr = Writer::from_path(
-            "cht_nodes_temp_profile.csv")
+            "matrix_solve_trial_ciet_heater_v_2_0_steady_state_temp_profile.csv")
             .unwrap();
 
         // this is code for writing the array of required temperatures
