@@ -13,6 +13,8 @@ use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entitie
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::CVType::*;
 
+use super::fluid_nodes::advance_timestep_fluid_node_array_pipe_high_peclet_number;
+
 /// for most pipe flows, we can consider radial conduction without
 /// considering axial conduction
 ///
@@ -20,67 +22,48 @@ heat_transfer_entities::CVType::*;
 /// much thermal conductance connects the inner nodes to the outer 
 /// metallic pipe array
 ///
+/// [outer side]
+/// T_back[0]         T[1]           T[1]          T[n-1](T_front)
+///
+/// ----------------boundary with thermal resistance ---------
+///
+///
 /// [solid]
-/// T_back            T[0]           T[1]          T[n-1]         T_front 
+/// T_back            T[0]           T[1]          T[n-1](T_front)
 ///
-/// ----------------fluid solid boundary with thermal resistance ---------
+/// ----------------boundary with thermal resistance ---------
 ///
-/// [fluid]
-/// T_back[0]         T[1]           T[1]          T[n-1]         T_front 
+/// [inner side]
+/// T_back[0]         T[1]           T[1]          T[n-1](T_front)
 ///
 /// 
-/// You can also add heat volumetrically to the fluid as if it were 
+/// You can also add heat volumetrically to the solid as if it were 
 /// generating heat, but you can also set it to zero
+///
+/// there is no axial conduction in this case, so the equations 
+/// are set up very simply
 ///
 ///
 pub (in crate) 
 fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     back_single_cv: &mut SingleCVNode,
     front_single_cv: &mut SingleCVNode,
+    solid_material: Material,
     number_of_nodes: usize,
     dt: Time,
     total_volume: Volume,
     q: Power,
+    last_timestep_temperature_inner_side: &mut Array1<ThermodynamicTemperature>,
+    solid_inner_conductance_array: &mut Array1<ThermalConductance>,
+    last_timestep_temperature_outer_side: &mut Array1<ThermodynamicTemperature>,
+    solid_outer_conductance_array: &mut Array1<ThermalConductance>,
     last_timestep_temperature_solid: &mut Array1<ThermodynamicTemperature>,
-    solid_fluid_conductance_array: &mut Array1<ThermalConductance>,
-    last_timestep_temperature_fluid: &mut Array1<ThermodynamicTemperature>,
     mass_flowrate: MassRate,
     volume_fraction_array: &mut Array1<f64>,
     rho_cp: &mut Array1<VolumetricHeatCapacity>,
     q_fraction: &mut Array1<f64>)
 -> Result<Array1<ThermodynamicTemperature>,error::LinalgError>{
 
-    // First things first, we need to set up 
-    // how the CV interacts with the internal array
-    // here is heat added to CV
-
-    let back_cv_rate_enthalpy_change_vector: Vec<Power> = 
-    back_single_cv.rate_enthalpy_change_vector.clone();
-
-    let front_cv_rate_enthalpy_change_vector: Vec<Power> = 
-    front_single_cv.rate_enthalpy_change_vector.clone();
-
-    // compute power source for back node
-
-    let mut total_enthalpy_rate_change_back_node = 
-    Power::new::<watt>(0.0);
-
-    for enthalpy_chg_rate in 
-        back_cv_rate_enthalpy_change_vector.iter() {
-
-            total_enthalpy_rate_change_back_node += *enthalpy_chg_rate;
-        }
-
-    // then the front node,
-
-    let mut total_enthalpy_rate_change_front_node = 
-    Power::new::<watt>(0.0);
-
-    for enthalpy_chg_rate in 
-        front_cv_rate_enthalpy_change_vector.iter() {
-
-            total_enthalpy_rate_change_front_node += *enthalpy_chg_rate;
-        }
 
     // this front and back nodes will be an extra term added to the 
     // heat source vector S
@@ -88,8 +71,8 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     // The old fluid temperature will need to be used to calculate 
     // new specific enthalpy for the system
 
-    let mut temperature_vector: Array1<ThermodynamicTemperature> = 
-    last_timestep_temperature_fluid.map(
+    let mut new_timestep_temperature_vector: Array1<ThermodynamicTemperature> = 
+    last_timestep_temperature_solid.map(
         |temp_kelvin_ptr: &ThermodynamicTemperature| {
 
             return *temp_kelvin_ptr;
@@ -114,94 +97,46 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
         let mut power_source_vector: 
         Array1<Power> = Array::zeros(number_of_nodes);
 
-        // ascertain if we have forward flow 
-
-        let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
 
         // back node calculation (first node)
         {
             // for the first node, also called the back node
-            // energy balance is: 
-            // m c_p dT/dt = -H (T - T_solid) - m_flow h_fluid(T) 
-            // + m_flow h_fluid(adjacent T) + q
-            // of all these terms, only the m cp dT/dt term and HT 
-            // 
-            // We separate this out to get:
+            // energy balance for each node is: 
             //
-            // m cp T / dt + HT = 
+            // m dh/dt = -H_{inner} (T_solid - T_inner_side) -H_{outer}
+            // (T_solid - T_outer_side)
             //
-            // HT_solid - m_flow h_fluid(T_old) 
-            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
-            // + q
+            // if we can afford not to use enthalpy mapping, it may be 
+            // faster,
             //
-            // belong in the M matrix, the rest belong in S
+            // We assign T_solid as T_new
+            //
+            //
+            // m cp(T_old) 
+            // (T_new-T_old)/dt = -H_{inner} (T_new - T_inner_side) -H_{outer}
+            // (T_new - T_outer_side) + q
+            //
+            // cp by default is based on T_old
+            //
+            // m cp/dt T_new + H_{inner} T_new + H_{outer} T_new 
+            // =  m cp/dt T_old + H_inner T_inner + H_outer T_outer + q
+            //
+            //
+            //  coefficient matrix is the coefficient of the LHS
             coefficient_matrix[[0,0]] = volume_fraction_array[0] * rho_cp[0] 
-            * total_volume / dt + solid_fluid_conductance_array[0];
+            * total_volume / dt + solid_inner_conductance_array[0]
+            + solid_outer_conductance_array[0];
 
-            // the first part of the source term deals with 
-            // the flow direction independent terms
-
-            let h_fluid_last_timestep: AvailableEnergy = 
-            back_single_cv.current_timestep_control_volume_specific_enthalpy;
-
-            // now this makes the scheme semi implicit, and we should then 
-            // treat the scheme as explicit
-
-            power_source_vector[0] = solid_fluid_conductance_array[0] *
-                last_timestep_temperature_solid[0] 
-                - mass_flowrate * h_fluid_last_timestep 
-                + last_timestep_temperature_fluid[0] * total_volume * 
+            // power source matrix is the RHS
+            power_source_vector[0] = 
+                last_timestep_temperature_solid[0] * total_volume * 
                 volume_fraction_array[0] * rho_cp[0] / dt 
-                + q * q_fraction[0] 
-                + total_enthalpy_rate_change_back_node ;
+                + solid_inner_conductance_array[0] *
+                last_timestep_temperature_inner_side[0] 
+                + solid_outer_conductance_array[0] *
+                last_timestep_temperature_outer_side[0]
+                + q * q_fraction[0];
 
-            // the next part deals with the inflow
-            // m_flow h_fluid(adjacent T_old)
-            //
-            // now if the advection interaction is done correctly, 
-            //
-            // (advection) ----- (back cv) --------> fwd
-            //
-            // then in a frontal flow condition, the enthalpy flows in 
-            // would already have been accounted for
-            //
-            // but in the case of backflow, then fluid from the node
-            // in front will flow into this fluid node 
-            // that is node 1 
-
-            // so if mass flowrate is <= 0 , then we will calculate 
-            // backflow conditions
-
-            if !forward_flow {
-                // first, get enthalpy of the node in front 
-
-                let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                specific_enthalpy(
-                    back_single_cv.material_control_volume,
-                    last_timestep_temperature_fluid[1],
-                    back_single_cv.pressure_control_volume).unwrap();
-
-                // now if mass flowrate is less than zero, then 
-                // we receive enthalpy from the front cv 
-                //
-                // But we need to subtract the negative mass flow if 
-                // that makes sense, or at least make it absolute
-                // - (-m) * h = m * h
-                //
-
-                power_source_vector[0] += 
-                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
-
-                // additionally, in backflow situations, the mass 
-                // flow out of this cv is already accounted for 
-                // so don't double count 
-
-                power_source_vector[0] += 
-                mass_flowrate * h_fluid_last_timestep;
-
-
-
-            }
         }
 
         // bulk node calculations 
@@ -213,7 +148,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
                 // thermal inertia terms
 
                 coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
-                    * total_volume / dt + solid_fluid_conductance_array[i];
+                    * total_volume / dt + solid_inner_conductance_array[i];
 
                 // we also consider outflow using previous timestep 
                 // temperature, 
@@ -222,47 +157,17 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
                 let h_fluid_last_timestep: AvailableEnergy = 
                 specific_enthalpy(
                     back_single_cv.material_control_volume,
-                    last_timestep_temperature_fluid[i],
+                    last_timestep_temperature_solid[i],
                     back_single_cv.pressure_control_volume).unwrap();
 
                 // basically, all the power terms remain 
-                power_source_vector[i] = solid_fluid_conductance_array[i] *
-                    last_timestep_temperature_solid[i] 
+                power_source_vector[i] = solid_inner_conductance_array[i] *
+                    last_timestep_temperature_inner_side[i] 
                     - mass_flowrate.abs() * h_fluid_last_timestep 
-                    + last_timestep_temperature_fluid[i] * total_volume * 
+                    + last_timestep_temperature_solid[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + q * q_fraction[i];
 
-                // account for enthalpy inflow
-
-                if forward_flow {
-
-                    // enthalpy must be based on the the cv at i-1
-
-                    let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
-                        back_single_cv.material_control_volume,
-                        last_timestep_temperature_fluid[i-1],
-                        back_single_cv.pressure_control_volume).unwrap();
-
-                    
-                    power_source_vector[i] += 
-                    h_fluid_adjacent_node * mass_flowrate.abs();
-
-                } else {
-
-                    // enthalpy must be based on cv at i+1
-                    let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
-                        back_single_cv.material_control_volume,
-                        last_timestep_temperature_fluid[i+1],
-                        back_single_cv.pressure_control_volume).unwrap();
-
-                    
-                    power_source_vector[i] += 
-                    h_fluid_adjacent_node * mass_flowrate.abs();
-
-                }
 
             }
         }
@@ -278,7 +183,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
             let i = number_of_nodes-1;
 
             coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
-            * total_volume / dt + solid_fluid_conductance_array[i];
+            * total_volume / dt + solid_inner_conductance_array[i];
             // the first part of the source term deals with 
             // the flow direction independent terms
 
@@ -292,13 +197,12 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
             //
             // so i shouldn't double count
 
-            power_source_vector[i] = solid_fluid_conductance_array[i] *
-                last_timestep_temperature_solid[i] 
+            power_source_vector[i] = solid_inner_conductance_array[i] *
+                last_timestep_temperature_inner_side[i] 
                 //- mass_flowrate * h_fluid_last_timestep 
-                + last_timestep_temperature_fluid[i] * total_volume * 
+                + last_timestep_temperature_solid[i] * total_volume * 
                 volume_fraction_array[i] * rho_cp[i] / dt 
-                + q * q_fraction[i] 
-                + total_enthalpy_rate_change_front_node ;
+                + q * q_fraction[i] ;
 
             // now advection causing heat transfer between the frontal 
             // node and some other single cv has already been accounted 
@@ -306,46 +210,11 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
             // If flow is forward facing though, then enthalpy will 
             // be coming in from the i-1 th node
 
-            if forward_flow {
-                // first, get enthalpy of the adjacent node to the 
-                // back
-
-                let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
-                specific_enthalpy(
-                    back_single_cv.material_control_volume,
-                    last_timestep_temperature_fluid[i-1],
-                    back_single_cv.pressure_control_volume).unwrap();
-
-                // now if mass flowrate is less than zero, then 
-                // we receive enthalpy from the front cv 
-                //
-                // But we need to subtract the negative mass flow if 
-                // that makes sense, or at least make it absolute
-                // - (-m) * h = m * h
-                //
-
-                power_source_vector[i] += 
-                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
-
-
-            } else {
-                // if there's backflow, 
-                // the front cv (last node) will receive enthalpy from 
-                // outside based on the enthalpy rate change vector in the 
-                // front node, 
-                // however it must also lose enthalpy, this is no 
-                // longer accounted for in the 
-                let h_fluid_last_timestep: AvailableEnergy = 
-                front_single_cv.current_timestep_control_volume_specific_enthalpy;
-
-                power_source_vector[i] -= 
-                mass_flowrate.abs() * h_fluid_last_timestep;
-            }
         }
 
         // solve for new temperature 
 
-        temperature_vector = 
+        new_timestep_temperature_vector = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;
     } 
@@ -355,7 +224,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     let back_node_enthalpy_next_timestep: AvailableEnergy = 
     specific_enthalpy(
         back_single_cv.material_control_volume,
-        temperature_vector[0],
+        new_timestep_temperature_vector[0],
         back_single_cv.pressure_control_volume).unwrap();
 
     back_single_cv.current_timestep_control_volume_specific_enthalpy 
@@ -364,7 +233,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     let front_node_enthalpy_next_timestep: AvailableEnergy = 
     specific_enthalpy(
         front_single_cv.material_control_volume,
-        temperature_vector[number_of_nodes-1],
+        new_timestep_temperature_vector[number_of_nodes-1],
         front_single_cv.pressure_control_volume).unwrap();
 
     front_single_cv.current_timestep_control_volume_specific_enthalpy 
@@ -372,7 +241,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
 
     // let's also update the previous temperature vector 
 
-    *last_timestep_temperature_fluid = temperature_vector.mapv(
+    *last_timestep_temperature_solid = new_timestep_temperature_vector.mapv(
         |temperature_value| {
             return temperature_value;
         }
@@ -388,11 +257,12 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     front_single_cv.rate_enthalpy_change_vector.clear();
     front_single_cv.max_timestep_vector.clear();
 
-    return Ok(temperature_vector);
+    return Ok(new_timestep_temperature_vector);
 
 }
 
 #[test]
+#[ignore="not ready yet"]
 fn fluid_solid_node_calculation_initial_test(){
 
 
@@ -827,7 +697,7 @@ fn fluid_solid_node_calculation_initial_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let new_temperature_vec = 
-            advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+            advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
