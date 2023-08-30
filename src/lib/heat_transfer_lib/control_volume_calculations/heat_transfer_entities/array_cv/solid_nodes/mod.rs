@@ -954,7 +954,7 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
     steel_temperature_array_present_timestep_ptr.clone();
 
     // time settings
-    let max_time: Time = Time::new::<second>(10.0);
+    let max_time: Time = Time::new::<second>(100.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
