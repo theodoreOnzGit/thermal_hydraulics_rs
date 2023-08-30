@@ -5,7 +5,7 @@ use ndarray::*;
 use ndarray_linalg::{*, error::LinalgError};
 use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter, inch}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin, ratio::ratio}, num_traits::Zero};
 
-use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::OuterDiameterThermalConduction}};
+use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp, dynamic_viscosity::dynamic_viscosity, thermal_conductivity::thermal_conductivity, prandtl::liquid_prandtl}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::OuterDiameterThermalConduction}};
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
@@ -1138,8 +1138,12 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
 
             // need to change this the nusselt correlation for the actual 
             // test
+            // heater 2.0
             let h_to_therminol: HeatTransfer = 
-            HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
+            heat_transfer_coefficient_ciet_v_2_0(
+                therminol_mass_flowrate,
+                fluid_avg_temp,
+                atmospheric_pressure);
 
             let therminol_steel_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
@@ -1170,7 +1174,7 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
                 therminol_steel_conductance_interaction,
             ).unwrap();
 
-            // now, create conductance vector 
+            // now, create conductance vector  for heater v2.0
 
             let mut steel_therminol_conductance_vector: Array1<ThermalConductance> = 
             Array::zeros(number_of_nodes);
@@ -1481,6 +1485,7 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
         // use cargo watch -x test --ignore '*.csv'
         time_wtr.flush().unwrap();
         temp_profile_wtr.flush().unwrap();
+        wtr.flush().unwrap();
     };
 
     let main_thread_handle = thread::spawn(calculation_loop);
@@ -1492,3 +1497,64 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
 
 }
 
+// nusselt number correlation 
+#[inline]
+fn ciet_heater_v_2_0_nusselt_number(reynolds:Ratio, 
+    prandtl:Ratio) -> Ratio {
+
+    let reynolds_power_0_836 = reynolds.value.powf(0.836);
+    let prandtl_power_0_333 = prandtl.value.powf(0.333333333333333);
+
+    Ratio::new::<ratio>(
+    0.04179 * reynolds_power_0_836 * prandtl_power_0_333)
+
+}
+
+#[inline]
+fn ciet_heater_v_2_0_reynolds_nunber(mass_flowrate: MassRate,
+    mu: DynamicViscosity) -> Ratio {
+
+    // Re = m* D_H/ A_{XS}/mu
+    let hydraulic_diameter = Length::new::<meter>(0.01467);
+    let flow_area = Area::new::<square_meter>(0.00105);
+
+    mass_flowrate*hydraulic_diameter/mu/flow_area
+}
+
+fn heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
+    therminol_temperature: ThermodynamicTemperature,
+    pressure: Pressure) -> HeatTransfer {
+
+    // let's calculate mu and k 
+
+    let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+    let mu: DynamicViscosity = dynamic_viscosity(therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+    let k: ThermalConductivity = thermal_conductivity(
+        therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+
+    let reynolds: Ratio = ciet_heater_v_2_0_reynolds_nunber(
+        mass_flowrate, mu);
+
+    let prandtl: Ratio = liquid_prandtl(
+        therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+    let nusselt: Ratio = ciet_heater_v_2_0_nusselt_number(
+        reynolds,
+        prandtl);
+
+    let hydraulic_diameter = Length::new::<meter>(0.01467);
+
+    let heat_transfer_coeff: HeatTransfer = 
+    nusselt * k / hydraulic_diameter;
+
+    heat_transfer_coeff
+
+}
