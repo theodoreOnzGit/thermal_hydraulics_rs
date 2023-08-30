@@ -1,11 +1,11 @@
-use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
+use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread, f64::consts::PI};
 
 use csv::Writer;
 use ndarray::*;
 use ndarray_linalg::{*, error::LinalgError};
 use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin}, num_traits::Zero};
 
-use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp}, control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction};
+use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::OuterDiameterThermalConduction}};
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
@@ -206,7 +206,7 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
 }
 
 #[test]
-#[ignore="not ready yet"]
+//#[ignore="not ready yet"]
 fn fluid_solid_node_calculation_initial_test(){
 
 
@@ -274,8 +274,13 @@ fn fluid_solid_node_calculation_initial_test(){
     };
 
     let fluid_front_cv: SingleCVNode = fluid_back_cv.clone();
-    let timestep_placeholder = Time::new::<second>(0.01);
-    let total_volume = flow_area * heated_length;
+    let total_fluid_volume = flow_area * heated_length;
+
+    // total steel volume is also needed 
+
+    let total_steel_volume = heated_length * 
+    (PI * 0.25 * od * od 
+    - PI * 0.25 * id * id);
 
 
     let mut initial_temperature_array: Array1<ThermodynamicTemperature> = 
@@ -286,8 +291,13 @@ fn fluid_solid_node_calculation_initial_test(){
 
     let mut steel_temperature_array: Array1<ThermodynamicTemperature> = 
     Array::default(number_of_nodes);
+    
+    steel_temperature_array.fill(initial_temperature);
 
-    steel_temperature_array.fill(ambient_air_temp);
+    let mut ambient_air_temperature_array: Array1<ThermodynamicTemperature> = 
+    Array::default(number_of_nodes);
+
+    ambient_air_temperature_array.fill(ambient_air_temp);
 
 
 
@@ -322,8 +332,8 @@ fn fluid_solid_node_calculation_initial_test(){
     let fluid_temp_at_present_timestep_ptr = Arc::new(Mutex::new(
         fluid_temperature_array
     ));
-    let steel_temp_at_present_timestep_ptr = Arc::new(Mutex::new(
-        steel_temperature_array
+    let ambient_air_temp_at_present_timestep_ptr = Arc::new(Mutex::new(
+        ambient_air_temperature_array
     ));
     let q_fraction_ptr = Arc::new(Mutex::new(
         q_fraction
@@ -334,16 +344,23 @@ fn fluid_solid_node_calculation_initial_test(){
     let solid_vol_fraction_ptr = Arc::new(Mutex::new(
         volume_fraction_array
     ));
+    let steel_temperature_array_present_timestep_ptr = Arc::new(Mutex::new(
+        steel_temperature_array
+    ));
+
+
 
     // clone the ptrs for the loop
     let back_cv_ptr_clone_for_loop = back_cv_ptr.clone();
     let front_cv_ptr_clone_for_loop = front_cv_ptr.clone();
     let fluid_temp_vec_ptr_for_loop = fluid_temp_at_present_timestep_ptr.clone();
-    let steel_temp_at_present_timestep_ptr_for_loop = 
-    steel_temp_at_present_timestep_ptr.clone();
+    let ambient_air_temp_at_present_timestep_ptr_for_loop = 
+    ambient_air_temp_at_present_timestep_ptr.clone();
     let q_fraction_ptr_for_loop = q_fraction_ptr.clone();
     let fluid_vol_fraction_ptr_for_loop = fluid_vol_fraction_ptr.clone();
     let solid_vol_fraction_ptr_for_loop = solid_vol_fraction_ptr.clone();
+    let steel_temperature_array_present_timestep_ptr_for_loop = 
+    steel_temperature_array_present_timestep_ptr.clone();
 
     // time settings
     let max_time: Time = Time::new::<second>(10.0);
@@ -358,7 +375,7 @@ fn fluid_solid_node_calculation_initial_test(){
 
         // csv writer 
 
-        let mut time_wtr = Writer::from_path("fluid_node_calc_time_profile.csv")
+        let mut time_wtr = Writer::from_path("cht_nodes_calc_time_profile.csv")
             .unwrap();
 
         time_wtr.write_record(&["loop_calculation_time_nanoseconds",
@@ -369,7 +386,7 @@ fn fluid_solid_node_calculation_initial_test(){
             .unwrap();
 
         let mut temp_profile_wtr = Writer::from_path(
-            "fluid_node_temp_profile.csv")
+            "cht_nodes_temp_profile.csv")
             .unwrap();
 
         // this is code for writing the array of required temperatures
@@ -424,14 +441,16 @@ fn fluid_solid_node_calculation_initial_test(){
             front_cv_ptr_clone_for_loop.lock().unwrap();
             let mut fluid_temp_vec_ptr_in_loop
             = fluid_temp_vec_ptr_for_loop.lock().unwrap();
-            let mut steel_temp_at_present_timestep_ptr_in_loop
-            = steel_temp_at_present_timestep_ptr_for_loop.lock().unwrap();
+            let mut ambient_air_temp_at_present_timestep_ptr_in_loop
+            = ambient_air_temp_at_present_timestep_ptr_for_loop.lock().unwrap();
             let mut q_fraction_ptr_in_loop 
             = q_fraction_ptr_for_loop.lock().unwrap();
             let mut fluid_vol_fraction_ptr_in_loop 
             = fluid_vol_fraction_ptr_for_loop.lock().unwrap();
-            let solid_vol_fraction_ptr_in_loop 
+            let mut solid_vol_fraction_ptr_in_loop 
             = solid_vol_fraction_ptr_for_loop.lock().unwrap();
+            let mut steel_temperature_array_present_timestep_ptr_in_loop 
+            = steel_temperature_array_present_timestep_ptr_for_loop.lock().unwrap();
 
             
             // time for arc mutex derefs
@@ -476,7 +495,7 @@ fn fluid_solid_node_calculation_initial_test(){
             Vec<f64> = vec![];
             
             for (index,steel_temp) in 
-                steel_temp_at_present_timestep_ptr_in_loop.iter().enumerate() {
+                steel_temperature_array_present_timestep_ptr_in_loop.iter().enumerate() {
 
                 let steel_temp_times_vol_frac = 
                 solid_vol_fraction_ptr_in_loop[index] *
@@ -514,17 +533,20 @@ fn fluid_solid_node_calculation_initial_test(){
             let inner_diameter_thermal_conduction: InnerDiameterThermalConduction 
             = id.into();
 
-            let h: HeatTransfer = 
+
+            // need to change this the nusselt correlation for the actual 
+            // test
+            let h_to_therminol: HeatTransfer = 
             HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
 
-            let conductance_interaction: HeatTransferInteractionType
+            let therminol_steel_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
                 CylindricalConductionConvectionLiquidInside(
                     (steel, 
                     radial_thickness_thermal_conduction,
                     steel_avg_temp,
                     atmospheric_pressure),
-                    (h,
+                    (h_to_therminol,
                     inner_diameter_thermal_conduction,
                     node_length.clone().into())
             );
@@ -537,27 +559,71 @@ fn fluid_solid_node_calculation_initial_test(){
             // has already been loaded into the thermal conductance 
             // interaction object
 
-            let nodal_thermal_conductance: ThermalConductance = 
+            let therminol_steel_nodal_thermal_conductance: ThermalConductance = 
             get_thermal_conductance_based_on_interaction(
                 fluid_avg_temp,
                 steel_avg_temp,
                 atmospheric_pressure,
                 atmospheric_pressure,
-                conductance_interaction,
+                therminol_steel_conductance_interaction,
             ).unwrap();
 
             // now, create conductance vector 
 
-            let mut conductance_vector: Array1<ThermalConductance> = 
+            let mut steel_therminol_conductance_vector: Array1<ThermalConductance> = 
             Array::zeros(number_of_nodes);
 
-            conductance_vector.fill(nodal_thermal_conductance);
+            steel_therminol_conductance_vector.fill(therminol_steel_nodal_thermal_conductance);
+
+            // now we need conductance for steel and air, the procedure 
+            // is quite similar
+            let radial_thickness_thermal_conduction = 0.5*(od - id);
+            let radial_thickness_thermal_conduction: 
+            RadialCylindricalThicknessThermalConduction = 
+            radial_thickness_thermal_conduction.into();
+
+            let outer_diameter_thermal_conduction: OuterDiameterThermalConduction
+            = od.into();
+
+            let h_to_air: HeatTransfer = 
+            HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+
+
+            let steel_air_conductance_interaction: HeatTransferInteractionType
+            = HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidOutside(
+                    (steel, 
+                    radial_thickness_thermal_conduction,
+                    steel_avg_temp,
+                    atmospheric_pressure),
+                    (h_to_air,
+                    outer_diameter_thermal_conduction,
+                    node_length.clone().into())
+            );
+
+            let steel_air_nodal_thermal_conductance: ThermalConductance = 
+            get_thermal_conductance_based_on_interaction(
+                fluid_avg_temp,
+                steel_avg_temp,
+                atmospheric_pressure,
+                atmospheric_pressure,
+                steel_air_conductance_interaction,
+            ).unwrap();
+
+            // now, create conductance vector 
+
+            let mut steel_air_conductance_vector: Array1<ThermalConductance> = 
+            Array::zeros(number_of_nodes);
+
+            steel_air_conductance_vector.fill(steel_air_nodal_thermal_conductance);
+
 
             // next is rho_cp vector for the fluid 
             // it has to be calculated based on each node temperature 
             // and should not be like the conductance bit
             //
             // hopefully it isn't too computationally expensive
+            //
 
             let mut fluid_rho_cp_array: Array1<VolumetricHeatCapacity> 
             = Array::zeros(number_of_nodes);
@@ -565,7 +631,7 @@ fn fluid_solid_node_calculation_initial_test(){
             for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
 
                 let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
-                    steel,
+                    therminol,
                     *fluid_temp,
                     atmospheric_pressure
                 ).unwrap();
@@ -573,6 +639,24 @@ fn fluid_solid_node_calculation_initial_test(){
                 fluid_rho_cp_array[index] = fluid_nodal_rho_cp;
 
             }
+
+            // same for solid 
+            let mut solid_rho_cp_array: Array1<VolumetricHeatCapacity> 
+            = Array::zeros(number_of_nodes);
+
+            for (index,solid_temp) in 
+                steel_temperature_array_present_timestep_ptr_in_loop.iter().enumerate() {
+
+                let solid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                    steel,
+                    *solid_temp,
+                    atmospheric_pressure
+                ).unwrap();
+
+                solid_rho_cp_array[index] = solid_nodal_rho_cp;
+
+            }
+
 
             // now I'm going to manually make enthalpy inflows and 
             // outflows 
@@ -619,7 +703,7 @@ fn fluid_solid_node_calculation_initial_test(){
                 temp_profile_data_vec.push(current_time_string);
                 temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
 
-                for node_temp in fluid_temp_vec_ptr_in_loop.deref_mut().iter() {
+                for node_temp in steel_temperature_array_present_timestep_ptr_in_loop.deref_mut().iter() {
 
                     let node_temp_deg_c: f64 = 
                     node_temp.get::<degree_celsius>();
@@ -638,24 +722,44 @@ fn fluid_solid_node_calculation_initial_test(){
             data_recording_time_start.elapsed().unwrap().as_nanos();
             // now we are ready to start
 
+            let mut fluid_temp_vec_last_timestep = 
+            fluid_temp_vec_ptr_in_loop.deref().clone();
+
             let timestep_advance_start = 
             SystemTime::now();
-            let new_temperature_vec = 
+            let new_therminol_temperature_vec = 
             advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
                 timestep,
-                total_volume,
-                heater_steady_state_power,
-                steel_temp_at_present_timestep_ptr_in_loop.deref_mut(),
-                &mut conductance_vector,
+                total_fluid_volume,
+                Power::new::<watt>(0.0),
+                steel_temperature_array_present_timestep_ptr_in_loop.deref_mut(),
+                &mut steel_therminol_conductance_vector,
                 fluid_temp_vec_ptr_in_loop.deref_mut(),
                 therminol_mass_flowrate,
                 fluid_vol_fraction_ptr_in_loop.deref_mut(),
                 &mut fluid_rho_cp_array,
                 q_fraction_ptr_in_loop.deref_mut(),
             ).unwrap();
+
+            let new_steel_temperature_vec = 
+            advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+                number_of_nodes,
+                timestep,
+                total_steel_volume,
+                heater_steady_state_power,
+                &mut fluid_temp_vec_last_timestep,
+                &mut steel_therminol_conductance_vector,
+                ambient_air_temp_at_present_timestep_ptr_in_loop.deref_mut(),
+                &mut steel_air_conductance_vector,
+                steel_temperature_array_present_timestep_ptr_in_loop.deref_mut(),
+                solid_vol_fraction_ptr_in_loop.deref_mut(),
+                &mut solid_rho_cp_array,
+                &mut q_fraction_ptr_in_loop
+            ).unwrap();
+
             
             let timestep_advance_end_ns = 
             timestep_advance_start.elapsed().unwrap().as_nanos();
