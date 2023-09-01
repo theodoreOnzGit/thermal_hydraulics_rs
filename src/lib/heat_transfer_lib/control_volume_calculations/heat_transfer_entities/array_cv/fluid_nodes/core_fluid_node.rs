@@ -54,7 +54,14 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
     rho_cp: &mut Array1<VolumetricHeatCapacity>,
     q_fraction: &mut Array1<f64>)
 -> Result<Array1<ThermodynamicTemperature>,error::LinalgError>{
+    // there will always be at least 2 nodes
 
+    if number_of_nodes <= 1 {
+        return Err(LinalgError::Shape(
+            ShapeError::from_kind(
+                ErrorKind::OutOfBounds
+            )));
+    }
     // First things first, we need to set up 
     // how the CV interacts with the internal array
     // here is heat added to CV
@@ -104,14 +111,7 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
 
     // now let's start calculation 
     //
-    // there will always be at least 2 nodes
-
-    if number_of_nodes <= 1 {
-        return Err(LinalgError::Shape(
-            ShapeError::from_kind(
-                ErrorKind::OutOfBounds
-            )));
-    } else if number_of_nodes > 1 {
+    if number_of_nodes > 1 {
 
         let mut coefficient_matrix: Array2<ThermalConductance> = 
         Array::zeros((number_of_nodes, number_of_nodes));
