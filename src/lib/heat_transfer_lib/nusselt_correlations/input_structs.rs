@@ -8,16 +8,23 @@ use super::pipe_correlations::gnielinski_correlation_interpolated_uniform_heat_f
 /// usually in the form:
 ///
 /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
+///
+/// a is the constant 
+/// b is the reynolds_prandtl_coefficient
+/// c is the reynolds_power,
+/// d is the prandtl_power,
+/// e is the prandtl_correction_factor_power
 #[derive(Clone,Copy,Debug, PartialEq)]
 pub (in crate) struct NusseltPrandtlReynoldsData {
     pub reynolds: Ratio,
     pub prandtl_bulk: Ratio,
     pub prandtl_wall: Ratio,
-    pub a: Ratio,
-    pub b: Ratio,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
+    pub constant: Ratio,
+    pub reynolds_prandtl_coefficient: Ratio,
+    pub reynolds_power: f64,
+    pub prandtl_power: f64,
+    /// power for prandtl number correction factor
+    pub prandtl_correction_factor_power: f64,
 }
 
 impl NusseltPrandtlReynoldsData {
@@ -28,11 +35,11 @@ impl NusseltPrandtlReynoldsData {
         let reynolds: Ratio =  self.reynolds;
         let prandtl_bulk: Ratio = self.prandtl_bulk;
         let prandtl_wall: Ratio = self.prandtl_wall;
-        let a: Ratio = self.a;
-        let b: Ratio = self.b;
-        let c: f64 = self.c;
-        let d: f64 = self.d;
-        let e: f64 = self.e;
+        let a: Ratio = self.constant;
+        let b: Ratio = self.reynolds_prandtl_coefficient;
+        let c: f64 = self.reynolds_power;
+        let d: f64 = self.prandtl_power;
+        let e: f64 = self.prandtl_correction_factor_power;
 
         let nusselt: Ratio = a + 
         b * reynolds.get::<ratio>().powf(c) 
@@ -40,6 +47,51 @@ impl NusseltPrandtlReynoldsData {
         * (prandtl_bulk/prandtl_wall).get::<ratio>().powf(e);
 
         return Ok(nusselt);
+    }
+
+    #[inline]
+    pub fn ciet_version_2_heater_uncorrected(&self) -> 
+    Result<Ratio, ThermalHydraulicsLibError>{
+
+        let reynolds = self.reynolds;
+        let prandtl = self.prandtl_bulk;
+        let reynolds_power_0_836 = reynolds.value.powf(0.836);
+        let prandtl_power_0_333 = prandtl.value.powf(0.333333333333333);
+
+        let nusselt = Ratio::new::<ratio>(
+            0.04179 * reynolds_power_0_836 * prandtl_power_0_333);
+
+        Ok(nusselt)
+    }
+
+    #[inline]
+    pub fn ciet_version_2_heater_prandtl_corrected(&self) -> 
+    Result<Ratio, ThermalHydraulicsLibError>{
+        let nusself_uncorrected 
+        =  {
+            let ref this = self;
+
+            let reynolds = this.reynolds;
+            let prandtl = this.prandtl_bulk;
+            let reynolds_power_0_836 = reynolds.value.powf(0.836);
+            let prandtl_power_0_333 = prandtl.value.powf(0.333333333333333);
+
+            let nusselt_uncorrected = Ratio::new::<ratio>(
+                0.04179 * reynolds_power_0_836 * prandtl_power_0_333);
+
+            nusselt_uncorrected
+        };
+
+        let prandtl_wall = self.prandtl_wall;
+        let prandtl_bulk = self.prandtl_bulk;
+
+        let prandtl_bulk_to_wall_ratio = prandtl_wall/prandtl_bulk;
+
+        let correction_factor: f64 
+        = prandtl_bulk_to_wall_ratio.get::<ratio>().powf(0.11);
+
+        return Ok(nusself_uncorrected*correction_factor);
+
     }
 }
 
@@ -116,4 +168,6 @@ impl GnielinskiData {
         );
 
     }
+
 }
+

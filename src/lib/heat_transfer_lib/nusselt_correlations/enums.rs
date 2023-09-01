@@ -12,6 +12,7 @@ pub(crate) enum NusseltCorrelation {
     ReynoldsPrandtl(NusseltPrandtlReynoldsData),
     PipeConstantHeatFluxFullyDeveloped,
     PipeConstantTemperatureFullyDeveloped,
+    CIETHeaterVersion2(NusseltPrandtlReynoldsData),
 }
 
 impl NusseltCorrelation {
@@ -38,6 +39,9 @@ impl NusseltCorrelation {
             },
             NusseltCorrelation::PipeConstantTemperatureFullyDeveloped => {
                 Ratio::new::<ratio>(3.66)
+            },
+            NusseltCorrelation::CIETHeaterVersion2(data) => {
+                return data.ciet_version_2_heater_prandtl_corrected();
             },
         };
 
