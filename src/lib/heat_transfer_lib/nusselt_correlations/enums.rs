@@ -55,5 +55,7 @@ impl NusseltCorrelation {
     pub(crate) fn is_pipe_constant_heat_flux(&self) -> bool {
         matches!(self, Self::PipeConstantHeatFluxFullyDeveloped)
     }
+
+
 }
 

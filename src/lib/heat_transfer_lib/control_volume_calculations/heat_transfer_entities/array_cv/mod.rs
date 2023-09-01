@@ -74,3 +74,8 @@ pub mod fluid_nodes;
 /// these are meant to represent the "shell" of the pipe 
 /// or any kind of solid material in the pipe
 pub mod solid_nodes;
+
+/// one dimensional pipe 
+/// it's a control volume for one dimensional pipes 
+/// will describe ONLY the fluid parts without the solid shells 
+pub mod one_dimension_fluid_array;
