@@ -205,6 +205,15 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
 
 }
 
+/// note: race conditions were seen for array type matrix calculations 
+/// using ndarray (intel mkl libraries)
+///
+/// Usually this happens when run concurrently with other threads using 
+/// intel mkl as well... 
+///
+/// Or maybe I was running two cargo watch tests simultaneously
+///
+/// either way, it's very rare
 #[test]
 //#[ignore="not ready yet"]
 fn fluid_solid_node_calculation_initial_test(){

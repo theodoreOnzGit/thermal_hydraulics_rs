@@ -2,12 +2,12 @@ use uom::si::{f64::*, ratio::ratio};
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use super::input_structs::{NusseltPrandtlReynoldsData, WakaoData};
+use super::input_structs::{NusseltPrandtlReynoldsData, WakaoData, GnielinskiData};
 
 #[derive(Debug,Clone,Copy)]
 pub(crate) enum NusseltCorrelation {
-    PipeGnielinskiGeneric,
-    PipeGnielinskiTurbulent,
+    PipeGnielinskiGeneric(GnielinskiData),
+    PipeGnielinskiTurbulent(GnielinskiData),
     Wakao(WakaoData),
     ReynoldsPrandtl(NusseltPrandtlReynoldsData),
     PipeConstantHeatFluxFullyDeveloped,
@@ -21,8 +21,12 @@ impl NusseltCorrelation {
     pub fn get(&self) -> Result<Ratio, ThermalHydraulicsLibError> {
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGeneric => todo!(),
-            NusseltCorrelation::PipeGnielinskiTurbulent => todo!(),
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+                return data.get_nusselt_for_developing_flow();
+            },
+            NusseltCorrelation::PipeGnielinskiTurbulent(data) => {
+                return data.get_nusselt_for_developing_flow();
+            },
             NusseltCorrelation::Wakao(wakao_data) => {
                 return wakao_data.get();
             },

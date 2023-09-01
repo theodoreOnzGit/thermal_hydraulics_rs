@@ -1,6 +1,8 @@
 use uom::si::{f64::*, ratio::ratio};
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
+use super::pipe_correlations::gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing;
 /// contains information Nusselt Prandtl Reynold's
 /// correlation
 /// usually in the form:
@@ -73,8 +75,10 @@ impl WakaoData {
 }
 
 
+/// contains data for gnielinski 
+/// correlation of various
 #[derive(Clone,Copy,Debug, PartialEq)]
-pub (in crate) struct Gnielinski {
+pub (in crate) struct GnielinskiData {
     pub reynolds: Ratio,
     pub prandtl_bulk: Ratio,
     pub prandtl_wall: Ratio,
@@ -83,29 +87,33 @@ pub (in crate) struct Gnielinski {
     pub c: f64,
     pub d: f64,
     pub e: f64,
-    pub friction_factor: Ratio,
+    pub darcy_friction_factor: Ratio,
     pub length_to_diameter: Ratio
 }
 
-impl Gnielinski {
+impl GnielinskiData {
 
     #[inline]
-    pub fn custom_reynolds_prandtl(&self) 
+    pub fn get_nusselt_for_developing_flow(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
         let reynolds: Ratio =  self.reynolds;
         let prandtl_bulk: Ratio = self.prandtl_bulk;
         let prandtl_wall: Ratio = self.prandtl_wall;
-        let a: Ratio = self.a;
-        let b: Ratio = self.b;
-        let c: f64 = self.c;
-        let d: f64 = self.d;
-        let e: f64 = self.e;
+        let darcy_friction_factor = self.darcy_friction_factor;
+        let length_to_diameter = self.length_to_diameter;
 
-        let nusselt: Ratio = a + 
-        b * reynolds.get::<ratio>().powf(c) 
-        * prandtl_bulk.get::<ratio>().powf(d) 
-        * (prandtl_bulk/prandtl_wall).get::<ratio>().powf(e);
+        let nusselt_value = 
+        gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+            reynolds.get::<ratio>(),
+            prandtl_bulk.get::<ratio>(),
+            prandtl_wall.get::<ratio>(),
+            darcy_friction_factor.get::<ratio>(),
+            length_to_diameter.get::<ratio>(),
+        );
 
-        return Ok(nusselt);
+        return Ok(
+            Ratio::new::<ratio>(nusselt_value)
+        );
+
     }
 }
