@@ -13,6 +13,7 @@ thermophysical_properties::Material;
 
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::CVType;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// this is essentially a 1D pipe array containing two CVs 
@@ -117,6 +118,42 @@ impl FluidArray {
         for (index,temperature) in temperature_array.iter_mut().enumerate() {
             *temperature = temperature_vec[index];
         }
+
+        // we also need to ensure that the front and end nodes are 
+        // properly synchronised in terms of temperature
+        //
+
+        let back_cv_temperature: ThermodynamicTemperature 
+        = temperature_vec[0];
+
+        let front_cv_temperature: ThermodynamicTemperature 
+        = *temperature_vec.last().unwrap();
+
+
+        // update enthalpies of control volumes withing
+
+        let material = self.material_control_volume;
+        let pressure = self.pressure_control_volume;
+
+        let back_cv_enthalpy = specific_enthalpy(
+            material,
+            back_cv_temperature,
+            pressure
+        )?;
+
+        let front_cv_enthalpy = specific_enthalpy(
+            material,
+            front_cv_temperature,
+            pressure
+        )?;
+
+        self.back_single_cv.current_timestep_control_volume_specific_enthalpy
+            = back_cv_enthalpy;
+
+        self.front_single_cv.current_timestep_control_volume_specific_enthalpy
+            = front_cv_enthalpy;
+
+
         
         Ok(())
     }
