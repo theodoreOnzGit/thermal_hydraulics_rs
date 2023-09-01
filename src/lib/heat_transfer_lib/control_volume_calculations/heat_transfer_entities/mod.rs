@@ -80,6 +80,8 @@ pub enum ArrayCVType {
     /// conduction model with one material type
     /// standby for implementation
     Cartesian1D(CartesianConduction1DArray),
+
+    
 }
 
 /// Contains all the types of Boundary Conditions (BCs) you can use 
