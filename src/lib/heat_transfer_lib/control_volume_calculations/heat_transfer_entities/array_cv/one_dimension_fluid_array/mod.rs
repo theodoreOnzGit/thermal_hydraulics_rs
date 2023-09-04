@@ -18,6 +18,8 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// this is essentially a 1D pipe array containing two CVs 
 /// and two other radially connected arrays
+/// (it's essentially a generic array representing pipes or 
+/// other fluid components with one inlet and one outlet)
 ///
 /// Usually, these will be nested inside a heat transfer component 
 /// and then be used
@@ -73,6 +75,24 @@ pub struct FluidArray {
 
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
+
+    // volume fraction array 
+    volume_fraction_array: Array1<f64>,
+
+    /// mass flowrate through the fluid array, 
+    mass_flowrate: MassRate,
+
+    /// pressure loss term 
+    pressure_loss: Pressure,
+
+    /// wetted perimeter (for hydraulic diameter) 
+    wetted_perimiter: Length,
+
+    /// incline angle 
+    incline_angle: Angle,
+
+    /// internal pressure source 
+    internal_pressure_source: Pressure
 
 }
 
@@ -158,3 +178,26 @@ impl FluidArray {
         Ok(())
     }
 }
+
+/// Functions or methods to retrieve temperature and other such 
+/// data from the array_cv
+pub mod postprocessing;
+pub use postprocessing::*;
+
+/// Functions or methods to get timestep and other such quantiies 
+/// for calculations 
+///
+/// helps to set up quantities used in calculation step
+pub mod preprocessing;
+pub use preprocessing::*; 
+
+/// Contains functions which advance the timestep
+/// it's the bulk of calculation
+pub mod calculation;
+pub use calculation::*;
+
+
+/// Contains functions specifically pertaining to fluid trait 
+/// implementation 
+pub mod fluid_component_trait;
+pub use fluid_component_trait::*;

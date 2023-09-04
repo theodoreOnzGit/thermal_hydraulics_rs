@@ -4,12 +4,13 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::input_structs::{NusseltPrandtlReynoldsData, WakaoData, GnielinskiData};
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone,Copy,Default, PartialEq)]
 pub(crate) enum NusseltCorrelation {
     PipeGnielinskiGeneric(GnielinskiData),
     PipeGnielinskiTurbulent(GnielinskiData),
     Wakao(WakaoData),
     ReynoldsPrandtl(NusseltPrandtlReynoldsData),
+    #[default]
     PipeConstantHeatFluxFullyDeveloped,
     PipeConstantTemperatureFullyDeveloped,
     CIETHeaterVersion2(NusseltPrandtlReynoldsData),

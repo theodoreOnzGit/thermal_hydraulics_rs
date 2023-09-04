@@ -7,6 +7,7 @@ use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::SingleCVNode;
+use crate::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 
@@ -82,6 +83,9 @@ pub struct CartesianConduction1DArray {
 
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
+
+    /// nusselt correlation type 
+    nusselt_correlation_type: NusseltCorrelation
 }
 
 /// here, i mostly do constructors
