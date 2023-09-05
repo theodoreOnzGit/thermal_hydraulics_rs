@@ -425,11 +425,3 @@ fn advance_timestep_fluid_shell_array_high_peclet_number(
     return Ok(temperature_vector);
 
 }
-
-#[test]
-fn fluid_shell_calculation_initial_test(){
-}
-
-#[test]
-fn fluid_node_backflow_calculation_initial_test(){
-}

@@ -7,6 +7,16 @@ use uom::si::f64::*;
 
 impl FluidComponent for FluidArray {
     fn get_mass_flowrate(&mut self) -> MassRate  {
+
+        // utilise existing pressure loss to get mass flowrate 
+
+        let pressure_loss = self.pressure_loss;
+
+        let mass_flowrate = self.get_mass_flowrate_from_pressure_loss_immutable(
+            pressure_loss);
+
+        self.set_mass_flowrate(mass_flowrate);
+
         self.mass_flowrate
     }
 
@@ -20,6 +30,13 @@ impl FluidComponent for FluidArray {
     }
 
     fn get_pressure_loss(&mut self) -> Pressure {
+
+        // utilise existing mass flowrate to get the pressure loss 
+
+        let mass_flowrate = self.mass_flowrate;
+
+        let pressure_loss = self.get_pressure_loss_immutable(mass_flowrate);
+        self.set_pressure_loss(pressure_loss);
         self.pressure_loss
     }
 
@@ -27,9 +44,26 @@ impl FluidComponent for FluidArray {
         self.pressure_loss = pressure_loss
     }
 
+    /// to get mass flowrate from pressure loss, we need to 
+    /// obtain a Reynold's number from the mass flowrate 
+    ///
+    /// and then surface roughness if any
     fn get_pressure_loss_immutable(
         &self, mass_flowrate: MassRate) -> Pressure {
-        todo!("need pressure loss to Re Correlatoin")
+
+        let reynolds_number: Ratio = mass_flowrate 
+        / self.get_cross_sectional_area_immutable()
+        * self.get_hydraulic_diameter_immutable()
+        / self.get_fluid_viscosity_immutable();
+
+        // we would then need to copy some important 
+        // fluid component parameters in order to obtain a friction 
+        // factor
+        //
+        // including but not limited to surface roughness
+
+
+        todo!("need pressure loss to Re Correlation")
     }
 
     fn get_cross_sectional_area(&mut self) -> Area {
