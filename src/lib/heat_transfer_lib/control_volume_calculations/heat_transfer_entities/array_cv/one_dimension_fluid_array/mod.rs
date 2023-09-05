@@ -2,6 +2,7 @@ use ndarray::*;
 use ndarray_linalg::error::LinalgError;
 use uom::si::f64::*;
 
+use crate::fluid_mechanics_lib::fluid_component_calculation::enums::DimensionlessDarcyLossCorrelations;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::ArrayCVType;
 use crate::heat_transfer_lib::control_volume_calculations::
@@ -73,6 +74,10 @@ pub struct FluidArray {
     /// control volume material 
     pub material_control_volume: Material,
 
+    /// for fluid nodes, it is surrounded by some solid material,
+    /// store it here 
+    pub adjacent_solid_material: Material,
+
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
 
@@ -92,7 +97,10 @@ pub struct FluidArray {
     incline_angle: Angle,
 
     /// internal pressure source 
-    internal_pressure_source: Pressure
+    internal_pressure_source: Pressure,
+
+    /// pipe loss properties 
+    pipe_loss_properties: DimensionlessDarcyLossCorrelations,
 
 }
 

@@ -51,19 +51,29 @@ impl FluidComponent for FluidArray {
     fn get_pressure_loss_immutable(
         &self, mass_flowrate: MassRate) -> Pressure {
 
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+        let fluid_viscosity = self.get_fluid_viscosity_immutable();
+        let fluid_density = self.get_fluid_density_immutable();
+
         let reynolds_number: Ratio = mass_flowrate 
         / self.get_cross_sectional_area_immutable()
-        * self.get_hydraulic_diameter_immutable()
-        / self.get_fluid_viscosity_immutable();
+        * hydraulic_diameter
+        / fluid_viscosity;
 
-        // we would then need to copy some important 
-        // fluid component parameters in order to obtain a friction 
-        // factor
-        //
-        // including but not limited to surface roughness
+        // next, we should get the type of pressure loss, 
+        // this should be dependency injected at 
+        // object construction time
 
+        let pressure_loss = self.pipe_loss_properties.
+            get_pressure_loss_from_reynolds(
+                reynolds_number,
+                hydraulic_diameter,
+                fluid_density,
+                fluid_viscosity
+            ).unwrap();
 
-        todo!("need pressure loss to Re Correlation")
+        // return pressure loss
+        pressure_loss
     }
 
     fn get_cross_sectional_area(&mut self) -> Area {
