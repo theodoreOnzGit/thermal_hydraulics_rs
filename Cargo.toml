@@ -25,6 +25,9 @@ uom = "0.35.0"
 [target.'cfg(windows)'.dependencies]
 ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
 
+[target.'cfg(macos)'.dependencies]
+ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
+
 [target.'cfg(unix)'.dependencies]
 ndarray-linalg = { version = "0.16.0", features = ["openblas-static"] }
 
