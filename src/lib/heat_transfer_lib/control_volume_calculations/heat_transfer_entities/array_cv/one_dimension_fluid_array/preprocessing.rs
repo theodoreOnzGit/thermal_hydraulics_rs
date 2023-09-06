@@ -1,3 +1,4 @@
+use crate::fluid_mechanics_lib::prelude::FluidComponent;
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
 use crate::heat_transfer_lib::thermophysical_properties::
@@ -17,8 +18,7 @@ impl FluidArray {
 
     pub fn get_max_timestep(&mut self,
     max_temperature_change: TemperatureInterval,
-    mass_flowrate: MassRate) -> Result<Time, 
-    ThermalHydraulicsLibError>{
+    mass_flowrate: MassRate) -> Result<Time, ThermalHydraulicsLibError>{
 
         // for a fluid node, there are two types of time intervals to be 
         // aware of 
@@ -154,7 +154,32 @@ impl FluidArray {
             control_vol_pressure
         )?;
 
-        let fluid_reynolds_number = self.get_reynolds(mass_flowrate);
+        let fluid_reynolds_number = self.get_reynolds(mass_flowrate)?;
+
+        // obtain a nusselt number estimate ignoring wall prandtl 
+        // number
+        let nusselt_estimate_ignoring_wall_prandtl 
+        = self.nusselt_correlation.estimate_based_on_prandtl_and_reynolds(
+            fluid_prandtl_number,
+            fluid_reynolds_number)?;
+
+        // now we need a radial conduction timescale 
+        // for this, the length estimate at the denominator will be 
+        // the cross sectional area 
+
+        let max_radial_condition_timescale: Time = 
+        max_mesh_fourier_number * self.xs_area 
+        /thermal_diffusivity_coeff;
+
+        let max_solid_fluid_convection_timescale: Time = 
+        max_radial_condition_timescale / 
+        nusselt_estimate_ignoring_wall_prandtl;
+
+        max_timestep_vector.push(max_solid_fluid_convection_timescale);
+        max_timestep_vector.push(max_radial_condition_timescale);
+
+        // todo, still need to get nusselt number
+        // estimate for timestepping purposes
 
         let maximum_timestep: Time = 
         *max_timestep_vector.iter().min_by(
@@ -222,17 +247,29 @@ impl FluidArray {
     mass_flowrate: MassRate,) -> Result<Ratio,
     ThermalHydraulicsLibError>{
 
-        Ok(Ratio::new::<ratio>(2000.0))
+        let xs_area = self.xs_area;
+        let hydraulic_diameter = self.get_hydraulic_diameter();
+        let fluid_viscosity = self.get_fluid_viscosity();
+
+        let reynolds = mass_flowrate / xs_area * hydraulic_diameter 
+            / fluid_viscosity;
+        
+        Ok(reynolds)
     }
 
     /// gets the nusselt number based on reynolds number 
     /// prandtl u
     #[inline]
     pub fn get_nusselt(&mut self,
-    reynolds: Ratio, 
-    prandtl: Ratio) -> Result<Ratio, ThermalHydraulicsLibError>{
+        reynolds: Ratio, 
+        prandtl_bulk: Ratio,
+        prandtl_wall: Ratio) -> Result<Ratio, ThermalHydraulicsLibError>{
 
 
-        Ok(Ratio::new::<ratio>(4.36))
+        self.nusselt_correlation.
+            estimate_based_on_prandtl_reynolds_and_wall_correction(
+            prandtl_bulk,
+            prandtl_wall,
+            reynolds)
     }
 }

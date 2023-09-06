@@ -9,6 +9,7 @@ use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::SingleCVNode;
+use crate::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 
@@ -101,6 +102,9 @@ pub struct FluidArray {
 
     /// pipe loss properties 
     pipe_loss_properties: DimensionlessDarcyLossCorrelations,
+
+    /// nusselt correlation 
+    nusselt_correlation: NusseltCorrelation,
 
 }
 
