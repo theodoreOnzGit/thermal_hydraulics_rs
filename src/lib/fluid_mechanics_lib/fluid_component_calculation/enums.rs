@@ -1,4 +1,5 @@
 use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::{churchill_friction_factor, get_reynolds_number}};
+use roots::*;
 use uom::{si::{f64::*, ratio::ratio}, num_traits::Zero, typenum::P2};
 
 /// contains form loss or minor loss correlations for use 
@@ -165,6 +166,52 @@ impl DimensionlessDarcyLossCorrelations {
 
     }
 
+    /// obtains a reynolds number from a given bejan number 
+    ///
+    /// needs testing
+    #[inline]
+    pub fn get_reynolds_number_from_bejan(&self,
+        bejan_input: Ratio) -> Result<Ratio,ThermalHydraulicsLibError>{
+
+        // we have to make a pressure drop root 
+
+        // first we need limits for maximum and minimum reynolds 
+        // number 
+        // by default, 1e12 should be enough 
+
+        let reynolds_max_limit_abs = Ratio::new::<ratio>(1.0e12);
+        let upper_limit: f64 = reynolds_max_limit_abs.get::<ratio>();
+        let lower_limit: f64 = -upper_limit;
+
+        let pressure_drop_root = |reynolds: f64| -> f64 {
+            // i'm solving for
+            // Be - 0.5*fLDK*Re^2 = 0 
+            // the fLDK term can be calculated using
+
+            let lhs_bejan = bejan_input;
+            let rhs_bejan: Ratio = self.get_bejan_number_from_reynolds(reynolds.into())
+            .unwrap();
+
+            return lhs_bejan.get::<ratio>() - rhs_bejan.get::<ratio>();
+        };
+
+
+
+        let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:30 };
+
+        let reynolds_number_result
+        = find_root_brent(upper_limit,
+            lower_limit,
+            pressure_drop_root,
+            &mut convergency
+        );
+        
+        let reynolds_number:f64 = reynolds_number_result.unwrap();
+        
+
+        return Ok(Ratio::new::<ratio>(reynolds_number));
+    }
+
     /// pressure drop from Re
     /// characteristic lengthscales and fluid properties
     #[inline]
@@ -196,6 +243,43 @@ impl DimensionlessDarcyLossCorrelations {
         fluid_density;
 
         return Ok(fluid_pressure);
+    }
+
+    /// get Re from pressure drop 
+    #[inline] 
+    pub fn get_reynolds_from_pressure_loss(&self,
+        pressure_loss_input: Pressure,
+        hydraulic_diameter: Length,
+        fluid_density: MassDensity,
+        fluid_viscosity:DynamicViscosity
+    ) -> Result<Ratio,ThermalHydraulicsLibError>{
+
+        if fluid_viscosity.value <= 0.0 {
+            panic!("fluid Viscosity <= 0.0, nonphysical");
+        }
+
+        if hydraulic_diameter.value <= 0.0 {
+            panic!("hydraulic Diameter <= 0.0, nonphysical");
+        }
+
+        if fluid_density.value <= 0.0 {
+            panic!("fluidDensity <= 0.0, nonphysical");
+        }
+
+        // convert fluid pressure to bejan number 
+
+        let bejan_input: Ratio = pressure_loss_input 
+        * hydraulic_diameter
+        * hydraulic_diameter
+        * fluid_density
+        / fluid_viscosity 
+        / fluid_viscosity;
+
+        // get the reynolds number 
+        let reynolds_number_result = self.get_reynolds_number_from_bejan(
+            bejan_input);
+
+        reynolds_number_result
     }
 
 
