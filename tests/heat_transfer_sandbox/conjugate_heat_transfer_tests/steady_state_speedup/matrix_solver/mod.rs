@@ -258,12 +258,15 @@ pub fn matrix_calculation_initial_test(){
             current_time_simulation_time += timestep;
             
             // time for arc mutex derefs
-            let arc_mutex_lock_end = SystemTime::now();
+            // this may cause race conditions
+            //let arc_mutex_lock_end = SystemTime::now();
 
-            let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            //let arc_mutex_lock_elapsed_ms = 
+            //arc_mutex_lock_start.elapsed().unwrap().as_millis()
+            //- arc_mutex_lock_end.elapsed().unwrap().as_millis();
             
+            let arc_mutex_lock_elapsed_ms = 
+            arc_mutex_lock_start.elapsed().unwrap().as_millis();
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
             //
@@ -686,11 +689,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
             let mut steel_shell_outer_node_vec_in_loop = 
             steel_shell_outer_node_vec_ptr.lock().unwrap();
 
-            let arc_mutex_lock_end = SystemTime::now();
 
             let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            arc_mutex_lock_start.elapsed().unwrap().as_millis();
 
             // we need to conenct a few things 
             //

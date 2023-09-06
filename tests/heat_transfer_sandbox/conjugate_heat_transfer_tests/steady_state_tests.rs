@@ -362,11 +362,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
             let mut steel_shell_outer_node_vec_in_loop = 
             steel_shell_outer_node_vec_ptr.lock().unwrap();
 
-            let arc_mutex_lock_end = SystemTime::now();
 
             let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            arc_mutex_lock_start.elapsed().unwrap().as_millis();
 
             // we need to conenct a few things 
             //
@@ -1407,11 +1405,9 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
             let mut steel_shell_outer_node_vec_in_loop = 
             steel_shell_outer_node_vec_ptr.lock().unwrap();
 
-            let arc_mutex_lock_end = SystemTime::now();
 
             let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            - arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            arc_mutex_lock_start.elapsed().unwrap().as_millis();
 
             // we need to conenct a few things 
             //

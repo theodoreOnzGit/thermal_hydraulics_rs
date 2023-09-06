@@ -463,11 +463,9 @@ fn fluid_solid_node_calculation_initial_test(){
 
             
             // time for arc mutex derefs
-            let arc_mutex_lock_end = SystemTime::now();
 
             let arc_mutex_lock_elapsed_ns = 
-            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
-            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos();
             
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
@@ -1066,11 +1064,8 @@ fn heater_v_2_0_nodalised_matrix_solver_test(){
 
             
             // time for arc mutex derefs
-            let arc_mutex_lock_end = SystemTime::now();
-
             let arc_mutex_lock_elapsed_ns = 
-            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
-            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos();
             
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec

@@ -626,11 +626,22 @@ fn fluid_node_calculation_initial_test(){
 
             
             // time for arc mutex derefs
-            let arc_mutex_lock_end = SystemTime::now();
+            // this code causes race conditions
+            //
+            // found through debugging,
+            //
+            // just use the elapsed function 
+            // cos the arc mutex lock end time is practically zero
+            // it will cause some error
+            //let arc_mutex_lock_end = SystemTime::now();
+
+            //let arc_mutex_lock_elapsed_ns = 
+            //arc_mutex_lock_start.elapsed().unwrap().as_nanos()
+            //- arc_mutex_lock_end.elapsed().unwrap().as_nanos();
 
             let arc_mutex_lock_elapsed_ns = 
-            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
-            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos();
+
             
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
@@ -1113,12 +1124,16 @@ fn fluid_node_backflow_calculation_initial_test(){
 
             
             // time for arc mutex derefs
-            let arc_mutex_lock_end = SystemTime::now();
+            // deprecate this, has been causing race conditions
+            //
+            // let arc_mutex_lock_end = SystemTime::now();
 
-            let arc_mutex_lock_elapsed_ns = 
-            arc_mutex_lock_start.elapsed().unwrap().as_nanos()
-            - arc_mutex_lock_end.elapsed().unwrap().as_nanos();
+            //let arc_mutex_lock_elapsed_ns = 
+            //arc_mutex_lock_start.elapsed().unwrap().as_nanos()
+            //- arc_mutex_lock_end.elapsed().unwrap().as_nanos();
             
+            let arc_mutex_lock_elapsed_ns = 
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos();
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
             //
