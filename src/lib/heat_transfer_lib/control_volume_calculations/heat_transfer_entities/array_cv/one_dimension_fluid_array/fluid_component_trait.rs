@@ -24,9 +24,28 @@ impl FluidComponent for FluidArray {
         self.mass_flowrate = mass_flowrate
     }
 
+    #[inline]
     fn get_mass_flowrate_from_pressure_loss_immutable(
         &self, pressure_loss: Pressure) -> MassRate {
-        todo!("need pressure loss to Re Correlatoin")
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+        let fluid_viscosity = self.get_fluid_viscosity_immutable();
+        let fluid_density = self.get_fluid_density_immutable();
+        let xs_area = self.xs_area;
+
+        let reynolds_number: Ratio = self.pipe_loss_properties. 
+            get_reynolds_from_pressure_loss(
+                pressure_loss,
+                hydraulic_diameter,
+                fluid_density,
+                fluid_viscosity
+            ).unwrap();
+
+        // convert Re to mass flowrate 
+
+        let mass_flowrate: MassRate = xs_area * fluid_viscosity * 
+        reynolds_number / hydraulic_diameter;
+
+        return mass_flowrate;
     }
 
     fn get_pressure_loss(&mut self) -> Pressure {
