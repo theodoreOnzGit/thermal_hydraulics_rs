@@ -181,5 +181,4 @@ pub use postprocessing::*;
 pub mod calculation;
 pub use calculation::*;
 
-use self::one_dimension_fluid_array::FluidArray;
 
