@@ -198,8 +198,8 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
                         // and sum the conductances 
 
                         for lateral_conductance in 
-                            self.lateral_adjacent_array_conductance_vector[idx] {
-                                *node_conductance += lateral_conductance;
+                            &self.lateral_adjacent_array_conductance_vector[idx] {
+                                *node_conductance += *lateral_conductance;
                             }
 
                     }
@@ -236,7 +236,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
                 // q by its respective fractions to obtain a vector
                 // of power arrays
 
-                let mut power_ndarray_vector: Vec<[Power; NUMBER_OF_NODES]>
+                let mut power_ndarray_vector: Vec<Array1<Power>>
                 = vec![];
 
                 for (power_source_idx, q_reference) in self.q_vector.iter().enumerate() {
@@ -244,12 +244,12 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
                     // multiply q by qfraction
 
 
-                    let power_frac_array: [f64; NUMBER_OF_NODES]
-                    = self.q_fraction_vector[power_source_idx];
+                    let power_frac_array: Array1<f64>
+                    = self.q_fraction_vector[power_source_idx].clone();
 
-                    let power_ndarray: [Power; NUMBER_OF_NODES] 
+                    let power_ndarray: Array1<Power>
                     = power_frac_array.map(
-                        |power_frac| {
+                        |&power_frac| {
                             power_frac * (*q_reference)
                         }
 

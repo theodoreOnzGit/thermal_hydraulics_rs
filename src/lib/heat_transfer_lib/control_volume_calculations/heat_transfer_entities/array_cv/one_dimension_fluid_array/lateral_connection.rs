@@ -57,8 +57,8 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
 
         // now let's make a new temperature array 
 
-        let mut temperature_arr: [ThermodynamicTemperature; NUMBER_OF_NODES]
-        = [ThermodynamicTemperature::new::<kelvin>(0.0); NUMBER_OF_NODES];
+        let mut temperature_arr: Array1<ThermodynamicTemperature>
+        = Array1::default(number_of_temperature_nodes);
 
         // assign the temperatures 
         
@@ -74,8 +74,8 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
 
         // next, construct conductance vector
 
-        let conductance_arr: [ThermalConductance; NUMBER_OF_NODES]
-        = [average_thermal_conductance; NUMBER_OF_NODES];
+        let conductance_arr: Array1<ThermalConductance>
+        = Array1::default(number_of_temperature_nodes);
 
         self.lateral_adjacent_array_conductance_vector.push(conductance_arr);
 
@@ -87,8 +87,11 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
     #[inline]
     pub fn lateral_link_new_power_vector(&mut self,
     power_source: Power,
-    q_fraction: [f64; NUMBER_OF_NODES]) 
+    q_fraction: Array1<f64>) 
         -> Result<(), ThermalHydraulicsLibError>{
+
+        // need to ensure that array parameters match 
+        todo!("check for dimensions of q_fraction at runtime");
 
         self.q_vector.push(power_source);
         self.q_fraction_vector.push(q_fraction);

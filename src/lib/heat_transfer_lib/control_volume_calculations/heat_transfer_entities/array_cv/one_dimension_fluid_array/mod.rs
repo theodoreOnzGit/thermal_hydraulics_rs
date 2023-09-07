@@ -66,10 +66,10 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
 
     /// temperature array current timestep 
     /// only accessible via get and set methods
-    temperature_array_current_timestep: [ThermodynamicTemperature; NUMBER_OF_NODES],
+    temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
 
     // temperature_array_next timestep 
-    temperature_array_next_timestep: [ThermodynamicTemperature; NUMBER_OF_NODES],
+    temperature_array_next_timestep: Array1<ThermodynamicTemperature>,
 
     /// control volume material 
     pub material_control_volume: Material,
@@ -82,7 +82,7 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     pub pressure_control_volume: Pressure,
 
     // volume fraction array 
-    volume_fraction_array: [f64; NUMBER_OF_NODES],
+    volume_fraction_array: Array1<f64>,
 
     /// mass flowrate through the fluid array, 
     mass_flowrate: MassRate,
@@ -118,7 +118,7 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     /// N is the array size, which is known at compile time
 
     pub lateral_adjacent_array_temperature_vector: 
-    Vec<[ThermodynamicTemperature; NUMBER_OF_NODES]>,
+    Vec<Array1<ThermodynamicTemperature>>,
 
     /// now fluid arrays can be connected to solid arrays 
     /// or other fluid arrays adjacent to it radially
@@ -132,7 +132,7 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     /// plus their thermal resistances 
     /// N is the array size, which is known at compile time
     pub lateral_adjacent_array_conductance_vector:
-    Vec<[ThermalConductance; NUMBER_OF_NODES]>,
+    Vec<Array1<ThermalConductance>>,
 
     /// fluid arrays can also be connected to heat sources 
     /// or have specified volumetric heat sources 
@@ -140,7 +140,7 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
 
     /// fluid arrays should have their power distributed according 
     /// to their nodes 
-    pub q_fraction_vector: Vec<[f64; NUMBER_OF_NODES]>,
+    pub q_fraction_vector: Vec<Array1<f64>>,
 
 }
 
