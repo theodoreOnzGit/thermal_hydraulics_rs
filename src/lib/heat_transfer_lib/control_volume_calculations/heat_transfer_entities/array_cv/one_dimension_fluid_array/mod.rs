@@ -132,7 +132,15 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     /// plus their thermal resistances 
     /// N is the array size, which is known at compile time
     pub lateral_adjacent_array_conductance_vector:
-    Vec<[ThermalConductance; NUMBER_OF_NODES]>
+    Vec<[ThermalConductance; NUMBER_OF_NODES]>,
+
+    /// fluid arrays can also be connected to heat sources 
+    /// or have specified volumetric heat sources 
+    pub q_vector: Vec<Power>,
+
+    /// fluid arrays should have their power distributed according 
+    /// to their nodes 
+    pub q_fraction_vector: Vec<[f64; NUMBER_OF_NODES]>,
 
 }
 
