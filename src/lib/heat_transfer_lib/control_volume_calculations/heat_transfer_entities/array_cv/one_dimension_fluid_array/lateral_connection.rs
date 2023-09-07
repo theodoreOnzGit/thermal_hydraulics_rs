@@ -87,14 +87,27 @@ impl FluidArray{
     #[inline]
     pub fn lateral_link_new_power_vector(&mut self,
     power_source: Power,
-    q_fraction: Array1<f64>) 
+    q_fraction_arr: Array1<f64>) 
         -> Result<(), ThermalHydraulicsLibError>{
 
         // need to ensure that array parameters match 
-        todo!("check for dimensions of q_fraction at runtime");
+        let number_of_temperature_nodes = self.len();
+
+        if q_fraction_arr.len() !=  number_of_temperature_nodes {
+            let shape_error = ShapeError::from_kind(
+                ErrorKind::IncompatibleShape
+            );
+
+            let linalg_error = LinalgError::Shape(shape_error);
+
+            return Err(ThermalHydraulicsLibError::LinalgError
+                (linalg_error));
+
+        }
+        
 
         self.q_vector.push(power_source);
-        self.q_fraction_vector.push(q_fraction);
+        self.q_fraction_vector.push(q_fraction_arr);
 
         Ok(())
     }
