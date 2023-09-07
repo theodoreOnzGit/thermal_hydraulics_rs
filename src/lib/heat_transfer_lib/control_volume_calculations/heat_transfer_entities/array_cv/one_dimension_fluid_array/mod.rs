@@ -28,8 +28,12 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 ///
 /// Within this array, the implicit Euler Scheme is used
 ///
+/// You must supply the number of nodes for the fluid array
+/// it will then be able to construct fixed size temperature 
+/// arrays. Note that the front and back cv count as one node
+///
 #[derive(Debug,Clone,PartialEq)]
-pub struct FluidArray<const N: usize> {
+pub struct FluidArray<const NUMBER_OF_NODES: usize> {
 
     /// represents the control volume at the back 
     /// imagine a car or train cruising along in a positive x direction
@@ -53,12 +57,6 @@ pub struct FluidArray<const N: usize> {
     ///
     pub front_single_cv: SingleCVNode,
 
-    /// number of inner nodes in the array besides the front and back 
-    /// cv 
-    ///
-    /// so total number of nodes is at least 2 all the time 
-    /// as the front and back CV count as nodes 
-    inner_nodes: usize,
 
     // total length for the array
     total_length: Length,
@@ -68,10 +66,10 @@ pub struct FluidArray<const N: usize> {
 
     /// temperature array current timestep 
     /// only accessible via get and set methods
-    temperature_array_current_timestep: [ThermodynamicTemperature; N],
+    temperature_array_current_timestep: [ThermodynamicTemperature; NUMBER_OF_NODES],
 
     // temperature_array_next timestep 
-    temperature_array_next_timestep: [ThermodynamicTemperature; N],
+    temperature_array_next_timestep: [ThermodynamicTemperature; NUMBER_OF_NODES],
 
     /// control volume material 
     pub material_control_volume: Material,
@@ -84,7 +82,7 @@ pub struct FluidArray<const N: usize> {
     pub pressure_control_volume: Pressure,
 
     // volume fraction array 
-    volume_fraction_array: [f64; N],
+    volume_fraction_array: [f64; NUMBER_OF_NODES],
 
     /// mass flowrate through the fluid array, 
     mass_flowrate: MassRate,
@@ -120,7 +118,7 @@ pub struct FluidArray<const N: usize> {
     /// per array for expedience)
     /// N is the array size, which is known at compile time
 
-    radial_adjacent_array_temperature_vector: Vec<[ThermodynamicTemperature; N]>
+    radial_adjacent_array_temperature_vector: Vec<[ThermodynamicTemperature; NUMBER_OF_NODES]>
 
 
 }
@@ -136,7 +134,7 @@ impl<const N: usize> FluidArray<N> {
         let mut temperature_vec: Vec<ThermodynamicTemperature> = vec![];
 
         for temperature in self.temperature_array_current_timestep.iter() {
-            temperature_vec.push(temperature.clone());
+            temperature_vec.push(*temperature);
         }
 
         return Ok(temperature_vec);
@@ -161,6 +159,17 @@ impl<const N: usize> FluidArray<N> {
         Ok(temperature_arr)
 
 
+    }
+
+    /// obtains a clone of temperature vector, but in reverse format 
+    /// this is useful for counter flow heat exchangers 
+    pub fn get_reverse_temperature_vector(&self) -> 
+    Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
+        let vec = self.get_temperature_vector()?;
+
+        let reversed_vec = vec.iter().copied().rev().collect();
+
+        Ok(reversed_vec)
     }
 
     /// sets the temperature vector to a 
