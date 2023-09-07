@@ -1,3 +1,5 @@
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::prelude::FluidComponent};
+
 use super::{HeatTransferEntity, CVType};
 use uom::si::f64::*;
 
@@ -30,5 +32,71 @@ impl HeatTransferEntity {
             };
 
         return cv_timestep_result;
+    }
+
+    /// tries to set or get mass flowrate from the heat transfer 
+    /// entity 
+    ///
+    /// only works in the case of the fluid array 
+    /// everything else does not matter
+    pub fn set_mass_flowrate(
+    entity: &mut HeatTransferEntity,
+    mass_flowrate: MassRate) -> Result<(),ThermalHydraulicsLibError> {
+
+        match entity {
+            HeatTransferEntity::ControlVolume(cv_type) => {
+                match cv_type {
+                    CVType::SingleCV(_) => unimplemented!(
+                    "single cvs dont have mass flowrates"),
+                    CVType::ArrayCV(array_cv) => {
+                        match array_cv {
+                            super::ArrayCVType::GenericPipe(fluid_arr) => {
+                                fluid_arr.set_mass_flowrate(mass_flowrate)
+                            },
+                            _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+                            heat transfer entity"),
+                        }
+                    },
+                    _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+                    heat transfer entity"),
+                }
+            },
+            _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+            heat transfer entity"),
+        }
+
+        Ok(())
+    }
+    /// tries to set or get mass flowrate from the heat transfer 
+    /// entity 
+    ///
+    /// only works in the case of the fluid array 
+    /// everything else does not matter
+    pub fn get_mass_flowrate(
+    entity: &mut HeatTransferEntity) 
+    -> Result<MassRate,ThermalHydraulicsLibError> {
+
+        match entity {
+            HeatTransferEntity::ControlVolume(cv_type) => {
+                match cv_type {
+                    CVType::SingleCV(_) => unimplemented!(
+                    "single cvs dont have mass flowrates"),
+                    CVType::ArrayCV(array_cv) => {
+                        match array_cv {
+                            super::ArrayCVType::GenericPipe(fluid_arr) => {
+                                Ok(fluid_arr.get_mass_flowrate())
+                            },
+                            _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+                            heat transfer entity"),
+                        }
+                    },
+                    _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+                    heat transfer entity"),
+                }
+            },
+            _ => unimplemented!("mass flowrate irrelevant for this kind of  \n
+            heat transfer entity"),
+        }
+
     }
 }
