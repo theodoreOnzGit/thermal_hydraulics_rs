@@ -594,3 +594,6 @@ pub use calculation::*;
 pub mod preprocessing;
 pub use preprocessing::*;
 
+/// contains type conversion from heat transfer entites
+pub mod type_conversion;
+pub use type_conversion::*;

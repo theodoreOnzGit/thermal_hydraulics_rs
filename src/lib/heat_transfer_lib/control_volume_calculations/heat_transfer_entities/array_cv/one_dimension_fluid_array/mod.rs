@@ -79,10 +79,6 @@ pub struct FluidArray {
     /// control volume material 
     pub material_control_volume: Material,
 
-    /// for fluid nodes, it is surrounded by some solid material,
-    /// store it here 
-    pub adjacent_solid_material: Material,
-
     /// control volume pressure 
     pub pressure_control_volume: Pressure,
 
@@ -309,3 +305,7 @@ pub use lateral_connection::*;
 pub mod axial_connection;
 pub use axial_connection::*;
 
+
+/// defaults 
+pub mod default;
+pub use default::*;

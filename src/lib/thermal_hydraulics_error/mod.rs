@@ -27,6 +27,10 @@ pub enum ThermalHydraulicsLibError {
     /// error to indicate that function is not implemented for BC 
     #[error("{0}")]
     NotImplementedForBoundaryConditions(String),
+
+    /// error for type conversions 
+    #[error("heat transfer entity is of the wrong type")]
+    TypeConversionErrorHeatTransferEntity,
 }
 
 /// 
@@ -48,10 +52,12 @@ impl Into<String> for ThermalHydraulicsLibError {
             ThermalHydraulicsLibError::GenericStringError(string) => {
                 string
             },
-            ThermalHydraulicsLibError::
-                NotImplementedForBoundaryConditions(string) => {
-                    string
-                },
+            ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(string) => {
+                string
+            },
+            ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity => {
+                self.to_string()
+            },
         }
     }
 }

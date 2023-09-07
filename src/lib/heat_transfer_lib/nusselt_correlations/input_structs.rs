@@ -134,11 +134,6 @@ pub (in crate) struct GnielinskiData {
     pub reynolds: Ratio,
     pub prandtl_bulk: Ratio,
     pub prandtl_wall: Ratio,
-    pub a: Ratio,
-    pub b: Ratio,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
     pub darcy_friction_factor: Ratio,
     pub length_to_diameter: Ratio
 }
