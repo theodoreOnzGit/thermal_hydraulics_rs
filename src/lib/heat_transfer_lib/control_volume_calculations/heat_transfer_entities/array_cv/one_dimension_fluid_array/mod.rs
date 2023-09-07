@@ -114,17 +114,30 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     /// hence, I only want to have a copy of the temperature 
     /// arrays radially adjacent to it
     ///
-    /// plus their thermal resistances (one average will be given 
-    /// per array for expedience)
+    /// plus their thermal resistances
     /// N is the array size, which is known at compile time
 
-    radial_adjacent_array_temperature_vector: Vec<[ThermodynamicTemperature; NUMBER_OF_NODES]>
+    pub lateral_adjacent_array_temperature_vector: 
+    Vec<[ThermodynamicTemperature; NUMBER_OF_NODES]>,
 
+    /// now fluid arrays can be connected to solid arrays 
+    /// or other fluid arrays adjacent to it radially
+    ///
+    /// There will be no advection in the radial direction,
+    /// but there can be thermal conductance shared between the nodes 
+    ///
+    /// hence, I only want to have a copy of the temperature 
+    /// arrays radially adjacent to it
+    ///
+    /// plus their thermal resistances 
+    /// N is the array size, which is known at compile time
+    pub lateral_adjacent_array_conductance_vector:
+    Vec<[ThermalConductance; NUMBER_OF_NODES]>
 
 }
 
 
-impl<const N: usize> FluidArray<N> {
+impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
 
 
     /// obtains a clone of the temperature vector within the CV 
@@ -149,7 +162,7 @@ impl<const N: usize> FluidArray<N> {
         // into a dynamically sized ndarray type so we can use solve
         // methods
         let mut temperature_arr: Array1<ThermodynamicTemperature> = 
-        Array1::default(N);
+        Array1::default(NUMBER_OF_NODES);
 
         for (idx,temperature) in 
             self.temperature_array_current_timestep.iter().enumerate() {
@@ -176,7 +189,7 @@ impl<const N: usize> FluidArray<N> {
     pub fn set_temperature_vector(&mut self,
     temperature_vec: Vec<ThermodynamicTemperature>) -> Result<(), ThermalHydraulicsLibError>{
 
-        let number_of_temperature_nodes = N;
+        let number_of_temperature_nodes = NUMBER_OF_NODES;
 
         // check if temperature_vec has the correct number_of_temperature_nodes
 
@@ -280,3 +293,12 @@ pub use calculation::*;
 pub mod fluid_component_trait;
 pub use fluid_component_trait::*;
 
+
+/// contains code to connect control volumes laterally,
+/// in a cylindrical situation, it means radially 
+pub mod lateral_connection;
+pub use lateral_connection::*;
+
+/// contains code to connect control volumes axially 
+pub mod axial_connection;
+pub use axial_connection::*;
