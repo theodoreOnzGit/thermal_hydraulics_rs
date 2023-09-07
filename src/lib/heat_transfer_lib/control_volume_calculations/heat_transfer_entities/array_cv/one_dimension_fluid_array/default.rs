@@ -59,6 +59,10 @@ impl Default for FluidArray {
             prandtl_bulk: pipe_prandtl,
             prandtl_wall: pipe_prandtl, //todo, must take into account 
             // wall prandtl number.. how?
+            // 
+            // Probably, the fluid node is going to be inserted into 
+            // another larger struct containing multiple fluid nodes,
+            // that struct will manage what the surrounding material is
             darcy_friction_factor: Ratio::new::<ratio>(0.0),
             length_to_diameter: default_length/hydraulic_diameter,
         };
