@@ -36,6 +36,18 @@ use super::FluidArray;
 /// the advance_timestep method to calculate the new 
 /// temperature array
 impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
+
+    /// advance_timestep in the array, using the mass flowrate set 
+    /// within the fluid array
+    pub fn advance_timestep(&mut self,
+        timestep: Time,) 
+        -> Result<(), ThermalHydraulicsLibError>{
+
+
+        self.advance_timestep_with_mass_flowrate(
+            timestep,
+            self.mass_flowrate)
+    }
     
     /// advances timestep for the fluid array 
     /// given a fixed timestep
@@ -44,7 +56,6 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
         mass_flowrate: MassRate) 
         -> Result<(), ThermalHydraulicsLibError>{
 
-        self.mass_flowrate = mass_flowrate;
         //advance_timestep_fluid_node_array_pipe_high_peclet_number(
         //    back_cv_ptr_in_loop.deref_mut(),
         //    front_cv_ptr_in_loop.deref_mut(),
@@ -127,8 +138,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
 
             // ascertain if we have forward flow 
 
-            let forward_flow: bool = self.
-                mass_flowrate.ge(&MassRate::zero());
+            let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
 
             // obtain some important parameters for calculation
             let material = self.material_control_volume;
@@ -533,8 +543,11 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
             // note that this works for high peclet number flows
             // peclet number is Re * Pr
             // if peclet number is low, then we must consider conduction 
+            //
+            // I'm also not interested in directionality,
+            // rather, the magnitude is more important
 
-            let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?;
+            let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
 
             let prandtl_number: Ratio = prandtl::liquid_prandtl(
                 material,
