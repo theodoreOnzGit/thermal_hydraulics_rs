@@ -81,5 +81,19 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
 
         Ok(())
     }
+    /// connects an adjacent solid or fluid node laterally 
+    /// with a given average thermal conductance
+    /// note that doing so with 
+    #[inline]
+    pub fn lateral_link_new_power_vector(&mut self,
+    power_source: Power,
+    q_fraction: [f64; NUMBER_OF_NODES]) 
+        -> Result<(), ThermalHydraulicsLibError>{
+
+        self.q_vector.push(power_source);
+        self.q_fraction_vector.push(q_fraction);
+
+        Ok(())
+    }
 
 }

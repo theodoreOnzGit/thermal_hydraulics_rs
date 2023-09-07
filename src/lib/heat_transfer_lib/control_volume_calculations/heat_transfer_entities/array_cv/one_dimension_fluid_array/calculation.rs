@@ -51,6 +51,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
     
     /// advances timestep for the fluid array 
     /// given a fixed timestep
+    #[inline]
     pub fn advance_timestep_with_mass_flowrate(&mut self,
         timestep: Time,
         mass_flowrate: MassRate) 
