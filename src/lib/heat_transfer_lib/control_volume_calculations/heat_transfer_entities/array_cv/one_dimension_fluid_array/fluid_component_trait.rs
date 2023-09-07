@@ -5,7 +5,7 @@ use fluid_component_trait::FluidComponent;
 use super::FluidArray;
 use uom::si::f64::*;
 
-impl<const NUMBER_OF_NODES: usize> FluidComponent for FluidArray<NUMBER_OF_NODES> {
+impl FluidComponent for FluidArray{
     fn get_mass_flowrate(&mut self) -> MassRate  {
 
         // utilise existing pressure loss to get mass flowrate 

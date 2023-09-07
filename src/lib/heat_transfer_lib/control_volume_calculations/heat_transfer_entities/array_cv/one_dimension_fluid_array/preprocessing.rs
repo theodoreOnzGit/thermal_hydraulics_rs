@@ -11,7 +11,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::FluidArray;
 use uom::si::f64::*;
 
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
+impl FluidArray {
 
     /// gets the maximum timestep from the 
     /// fluid array 
@@ -75,7 +75,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
         );
         // let's calculate the internal lengthscale
         let number_of_temperature_nodes: usize = 
-        NUMBER_OF_NODES;
+        self.len();
 
         let fluid_volume_in_one_node: Volume = 
         self.front_single_cv.volume;

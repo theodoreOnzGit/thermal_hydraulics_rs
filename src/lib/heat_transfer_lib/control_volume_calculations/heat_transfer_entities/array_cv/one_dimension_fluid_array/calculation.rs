@@ -35,7 +35,7 @@ use super::FluidArray;
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
+impl FluidArray{
 
     /// advance_timestep in the array, using the mass flowrate set 
     /// within the fluid array
@@ -75,7 +75,9 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
 
         // there will always be at least 2 nodes
 
-        if NUMBER_OF_NODES <= 1 {
+        let number_of_nodes = self.len();
+
+        if number_of_nodes <= 1 {
             return Err(LinalgError::Shape(
                 ShapeError::from_kind(
                     ErrorKind::OutOfBounds
@@ -130,12 +132,12 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
         );
         // now let's start calculation 
         //
-        if NUMBER_OF_NODES > 1 {
+        if number_of_nodes > 1 {
             let mut coefficient_matrix: Array2<ThermalConductance> = 
-            Array::zeros((NUMBER_OF_NODES, NUMBER_OF_NODES));
+            Array::zeros((number_of_nodes, number_of_nodes));
 
             let mut power_source_vector: 
-            Array1<Power> = Array::zeros(NUMBER_OF_NODES);
+            Array1<Power> = Array::zeros(number_of_nodes);
 
             // ascertain if we have forward flow 
 
@@ -147,7 +149,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
             let bulk_temperature = self.get_bulk_temperature()?;
             let total_volume = self.total_length *  self.xs_area;
             let dt = timestep;
-            let node_length = self.total_length / NUMBER_OF_NODES as f64;
+            let node_length = self.total_length / number_of_nodes as f64;
             let volume_fraction_array: Array1<f64> = 
             self.volume_fraction_array.iter().map(
                 |&vol_frac| {
@@ -178,7 +180,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
             // as sum H is the relevant coefficient in the coefficient_matrix
 
             let mut sum_of_lateral_conductances: Array1<ThermalConductance>
-            = Array1::zeros(NUMBER_OF_NODES);
+            = Array1::zeros(number_of_nodes);
 
             // conductances will need to be summed over each node 
             //
@@ -209,8 +211,8 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
             let lateral_power_sources_connected: bool 
             = self.q_vector.len() > 0; 
 
-            let mut sum_of_lateral_power_sources: [Power; NUMBER_OF_NODES]
-            = [Power::zero(); NUMBER_OF_NODES];
+            let mut sum_of_lateral_power_sources: Array1<Power>
+            = Array::zeros(number_of_nodes);
 
             if lateral_power_sources_connected {
                 // again index into each node, multiply q by the 
@@ -404,9 +406,9 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
             }
 
             // bulk node calculations 
-            if NUMBER_OF_NODES > 2 {
+            if number_of_nodes > 2 {
                 // loop over all nodes from 1 to n-2 (n-1 is not included)
-                for i in 1..NUMBER_OF_NODES-1 {
+                for i in 1..number_of_nodes-1 {
                     // the coefficient matrix is pretty much the same, 
                     // we only consider solid fluid conduction, and the 
                     // thermal inertia terms
@@ -474,7 +476,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
                 // HT_solid - m_flow h_fluid(T_old) 
                 // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
                 // + q
-                let i = NUMBER_OF_NODES-1;
+                let i = number_of_nodes-1;
 
                 coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
                     * total_volume / dt + sum_of_lateral_conductances[i];
@@ -598,7 +600,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
         let front_node_enthalpy_next_timestep: AvailableEnergy = 
         specific_enthalpy(
             self.front_single_cv.material_control_volume,
-            new_temperature_array[NUMBER_OF_NODES-1],
+            new_temperature_array[number_of_nodes-1],
             self.front_single_cv.pressure_control_volume).unwrap();
 
         self.front_single_cv.current_timestep_control_volume_specific_enthalpy 

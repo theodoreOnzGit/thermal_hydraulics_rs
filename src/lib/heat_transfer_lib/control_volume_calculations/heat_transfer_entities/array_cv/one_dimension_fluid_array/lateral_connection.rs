@@ -29,7 +29,7 @@ use super::FluidArray;
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
+impl FluidArray{
 
     /// connects an adjacent solid or fluid node laterally 
     /// with a given average thermal conductance
@@ -39,7 +39,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
     temperature_vec: Vec<ThermodynamicTemperature>) 
         -> Result<(), ThermalHydraulicsLibError>{
 
-        let number_of_temperature_nodes = NUMBER_OF_NODES;
+        let number_of_temperature_nodes = self.len();
 
         // check if temperature_vec has the correct number_of_temperature_nodes
 

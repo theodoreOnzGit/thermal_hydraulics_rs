@@ -31,7 +31,7 @@ use super::FluidArray;
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES>{
+impl FluidArray{
 
     /// connects an adjacent heat transfer entity to front cv 
     ///

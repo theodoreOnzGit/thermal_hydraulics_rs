@@ -11,7 +11,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::FluidArray;
 use uom::si::f64::*;
 
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
+impl FluidArray {
 
 
     /// obtains a clone of the temperature vector within the CV 

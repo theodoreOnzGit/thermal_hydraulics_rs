@@ -29,11 +29,10 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// Within this array, the implicit Euler Scheme is used
 ///
 /// You must supply the number of nodes for the fluid array
-/// it will then be able to construct fixed size temperature 
-/// arrays. Note that the front and back cv count as one node
+/// Note that the front and back cv count as one node
 ///
 #[derive(Debug,Clone,PartialEq)]
-pub struct FluidArray<const NUMBER_OF_NODES: usize> {
+pub struct FluidArray {
 
     /// represents the control volume at the back 
     /// imagine a car or train cruising along in a positive x direction
@@ -56,6 +55,12 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
     /// //            lower x                 higher x
     ///
     pub front_single_cv: SingleCVNode,
+
+    /// number of inner nodes ,
+    /// besides the back and front node 
+    ///
+    /// total number of nodes is inner_nodes + 2
+    inner_nodes: usize,
 
 
     // total length for the array
@@ -145,7 +150,7 @@ pub struct FluidArray<const NUMBER_OF_NODES: usize> {
 }
 
 
-impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
+impl FluidArray{
 
 
 
@@ -158,7 +163,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
         // into a dynamically sized ndarray type so we can use solve
         // methods
         let mut temperature_arr: Array1<ThermodynamicTemperature> = 
-        Array1::default(NUMBER_OF_NODES);
+        Array1::default(self.len());
 
         for (idx,temperature) in 
             self.temperature_array_current_timestep.iter().enumerate() {
@@ -185,7 +190,7 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
     pub fn set_temperature_vector(&mut self,
     temperature_vec: Vec<ThermodynamicTemperature>) -> Result<(), ThermalHydraulicsLibError>{
 
-        let number_of_temperature_nodes = NUMBER_OF_NODES;
+        let number_of_temperature_nodes = self.len();
 
         // check if temperature_vec has the correct number_of_temperature_nodes
 
@@ -263,6 +268,11 @@ impl<const NUMBER_OF_NODES: usize> FluidArray<NUMBER_OF_NODES> {
         self.set_temperature_vector(temperature_vec)
 
 
+    }
+
+    /// length of the fluid array 
+    pub fn len(&self) -> usize {
+        self.inner_nodes + 2
     }
 }
 
