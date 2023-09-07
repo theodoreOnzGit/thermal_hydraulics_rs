@@ -11,7 +11,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::FluidArray;
 use uom::si::f64::*;
 
-impl FluidArray {
+impl<const N: usize> FluidArray<N> {
 
     /// gets the maximum timestep from the 
     /// fluid array 
@@ -58,7 +58,7 @@ impl FluidArray {
         let control_vol_pressure: Pressure = self.pressure_control_volume;
         let control_vol_material: Material = self.material_control_volume;
         let control_vol_temperature_array: Array1<ThermodynamicTemperature> 
-        = self.temperature_array_current_timestep.clone();
+        = self.get_temperature_array()?;
 
         // now let's map the alpha 
         // this is quick and dirty cos i used unwrap

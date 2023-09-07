@@ -27,8 +27,9 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// and then be used
 ///
 /// Within this array, the implicit Euler Scheme is used
-#[derive(Debug,Clone,PartialEq,Default)]
-pub struct FluidArray {
+///
+#[derive(Debug,Clone,PartialEq)]
+pub struct FluidArray<const N: usize> {
 
     /// represents the control volume at the back 
     /// imagine a car or train cruising along in a positive x direction
@@ -67,10 +68,10 @@ pub struct FluidArray {
 
     /// temperature array current timestep 
     /// only accessible via get and set methods
-    temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
+    temperature_array_current_timestep: [ThermodynamicTemperature; N],
 
     // temperature_array_next timestep 
-    temperature_array_next_timestep: Array1<ThermodynamicTemperature>,
+    temperature_array_next_timestep: [ThermodynamicTemperature; N],
 
     /// control volume material 
     pub material_control_volume: Material,
@@ -83,7 +84,7 @@ pub struct FluidArray {
     pub pressure_control_volume: Pressure,
 
     // volume fraction array 
-    volume_fraction_array: Array1<f64>,
+    volume_fraction_array: [f64; N],
 
     /// mass flowrate through the fluid array, 
     mass_flowrate: MassRate,
@@ -106,9 +107,26 @@ pub struct FluidArray {
     /// nusselt correlation 
     nusselt_correlation: NusseltCorrelation,
 
+    /// now fluid arrays can be connected to solid arrays 
+    /// or other fluid arrays adjacent to it radially
+    ///
+    /// There will be no advection in the radial direction,
+    /// but there can be thermal conductance shared between the nodes 
+    ///
+    /// hence, I only want to have a copy of the temperature 
+    /// arrays radially adjacent to it
+    ///
+    /// plus their thermal resistances (one average will be given 
+    /// per array for expedience)
+    /// N is the array size, which is known at compile time
+
+    radial_adjacent_array_temperature_vector: Vec<[ThermodynamicTemperature; N]>
+
+
 }
 
-impl FluidArray {
+
+impl<const N: usize> FluidArray<N> {
 
 
     /// obtains a clone of the temperature vector within the CV 
@@ -124,11 +142,32 @@ impl FluidArray {
         return Ok(temperature_vec);
     }
 
+    /// obtains a clone of the temperature array in Array1 ndarray 
+    /// form 
+    pub fn get_temperature_array(&self) -> Result< 
+    Array1<ThermodynamicTemperature>, ThermalHydraulicsLibError> {
+
+        // converts the fixed sized temperature array (at compile time) 
+        // into a dynamically sized ndarray type so we can use solve
+        // methods
+        let mut temperature_arr: Array1<ThermodynamicTemperature> = 
+        Array1::default(N);
+
+        for (idx,temperature) in 
+            self.temperature_array_current_timestep.iter().enumerate() {
+                temperature_arr[idx] = *temperature;
+        }
+
+        Ok(temperature_arr)
+
+
+    }
+
     /// sets the temperature vector to a 
     pub fn set_temperature_vector(&mut self,
     temperature_vec: Vec<ThermodynamicTemperature>) -> Result<(), ThermalHydraulicsLibError>{
 
-        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let number_of_temperature_nodes = N;
 
         // check if temperature_vec has the correct number_of_temperature_nodes
 
@@ -144,10 +183,8 @@ impl FluidArray {
 
         }
 
-        let mut temperature_array: Array1<ThermodynamicTemperature>
-        = Array::default(number_of_temperature_nodes);
-
-        for (index,temperature) in temperature_array.iter_mut().enumerate() {
+        for (index,temperature) in 
+            self.temperature_array_current_timestep.iter_mut().enumerate() {
             *temperature = temperature_vec[index];
         }
 
@@ -189,6 +226,26 @@ impl FluidArray {
         
         Ok(())
     }
+
+    /// obtains a clone of the temperature array in Array1 ndarray 
+    /// form 
+    pub fn set_temperature_array(&mut self,
+    temperature_arr: Array1<ThermodynamicTemperature>) -> Result<(),
+    ThermalHydraulicsLibError> {
+
+        // we'll convert the temperature array into vector form 
+        // and use the existing method 
+        let mut temperature_vec: Vec<ThermodynamicTemperature> 
+        = vec![];
+
+        for temperature in temperature_arr.iter() {
+            temperature_vec.push(*temperature)
+        }
+
+        self.set_temperature_vector(temperature_vec)
+
+
+    }
 }
 
 /// Functions or methods to retrieve temperature and other such 
@@ -213,3 +270,4 @@ pub use calculation::*;
 /// implementation 
 pub mod fluid_component_trait;
 pub use fluid_component_trait::*;
+
