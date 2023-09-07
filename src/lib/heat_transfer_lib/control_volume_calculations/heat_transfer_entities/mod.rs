@@ -80,6 +80,10 @@ pub enum ArrayCVType {
     /// conduction model with one material type
     /// standby for implementation
     Cartesian1D(CartesianConduction1DArray),
+
+    /// one dimensional fluid array, with one 
+    /// inlet and one outlet
+    GenericPipe(FluidArray),
     
 }
 
@@ -180,5 +184,7 @@ pub use postprocessing::*;
 /// calculation modules contain methods to advance timestep 
 pub mod calculation;
 pub use calculation::*;
+
+use self::one_dimension_fluid_array::FluidArray;
 
 

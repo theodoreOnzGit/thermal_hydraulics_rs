@@ -301,6 +301,18 @@ fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
                     front_cv_reference, interaction)
 
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                // get a mutable reference for the front cv 
+
+                let front_cv_reference = 
+                &mut fluid_arr.front_single_cv;
+
+
+                // once that is done, use the same function
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    front_cv_reference, interaction)
+
+            },
         }
     };
 
@@ -372,6 +384,19 @@ fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
                     back_cv_reference, interaction)
 
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                // get a mutable reference for the back cv 
+
+                let back_cv_reference = 
+                &mut fluid_arr.back_single_cv;
+
+
+                // once that is done, recycle the condition
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    back_cv_reference, interaction)
+                
+            },
+
         }
     };
 

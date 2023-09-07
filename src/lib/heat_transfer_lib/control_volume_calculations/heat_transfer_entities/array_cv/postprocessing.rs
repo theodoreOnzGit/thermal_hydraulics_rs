@@ -14,6 +14,10 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_1d_cv) => {
                 cartesian_1d_cv.get_bulk_temperature()
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                Ok(fluid_arr.get_bulk_temperature().unwrap())
+            },
+
         }
 
     }

@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
 
+use crate::fluid_mechanics_lib::prelude::FluidComponent;
 use crate::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::ArrayCVType;
 use crate::heat_transfer_lib::
@@ -39,6 +40,14 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cv) => {
                 cv.get_max_timestep(max_temperature_change)
             },
+            ArrayCVType::GenericPipe(cv) => {
+                let mass_flowrate = cv.get_mass_flowrate();
+
+                Ok(cv.get_max_timestep(
+                max_temperature_change,
+                mass_flowrate).unwrap())
+            },
+
         }
     }
     /// attaches a single cv to the front,entrance,
@@ -72,6 +81,10 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
+            },
+
         };
 
         // now link both cvs or calculate between them
@@ -112,6 +125,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
+            },
         };
 
         // now link both cvs or calculate between them
@@ -136,6 +152,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
+            },
         };
 
         // and the back of the other cv
@@ -143,6 +162,9 @@ impl ArrayCVType {
         match array_cv_other {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
             },
         };
 
@@ -270,6 +292,20 @@ impl ArrayCVType {
                     },
                 }
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                fluid_arr.front_single_cv. 
+                rate_enthalpy_change_vector.push(heat_flowrate_into_control_vol);
+
+                // now for heat flux flowrates, I'll need to 
+                // calculate timescales for liquid too 
+                // but i'll just deal with solid conduction timescales 
+                // and worry about that later
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    &mut fluid_arr.front_single_cv,
+                    interaction)?;
+
+            },
+
         }
 
         return Ok(());
@@ -393,6 +429,19 @@ impl ArrayCVType {
                     },
                 }
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                fluid_arr.back_single_cv. 
+                rate_enthalpy_change_vector.push(heat_flowrate_into_control_vol);
+
+                // now for heat flux flowrates, I'll need to 
+                // calculate timescales for liquid too 
+                // but i'll just deal with solid conduction timescales 
+                // and worry about that later
+                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+                    &mut fluid_arr.back_single_cv,
+                    interaction)?;
+
+            },
         }
 
         return Ok(());
@@ -414,6 +463,9 @@ impl ArrayCVType {
         match self {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
             },
         };
 
@@ -445,6 +497,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
+            },
         };
         calculate_single_cv_front_constant_heat_addition_back(
             heat_rate,
@@ -468,6 +523,9 @@ impl ArrayCVType {
         match self {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
             },
         };
 
@@ -495,6 +553,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
+            },
         };
         calculate_single_cv_node_front_constant_temperature_back (
             bc_temperature,
@@ -518,6 +579,9 @@ impl ArrayCVType {
         match self {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
             },
         };
 
@@ -545,6 +609,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
+            },
         };
 
         calculate_mesh_stability_timestep_for_two_single_cv_nodes(
@@ -571,6 +638,9 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.outer_single_cv
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.front_single_cv
+            },
         };
 
         // we need to obtain the single cv from the array cv first 
@@ -581,6 +651,9 @@ impl ArrayCVType {
         match array_cv_other {
             ArrayCVType::Cartesian1D(cartesian_array_cv) => {
                 &mut cartesian_array_cv.inner_single_cv
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                &mut fluid_arr.back_single_cv
             },
         };
 

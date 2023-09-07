@@ -18,6 +18,10 @@ impl ArrayCVType {
             ArrayCVType::Cartesian1D(cartesian_1d_cv) => {
                 cartesian_1d_cv.advance_timestep(timestep)
             },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                fluid_arr.advance_timestep(timestep).unwrap();
+                Ok(())
+            },
         }
     }
 }
