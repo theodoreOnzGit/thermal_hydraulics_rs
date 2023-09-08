@@ -4,6 +4,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use ndarray_linalg::error::LinalgError;
 use ndarray::*;
 use uom::si::power::watt;
+use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
 
 /// This deals with the calculations of the solid column array
 /// at the end of the connection phase, one can then use 
@@ -86,7 +87,36 @@ impl SolidColumn {
         let mut power_source_vector: 
         Array1<Power> = Array::zeros(number_of_nodes);
 
+        // obtain some important parameters for calculation
+        let material = self.material_control_volume;
+        let pressure = self.pressure_control_volume;
+        let bulk_temperature = self.get_bulk_temperature()?;
+        let total_volume = self.total_length *  self.xs_area;
+        let dt = timestep;
+        let node_length = self.total_length / number_of_nodes as f64;
+        // for the fluid array, we do not keep track of node enthalpies,
+        // instead, we keep track of temperatures and then calculate 
+        // enthalpy changes using rho_cp calculated at the current 
+        // timestep
+        let volume_fraction_array: Array1<f64> = 
+        self.volume_fraction_array.iter().map(
+            |&vol_frac| {
+                vol_frac
+            }
+        ).collect();
+        // rho_cp is determined by the temperature array 
+        let rho_cp: Array1<VolumetricHeatCapacity> = 
+        self.temperature_array_current_timestep.iter().map(
+            |&temperature| {
+                rho_cp(material, temperature, pressure).unwrap()
+            }
+        ).collect();
 
+        // now that we've gotten all the important properties, we can 
+        // start matrix construction
+
+        
+        
         todo!()
     }
 }
