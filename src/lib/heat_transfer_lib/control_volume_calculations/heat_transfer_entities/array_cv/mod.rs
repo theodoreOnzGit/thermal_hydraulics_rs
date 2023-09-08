@@ -101,5 +101,8 @@ pub mod one_dimension_fluid_array;
 /// However, the cross sectional area is uniform
 pub mod one_dimension_solid_array;
 
-
+/// very often in array cvs, you'll find yourself wanting to expose 
+/// the nested single control volumes 
+/// This adds functionality for that 
+pub mod interface_nested_cv;
 

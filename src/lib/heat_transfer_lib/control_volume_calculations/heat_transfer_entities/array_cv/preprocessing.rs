@@ -77,15 +77,7 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-
-        };
+        self.nested_back_cv_deref_mut().unwrap();
 
         // now link both cvs or calculate between them
 
@@ -121,14 +113,7 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
 
         // now link both cvs or calculate between them
 
