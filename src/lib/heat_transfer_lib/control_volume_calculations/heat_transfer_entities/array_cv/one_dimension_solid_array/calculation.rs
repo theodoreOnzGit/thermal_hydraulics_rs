@@ -129,6 +129,8 @@ impl SolidColumn {
         let mut sum_of_lateral_conductances: Array1<ThermalConductance>
         = Array1::zeros(number_of_nodes);
 
+        let mut sum_of_lateral_conductance_times_lateral_temperatures:
+        Array1<Power> = Array1::zeros(number_of_nodes);
         // conductances will need to be summed over each node 
         //
         // i will also need to make sure that there are actually 
@@ -150,6 +152,33 @@ impl SolidColumn {
                         }
 
                 }
+            // end sum of conductances for loop
+            // we also need the HT sum for the lateral temperatures 
+
+            for (node_idx, node_ht_lateral_sum) in 
+            sum_of_lateral_conductance_times_lateral_temperatures.iter_mut().enumerate() {
+
+                    // I will need to index into the conductance array
+                    // and sum the conductances times temperature
+                    for (lateral_index, &node_lateral_conductance) in 
+                        self.lateral_adjacent_array_conductance_vector[node_idx].iter().enumerate() {
+
+                            // I'll need to find the temperature  first 
+
+                            let lateral_temperature_array = 
+                            &self.lateral_adjacent_array_temperature_vector[lateral_index];
+
+                            let node_temperature: ThermodynamicTemperature = 
+                            lateral_temperature_array[node_idx];
+
+                            *node_ht_lateral_sum += node_temperature * 
+                            node_lateral_conductance;
+
+
+                        }
+
+                }
+            // end of ht lateral sum
         }
 
         // we need to do the same for the q and q fractions
@@ -289,9 +318,8 @@ impl SolidColumn {
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
 
-            todo!("lateral temperature arrays need to be connected");
-            power_source_vector[0] = sum_of_lateral_conductances[0] *
-                self.temperature_array_current_timestep[0] 
+            power_source_vector[0] = 
+                sum_of_lateral_conductance_times_lateral_temperatures[0] 
                 + self.temperature_array_current_timestep[0] * total_volume * 
                 volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
@@ -319,10 +347,8 @@ impl SolidColumn {
                 // temperature, 
                 // assume back cv and front cv material are the same
 
-            todo!("lateral temperature arrays need to be connected");
                 // basically, all the power terms remain 
-                power_source_vector[i] = sum_of_lateral_conductances[i] *
-                    self.temperature_array_current_timestep[i] 
+                power_source_vector[i] = sum_of_lateral_conductance_times_lateral_temperatures[i] 
                     + self.temperature_array_current_timestep[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + sum_of_lateral_power_sources[i];
@@ -357,9 +383,7 @@ impl SolidColumn {
             //
             // so i shouldn't double count
 
-            todo!("lateral temperature arrays need to be connected");
-            power_source_vector[i] = sum_of_lateral_conductances[i] *
-                self.temperature_array_current_timestep[i] 
+            power_source_vector[i] = sum_of_lateral_conductance_times_lateral_temperatures[i] 
                 + self.temperature_array_current_timestep[i] * total_volume * 
                 volume_fraction_array[i] * rho_cp[i] / dt 
                 + sum_of_lateral_power_sources[i] 
@@ -443,13 +467,13 @@ impl SolidColumn {
                 }
 
 
-                // now an estimate for the radial thermal conductance 
+                // now an estimate for the lateral power by conduction
 
-                // I'm going to take the sum of lateral conductances 
-                // and take that as some average 
 
-                let sum_of_lateral_conductance_estimate: ThermalConductance 
-                = sum_of_lateral_conductances[0];
+
+                
+
+                
                 
 
 
