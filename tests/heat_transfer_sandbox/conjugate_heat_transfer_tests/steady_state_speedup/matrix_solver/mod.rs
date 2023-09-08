@@ -16,7 +16,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SurfaceArea, SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
+    SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
@@ -25,7 +25,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density
 
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
-use uom::si::area::{square_centimeter, square_meter};
+use uom::si::area::square_meter;
 use uom::si::f64::*;
 use uom::si::length::{centimeter, meter, inch};
 use uom::si::mass_rate::kilogram_per_second;
@@ -39,12 +39,8 @@ use uom::si::time::second;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_entities::BCType::*;
 
-use rayon::prelude::*;
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
 
-use thermal_hydraulics_rs::heat_transfer_lib:: control_volume_calculations::
-heat_transfer_interactions::enum_selection_alpha;
 
 
 /// In this test, we have a nodalised representation of the 

@@ -12,19 +12,10 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy};
-
-
 
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
 use uom::si::f64::*;
 use uom::si::length::centimeter;
-use uom::si::power::watt;
-use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;

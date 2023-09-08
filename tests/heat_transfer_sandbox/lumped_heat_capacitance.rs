@@ -23,7 +23,6 @@ thermophysical_properties::specific_enthalpy::{specific_enthalpy, temperature_fr
 use uom::si::f64::*;
 use uom::si::length::centimeter;
 use uom::si::power::watt;
-use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;

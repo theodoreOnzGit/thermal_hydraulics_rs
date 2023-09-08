@@ -1,23 +1,18 @@
-use std::f64::consts::PI;
 use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use ndarray::*;
 use peroxide::prelude::erfc;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType, calculate_timescales_for_heat_transfer_entity};
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::{SteelSS304L, Copper};
+thermophysical_properties::SolidMaterial::Copper;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType, XThicknessThermalConduction, CartesianConduction1DArray, BCType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy};
+control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, SingleCVNode, XThicknessThermalConduction, CartesianConduction1DArray, BCType};
+
+
+
 
 
 
@@ -28,7 +23,6 @@ use uom::si::power::watt;
 use uom::si::ratio::ratio;
 use uom::si::temperature_interval::degree_celsius as interval_deg_c;
 use uom::si::pressure::atmosphere;
-use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
