@@ -133,25 +133,11 @@ impl ArrayCVType {
 
         // basically we need to get the front of the self cv, 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
 
         // and the back of the other cv
         let single_cv_node_other: &mut SingleCVNode = 
-        match array_cv_other {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-        };
+        array_cv_other.nested_back_cv_deref_mut().unwrap();
 
         calculate_between_two_singular_cv_nodes(
             single_cv_node_other,
