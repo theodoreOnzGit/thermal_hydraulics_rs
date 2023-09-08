@@ -431,14 +431,7 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
 
         // then link it to the other bc as per normal for 
         // single control volumes
@@ -464,14 +457,8 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-        };
+        self.nested_back_cv_deref_mut().unwrap();
+
         calculate_single_cv_front_constant_heat_addition_back(
             heat_rate,
             single_cv_node_self,
@@ -491,14 +478,8 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
+
 
         calculate_constant_temperature_front_single_cv_back (
             single_cv_node_self,
@@ -520,14 +501,8 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-        };
+        self.nested_back_cv_deref_mut().unwrap();
+
         calculate_single_cv_node_front_constant_temperature_back (
             bc_temperature,
             single_cv_node_self,
@@ -547,14 +522,7 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
 
         calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             single_cv_node_self,
@@ -576,14 +544,7 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-        };
+        self.nested_back_cv_deref_mut().unwrap();
 
         calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             single_cv_node_self,
@@ -605,28 +566,14 @@ impl ArrayCVType {
         //
 
         let single_cv_node_self: &mut SingleCVNode = 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.outer_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.front_single_cv
-            },
-        };
+        self.nested_front_cv_deref_mut().unwrap();
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 
         //
 
         let single_cv_node_other: &mut SingleCVNode = 
-        match array_cv_other {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                &mut cartesian_array_cv.inner_single_cv
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                &mut fluid_arr.back_single_cv
-            },
-        };
+        array_cv_other.nested_back_cv_deref_mut().unwrap();
 
         calculate_mesh_stability_timestep_for_two_single_cv_nodes(
             single_cv_node_self,
