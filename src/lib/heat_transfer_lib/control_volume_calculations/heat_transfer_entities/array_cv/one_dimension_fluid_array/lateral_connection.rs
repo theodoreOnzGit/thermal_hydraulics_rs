@@ -58,8 +58,9 @@ impl FluidArray{
 
         // next, construct conductance vector
 
-        let conductance_arr: Array1<ThermalConductance>
+        let mut conductance_arr: Array1<ThermalConductance>
         = Array1::default(number_of_temperature_nodes);
+        conductance_arr.fill(average_thermal_conductance);
 
         self.lateral_adjacent_array_conductance_vector.push(conductance_arr);
 
