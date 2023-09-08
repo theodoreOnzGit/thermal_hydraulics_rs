@@ -1,6 +1,6 @@
 use super::SolidColumn;
-use uom::{si::{f64::*, thermodynamic_temperature::kelvin, temperature_interval::degree_celsius}, num_traits::Zero};
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity};
+use uom::{si::{f64::*, thermodynamic_temperature::kelvin, temperature_interval::degree_celsius, ratio::percent}, num_traits::Zero};
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::{thermophysical_properties::{thermal_conductivity::thermal_conductivity, specific_enthalpy::specific_enthalpy}, control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector}};
 use ndarray_linalg::error::LinalgError;
 use ndarray::*;
 use uom::si::power::watt;
@@ -434,6 +434,24 @@ impl SolidColumn {
         //
         // We can neglect axial conduction only if the lateral 
         // conduction is much greater than axial conduction 
+
+        // an important parameter for all these calculations 
+        // is the average axial thermal 
+        // conductance
+        // first calculate axial conduction thermal 
+        // resistance
+
+        let average_thermal_conductivity = 
+        thermal_conductivity(
+            material,
+            bulk_temperature,
+            pressure,
+        )?;
+
+        let average_axial_conductance: ThermalConductance 
+        = average_thermal_conductivity * self.xs_area 
+        / node_length;
+
         let neglect_axial_conduction: bool = {
 
             // how shall we know if the axial conduction is to be 
@@ -445,20 +463,7 @@ impl SolidColumn {
                 // we can calculate a typical power scale for axial 
                 // conduction and compare it to the radial conduction
 
-                // first calculate axial conduction thermal 
-                // resistance
 
-                let average_thermal_conductivity = 
-                thermal_conductivity(
-                    material,
-                    bulk_temperature,
-                    pressure,
-                ).unwrap();
-
-                // now calculate axial thermal conductance
-                let average_axial_thermal_conductance: ThermalConductance 
-                = average_thermal_conductivity * self.xs_area 
-                / node_length;
 
                 // the max temperature gradient is the max temperature 
                 // minus the min temperature 
@@ -485,7 +490,7 @@ impl SolidColumn {
                 let axial_power_scale: Power = 
                 TemperatureInterval::new::<degree_celsius>(
                     approx_axial_temp_diff_val_kelvin)
-                * average_axial_thermal_conductance;
+                * average_axial_conductance;
                 
 
                 // we need to compare this against the radial temperature 
@@ -499,24 +504,63 @@ impl SolidColumn {
                 let mut lateral_power_sum: Power = Power::zero();
 
                 for &power in &self.q_vector {
-                    lateral_power_sum += power;
+                    lateral_power_sum += power.abs();
                 }
 
 
                 // now an estimate for the lateral power by conduction
-
-
-
+                // thankfully, we already calculated this beforehand
                 
 
+                // the HT here comes from 
+                //
+                // Q = -H(T_node - T_lateral) 
+                //
+                // Q = -HT_node + HT_lateral 
+
+                let mut sum_of_conductance_times_node_temp_array:
+                Array1<Power> = Array::zeros(number_of_nodes);
+
+                for (node_idx, ht_node) in 
+                sum_of_conductance_times_node_temp_array.iter_mut().enumerate(){
+
+                        // get the node temperature and sum of conductance 
+
+                        let node_temperature: ThermodynamicTemperature = 
+                        self.temperature_array_current_timestep[node_idx];
+
+                        let node_conductance_sum: ThermalConductance = 
+                        sum_of_lateral_conductances[node_idx];
+
+                        *ht_node = node_temperature * node_conductance_sum;
+
+                    }
+
+                let lateral_ht_power_vector: Array1<Power> = 
+                sum_of_lateral_conductance_times_lateral_temperatures 
+                - sum_of_conductance_times_node_temp_array;
+
+                // add all the power changes to the lateral power 
+                // vector
                 
+                for &power in &lateral_ht_power_vector {
+                    lateral_power_sum += power.abs();
+                }
                 
+                // for lateral power flow, we have the lateral 
+                // power sum to measure the power flows 
+                // 
 
+                let axial_power_to_lateral_power_ratio: Ratio = 
+                axial_power_scale.abs()/lateral_power_sum;
 
+                // if this ratio is less than 1%, then we neglect 
+                // axial power otherwise, don't neglect
 
+                let neglect_axial_power = 
+                axial_power_to_lateral_power_ratio <= Ratio::new::<percent>(1.0);
 
-
-                true
+                neglect_axial_power
             };
 
 
@@ -525,17 +569,170 @@ impl SolidColumn {
             // only 
 
             if axial_conduction_only {
+                // if axial conduction only, we cannot neglect 
+                // axial conduction
                 false
-            } else {
+            } else if axial_power_scale_insignificant() {
+                // if axial power scales are insignificant
+                // neglect
+                // axial conduction
                 true
+            } else {
+                // the safest is to not neglect
+                false
             }
 
         };
-        // end code block for neglecting axial conduction
+        // end code block for checking if we can neglect axial conduction
 
+        // if we dont neglect axial conduction 
 
-        
-        
-        todo!()
+        if !neglect_axial_conduction {
+
+            // construct matrices for axial conduction
+            for node_idx in 0..number_of_nodes {
+                // check if first or last node 
+                let first_node: bool = node_idx == 0;
+                let last_node: bool = node_idx == number_of_nodes - 1;
+                // bulk node means 
+                let bulk_node: bool = !first_node  || !last_node;
+
+                // bulk nodes
+                if bulk_node {
+
+                    // The extra terms from conduction are: 
+                    // q = -H_avg(T_i - T_{i+1}) 
+                    // -H_avg (T_i - T_{i-1})
+                    //
+                    // of course, by convention, we move all 
+                    // temperature dependent terms to the right hand 
+                    // side so that 
+                    //
+                    // m cp dT_i/dt + 2 H_avg T_i
+                    // - Havg T_{i+1} - Havg T_{i-1}
+                    // + other terms (see above)
+                    // = heat sources
+                    //
+                    // So i'll have to add conductances to the 
+                    // coefficient matrix
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += 2.0 *average_axial_conductance;
+
+                    // we index using row, column convention 
+                    // as per the ndarray crate
+                    // "In a 2D array the index of each element is 
+                    // [row, column] as seen in this 4 × 3 example:"
+                    // https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html
+                    //
+                    // The row is i, because that deals with node i 
+                    //
+                    // the column is i, i-1 and i+1 because that deals 
+                    // with the node temperatures affecting node i 
+                    //
+                    // In this case, I want to involve T_{i+1} 
+                    // and T_i and both terms are multipled by an 
+                    // average conductance
+                    // for speed. 
+                    //
+                    // Of course, one could use the node conductance 
+                    // for each node to estimate the conductance 
+                    // but that would be computationally expensive
+
+                    coefficient_matrix[[node_idx, node_idx+1]] 
+                    -= average_axial_conductance;
+
+                    coefficient_matrix[[node_idx, node_idx-1]] 
+                    -= average_axial_conductance;
+
+                }
+                // first node 
+                if first_node {
+
+                    // it's easier to do bulk nodes first because 
+                    // it is the general case 
+                    // first node is a fringe case where 
+                    // it only conducts heat from the node in front 
+                    // m cp dT_0/dt +  H_avg T_0
+                    // - Havg T_{1} 
+                    // + other terms (see above)
+                    // = heat sources
+
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += average_axial_conductance;
+                    coefficient_matrix[[node_idx, node_idx+1]] 
+                    -= average_axial_conductance;
+
+                }
+                // last node 
+                if last_node {
+
+                    // likewise, the last node is also a fringe case
+
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += average_axial_conductance;
+                    coefficient_matrix[[node_idx, node_idx-1]] 
+                    -= average_axial_conductance;
+                }
+                // done modification for axial conduction
+            }
+
+            // done for loop
+
+        }
+        // done axial conduction code and ready to solve matrix
+
+        new_temperature_array = 
+            solve_conductance_matrix_power_vector(
+                coefficient_matrix,power_source_vector)?;
+
+        // update the single cvs at the front and back with new enthalpies 
+
+        // Todo: probably need to synchronise error types in future
+        let back_node_enthalpy_next_timestep: AvailableEnergy = 
+        specific_enthalpy(
+            self.back_single_cv.material_control_volume,
+            new_temperature_array[0],
+            self.back_single_cv.pressure_control_volume).unwrap();
+
+        self.back_single_cv.current_timestep_control_volume_specific_enthalpy 
+            = back_node_enthalpy_next_timestep;
+
+        let front_node_enthalpy_next_timestep: AvailableEnergy = 
+        specific_enthalpy(
+            self.front_single_cv.material_control_volume,
+            new_temperature_array[number_of_nodes-1],
+            self.front_single_cv.pressure_control_volume).unwrap();
+
+        self.front_single_cv.current_timestep_control_volume_specific_enthalpy 
+            = front_node_enthalpy_next_timestep;
+        // let's also update the previous temperature vector 
+
+        self.set_temperature_array(new_temperature_array)?;
+
+        // set liquid cv mass 
+        // probably also need to update error types in future
+        self.back_single_cv.set_liquid_cv_mass_from_temperature()?;
+        self.back_single_cv.rate_enthalpy_change_vector.clear();
+        self.back_single_cv.max_timestep_vector.clear();
+
+        self.front_single_cv.set_liquid_cv_mass_from_temperature()?;
+        self.front_single_cv.rate_enthalpy_change_vector.clear();
+        self.front_single_cv.max_timestep_vector.clear();
+        self.clear_vectors()?;
+
+        // all done
+        Ok(())
+    }
+    /// clears all vectors for next timestep
+    /// This is important for the advance timestep method
+    pub fn clear_vectors(&mut self) 
+    -> Result<(), ThermalHydraulicsLibError>{
+
+        self.lateral_adjacent_array_conductance_vector.clear();
+        self.lateral_adjacent_array_temperature_vector.clear();
+
+        self.q_vector.clear();
+        self.q_fraction_vector.clear();
+        Ok(())
     }
 }
