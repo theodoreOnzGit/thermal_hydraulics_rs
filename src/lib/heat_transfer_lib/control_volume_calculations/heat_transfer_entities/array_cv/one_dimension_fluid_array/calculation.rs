@@ -544,7 +544,7 @@ impl FluidArray{
             )?;
 
             let peclet_number = reynolds * prandtl_number;
-            let _average_axial_conductance: ThermalConductance;
+            let average_axial_conductance: ThermalConductance;
 
             if peclet_number.value < 100.0 {
                 // for low peclet number flows, consider conduction
@@ -557,13 +557,101 @@ impl FluidArray{
                     pressure
                 )?;
 
-                _average_axial_conductance = 
+                // note that conductance axially is done only ONCE 
+                // per timestep to expedite the speed of calculation
+
+                average_axial_conductance = 
                     average_fluid_conductivity * 
                     self.xs_area / node_length;
 
-                todo!("low peclet number <100, not implemented");
+                for node_idx in 0..number_of_nodes {
+                    // check if first or last node 
+                    let first_node: bool = node_idx == 0;
+                    let last_node: bool = node_idx == number_of_nodes - 1;
+                    // bulk node means 
+                    let bulk_node: bool = !first_node  || !last_node;
 
+                    // bulk nodes
+                    if bulk_node {
+
+                        // The extra terms from conduction are: 
+                        // q = -H_avg(T_i - T_{i+1}) 
+                        // -H_avg (T_i - T_{i-1})
+                        //
+                        // of course, by convention, we move all 
+                        // temperature dependent terms to the right hand 
+                        // side so that 
+                        //
+                        // m cp dT_i/dt + 2 H_avg T_i
+                        // - Havg T_{i+1} - Havg T_{i-1}
+                        // + other terms (see above)
+                        // = heat sources
+                        //
+                        // So i'll have to add conductances to the 
+                        // coefficient matrix
+                        coefficient_matrix[[node_idx,node_idx]] 
+                        += 2.0 *average_axial_conductance;
+
+                        // we index using row, column convention 
+                        // as per the ndarray crate
+                        // "In a 2D array the index of each element is 
+                        // [row, column] as seen in this 4 × 3 example:"
+                        // https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html
+                        //
+                        // The row is i, because that deals with node i 
+                        //
+                        // the column is i, i-1 and i+1 because that deals 
+                        // with the node temperatures affecting node i 
+                        //
+                        // In this case, I want to involve T_{i+1} 
+                        // and T_i and both terms are multipled by an 
+                        // average conductance
+                        // for speed. 
+                        //
+                        // Of course, one could use the node conductance 
+                        // for each node to estimate the conductance 
+                        // but that would be computationally expensive
+
+                        coefficient_matrix[[node_idx, node_idx+1]] 
+                        -= average_axial_conductance;
+
+                        coefficient_matrix[[node_idx, node_idx-1]] 
+                        -= average_axial_conductance;
+
+                    }
+                    // first node 
+                    if first_node {
+
+                        // it's easier to do bulk nodes first because 
+                        // it is the general case 
+                        // first node is a fringe case where 
+                        // it only conducts heat from the node in front 
+                        // m cp dT_0/dt +  H_avg T_0
+                        // - Havg T_{1} 
+                        // + other terms (see above)
+                        // = heat sources
+
+                        coefficient_matrix[[node_idx,node_idx]] 
+                        += average_axial_conductance;
+                        coefficient_matrix[[node_idx, node_idx+1]] 
+                        -= average_axial_conductance;
+
+                    }
+                    // last node 
+                    if last_node {
+
+                        // likewise, the last node is also a fringe case
+
+                        coefficient_matrix[[node_idx,node_idx]] 
+                        += average_axial_conductance;
+                        coefficient_matrix[[node_idx, node_idx-1]] 
+                        -= average_axial_conductance;
+                    }
+                    // done modification for axial conduction
+                }
+                // done peclet number check
             }
+            // done matrix construction, now
             // solve for new temperature 
 
             new_temperature_array = 

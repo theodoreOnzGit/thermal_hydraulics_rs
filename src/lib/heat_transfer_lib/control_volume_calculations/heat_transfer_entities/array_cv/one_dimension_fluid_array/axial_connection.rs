@@ -19,7 +19,7 @@ use super::FluidArray;
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
-impl FluidArray{
+impl FluidArray {
 
     /// connects an adjacent heat transfer entity to front cv 
     ///
