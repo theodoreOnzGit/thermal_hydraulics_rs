@@ -288,32 +288,15 @@ fn calculate_timestep_control_volume_front_to_boundary_condition_serial(
     // volume) and calculate the timestep based on that
     let match_array_cv_front = |array_cv_type: &mut ArrayCVType|{
 
-        match array_cv_type {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                // get a mutable reference for the front cv 
+        // get a mutable reference for the front cv 
 
-                let front_cv_reference = 
-                &mut cartesian_array_cv.outer_single_cv;
+        let front_cv_reference = 
+        array_cv_type.nested_front_cv_deref_mut().unwrap();
 
+        // once that is done, calculate the mesh stability
+        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+            front_cv_reference, interaction)
 
-                // once that is done, use the same function
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    front_cv_reference, interaction)
-
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                // get a mutable reference for the front cv 
-
-                let front_cv_reference = 
-                &mut fluid_arr.front_single_cv;
-
-
-                // once that is done, use the same function
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    front_cv_reference, interaction)
-
-            },
-        }
     };
 
     let cv_bc_result = match (control_vol, boundary_condition) {
@@ -368,36 +351,12 @@ fn calculate_timestep_control_volume_back_to_boundary_condition_serial(
     // volume) and calculate the timestep based on that
     let match_array_cv_back = |array_cv_type: &mut ArrayCVType|{
 
-        // match the cv to the cv type, extract the back boundary 
-        // condition 
+        let back_cv_reference = 
+        array_cv_type.nested_back_cv_deref_mut().unwrap();
 
-        match array_cv_type {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                // get a mutable reference for the back cv 
-
-                let back_cv_reference = 
-                &mut cartesian_array_cv.inner_single_cv;
-
-
-                // once that is done, recycle the condition
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    back_cv_reference, interaction)
-
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                // get a mutable reference for the back cv 
-
-                let back_cv_reference = 
-                &mut fluid_arr.back_single_cv;
-
-
-                // once that is done, recycle the condition
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    back_cv_reference, interaction)
-                
-            },
-
-        }
+        // once that is done, calculate the mesh stability
+        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+            back_cv_reference, interaction)
     };
 
     let cv_bc_result = match (control_vol, boundary_condition) {

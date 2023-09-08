@@ -1,3 +1,5 @@
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
 use super::CartesianConduction1DArray;
 use uom::si::f64::*;
 use ndarray::*;
@@ -12,7 +14,7 @@ impl CartesianConduction1DArray {
     ///
     #[inline]
     pub fn get_bulk_temperature(&mut self) -> 
-    Result<ThermodynamicTemperature,String>{
+    Result<ThermodynamicTemperature,ThermalHydraulicsLibError>{
 
         // for now, doing it quick and dirty, i'm going to obtain a volume 
         // averaged temperature 

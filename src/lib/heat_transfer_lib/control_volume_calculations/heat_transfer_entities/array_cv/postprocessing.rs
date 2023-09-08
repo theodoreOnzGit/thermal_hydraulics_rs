@@ -1,5 +1,5 @@
 use uom::si::f64::*;
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType;
+use crate::{heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
 /// contains implementations for ArrayCVType specific to post processing 
 ///
@@ -8,7 +8,7 @@ impl ArrayCVType {
 
     /// gets the bulk temperature for the ArrayCV
     pub fn get_bulk_temperature(&mut self) -> 
-    Result<ThermodynamicTemperature,String>{
+    Result<ThermodynamicTemperature,ThermalHydraulicsLibError>{
 
         match self {
             ArrayCVType::Cartesian1D(cartesian_1d_cv) => {
@@ -21,6 +21,7 @@ impl ArrayCVType {
         }
 
     }
+
 
 
 

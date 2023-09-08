@@ -24,7 +24,7 @@
 // want to copy and paste how ndarray-linalg constructs its error types 
 // so that my results are similar
 
-use self::one_dimension_fluid_array::FluidArray;
+use self::{one_dimension_fluid_array::FluidArray, one_dimension_solid_array::SolidColumn};
 /// This is the array cv type
 #[derive(Debug,Clone,PartialEq)]
 pub enum ArrayCVType {
@@ -36,6 +36,9 @@ pub enum ArrayCVType {
     /// one dimensional fluid array, with one 
     /// inlet and one outlet
     GenericPipe(FluidArray),
+
+    ///// one dimensional solid array (column)
+    //GenericColumn(SolidColumn),
     
 }
 

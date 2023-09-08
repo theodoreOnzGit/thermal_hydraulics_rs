@@ -6,7 +6,7 @@ use super::CVType;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType;
 
 
-use uom::si::{f64::*, pressure::atmosphere, power::watt, time::second, length::meter};
+use uom::si::f64::*;
 
 impl HeatTransferEntity {
 
@@ -22,7 +22,7 @@ impl HeatTransferEntity {
                         single_cv.get_temperature()
                     },
                     CVType::ArrayCV(cv) => {
-                        cv.get_bulk_temperature()
+                        Ok(cv.get_bulk_temperature().unwrap())
                     },
                 }
             },
@@ -69,6 +69,7 @@ impl HeatTransferEntity {
                         Ok(temp_vector)
                     },
                     CVType::ArrayCV(array_cv_type) => {
+
                         let temp_vector_result:
                         Result<Vec<ThermodynamicTemperature>, String>;
 
