@@ -11,7 +11,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::FluidArray;
 
-/// this implementation deals with lateral connections 
+/// this implementation deals with axial connections 
 ///
 /// the convention is to supply an average conductance 
 /// as well as a temperature array
@@ -36,31 +36,18 @@ impl FluidArray {
 
         // package it as a heat transfer entity 
 
-        let mut front_cv: HeatTransferEntity = 
-        HeatTransferEntity::ControlVolume(
-            CVType::SingleCV(front_cv_clone)
-        );
+        let mut front_cv_entity: HeatTransferEntity = 
+        front_cv_clone.into();
 
         link_heat_transfer_entity(
-            &mut front_cv,
+            &mut front_cv_entity,
             heat_trf_entity,
             heat_transfer_interaction,
         )?;
 
         // now that the front_cv is edited, we can extract it 
 
-        let front_cv_edited: SingleCVNode = match front_cv {
-            HeatTransferEntity::ControlVolume(cv_type) => {
-                match cv_type {
-                    CVType::SingleCV(single_cv) => {
-                        single_cv
-                    },
-                    _ => unimplemented!(),
-                }
-            },
-            _ => unimplemented!(),
-        };
-
+        let front_cv_edited: SingleCVNode = front_cv_entity.try_into()?;
         self.front_single_cv = front_cv_edited;
 
 
@@ -82,31 +69,18 @@ impl FluidArray {
 
         // package it as a heat transfer entity 
 
-        let mut back_cv: HeatTransferEntity = 
-        HeatTransferEntity::ControlVolume(
-            CVType::SingleCV(back_cv_clone)
-        );
+        let mut back_cv_entity: HeatTransferEntity = 
+        back_cv_clone.into();
 
         link_heat_transfer_entity(
-            &mut back_cv,
+            &mut back_cv_entity,
             heat_trf_entity,
             heat_transfer_interaction,
         )?;
 
         // now that the back_cv is edited, we can extract it 
 
-        let back_cv_edited: SingleCVNode = match back_cv {
-            HeatTransferEntity::ControlVolume(cv_type) => {
-                match cv_type {
-                    CVType::SingleCV(single_cv) => {
-                        single_cv
-                    },
-                    _ => unimplemented!(),
-                }
-            },
-            _ => unimplemented!(),
-        };
-
+        let back_cv_edited: SingleCVNode = back_cv_entity.try_into()?;
         self.back_single_cv = back_cv_edited;
 
 
