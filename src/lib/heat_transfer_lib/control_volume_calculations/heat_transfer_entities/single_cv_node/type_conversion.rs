@@ -20,3 +20,13 @@ impl TryFrom<HeatTransferEntity> for SingleCVNode {
 
     type Error = ThermalHydraulicsLibError;
 }
+
+impl Into<HeatTransferEntity> for SingleCVNode {
+    fn into(self) -> HeatTransferEntity {
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                self
+            ))
+
+    }
+}
