@@ -1,13 +1,5 @@
-use crate::fluid_mechanics_lib::prelude::FluidComponent;
-use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
-use crate::heat_transfer_lib::thermophysical_properties::
-thermal_diffusivity::thermal_diffusivity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use ndarray::*;
-use uom::si::ratio::ratio;
-use uom::si::thermodynamic_temperature::kelvin;
 use super::FluidArray;
 use uom::si::f64::*;
 

@@ -6,7 +6,6 @@ thermal_diffusivity::thermal_diffusivity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use ndarray::*;
-use uom::si::ratio::ratio;
 use uom::si::thermodynamic_temperature::kelvin;
 use super::FluidArray;
 use uom::si::f64::*;

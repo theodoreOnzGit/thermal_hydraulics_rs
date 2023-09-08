@@ -4,17 +4,11 @@ use uom::si::f64::*;
 
 use crate::fluid_mechanics_lib::fluid_component_calculation::enums::DimensionlessDarcyLossCorrelations;
 use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_entities::ArrayCVType;
-use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_entities::HeatTransferEntity;
-use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::SingleCVNode;
 use crate::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 
-use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_entities::CVType;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
