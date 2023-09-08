@@ -140,45 +140,83 @@ impl SolidColumn {
 
         if lateral_temperature_arary_connected {
 
-            for (idx, node_conductance) in 
-                sum_of_lateral_conductances.iter_mut().enumerate() {
+            // the HT here comes from 
+            //
+            // Q = -H(T_node - T_lateral) 
+            //
+            // Q = -HT_node + HT_lateral 
+            //
+            // HT_node goes into the coefficient matrix 
+            // where H * T[i] is calculated 
+            // We sum over all H, and therefore we need to 
+            // sum over all H for each node
+            // we need sum of conductances, which becomes the coefficient 
+            // for the node temperature
 
-                    // I will need to index into the array
-                    // and sum the conductances 
+            for conductance_array in 
+                self.lateral_adjacent_array_conductance_vector.iter(){
 
-                    for lateral_conductance in 
-                        &self.lateral_adjacent_array_conductance_vector[idx] {
-                            *node_conductance += *lateral_conductance;
-                        }
 
+                    // now I'm inside the each conductance array,
+                    // i can now sum the conductance array
+                    // using array arithmetic without the hassle of indexing
+                    sum_of_lateral_conductances += conductance_array;
                 }
             // end sum of conductances for loop
+            
             // we also need the HT sum for the lateral temperatures 
+            // this is power due to heat transfer (other than advection)
 
-            for (node_idx, node_ht_lateral_sum) in 
-            sum_of_lateral_conductance_times_lateral_temperatures.iter_mut().enumerate() {
+            for (lateral_idx, conductance_arr) in 
+                self.lateral_adjacent_array_conductance_vector.iter().enumerate() {
+                    // the HT here comes from 
+                    //
+                    // Q = -H(T_node - T_lateral) 
+                    //
+                    // Q = -HT_node + HT_lateral 
+                    //
+                    // HT_node goes into the coefficient matrix 
+                    // where H * T[i] is calculated 
+                    // We sum over all H, and therefore we need to 
+                    // sum over all H for each node
+                    // 
+                    // However, HT_lateral needs to be summed manually 
+                    // over all the nodes and over all adjacent temperatures
 
                     // I will need to index into the conductance array
                     // and sum the conductances times temperature
-                    for (lateral_index, &node_lateral_conductance) in 
-                        self.lateral_adjacent_array_conductance_vector[node_idx].iter().enumerate() {
+                    //
+                    // so the node_ht_lateral_sum represents the sum 
+                    // of this, which we must sequentially add to
 
-                            // I'll need to find the temperature  first 
+                    // for each node, at node index, we need to sum 
+                    // all HT_lateral for all laterally linked 
+                    // temperature arrays
 
-                            let lateral_temperature_array = 
-                            &self.lateral_adjacent_array_temperature_vector[lateral_index];
+                    // once we cycle through the lateral index, 
+                    // we need to calculate the vector of power contributions 
+                    // for this temperature array
 
-                            let node_temperature: ThermodynamicTemperature = 
-                            lateral_temperature_array[node_idx];
+                    let temperature_arr: Array1<ThermodynamicTemperature> 
+                    = self.lateral_adjacent_array_temperature_vector[lateral_idx].clone();
 
-                            *node_ht_lateral_sum += node_temperature * 
-                            node_lateral_conductance;
+                    let mut power_arr: Array1<Power> = Array::zeros(
+                        number_of_nodes);
 
+                    for (node_idx, power) in power_arr.iter_mut().enumerate() {
 
-                        }
+                        *power = conductance_arr[node_idx] * temperature_arr[node_idx];
+                    }
+
+                    // once the power array is built, I can add it to 
+                    // the htsum array
+
+                    sum_of_lateral_conductance_times_lateral_temperatures 
+                    += &power_arr;
 
                 }
-            // end of ht lateral sum
+
+
         }
 
         // we need to do the same for the q and q fractions
@@ -212,13 +250,13 @@ impl SolidColumn {
             let mut power_ndarray_vector: Vec<Array1<Power>>
             = vec![];
 
-            for (power_source_idx, q_reference) in self.q_vector.iter().enumerate() {
+            for (lateral_idx, q_reference) in self.q_vector.iter().enumerate() {
 
                 // multiply q by qfraction
 
 
                 let power_frac_array: Array1<f64>
-                = self.q_fraction_vector[power_source_idx].clone();
+                = self.q_fraction_vector[lateral_idx].clone();
 
                 let power_ndarray: Array1<Power>
                 = power_frac_array.map(
@@ -275,10 +313,8 @@ impl SolidColumn {
 
 
                     }
-                    // end inner for loop
 
                 }
-            // end sum of lateral sources for loop
 
         }
         // end if for lateral_power_sources_connected
