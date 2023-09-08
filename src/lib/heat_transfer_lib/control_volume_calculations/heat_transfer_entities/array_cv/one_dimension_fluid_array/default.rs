@@ -103,7 +103,6 @@ impl Default for FluidArray {
             total_length: default_length,
             xs_area: cross_sectional_area,
             temperature_array_current_timestep: default_temp_array.clone(),
-            temperature_array_next_timestep: default_temp_array.clone(),
             material_control_volume: therminol,
             pressure_control_volume: Pressure::new::<atmosphere>(1.0),
             volume_fraction_array: array![0.5, 0.5],

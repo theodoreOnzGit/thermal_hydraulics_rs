@@ -67,9 +67,6 @@ pub struct FluidArray {
     /// only accessible via get and set methods
     temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
 
-    // temperature_array_next timestep 
-    temperature_array_next_timestep: Array1<ThermodynamicTemperature>,
-
     /// control volume material 
     pub material_control_volume: Material,
 

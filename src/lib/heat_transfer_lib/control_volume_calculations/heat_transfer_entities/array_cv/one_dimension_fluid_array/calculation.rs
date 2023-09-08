@@ -12,11 +12,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::FluidArray;
 
-/// this implementation deals with lateral connections 
-///
-/// the convention is to supply an average conductance 
-/// as well as a temperature array
-///
+/// This deals with the calculations of the fluid array 
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
@@ -41,7 +37,7 @@ impl FluidArray{
         timestep: Time,
         mass_flowrate: MassRate) 
         -> Result<(), ThermalHydraulicsLibError>{
-
+        // here's the function I copied from initially and modified
         //advance_timestep_fluid_node_array_pipe_high_peclet_number(
         //    back_cv_ptr_in_loop.deref_mut(),
         //    front_cv_ptr_in_loop.deref_mut(),
@@ -104,8 +100,10 @@ impl FluidArray{
         // this front and back nodes will be an extra term added to the 
         // heat source vector S
         //
-        // The old fluid temperature will need to be used to calculate 
-        // new specific enthalpy for the system
+        // We need a blank temperature array to start the iteration 
+        // process, so we just copy the old temperature array over 
+        // as the initial guess (i think?)
+        //
 
         let mut new_temperature_array: Array1<ThermodynamicTemperature> = 
         self.get_temperature_array()?.map(
@@ -117,37 +115,191 @@ impl FluidArray{
         );
         // now let's start calculation 
         //
-        if number_of_nodes > 1 {
-            let mut coefficient_matrix: Array2<ThermalConductance> = 
-            Array::zeros((number_of_nodes, number_of_nodes));
+        let mut coefficient_matrix: Array2<ThermalConductance> = 
+        Array::zeros((number_of_nodes, number_of_nodes));
 
-            let mut power_source_vector: 
-            Array1<Power> = Array::zeros(number_of_nodes);
+        let mut power_source_vector: 
+        Array1<Power> = Array::zeros(number_of_nodes);
 
-            // ascertain if we have forward flow 
+        // ascertain if we have forward flow 
 
-            let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
+        let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
 
-            // obtain some important parameters for calculation
-            let material = self.material_control_volume;
-            let pressure = self.pressure_control_volume;
-            let bulk_temperature = self.get_bulk_temperature()?;
-            let total_volume = self.total_length *  self.xs_area;
-            let dt = timestep;
-            let node_length = self.total_length / number_of_nodes as f64;
-            let volume_fraction_array: Array1<f64> = 
-            self.volume_fraction_array.iter().map(
-                |&vol_frac| {
-                    vol_frac
+        // obtain some important parameters for calculation
+        let material = self.material_control_volume;
+        let pressure = self.pressure_control_volume;
+        let bulk_temperature = self.get_bulk_temperature()?;
+        let total_volume = self.total_length *  self.xs_area;
+        let dt = timestep;
+        let node_length = self.total_length / number_of_nodes as f64;
+        // for the fluid array, we do not keep track of node enthalpies,
+        // instead, we keep track of temperatures and then calculate 
+        // enthalpy changes using rho_cp calculated at the current 
+        // timestep
+        let volume_fraction_array: Array1<f64> = 
+        self.volume_fraction_array.iter().map(
+            |&vol_frac| {
+                vol_frac
+            }
+        ).collect();
+        // rho_cp is determined by the temperature array 
+        let rho_cp: Array1<VolumetricHeatCapacity> = 
+        self.temperature_array_current_timestep.iter().map(
+            |&temperature| {
+                rho_cp(material, temperature, pressure).unwrap()
+            }
+        ).collect();
+        // energy balance is: 
+        // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
+        // + m_flow h_fluid(adjacent T) + q
+        // of all these terms, only the m cp dT/dt term and HT 
+        // 
+        // We separate this out to get:
+        //
+        // m cp T / dt + \sum HT = 
+        //
+        // \sum HT_lateral - m_flow h_fluid(T_old) 
+        // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
+        // + q
+        //
+        // so we will need to determine sum H and sum HT_lateral
+        // as sum H is the relevant coefficient in the coefficient_matrix
+
+        let mut sum_of_lateral_conductances: Array1<ThermalConductance>
+        = Array1::zeros(number_of_nodes);
+
+        // conductances will need to be summed over each node 
+        //
+        // i will also need to make sure that there are actually 
+        // lateral connections to this array in the first place 
+        // though!
+
+        let lateral_temperature_arary_connected: bool 
+        = self.lateral_adjacent_array_conductance_vector.len() > 0;
+
+        if lateral_temperature_arary_connected {
+
+            for (idx, node_conductance) in 
+                sum_of_lateral_conductances.iter_mut().enumerate() {
+
+                    // I will need to index into the array
+                    // and sum the conductances 
+
+                    for lateral_conductance in 
+                        &self.lateral_adjacent_array_conductance_vector[idx] {
+                            *node_conductance += *lateral_conductance;
+                        }
+
                 }
-            ).collect();
-            // rho_cp is determined by the temperature array 
-            let rho_cp: Array1<VolumetricHeatCapacity> = 
-            self.temperature_array_current_timestep.iter().map(
-                |&temperature| {
-                    rho_cp(material, temperature, pressure).unwrap()
+        }
+        // we need to do the same for the q and q fractions
+
+        let lateral_power_sources_connected: bool 
+        = self.q_vector.len() > 0; 
+
+        let mut sum_of_lateral_power_sources: Array1<Power>
+        = Array::zeros(number_of_nodes);
+
+        if lateral_power_sources_connected {
+            // again index into each node, multiply q by the 
+            // q fraction 
+            //
+            // suppose there are two power sources in a three node 
+            // system 
+            //
+            // 
+            // [P1a, P1b, P1c] 
+            // [P2a, P2b, P2c] 
+            //
+            // --> these are power ndarray
+            //
+            // The total power contributed to each node is:
+            //
+            //
+            // [Pa, Pb, Pc]
+            //
+            // --> this is the sum_of_lateral_power_sources
+            //
+            // The simplest way would be to multiply the power 
+            // q by its respective fractions to obtain a vector
+            // of power arrays
+
+            let mut power_ndarray_vector: Vec<Array1<Power>>
+            = vec![];
+
+            for (power_source_idx, q_reference) in self.q_vector.iter().enumerate() {
+
+                // multiply q by qfraction
+
+
+                let power_frac_array: Array1<f64>
+                = self.q_fraction_vector[power_source_idx].clone();
+
+                let power_ndarray: Array1<Power>
+                = power_frac_array.map(
+                    |&power_frac| {
+                        power_frac * (*q_reference)
+                    }
+
+                );
+
+
+                power_ndarray_vector.push(power_ndarray);
+
+            }
+
+            // this part construts
+            // the sum_of_lateral_power_sources
+            // vector
+            //
+            // [Pa, Pb, Pc]
+            //
+            // at first, it's just a vector of zero power 
+            // 
+            // [0, 0, 0]
+            //
+            // The outer loop gets the node index, 
+            // for example, node 1, 
+            //
+            // and obtains a reference to the node power source,
+            // 0 watts
+            //
+
+            for (node_idx, node_power_source) in 
+                sum_of_lateral_power_sources.iter_mut().enumerate() {
+
+                    // at the node index i, and 
+                    // with a reference to the node power source,
+                    // I want to sum all the power sources
+                    //
+                    // So I start indexing into each power vector
+
+                    for power_vector in power_ndarray_vector.iter(){
+
+                        // from each power vector, I pull out the 
+                        // relevant node power at the correct 
+                        // node
+
+                        let node_power_contribution = 
+                        power_vector[node_idx];
+
+                        // then I add it to the power source
+
+                        *node_power_source 
+                        += node_power_contribution;
+
+
+                    }
+
                 }
-            ).collect();
+
+        }
+
+
+        // back node calculation (first node)
+        {
+
+            // for the first node, also called the back node
             // energy balance is: 
             // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
             // + m_flow h_fluid(adjacent T) + q
@@ -164,495 +316,341 @@ impl FluidArray{
             // so we will need to determine sum H and sum HT_lateral
             // as sum H is the relevant coefficient in the coefficient_matrix
 
-            let mut sum_of_lateral_conductances: Array1<ThermalConductance>
-            = Array1::zeros(number_of_nodes);
 
-            // conductances will need to be summed over each node 
+
+
+            // Now I'm ready to construct the M matrix
+            // belong in the M matrix, the rest belong in S
+            coefficient_matrix[[0,0]] = 
+                volume_fraction_array[0] * rho_cp[0] 
+                * total_volume / dt + sum_of_lateral_conductances[0];
+
+
+            // the first part of the source term deals with 
+            // the flow direction independent terms
+
+            let h_fluid_last_timestep: AvailableEnergy = 
+            self.back_single_cv.current_timestep_control_volume_specific_enthalpy;
+
+            // now this makes the scheme semi implicit, and we should then 
+            // treat the scheme as explicit
+
+            power_source_vector[0] = sum_of_lateral_conductances[0] *
+                self.temperature_array_current_timestep[0] 
+                - mass_flowrate * h_fluid_last_timestep 
+                + self.temperature_array_current_timestep[0] * total_volume * 
+                volume_fraction_array[0] * rho_cp[0] / dt 
+                + sum_of_lateral_power_sources[0]
+                + total_enthalpy_rate_change_back_node ;
+
+            // the next part deals with the inflow
+            // m_flow h_fluid(adjacent T_old)
             //
-            // i will also need to make sure that there are actually 
-            // lateral connections to this array in the first place 
-            // though!
+            // now if the advection interaction is done correctly, 
+            //
+            // (advection) ----- (back cv) --------> fwd
+            //
+            // then in a frontal flow condition, the enthalpy flows in 
+            // would already have been accounted for
+            //
+            // but in the case of backflow, then fluid from the node
+            // in front will flow into this fluid node 
+            // that is node 1 
 
-            let lateral_temperature_arary_connected: bool 
-            = self.lateral_adjacent_array_conductance_vector.len() > 0;
+            // so if mass flowrate is <= 0 , then we will calculate 
+            // backflow conditions
 
-            if lateral_temperature_arary_connected {
+            if !forward_flow {
+                // first, get enthalpy of the node in front 
 
-                for (idx, node_conductance) in 
-                    sum_of_lateral_conductances.iter_mut().enumerate() {
+                let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
+                specific_enthalpy(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[1],
+                    self.back_single_cv.pressure_control_volume).unwrap();
 
-                        // I will need to index into the array
-                        // and sum the conductances 
-
-                        for lateral_conductance in 
-                            &self.lateral_adjacent_array_conductance_vector[idx] {
-                                *node_conductance += *lateral_conductance;
-                            }
-
-                    }
-            }
-            // we need to do the same for the q and q fractions
-
-            let lateral_power_sources_connected: bool 
-            = self.q_vector.len() > 0; 
-
-            let mut sum_of_lateral_power_sources: Array1<Power>
-            = Array::zeros(number_of_nodes);
-
-            if lateral_power_sources_connected {
-                // again index into each node, multiply q by the 
-                // q fraction 
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
                 //
-                // suppose there are two power sources in a three node 
-                // system 
-                //
-                // 
-                // [P1a, P1b, P1c] 
-                // [P2a, P2b, P2c] 
-                //
-                // --> these are power ndarray
-                //
-                // The total power contributed to each node is:
-                //
-                //
-                // [Pa, Pb, Pc]
-                //
-                // --> this is the sum_of_lateral_power_sources
-                //
-                // The simplest way would be to multiply the power 
-                // q by its respective fractions to obtain a vector
-                // of power arrays
-
-                let mut power_ndarray_vector: Vec<Array1<Power>>
-                = vec![];
-
-                for (power_source_idx, q_reference) in self.q_vector.iter().enumerate() {
-
-                    // multiply q by qfraction
-
-
-                    let power_frac_array: Array1<f64>
-                    = self.q_fraction_vector[power_source_idx].clone();
-
-                    let power_ndarray: Array1<Power>
-                    = power_frac_array.map(
-                        |&power_frac| {
-                            power_frac * (*q_reference)
-                        }
-
-                    );
-
-
-                    power_ndarray_vector.push(power_ndarray);
-
-                }
-
-                // this part construts
-                // the sum_of_lateral_power_sources
-                // vector
-                //
-                // [Pa, Pb, Pc]
-                //
-                // at first, it's just a vector of zero power 
-                // 
-                // [0, 0, 0]
-                //
-                // The outer loop gets the node index, 
-                // for example, node 1, 
-                //
-                // and obtains a reference to the node power source,
-                // 0 watts
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
                 //
 
-                for (node_idx, node_power_source) in 
-                    sum_of_lateral_power_sources.iter_mut().enumerate() {
+                power_source_vector[0] += 
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
 
-                        // at the node index i, and 
-                        // with a reference to the node power source,
-                        // I want to sum all the power sources
-                        //
-                        // So I start indexing into each power vector
+                // additionally, in backflow situations, the mass 
+                // flow out of this cv is already accounted for 
+                // so don't double count 
 
-                        for power_vector in power_ndarray_vector.iter(){
-
-                            // from each power vector, I pull out the 
-                            // relevant node power at the correct 
-                            // node
-
-                            let node_power_contribution = 
-                            power_vector[node_idx];
-
-                            // then I add it to the power source
-
-                            *node_power_source 
-                            += node_power_contribution;
-
-
-                        }
-
-                    }
-
+                power_source_vector[0] += 
+                mass_flowrate * h_fluid_last_timestep;
             }
 
 
-            // back node calculation (first node)
-            {
+        }
 
-                // for the first node, also called the back node
-                // energy balance is: 
-                // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
-                // + m_flow h_fluid(adjacent T) + q
-                // of all these terms, only the m cp dT/dt term and HT 
-                // 
-                // We separate this out to get:
-                //
-                // m cp T / dt + \sum HT = 
-                //
-                // \sum HT_lateral - m_flow h_fluid(T_old) 
-                // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
-                // + q
-                //
-                // so we will need to determine sum H and sum HT_lateral
-                // as sum H is the relevant coefficient in the coefficient_matrix
-
-
-
-
-                // Now I'm ready to construct the M matrix
-                // belong in the M matrix, the rest belong in S
-                coefficient_matrix[[0,0]] = 
-                    volume_fraction_array[0] * rho_cp[0] 
-                    * total_volume / dt + sum_of_lateral_conductances[0];
-
-
-                // the first part of the source term deals with 
-                // the flow direction independent terms
-
-                let h_fluid_last_timestep: AvailableEnergy = 
-                self.back_single_cv.current_timestep_control_volume_specific_enthalpy;
-
-                // now this makes the scheme semi implicit, and we should then 
-                // treat the scheme as explicit
-
-                power_source_vector[0] = sum_of_lateral_conductances[0] *
-                    self.temperature_array_current_timestep[0] 
-                    - mass_flowrate * h_fluid_last_timestep 
-                    + self.temperature_array_current_timestep[0] * total_volume * 
-                    volume_fraction_array[0] * rho_cp[0] / dt 
-                    + sum_of_lateral_power_sources[0]
-                    + total_enthalpy_rate_change_back_node ;
-
-                // the next part deals with the inflow
-                // m_flow h_fluid(adjacent T_old)
-                //
-                // now if the advection interaction is done correctly, 
-                //
-                // (advection) ----- (back cv) --------> fwd
-                //
-                // then in a frontal flow condition, the enthalpy flows in 
-                // would already have been accounted for
-                //
-                // but in the case of backflow, then fluid from the node
-                // in front will flow into this fluid node 
-                // that is node 1 
-
-                // so if mass flowrate is <= 0 , then we will calculate 
-                // backflow conditions
-
-                if !forward_flow {
-                    // first, get enthalpy of the node in front 
-
-                    let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                    specific_enthalpy(
-                        self.back_single_cv.material_control_volume,
-                        self.temperature_array_current_timestep[1],
-                        self.back_single_cv.pressure_control_volume).unwrap();
-
-                    // now if mass flowrate is less than zero, then 
-                    // we receive enthalpy from the front cv 
-                    //
-                    // But we need to subtract the negative mass flow if 
-                    // that makes sense, or at least make it absolute
-                    // - (-m) * h = m * h
-                    //
-
-                    power_source_vector[0] += 
-                    mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
-
-                    // additionally, in backflow situations, the mass 
-                    // flow out of this cv is already accounted for 
-                    // so don't double count 
-
-                    power_source_vector[0] += 
-                    mass_flowrate * h_fluid_last_timestep;
-                }
-
-
-            }
-
-            // bulk node calculations 
-            if number_of_nodes > 2 {
-                // loop over all nodes from 1 to n-2 (n-1 is not included)
-                for i in 1..number_of_nodes-1 {
-                    // the coefficient matrix is pretty much the same, 
-                    // we only consider solid fluid conduction, and the 
-                    // thermal inertia terms
-
-                    coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
-                        * total_volume / dt + sum_of_lateral_conductances[i];
-
-                    // we also consider outflow using previous timestep 
-                    // temperature, 
-                    // assume back cv and front cv material are the same
-
-                    let h_fluid_last_timestep: AvailableEnergy = 
-                    specific_enthalpy(
-                        self.back_single_cv.material_control_volume,
-                        self.temperature_array_current_timestep[i],
-                        self.back_single_cv.pressure_control_volume).unwrap();
-
-                    // basically, all the power terms remain 
-                    power_source_vector[i] = sum_of_lateral_conductances[i] *
-                        self.temperature_array_current_timestep[i] 
-                        - mass_flowrate.abs() * h_fluid_last_timestep 
-                        + self.temperature_array_current_timestep[i] * total_volume * 
-                        volume_fraction_array[i] * rho_cp[i] / dt 
-                        + sum_of_lateral_power_sources[i];
-
-                    // account for enthalpy inflow
-
-                    if forward_flow {
-
-                        // enthalpy must be based on the the cv at i-1
-
-                        let h_fluid_adjacent_node: AvailableEnergy = 
-                        specific_enthalpy(
-                            self.back_single_cv.material_control_volume,
-                            self.temperature_array_current_timestep[i-1],
-                            self.back_single_cv.pressure_control_volume).unwrap();
-
-
-                        power_source_vector[i] += 
-                        h_fluid_adjacent_node * mass_flowrate.abs();
-
-                    } else {
-
-                        // enthalpy must be based on cv at i+1
-                        let h_fluid_adjacent_node: AvailableEnergy = 
-                        specific_enthalpy(
-                            self.back_single_cv.material_control_volume,
-                            self.temperature_array_current_timestep[i+1],
-                            self.back_single_cv.pressure_control_volume).unwrap();
-
-
-                        power_source_vector[i] += 
-                        h_fluid_adjacent_node * mass_flowrate.abs();
-
-                    }
-
-                }
-            }
-
-            // front node (last node) calculation 
-            {
-                // we still follow the same guideline
-                // m cp T / dt + HT = 
-                //
-                // HT_solid - m_flow h_fluid(T_old) 
-                // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
-                // + q
-                let i = number_of_nodes-1;
+        // bulk node calculations 
+        if number_of_nodes > 2 {
+            // loop over all nodes from 1 to n-2 (n-1 is not included)
+            for i in 1..number_of_nodes-1 {
+                // the coefficient matrix is pretty much the same, 
+                // we only consider solid fluid conduction, and the 
+                // thermal inertia terms
 
                 coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
                     * total_volume / dt + sum_of_lateral_conductances[i];
-                // the first part of the source term deals with 
-                // the flow direction independent terms
 
-                // now this makes the scheme semi implicit, and we should then 
-                // treat the scheme as explicit
-                //
-                // now I should subtract the enthalpy outflow from the 
-                // power source vector here, 
-                // but if done correctly, it should already be accounted 
-                // for in total_enthalpy_rate_change_front_node
-                //
-                // so i shouldn't double count
+                // we also consider outflow using previous timestep 
+                // temperature, 
+                // assume back cv and front cv material are the same
 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                specific_enthalpy(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[i],
+                    self.back_single_cv.pressure_control_volume).unwrap();
+
+                // basically, all the power terms remain 
                 power_source_vector[i] = sum_of_lateral_conductances[i] *
                     self.temperature_array_current_timestep[i] 
+                    - mass_flowrate.abs() * h_fluid_last_timestep 
                     + self.temperature_array_current_timestep[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
-                    + sum_of_lateral_power_sources[i] 
-                    + total_enthalpy_rate_change_front_node ;
+                    + sum_of_lateral_power_sources[i];
 
-                // now advection causing heat transfer between the frontal 
-                // node and some other single cv has already been accounted 
-                // for in total_enthalpy_rate_change_front_node 
-                // If flow is forward facing though, then enthalpy will 
-                // be coming in from the i-1 th node
+                // account for enthalpy inflow
 
                 if forward_flow {
-                    // first, get enthalpy of the adjacent node to the 
-                    // back
 
-                    let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
+                    // enthalpy must be based on the the cv at i-1
+
+                    let h_fluid_adjacent_node: AvailableEnergy = 
                     specific_enthalpy(
                         self.back_single_cv.material_control_volume,
                         self.temperature_array_current_timestep[i-1],
                         self.back_single_cv.pressure_control_volume).unwrap();
 
-                    // now if mass flowrate is less than zero, then 
-                    // we receive enthalpy from the front cv 
-                    //
-                    // But we need to subtract the negative mass flow if 
-                    // that makes sense, or at least make it absolute
-                    // - (-m) * h = m * h
-                    //
 
                     power_source_vector[i] += 
-                    mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
-
+                    h_fluid_adjacent_node * mass_flowrate.abs();
 
                 } else {
-                    // if there's backflow, 
-                    // the front cv (last node) will receive enthalpy from 
-                    // outside based on the enthalpy rate change vector in the 
-                    // front node, 
-                    // however it must also lose enthalpy, this is no 
-                    // longer accounted for in the 
-                    let h_fluid_last_timestep: AvailableEnergy = 
-                    self.front_single_cv.current_timestep_control_volume_specific_enthalpy;
 
-                    power_source_vector[i] -= 
-                    mass_flowrate.abs() * h_fluid_last_timestep;
+                    // enthalpy must be based on cv at i+1
+                    let h_fluid_adjacent_node: AvailableEnergy = 
+                    specific_enthalpy(
+                        self.back_single_cv.material_control_volume,
+                        self.temperature_array_current_timestep[i+1],
+                        self.back_single_cv.pressure_control_volume).unwrap();
+
+
+                    power_source_vector[i] += 
+                    h_fluid_adjacent_node * mass_flowrate.abs();
+
                 }
+
             }
+        }
 
-            // note that this works for high peclet number flows
-            // peclet number is Re * Pr
-            // if peclet number is low, then we must consider conduction 
+        // front node (last node) calculation 
+        {
+            // we still follow the same guideline
+            // m cp T / dt + HT = 
             //
-            // I'm also not interested in directionality,
-            // rather, the magnitude is more important
+            // HT_solid - m_flow h_fluid(T_old) 
+            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
+            // + q
+            let i = number_of_nodes-1;
 
-            let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
+            coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
+                * total_volume / dt + sum_of_lateral_conductances[i];
+            // the first part of the source term deals with 
+            // the flow direction independent terms
 
-            let prandtl_number: Ratio = prandtl::liquid_prandtl(
+            // now this makes the scheme semi implicit, and we should then 
+            // treat the scheme as explicit
+            //
+            // now I should subtract the enthalpy outflow from the 
+            // power source vector here, 
+            // but if done correctly, it should already be accounted 
+            // for in total_enthalpy_rate_change_front_node
+            //
+            // so i shouldn't double count
+
+            power_source_vector[i] = sum_of_lateral_conductances[i] *
+                self.temperature_array_current_timestep[i] 
+                + self.temperature_array_current_timestep[i] * total_volume * 
+                volume_fraction_array[i] * rho_cp[i] / dt 
+                + sum_of_lateral_power_sources[i] 
+                + total_enthalpy_rate_change_front_node ;
+
+            // now advection causing heat transfer between the frontal 
+            // node and some other single cv has already been accounted 
+            // for in total_enthalpy_rate_change_front_node 
+            // If flow is forward facing though, then enthalpy will 
+            // be coming in from the i-1 th node
+
+            if forward_flow {
+                // first, get enthalpy of the adjacent node to the 
+                // back
+
+                let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
+                specific_enthalpy(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[i-1],
+                    self.back_single_cv.pressure_control_volume).unwrap();
+
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
+                //
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
+                //
+
+                power_source_vector[i] += 
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
+
+
+            } else {
+                // if there's backflow, 
+                // the front cv (last node) will receive enthalpy from 
+                // outside based on the enthalpy rate change vector in the 
+                // front node, 
+                // however it must also lose enthalpy, this is no 
+                // longer accounted for in the 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                self.front_single_cv.current_timestep_control_volume_specific_enthalpy;
+
+                power_source_vector[i] -= 
+                mass_flowrate.abs() * h_fluid_last_timestep;
+            }
+        }
+
+        // note that this works for high peclet number flows
+        // peclet number is Re * Pr
+        // if peclet number is low, then we must consider conduction 
+        //
+        // I'm also not interested in directionality,
+        // rather, the magnitude is more important
+
+        let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
+
+        let prandtl_number: Ratio = prandtl::liquid_prandtl(
+            material,
+            bulk_temperature,
+            pressure
+        )?;
+
+        let peclet_number = reynolds * prandtl_number;
+        let average_axial_conductance: ThermalConductance;
+
+        if peclet_number.value < 100.0 {
+            // for low peclet number flows, consider conduction
+            // which means we need to get axial conductance 
+            // between nodes 
+
+            let average_fluid_conductivity = thermal_conductivity(
                 material,
                 bulk_temperature,
                 pressure
             )?;
 
-            let peclet_number = reynolds * prandtl_number;
-            let average_axial_conductance: ThermalConductance;
+            // note that conductance axially is done only ONCE 
+            // per timestep to expedite the speed of calculation
 
-            if peclet_number.value < 100.0 {
-                // for low peclet number flows, consider conduction
-                // which means we need to get axial conductance 
-                // between nodes 
+            average_axial_conductance = 
+                average_fluid_conductivity * 
+                self.xs_area / node_length;
 
-                let average_fluid_conductivity = thermal_conductivity(
-                    material,
-                    bulk_temperature,
-                    pressure
-                )?;
+            for node_idx in 0..number_of_nodes {
+                // check if first or last node 
+                let first_node: bool = node_idx == 0;
+                let last_node: bool = node_idx == number_of_nodes - 1;
+                // bulk node means 
+                let bulk_node: bool = !first_node  || !last_node;
 
-                // note that conductance axially is done only ONCE 
-                // per timestep to expedite the speed of calculation
+                // bulk nodes
+                if bulk_node {
 
-                average_axial_conductance = 
-                    average_fluid_conductivity * 
-                    self.xs_area / node_length;
+                    // The extra terms from conduction are: 
+                    // q = -H_avg(T_i - T_{i+1}) 
+                    // -H_avg (T_i - T_{i-1})
+                    //
+                    // of course, by convention, we move all 
+                    // temperature dependent terms to the right hand 
+                    // side so that 
+                    //
+                    // m cp dT_i/dt + 2 H_avg T_i
+                    // - Havg T_{i+1} - Havg T_{i-1}
+                    // + other terms (see above)
+                    // = heat sources
+                    //
+                    // So i'll have to add conductances to the 
+                    // coefficient matrix
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += 2.0 *average_axial_conductance;
 
-                for node_idx in 0..number_of_nodes {
-                    // check if first or last node 
-                    let first_node: bool = node_idx == 0;
-                    let last_node: bool = node_idx == number_of_nodes - 1;
-                    // bulk node means 
-                    let bulk_node: bool = !first_node  || !last_node;
+                    // we index using row, column convention 
+                    // as per the ndarray crate
+                    // "In a 2D array the index of each element is 
+                    // [row, column] as seen in this 4 × 3 example:"
+                    // https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html
+                    //
+                    // The row is i, because that deals with node i 
+                    //
+                    // the column is i, i-1 and i+1 because that deals 
+                    // with the node temperatures affecting node i 
+                    //
+                    // In this case, I want to involve T_{i+1} 
+                    // and T_i and both terms are multipled by an 
+                    // average conductance
+                    // for speed. 
+                    //
+                    // Of course, one could use the node conductance 
+                    // for each node to estimate the conductance 
+                    // but that would be computationally expensive
 
-                    // bulk nodes
-                    if bulk_node {
+                    coefficient_matrix[[node_idx, node_idx+1]] 
+                    -= average_axial_conductance;
 
-                        // The extra terms from conduction are: 
-                        // q = -H_avg(T_i - T_{i+1}) 
-                        // -H_avg (T_i - T_{i-1})
-                        //
-                        // of course, by convention, we move all 
-                        // temperature dependent terms to the right hand 
-                        // side so that 
-                        //
-                        // m cp dT_i/dt + 2 H_avg T_i
-                        // - Havg T_{i+1} - Havg T_{i-1}
-                        // + other terms (see above)
-                        // = heat sources
-                        //
-                        // So i'll have to add conductances to the 
-                        // coefficient matrix
-                        coefficient_matrix[[node_idx,node_idx]] 
-                        += 2.0 *average_axial_conductance;
+                    coefficient_matrix[[node_idx, node_idx-1]] 
+                    -= average_axial_conductance;
 
-                        // we index using row, column convention 
-                        // as per the ndarray crate
-                        // "In a 2D array the index of each element is 
-                        // [row, column] as seen in this 4 × 3 example:"
-                        // https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html
-                        //
-                        // The row is i, because that deals with node i 
-                        //
-                        // the column is i, i-1 and i+1 because that deals 
-                        // with the node temperatures affecting node i 
-                        //
-                        // In this case, I want to involve T_{i+1} 
-                        // and T_i and both terms are multipled by an 
-                        // average conductance
-                        // for speed. 
-                        //
-                        // Of course, one could use the node conductance 
-                        // for each node to estimate the conductance 
-                        // but that would be computationally expensive
-
-                        coefficient_matrix[[node_idx, node_idx+1]] 
-                        -= average_axial_conductance;
-
-                        coefficient_matrix[[node_idx, node_idx-1]] 
-                        -= average_axial_conductance;
-
-                    }
-                    // first node 
-                    if first_node {
-
-                        // it's easier to do bulk nodes first because 
-                        // it is the general case 
-                        // first node is a fringe case where 
-                        // it only conducts heat from the node in front 
-                        // m cp dT_0/dt +  H_avg T_0
-                        // - Havg T_{1} 
-                        // + other terms (see above)
-                        // = heat sources
-
-                        coefficient_matrix[[node_idx,node_idx]] 
-                        += average_axial_conductance;
-                        coefficient_matrix[[node_idx, node_idx+1]] 
-                        -= average_axial_conductance;
-
-                    }
-                    // last node 
-                    if last_node {
-
-                        // likewise, the last node is also a fringe case
-
-                        coefficient_matrix[[node_idx,node_idx]] 
-                        += average_axial_conductance;
-                        coefficient_matrix[[node_idx, node_idx-1]] 
-                        -= average_axial_conductance;
-                    }
-                    // done modification for axial conduction
                 }
-                // done peclet number check
+                // first node 
+                if first_node {
+
+                    // it's easier to do bulk nodes first because 
+                    // it is the general case 
+                    // first node is a fringe case where 
+                    // it only conducts heat from the node in front 
+                    // m cp dT_0/dt +  H_avg T_0
+                    // - Havg T_{1} 
+                    // + other terms (see above)
+                    // = heat sources
+
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += average_axial_conductance;
+                    coefficient_matrix[[node_idx, node_idx+1]] 
+                    -= average_axial_conductance;
+
+                }
+                // last node 
+                if last_node {
+
+                    // likewise, the last node is also a fringe case
+
+                    coefficient_matrix[[node_idx,node_idx]] 
+                    += average_axial_conductance;
+                    coefficient_matrix[[node_idx, node_idx-1]] 
+                    -= average_axial_conductance;
+                }
+                // done modification for axial conduction
             }
-            // done matrix construction, now
-            // solve for new temperature 
+            // done peclet number check
 
             new_temperature_array = 
                 solve_conductance_matrix_power_vector(
