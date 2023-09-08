@@ -24,6 +24,20 @@
 // want to copy and paste how ndarray-linalg constructs its error types 
 // so that my results are similar
 
+use self::one_dimension_fluid_array::FluidArray;
+/// This is the array cv type
+#[derive(Debug,Clone,PartialEq)]
+pub enum ArrayCVType {
+    /// This is one type of array CV which contains a 1D 
+    /// conduction model with one material type
+    /// standby for implementation
+    Cartesian1D(CartesianConduction1DArray),
+
+    /// one dimensional fluid array, with one 
+    /// inlet and one outlet
+    GenericPipe(FluidArray),
+    
+}
 
 /// This module contains direct translations of GeN-Foam code 
 /// into rust for the lumped nuclear structure
@@ -63,6 +77,7 @@ pub use postprocessing::*;
 
 
 
+
 /// sandbox, for miscellaneous testing of code
 mod sandbox;
 
@@ -85,3 +100,6 @@ pub mod one_dimension_fluid_array;
 /// be somewhat cylindrical, but may include other shapes
 /// However, the cross sectional area is uniform
 pub mod one_dimension_solid_array;
+
+
+

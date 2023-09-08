@@ -1,6 +1,10 @@
 use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::density::density};
 
-use super::{HeatTransferEntity, CVType, BCType, ArrayCVType};
+use super::HeatTransferEntity;
+use super::BCType;
+use super::CVType;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType;
+
 
 use uom::si::{f64::*, pressure::atmosphere, power::watt, time::second, length::meter};
 

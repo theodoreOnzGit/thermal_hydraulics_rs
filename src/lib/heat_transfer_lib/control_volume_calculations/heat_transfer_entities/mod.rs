@@ -73,19 +73,6 @@ pub enum CVType {
     ArrayCV(ArrayCVType),
 }
 
-/// Contains types of array control volumes
-#[derive(Debug,Clone,PartialEq)]
-pub enum ArrayCVType {
-    /// This is one type of array CV which contains a 1D 
-    /// conduction model with one material type
-    /// standby for implementation
-    Cartesian1D(CartesianConduction1DArray),
-
-    /// one dimensional fluid array, with one 
-    /// inlet and one outlet
-    GenericPipe(FluidArray),
-    
-}
 
 /// Contains all the types of Boundary Conditions (BCs) you can use 
 #[derive(Debug,Clone,Copy,PartialEq)]
@@ -157,6 +144,7 @@ pub use single_cv_node::*;
 
 /// contains functions and methods for array control volumes 
 pub mod array_cv;
+pub use array_cv::*;
 /// the array control volume (cv) module is basically to speed up creation 
 /// process of control volumes which require somewhat of a one dimensional 
 /// mesh or series of one dimensional meshes 
@@ -185,6 +173,5 @@ pub use postprocessing::*;
 pub mod calculation;
 pub use calculation::*;
 
-use self::one_dimension_fluid_array::FluidArray;
 
 
