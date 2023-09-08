@@ -1,12 +1,13 @@
 use ndarray::*;
 use uom::si::f64::*;
 
-use crate::fluid_mechanics_lib::fluid_component_calculation::enums::DimensionlessDarcyLossCorrelations;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::SingleCVNode;
-use crate::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use ndarray_linalg::error::LinalgError;
 
 /// this is essentially a 1D pipe array containing two CVs 
 /// and two other laterally connected arrays
@@ -115,4 +116,120 @@ pub struct SolidColumn {
     /// to their nodes 
     pub q_fraction_vector: Vec<Array1<f64>>,
 
+}
+
+impl SolidColumn {
+
+
+
+    /// obtains a clone of the temperature array in Array1 ndarray 
+    /// form 
+    pub fn get_temperature_array(&self) -> Result< 
+    Array1<ThermodynamicTemperature>, ThermalHydraulicsLibError> {
+
+        // converts the fixed sized temperature array (at compile time) 
+        // into a dynamically sized ndarray type so we can use solve
+        // methods
+        let mut temperature_arr: Array1<ThermodynamicTemperature> = 
+        Array1::default(self.len());
+
+        for (idx,temperature) in 
+            self.temperature_array_current_timestep.iter().enumerate() {
+                temperature_arr[idx] = *temperature;
+        }
+
+        Ok(temperature_arr)
+
+
+    }
+
+
+    /// sets the temperature vector to a 
+    pub fn set_temperature_vector(&mut self,
+    temperature_vec: Vec<ThermodynamicTemperature>) -> Result<(), ThermalHydraulicsLibError>{
+
+        let number_of_temperature_nodes = self.len();
+
+        // check if temperature_vec has the correct number_of_temperature_nodes
+
+        if temperature_vec.len() !=  number_of_temperature_nodes {
+            let shape_error = ShapeError::from_kind(
+                ErrorKind::IncompatibleShape
+            );
+
+            let linalg_error = LinalgError::Shape(shape_error);
+
+            return Err(ThermalHydraulicsLibError::LinalgError
+                (linalg_error));
+
+        }
+
+        for (index,temperature) in 
+            self.temperature_array_current_timestep.iter_mut().enumerate() {
+            *temperature = temperature_vec[index];
+        }
+
+        // we also need to ensure that the front and end nodes are 
+        // properly synchronised in terms of temperature
+        //
+
+        let back_cv_temperature: ThermodynamicTemperature 
+        = temperature_vec[0];
+
+        let front_cv_temperature: ThermodynamicTemperature 
+        = *temperature_vec.last().unwrap();
+
+
+        // update enthalpies of control volumes withing
+
+        let material = self.material_control_volume;
+        let pressure = self.pressure_control_volume;
+
+        let back_cv_enthalpy = specific_enthalpy(
+            material,
+            back_cv_temperature,
+            pressure
+        )?;
+
+        let front_cv_enthalpy = specific_enthalpy(
+            material,
+            front_cv_temperature,
+            pressure
+        )?;
+
+        self.back_single_cv.current_timestep_control_volume_specific_enthalpy
+            = back_cv_enthalpy;
+
+        self.front_single_cv.current_timestep_control_volume_specific_enthalpy
+            = front_cv_enthalpy;
+
+
+        
+        Ok(())
+    }
+
+    /// obtains a clone of the temperature array in Array1 ndarray 
+    /// form 
+    pub fn set_temperature_array(&mut self,
+    temperature_arr: Array1<ThermodynamicTemperature>) -> Result<(),
+    ThermalHydraulicsLibError> {
+
+        // we'll convert the temperature array into vector form 
+        // and use the existing method 
+        let mut temperature_vec: Vec<ThermodynamicTemperature> 
+        = vec![];
+
+        for temperature in temperature_arr.iter() {
+            temperature_vec.push(*temperature)
+        }
+
+        self.set_temperature_vector(temperature_vec)
+
+
+    }
+
+    /// length of the fluid array 
+    pub fn len(&self) -> usize {
+        self.inner_nodes + 2
+    }
 }

@@ -165,16 +165,6 @@ impl FluidArray{
 
     }
 
-    /// obtains a clone of temperature vector, but in reverse format 
-    /// this is useful for counter flow heat exchangers 
-    pub fn get_reverse_temperature_vector(&self) -> 
-    Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
-        let vec = self.get_temperature_vector()?;
-
-        let reversed_vec = vec.iter().copied().rev().collect();
-
-        Ok(reversed_vec)
-    }
 
     /// sets the temperature vector to a 
     pub fn set_temperature_vector(&mut self,
