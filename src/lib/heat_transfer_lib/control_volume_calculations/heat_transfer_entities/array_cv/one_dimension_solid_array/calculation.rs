@@ -289,6 +289,7 @@ impl SolidColumn {
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
 
+            todo!("lateral temperature arrays need to be connected");
             power_source_vector[0] = sum_of_lateral_conductances[0] *
                 self.temperature_array_current_timestep[0] 
                 + self.temperature_array_current_timestep[0] * total_volume * 
@@ -318,6 +319,7 @@ impl SolidColumn {
                 // temperature, 
                 // assume back cv and front cv material are the same
 
+            todo!("lateral temperature arrays need to be connected");
                 // basically, all the power terms remain 
                 power_source_vector[i] = sum_of_lateral_conductances[i] *
                     self.temperature_array_current_timestep[i] 
@@ -355,6 +357,7 @@ impl SolidColumn {
             //
             // so i shouldn't double count
 
+            todo!("lateral temperature arrays need to be connected");
             power_source_vector[i] = sum_of_lateral_conductances[i] *
                 self.temperature_array_current_timestep[i] 
                 + self.temperature_array_current_timestep[i] * total_volume * 

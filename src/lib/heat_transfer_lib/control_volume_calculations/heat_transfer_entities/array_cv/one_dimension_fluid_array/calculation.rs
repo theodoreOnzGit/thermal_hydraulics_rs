@@ -168,6 +168,9 @@ impl FluidArray{
         let mut sum_of_lateral_conductances: Array1<ThermalConductance>
         = Array1::zeros(number_of_nodes);
 
+        let mut sum_of_lateral_conductance_times_lateral_temperatures:
+        Array1<Power> = Array1::zeros(number_of_nodes);
+
         // conductances will need to be summed over each node 
         //
         // i will also need to make sure that there are actually 
@@ -179,6 +182,8 @@ impl FluidArray{
 
         if lateral_temperature_arary_connected {
 
+            // we need sum of conductances, which becomes the coefficient 
+            // for the node temperature
             for (idx, node_conductance) in 
                 sum_of_lateral_conductances.iter_mut().enumerate() {
 
@@ -188,6 +193,33 @@ impl FluidArray{
                     for lateral_conductance in 
                         &self.lateral_adjacent_array_conductance_vector[idx] {
                             *node_conductance += *lateral_conductance;
+                        }
+
+                }
+            // end sum of conductances for loop
+            
+            // we also need the HT sum for the lateral temperatures 
+
+            for (node_idx, node_ht_lateral_sum) in 
+            sum_of_lateral_conductance_times_lateral_temperatures.iter_mut().enumerate() {
+
+                    // I will need to index into the conductance array
+                    // and sum the conductances times temperature
+                    for (lateral_index, &node_lateral_conductance) in 
+                        self.lateral_adjacent_array_conductance_vector[node_idx].iter().enumerate() {
+
+                            // I'll need to find the temperature  first 
+
+                            let lateral_temperature_array = 
+                            &self.lateral_adjacent_array_temperature_vector[lateral_index];
+
+                            let node_temperature: ThermodynamicTemperature = 
+                            lateral_temperature_array[node_idx];
+
+                            *node_ht_lateral_sum += node_temperature * 
+                            node_lateral_conductance;
+
+
                         }
 
                 }
@@ -334,9 +366,16 @@ impl FluidArray{
 
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
+            
+            // we need to consider heat source from lateral conductances 
+            // for that, we need to find the temperature at each node 
+            // and multiply that by the conductance 
 
-            power_source_vector[0] = sum_of_lateral_conductances[0] *
-                self.temperature_array_current_timestep[0] 
+
+
+
+            power_source_vector[0] = 
+                sum_of_lateral_conductance_times_lateral_temperatures[0]
                 - mass_flowrate * h_fluid_last_timestep 
                 + self.temperature_array_current_timestep[0] * total_volume * 
                 volume_fraction_array[0] * rho_cp[0] / dt 
@@ -413,8 +452,8 @@ impl FluidArray{
                     self.back_single_cv.pressure_control_volume).unwrap();
 
                 // basically, all the power terms remain 
-                power_source_vector[i] = sum_of_lateral_conductances[i] *
-                    self.temperature_array_current_timestep[i] 
+                power_source_vector[i] = 
+                    sum_of_lateral_conductance_times_lateral_temperatures[i]
                     - mass_flowrate.abs() * h_fluid_last_timestep 
                     + self.temperature_array_current_timestep[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
@@ -479,8 +518,8 @@ impl FluidArray{
             //
             // so i shouldn't double count
 
-            power_source_vector[i] = sum_of_lateral_conductances[i] *
-                self.temperature_array_current_timestep[i] 
+            power_source_vector[i] = 
+                sum_of_lateral_conductance_times_lateral_temperatures[i]
                 + self.temperature_array_current_timestep[i] * total_volume * 
                 volume_fraction_array[i] * rho_cp[i] / dt 
                 + sum_of_lateral_power_sources[i] 
