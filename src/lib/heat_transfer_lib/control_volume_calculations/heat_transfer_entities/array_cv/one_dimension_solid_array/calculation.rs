@@ -1,6 +1,6 @@
 use super::SolidColumn;
-use uom::si::f64::*;
-use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use uom::{si::{f64::*, thermodynamic_temperature::kelvin, temperature_interval::degree_celsius}, num_traits::Zero};
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity};
 use ndarray_linalg::error::LinalgError;
 use ndarray::*;
 use uom::si::power::watt;
@@ -373,9 +373,99 @@ impl SolidColumn {
         // conduction is much greater than axial conduction 
         let neglect_axial_conduction: bool = {
 
-            // how shall we know
+            // how shall we know if the axial conduction is to be 
+            // neglected?
 
-            true
+
+            let axial_power_scale_insignificant = || -> bool {
+
+                // we can calculate a typical power scale for axial 
+                // conduction and compare it to the radial conduction
+
+                // first calculate axial conduction thermal 
+                // resistance
+
+                let average_thermal_conductivity = 
+                thermal_conductivity(
+                    material,
+                    bulk_temperature,
+                    pressure,
+                ).unwrap();
+
+                // now calculate axial thermal conductance
+                let average_axial_thermal_conductance: ThermalConductance 
+                = average_thermal_conductivity * self.xs_area 
+                / node_length;
+
+                // the max temperature gradient is the max temperature 
+                // minus the min temperature 
+
+                let temp_value_kelvin_integer_vector: Array1<u32> = 
+                self.temperature_array_current_timestep.map(
+                    |&temperature|{
+                        let temp_value_kelvin = temperature.get::<kelvin>();
+
+                        temp_value_kelvin.ceil() as u32
+                    }
+                );
+
+                let max_temp_val_kelvin: u32 = 
+                *temp_value_kelvin_integer_vector.iter().max().unwrap();
+
+                let min_temp_val_kelvin: u32 = 
+                *temp_value_kelvin_integer_vector.iter().min().unwrap();
+
+                let approx_axial_temp_diff_val_kelvin: f64 = 
+                max_temp_val_kelvin as f64 
+                - min_temp_val_kelvin as f64;
+
+                let axial_power_scale: Power = 
+                TemperatureInterval::new::<degree_celsius>(
+                    approx_axial_temp_diff_val_kelvin)
+                * average_axial_thermal_conductance;
+                
+
+                // we need to compare this against the radial temperature 
+                // differences
+                //
+                // as well as power inputs 
+                //
+                // unfortunately, the temperatures are nested in a 
+                // vector of arrays or in essence a 2D array
+
+                let mut lateral_power_sum: Power = Power::zero();
+
+                for &power in &self.q_vector {
+                    lateral_power_sum += power;
+                }
+
+
+                // now an estimate for the radial thermal conductance 
+
+                // I'm going to take the sum of lateral conductances 
+                // and take that as some average 
+
+                let sum_of_lateral_conductance_estimate: ThermalConductance 
+                = sum_of_lateral_conductances[0];
+                
+
+
+
+
+
+                true
+            };
+
+
+
+            // first let's deal with the case that it's axial conduction 
+            // only 
+
+            if axial_conduction_only {
+                false
+            } else {
+                true
+            }
 
         };
         // end code block for neglecting axial conduction
