@@ -239,45 +239,25 @@ impl ArrayCVType {
         heat_flux_into_control_vol * heat_transfer_area;
 
         // then push the power to the front control volume, 
+        // then just do conduction timescales 
+        // There's no advection in this case so no need to worry 
 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                cartesian_array_cv.
-                    outer_single_cv.rate_enthalpy_change_vector 
-                    .push(heat_flowrate_into_control_vol);
+        let front_cv_ref = self.nested_front_cv_deref_mut().unwrap();
 
-                // needed to check the timescales between the 
-                // outer or front surface node to the bc
-                let cv_material = cartesian_array_cv.outer_single_cv.material_control_volume;
-                match cv_material {
-                    Solid(_) => {
-                        // in this case, we just have one cv and one bc 
-                        // so we only consider thermal inertia of this cv 
-                        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                            &mut cartesian_array_cv.outer_single_cv,
-                            interaction)?;
-                        ()
-                    },
-                    Liquid(_) => {
-                        todo!("need to calculate convection based time scales")
-                    },
-                }
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                fluid_arr.front_single_cv. 
-                rate_enthalpy_change_vector.push(heat_flowrate_into_control_vol);
+        // push the power power to the front cv 
 
-                // now for heat flux flowrates, I'll need to 
-                // calculate timescales for liquid too 
-                // but i'll just deal with solid conduction timescales 
-                // and worry about that later
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    &mut fluid_arr.front_single_cv,
-                    interaction)?;
+        front_cv_ref.rate_enthalpy_change_vector.push( 
+            heat_flowrate_into_control_vol);
+        // calculate conduction timescales
+        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+            front_cv_ref,
+            interaction)?;
 
-            },
+        // I don't calculate solid-liquid timescales here, 
+        // kind of redundant 
+        // I could implement it in future though
+        // todo: nusselt number adjusted timescales for heatflux 
 
-        }
 
         return Ok(());
     }
@@ -377,43 +357,25 @@ impl ArrayCVType {
 
         // then push the power to the front control volume, 
 
-        match self {
-            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                cartesian_array_cv.
-                    inner_single_cv.rate_enthalpy_change_vector 
-                    .push(heat_flowrate_into_control_vol);
+        // then push the power to the front control volume, 
+        // then just do conduction timescales 
+        // There's no advection in this case so no need to worry 
 
-                // needed to check the timescales between the 
-                // inner or front surface node to the bc
-                let cv_material = cartesian_array_cv.inner_single_cv.material_control_volume;
-                match cv_material {
-                    Solid(_) => {
-                        // in this case, we just have one cv and one bc 
-                        // so we only consider thermal inertia of this cv 
-                        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                            &mut cartesian_array_cv.inner_single_cv,
-                            interaction)?;
-                        ()
-                    },
-                    Liquid(_) => {
-                        todo!("need to calculate convection based time scales")
-                    },
-                }
-            },
-            ArrayCVType::GenericPipe(fluid_arr) => {
-                fluid_arr.back_single_cv. 
-                rate_enthalpy_change_vector.push(heat_flowrate_into_control_vol);
+        let back_cv_ref = self.nested_front_cv_deref_mut().unwrap();
 
-                // now for heat flux flowrates, I'll need to 
-                // calculate timescales for liquid too 
-                // but i'll just deal with solid conduction timescales 
-                // and worry about that later
-                calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
-                    &mut fluid_arr.back_single_cv,
-                    interaction)?;
+        // push the power power to the back cv 
 
-            },
-        }
+        back_cv_ref.rate_enthalpy_change_vector.push( 
+            heat_flowrate_into_control_vol);
+        // calculate conduction timescales
+        calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+            back_cv_ref,
+            interaction)?;
+
+        // I don't calculate solid-liquid timescales here, 
+        // kind of redundant 
+        // I could implement it in future though
+        // todo: nusselt number adjusted timescales for heatflux 
 
         return Ok(());
     }
