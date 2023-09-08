@@ -17,7 +17,6 @@ impl FluidArray{
 
     /// connects an adjacent solid or fluid node laterally 
     /// with a given average thermal conductance
-    /// note that doing so with 
     pub fn lateral_link_new_temperature_vector_avg_conductance(&mut self,
     average_thermal_conductance: ThermalConductance,
     temperature_vec: Vec<ThermodynamicTemperature>) 
@@ -67,8 +66,7 @@ impl FluidArray{
         Ok(())
     }
     /// connects an adjacent solid or fluid node laterally 
-    /// with a given average thermal conductance
-    /// note that doing so with 
+    /// with a given power source with an axial power distribution
     #[inline]
     pub fn lateral_link_new_power_vector(&mut self,
     power_source: Power,

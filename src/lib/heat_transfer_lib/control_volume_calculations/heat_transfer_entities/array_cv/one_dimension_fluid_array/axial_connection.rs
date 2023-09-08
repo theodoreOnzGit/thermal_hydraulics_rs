@@ -5,16 +5,11 @@ heat_transfer_entities::SingleCVNode;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::link_heat_transfer_entity;
 
-use crate::heat_transfer_lib::control_volume_calculations::
-heat_transfer_entities::CVType;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::FluidArray;
 
 /// this implementation deals with axial connections 
-///
-/// the convention is to supply an average conductance 
-/// as well as a temperature array
 ///
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
