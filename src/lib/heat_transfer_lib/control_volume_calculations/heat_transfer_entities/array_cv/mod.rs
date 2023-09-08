@@ -79,3 +79,9 @@ pub mod solid_nodes;
 /// it's a control volume for one dimensional pipes 
 /// will describe ONLY the fluid parts without the solid shells 
 pub mod one_dimension_fluid_array;
+
+/// one dimensional solid rod like object 
+/// we call it a column to generalise the idea that is should 
+/// be somewhat cylindrical, but may include other shapes
+/// However, the cross sectional area is uniform
+pub mod one_dimension_solid_array;

@@ -1,5 +1,7 @@
 
-use crate::{fluid_mechanics_lib::fluid_component_calculation::fluid_component_trait, heat_transfer_lib::thermophysical_properties::{dynamic_viscosity::dynamic_viscosity, density::density}};
+use crate::heat_transfer_lib::thermophysical_properties::density::density;
+use crate::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
+use crate::fluid_mechanics_lib::fluid_component_calculation::fluid_component_trait;
 use fluid_component_trait::FluidComponent;
 
 use super::FluidArray;

@@ -13,7 +13,7 @@ use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::spec
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// this is essentially a 1D pipe array containing two CVs 
-/// and two other radially connected arrays
+/// and two other laterally connected arrays
 /// (it's essentially a generic array representing pipes or 
 /// other fluid components with one inlet and one outlet)
 ///
