@@ -11,7 +11,7 @@ use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_intera
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::CVType::*;
+heat_transfer_entities::CVType::{SingleCV, ArrayCV};
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction
@@ -38,8 +38,7 @@ heat_transfer_entities::CVType::*;
 /// generating heat, but you can also set it to zero
 ///
 ///
-pub (in crate) 
-fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
+pub fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
     back_single_cv: &mut SingleCVNode,
     front_single_cv: &mut SingleCVNode,
     number_of_nodes: usize,
@@ -398,7 +397,7 @@ fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
 }
 
 #[test]
-fn fluid_node_calculation_initial_test(){
+pub fn fluid_node_calculation_initial_test(){
 
 
     // okay, let's make two control volumes 
@@ -465,7 +464,6 @@ fn fluid_node_calculation_initial_test(){
     };
 
     let fluid_front_cv: SingleCVNode = fluid_back_cv.clone();
-    let timestep_placeholder = Time::new::<second>(0.01);
     let total_volume = flow_area * heated_length;
 
 
