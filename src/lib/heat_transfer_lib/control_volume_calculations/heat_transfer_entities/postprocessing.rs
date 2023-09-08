@@ -70,18 +70,15 @@ impl HeatTransferEntity {
                     },
                     CVType::ArrayCV(array_cv_type) => {
 
-                        let temp_vector_result:
-                        Result<Vec<ThermodynamicTemperature>, String>;
 
-                        temp_vector_result = match array_cv_type {
-                            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
-                                cartesian_array_cv.get_temperature_vector()
-                            },
-                            ArrayCVType::GenericPipe(fluid_arr) => {
-                                Ok(fluid_arr.get_temperature_vector().unwrap())
-                            },
-                        };
-                        temp_vector_result
+                        let temp_vector_result = 
+                        array_cv_type.get_temperature_vector();
+
+
+                        match temp_vector_result {
+                            Ok(vec) => Ok(vec),
+                            Err(err) => Err(err.to_string()),
+                        }
                     },
                 };
                 temp_vector_result

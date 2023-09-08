@@ -21,7 +21,27 @@ impl ArrayCVType {
         }
 
     }
+    /// gets temperature vector for array cv
+    pub fn get_temperature_vector(&mut self,) ->
+    Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
 
+        let temp_vector_result = match self {
+            ArrayCVType::Cartesian1D(cartesian_array_cv) => {
+                match cartesian_array_cv.get_temperature_vector() {
+                    Ok(vec) => Ok(vec),
+                    Err(string) => Err(ThermalHydraulicsLibError::GenericStringError
+                        (string)),
+                }
+            },
+            ArrayCVType::GenericPipe(fluid_arr) => {
+                fluid_arr.get_temperature_vector()
+            },
+        };
+
+        temp_vector_result
+
+        
+    }
 
 
 
