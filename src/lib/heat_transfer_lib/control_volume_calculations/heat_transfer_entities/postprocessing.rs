@@ -119,15 +119,7 @@ impl HeatTransferEntity {
                         single_cv.material_control_volume.clone()
                     },
                     CVType::ArrayCV(array_cv) => {
-                        match array_cv {
-                            ArrayCVType::Cartesian1D(cv) => {
-                                cv.material_control_volume.clone()
-                            },
-                            ArrayCVType::GenericPipe(cv) => {
-                                cv.material_control_volume.clone()
-                            },
-
-                        }
+                        array_cv.get_array_cv_material().unwrap()
                     },
                 }
             },
@@ -146,14 +138,7 @@ impl HeatTransferEntity {
                         single_cv.pressure_control_volume
                     },
                     CVType::ArrayCV(array_cv) => {
-                        match array_cv {
-                            ArrayCVType::Cartesian1D(cv) => {
-                                cv.pressure_control_volume
-                            },
-                            ArrayCVType::GenericPipe(cv) => {
-                                cv.pressure_control_volume
-                            },
-                        }
+                        array_cv.get_array_cv_pressure().unwrap()
                     },
                 }
             },

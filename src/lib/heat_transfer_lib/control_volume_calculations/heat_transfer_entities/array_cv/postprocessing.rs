@@ -1,5 +1,5 @@
 use uom::si::f64::*;
-use crate::{heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType, thermal_hydraulics_error::ThermalHydraulicsLibError};
+use crate::{heat_transfer_lib::{control_volume_calculations::heat_transfer_entities::ArrayCVType, thermophysical_properties::Material}, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
 /// contains implementations for ArrayCVType specific to post processing 
 ///
@@ -43,6 +43,34 @@ impl ArrayCVType {
         
     }
 
+    /// gets pressure for array cv 
+    pub fn get_array_cv_pressure(&mut self) -> Result<Pressure, ThermalHydraulicsLibError> {
 
+        let pressure = match self {
+            ArrayCVType::Cartesian1D(cv) => {
+                cv.pressure_control_volume
+            },
+            ArrayCVType::GenericPipe(cv) => {
+                cv.pressure_control_volume
+            },
+        };
+
+        Ok(pressure)
+    }
+
+    /// gets pressure for array cv 
+    pub fn get_array_cv_material(&mut self) -> Result<Material, ThermalHydraulicsLibError> {
+
+        let material = match self {
+            ArrayCVType::Cartesian1D(cv) => {
+                cv.material_control_volume
+            },
+            ArrayCVType::GenericPipe(cv) => {
+                cv.material_control_volume
+            },
+        };
+
+        Ok(material)
+    }
 
 }
