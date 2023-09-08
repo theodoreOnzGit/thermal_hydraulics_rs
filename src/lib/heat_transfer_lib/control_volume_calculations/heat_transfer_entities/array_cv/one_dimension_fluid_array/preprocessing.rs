@@ -42,11 +42,6 @@ impl FluidArray {
         max_timestep_vector.push(max_timestep_front_cv);
         max_timestep_vector.push(max_timestep_back_cv);
 
-        // based on timestepping methods from 
-        // these two cvs, I don't need to deal with courant 
-        // number again
-        
-
         // secondly we have fourier number based timestepping 
         // of course, fourier number is traditionally used for conduction 
         // here we have convection timescales between solid and fluid 
@@ -117,7 +112,7 @@ impl FluidArray {
                 a.total_cmp(b)
             });
 
-        let bulk_temp = self.get_bulk_temperature().unwrap();
+        let bulk_temp = self.get_bulk_temperature()?;
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
         match thermal_diffusivity_coeff_opt {
             Some(alpha_reference) => *alpha_reference,
@@ -177,8 +172,7 @@ impl FluidArray {
         max_timestep_vector.push(max_solid_fluid_convection_timescale);
         max_timestep_vector.push(max_radial_condition_timescale);
 
-        // todo, still need to get nusselt number
-        // estimate for timestepping purposes
+        // lets get the maximum timestep
 
         let maximum_timestep: Time = 
         *max_timestep_vector.iter().min_by(
