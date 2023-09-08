@@ -37,8 +37,8 @@ pub enum ArrayCVType {
     /// inlet and one outlet
     GenericPipe(FluidArray),
 
-    ///// one dimensional solid array (column)
-    //GenericColumn(SolidColumn),
+    /// one dimensional solid array (column)
+    GenericColumn(SolidColumn),
     
 }
 

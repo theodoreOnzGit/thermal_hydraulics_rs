@@ -15,7 +15,10 @@ impl ArrayCVType {
                 cartesian_1d_cv.get_bulk_temperature()
             },
             ArrayCVType::GenericPipe(fluid_arr) => {
-                Ok(fluid_arr.get_bulk_temperature().unwrap())
+                fluid_arr.get_bulk_temperature()
+            },
+            ArrayCVType::GenericColumn(solid_arr) => {
+                solid_arr.get_bulk_temperature()
             },
 
         }
@@ -36,6 +39,9 @@ impl ArrayCVType {
             ArrayCVType::GenericPipe(fluid_arr) => {
                 fluid_arr.get_temperature_vector()
             },
+            ArrayCVType::GenericColumn(solid_arr) => {
+                solid_arr.get_temperature_vector()
+            },
         };
 
         temp_vector_result
@@ -53,6 +59,9 @@ impl ArrayCVType {
             ArrayCVType::GenericPipe(cv) => {
                 cv.pressure_control_volume
             },
+            ArrayCVType::GenericColumn(cv) => {
+                cv.pressure_control_volume
+            },
         };
 
         Ok(pressure)
@@ -66,6 +75,9 @@ impl ArrayCVType {
                 cv.material_control_volume
             },
             ArrayCVType::GenericPipe(cv) => {
+                cv.material_control_volume
+            },
+            ArrayCVType::GenericColumn(cv) => {
                 cv.material_control_volume
             },
         };

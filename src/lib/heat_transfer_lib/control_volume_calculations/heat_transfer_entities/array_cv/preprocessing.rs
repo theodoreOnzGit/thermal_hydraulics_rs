@@ -45,6 +45,12 @@ impl ArrayCVType {
                 max_temperature_change,
                 mass_flowrate).unwrap())
             },
+            ArrayCVType::GenericColumn(cv) => {
+
+                Ok(cv.get_max_timestep(
+                max_temperature_change,
+                ).unwrap())
+            },
 
         }
     }

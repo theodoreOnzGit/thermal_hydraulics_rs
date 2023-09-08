@@ -16,6 +16,9 @@ impl ArrayCVType {
             ArrayCVType::GenericPipe(fluid_arr) => {
                 &mut fluid_arr.back_single_cv
             },
+            ArrayCVType::GenericColumn(solid_arr) => {
+                &mut solid_arr.back_single_cv
+            },
 
         };
 
@@ -32,6 +35,9 @@ impl ArrayCVType {
             },
             ArrayCVType::GenericPipe(fluid_arr) => {
                 &mut fluid_arr.front_single_cv
+            },
+            ArrayCVType::GenericColumn(solid_arr) => {
+                &mut solid_arr.front_single_cv
             },
         };
 

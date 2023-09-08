@@ -22,6 +22,10 @@ impl ArrayCVType {
                 fluid_arr.advance_timestep(timestep).unwrap();
                 Ok(())
             },
+            ArrayCVType::GenericColumn(solid_arr) => {
+                solid_arr.advance_timestep(timestep).unwrap();
+                Ok(())
+            },
         }
     }
 }
