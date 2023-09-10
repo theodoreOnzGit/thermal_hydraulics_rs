@@ -127,10 +127,9 @@ pub fn matrix_calculation_initial_test(){
     // I'll construct the inner fluid tube first 
 
     let therminol_array: FluidArray = 
-    FluidArray::new_annular_cylinder(
+    FluidArray::new_odd_shaped_pipe(
         heated_length,
-        id,
-        od, 
+        flow_area,
         initial_temperature,
         atmospheric_pressure,
         SolidMaterial::SteelSS304L,
