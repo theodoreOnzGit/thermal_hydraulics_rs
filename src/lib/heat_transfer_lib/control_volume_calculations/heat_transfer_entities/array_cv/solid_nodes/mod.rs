@@ -696,7 +696,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
             ).unwrap();
 
             let _new_steel_temperature_vec = 
-            shell_solid_node::advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+            shell_solid_node::_advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
                 number_of_nodes,
                 timestep,
                 total_steel_volume,

@@ -2,7 +2,7 @@ use uom::si::f64::*;
 use ndarray::*;
 use ndarray_linalg::*;
 
-use super::shell_solid_node::advance_timestep_solid_cylindrical_shell_node_no_axial_conduction;
+use super::shell_solid_node::_advance_timestep_solid_cylindrical_shell_node_no_axial_conduction;
 
 /// calculates solid cylindrical core without axial conduction 
 /// algorithm is simple, call on the shell_solid_node calculation 
@@ -44,7 +44,7 @@ fn _advance_timestep_solid_cylindrical_core_node_no_axial_conduction(
     = &mut arbitrary_temperature_conductance_array;
 
 
-    advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+    _advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
         number_of_nodes,
         dt,
         total_volume,

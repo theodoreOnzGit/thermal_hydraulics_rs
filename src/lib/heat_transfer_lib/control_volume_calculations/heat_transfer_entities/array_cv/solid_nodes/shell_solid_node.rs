@@ -1,17 +1,10 @@
-use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread, f64::consts::PI};
-
-use csv::Writer;
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
-use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter, inch}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin, ratio::ratio}, num_traits::Zero};
+use ndarray_linalg::*;
+use ndarray_linalg::error::LinalgError;
+use uom::si::f64::*;
 
-use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp, dynamic_viscosity::dynamic_viscosity, thermal_conductivity::thermal_conductivity, prandtl::liquid_prandtl}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::{OuterDiameterThermalConduction, fluid_nodes::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number}}};
-use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::CVType::*;
 
 
 
@@ -45,7 +38,7 @@ heat_transfer_entities::CVType::*;
 ///
 ///
 pub (in crate) 
-fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+fn _advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
     number_of_nodes: usize,
     dt: Time,
     total_volume: Volume,
@@ -222,13 +215,32 @@ fn fluid_solid_node_calculation_initial_test(){
 
     use csv::Writer;
     use ndarray::*;
-    use ndarray_linalg::{*, error::LinalgError};
-    use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter, inch}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin, ratio::ratio}, num_traits::Zero};
+    
+    use uom::si::f64::*;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::time::second;
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::area::square_meter;
+    use uom::si::pressure::atmosphere;
+    use uom::si::thermodynamic_temperature::kelvin;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use uom::si::length::{meter, centimeter};
+    use uom::si::power::kilowatt;
+    use uom::si::power::watt;
 
-    use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp, dynamic_viscosity::dynamic_viscosity, thermal_conductivity::thermal_conductivity, prandtl::liquid_prandtl}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::{OuterDiameterThermalConduction, fluid_nodes::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number}}};
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::fluid_nodes::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::OuterDiameterThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
+    use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
     use crate::heat_transfer_lib::thermophysical_properties::Material;
-    use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
-    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::RadialCylindricalThicknessThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
 
     use crate::heat_transfer_lib::control_volume_calculations:: 
     heat_transfer_entities::CVType::*;
@@ -242,7 +254,7 @@ fn fluid_solid_node_calculation_initial_test(){
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);
-    let inner_tube_od = Length::new::<centimeter>(3.175);
+    let _inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
     let _total_length = Length::new::<meter>(1.983333);
     let heated_length = Length::new::<meter>(1.676);
@@ -766,7 +778,7 @@ fn fluid_solid_node_calculation_initial_test(){
             ).unwrap();
 
             let _new_steel_temperature_vec = 
-            advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
+            _advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
                 number_of_nodes,
                 timestep,
                 total_steel_volume,
