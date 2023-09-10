@@ -83,7 +83,7 @@ pub struct FluidArray {
     pressure_loss: Pressure,
 
     /// wetted perimeter (for hydraulic diameter) 
-    wetted_perimiter: Length,
+    wetted_perimeter: Length,
 
     /// incline angle 
     incline_angle: Angle,
@@ -291,8 +291,14 @@ pub use axial_connection::*;
 pub mod default;
 pub use default::*;
 
+/// constructors for specific types of arrays 
+pub mod constructors;
+pub use constructors::*;
+
 /// constructors (todo) 
 
 /// conversions 
 pub mod type_conversion;
 pub use type_conversion::*;
+
+

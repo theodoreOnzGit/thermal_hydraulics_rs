@@ -108,11 +108,11 @@ impl FluidComponent for FluidArray{
     fn get_hydraulic_diameter(&mut self) -> Length {
         // d_h = 4A/P 
 
-        4.0 * self.xs_area / self.wetted_perimiter
+        4.0 * self.xs_area / self.wetted_perimeter
     }
 
     fn get_hydraulic_diameter_immutable(&self) -> Length {
-        4.0 * self.xs_area / self.wetted_perimiter
+        4.0 * self.xs_area / self.wetted_perimeter
     }
 
     fn get_fluid_viscosity(&mut self) -> DynamicViscosity {

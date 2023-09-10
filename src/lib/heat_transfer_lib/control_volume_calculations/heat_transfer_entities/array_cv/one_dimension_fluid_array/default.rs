@@ -108,7 +108,7 @@ impl Default for FluidArray {
             volume_fraction_array: array![0.5, 0.5],
             mass_flowrate: MassRate::new::<kilogram_per_second>(0.0),
             pressure_loss: Pressure::new::<atmosphere>(0.0),
-            wetted_perimiter: PI * hydraulic_diameter,
+            wetted_perimeter: PI * hydraulic_diameter,
             incline_angle: Angle::new::<radian>(0.0),
             internal_pressure_source: Pressure::new::<atmosphere>(0.0),
             pipe_loss_properties: pipe_losses,
