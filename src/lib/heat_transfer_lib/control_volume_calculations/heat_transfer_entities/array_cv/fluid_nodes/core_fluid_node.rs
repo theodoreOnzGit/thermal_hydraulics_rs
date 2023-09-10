@@ -714,8 +714,10 @@ pub fn fluid_node_calculation_initial_test(){
             let inner_diameter_thermal_conduction: InnerDiameterThermalConduction 
             = id.into();
 
-            let h: HeatTransfer = 
-            HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+
+            // i'm using a dummy heat transfer coefficient here
+            let h_to_therminol_dummy: HeatTransfer = 
+            HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
 
             let conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
@@ -724,7 +726,7 @@ pub fn fluid_node_calculation_initial_test(){
                     radial_thickness_thermal_conduction,
                     steel_avg_temp,
                     atmospheric_pressure),
-                    (h,
+                    (h_to_therminol_dummy,
                     inner_diameter_thermal_conduction,
                     node_length.clone().into())
             );
