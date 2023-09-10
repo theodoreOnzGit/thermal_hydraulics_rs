@@ -18,6 +18,12 @@ pub enum DimensionlessDarcyLossCorrelations {
     /// The first in the tuple is A,
     /// the second is B, the third is C
     SimpleReynoldsPower(Ratio, Ratio, f64),
+
+    /// Ergun Equation 
+    /// Ergun, S., & Orning, A. A. (1949). Fluid flow through 
+    /// randomly packed columns and fluidized beds. Industrial 
+    /// & Engineering Chemistry, 41(6), 1179-1184.
+    Ergun
 }
 
 impl Default for DimensionlessDarcyLossCorrelations {
@@ -123,6 +129,9 @@ impl DimensionlessDarcyLossCorrelations {
                 
                 friction_factor
 
+            },
+            DimensionlessDarcyLossCorrelations::Ergun => {
+                todo!()
             },
         };
 
