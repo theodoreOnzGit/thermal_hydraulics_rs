@@ -218,6 +218,20 @@ fn advance_timestep_solid_cylindrical_shell_node_no_axial_conduction(
 //#[ignore="not ready yet"]
 fn fluid_solid_node_calculation_initial_test(){
 
+    use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread, f64::consts::PI};
+
+    use csv::Writer;
+    use ndarray::*;
+    use ndarray_linalg::{*, error::LinalgError};
+    use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter, inch}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin, ratio::ratio}, num_traits::Zero};
+
+    use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp, dynamic_viscosity::dynamic_viscosity, thermal_conductivity::thermal_conductivity, prandtl::liquid_prandtl}, control_volume_calculations::{heat_transfer_interactions::get_thermal_conductance_based_on_interaction, heat_transfer_entities::{OuterDiameterThermalConduction, fluid_nodes::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number}}};
+    use crate::heat_transfer_lib::thermophysical_properties::Material;
+    use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+
+    use crate::heat_transfer_lib::control_volume_calculations:: 
+    heat_transfer_entities::CVType::*;
 
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell

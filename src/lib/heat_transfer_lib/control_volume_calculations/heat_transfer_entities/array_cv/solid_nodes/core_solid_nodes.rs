@@ -1,6 +1,6 @@
 use uom::si::f64::*;
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
+use ndarray_linalg::*;
 
 use super::shell_solid_node::advance_timestep_solid_cylindrical_shell_node_no_axial_conduction;
 
@@ -8,7 +8,7 @@ use super::shell_solid_node::advance_timestep_solid_cylindrical_shell_node_no_ax
 /// algorithm is simple, call on the shell_solid_node calculation 
 /// but make one side have zero heat conductance
 pub (in crate) 
-fn advance_timestep_solid_cylindrical_core_node_no_axial_conduction(
+fn _advance_timestep_solid_cylindrical_core_node_no_axial_conduction(
     number_of_nodes: usize,
     dt: Time,
     total_volume: Volume,
