@@ -753,7 +753,7 @@ fn lumped_capacitance_timestep_adjustment_improved_api()
             // set timestep
 
 
-            let timestep_raw_value = max_mesh_fourier_number * 
+            let _timestep_raw_value = max_mesh_fourier_number * 
             mesh_lengthscale_delta_x *
             mesh_lengthscale_delta_x / 
             steel_diffusivity;
@@ -768,7 +768,7 @@ fn lumped_capacitance_timestep_adjustment_improved_api()
             // it should be an associated method to the heat transfer 
             // entity
 
-            let steel_cv_clone = steel_cv_in_loop.clone();
+            let _steel_cv_clone = steel_cv_in_loop.clone();
 
 
             // timestep is +/- 6.57s

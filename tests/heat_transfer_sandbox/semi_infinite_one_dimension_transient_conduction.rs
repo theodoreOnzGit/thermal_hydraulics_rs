@@ -711,7 +711,6 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
         delta_x * 0.5;
         let node_half_length: XThicknessThermalConduction = 
         node_half_length.into();
-        let node_length: XThicknessThermalConduction = delta_x.into();
 
         let first_node_thermal_resistance = 
         HeatTransferInteractionType::
@@ -739,7 +738,7 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
 
-        let mut timestep_value = Time::new::<second>(0.0);
+        let mut timestep_value;
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
             // first let's link the heat transfer entities 
