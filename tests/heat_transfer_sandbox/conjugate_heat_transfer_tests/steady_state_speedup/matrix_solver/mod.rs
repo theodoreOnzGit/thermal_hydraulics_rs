@@ -4,44 +4,31 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use ndarray::Array1;
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::{DataUserSpecifiedConvectionResistance, DataAdvection};
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::{self};
+thermophysical_properties::{SolidMaterial, Material};
+use thermal_hydraulics_rs::heat_transfer_lib::
+thermophysical_properties::LiquidMaterial;
+
+
+
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::{Material, LiquidMaterial};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SingleCVNode, CVType, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
-
-
-
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_meter;
 use uom::si::f64::*;
-use uom::si::length::{centimeter, meter, inch};
+use uom::si::length::{centimeter, meter};
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::power::{watt, kilowatt};
 use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
-use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
+use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
-
-use ndarray::*;
 
 
 
@@ -87,7 +74,24 @@ use ndarray::*;
 //#[ignore = "data collected"]
 pub fn matrix_calculation_initial_test(){
 
+    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
+    heat_transfer_interactions::data_enum_structs::DataAdvection;
+    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
+    heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
+    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
+    heat_transfer_interactions::HeatTransferInteractionType;
+    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
+    heat_transfer_interactions::link_heat_transfer_entity;
+    use thermal_hydraulics_rs::heat_transfer_lib::
+    thermophysical_properties::Material;
 
+    use uom::si::length::inch;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
+    ::heat_transfer_entities::BCType::*;
+    use uom::si::thermodynamic_temperature::kelvin;
+
+    use ndarray::*;
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
     //
@@ -112,6 +116,7 @@ pub fn matrix_calculation_initial_test(){
 
     let heater_steady_state_power = Power::new::<kilowatt>(8.0);
     let therminol_mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
+    let node_length: Length = heated_length/number_of_nodes as f64;
 
     // the form loss of the pipe is meant to help construct the inner 
     // pipe object, that is to help it return the nusselt number 
@@ -128,7 +133,7 @@ pub fn matrix_calculation_initial_test(){
     //
     // I'll construct the inner fluid tube first 
 
-    let therminol_array: FluidArray = 
+    let therminol_array: HeatTransferEntity = 
     FluidArray::new_odd_shaped_pipe(
         heated_length,
         flow_area,
@@ -139,11 +144,11 @@ pub fn matrix_calculation_initial_test(){
         dummy_pipe_form_loss,
         6,
         pipe_incline_angle
-    );
+    ).into();
 
     // now the outer steel array
 
-    let steel_shell_array: SolidColumn = 
+    let steel_shell_array: HeatTransferEntity = 
     SolidColumn::new_cylindrical_shell(
         heated_length,
         id,
@@ -152,7 +157,7 @@ pub fn matrix_calculation_initial_test(){
         atmospheric_pressure,
         SolidMaterial::SteelSS304L,
         6
-    );
+    ).into();
 
     // move arrays to Arc ptrs 
 
@@ -202,7 +207,6 @@ pub fn matrix_calculation_initial_test(){
 
             // I want the mid node length of this temperature
 
-            let node_length: Length = heated_length/number_of_nodes as f64;
 
             let half_node_length: Length = 0.5 * node_length;
 
@@ -245,10 +249,10 @@ pub fn matrix_calculation_initial_test(){
             // obtain arc mutex locks 
 
 
-            let mut therminol_array_ptr_in_loop = 
+            let mut therminol_entity_ptr_in_loop = 
             fluid_array_ptr_for_loop.lock().unwrap();
 
-            let mut steel_array_ptr_in_loop 
+            let mut steel_entity_ptr_in_loop 
             = solid_array_ptr_for_loop.lock().unwrap();
             
             let arc_mutex_lock_elapsed_ms = 
@@ -261,14 +265,86 @@ pub fn matrix_calculation_initial_test(){
             //
             let node_connection_start = SystemTime::now();
 
+            // now I'm going to clone the heat transfer entity 
+            // as a fluid array and solid column respectively to 
+            // get the underlying bulk temp
+
+            let mut therminol_array_clone: FluidArray = 
+            therminol_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
+            let mut steel_array_clone: SolidColumn = 
+            steel_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
+
             let fluid_average_temp: ThermodynamicTemperature = 
-            therminol_array_ptr_in_loop.deref_mut().get_bulk_temperature()
-                .unwrap();
+            therminol_array_clone.get_bulk_temperature().unwrap();
 
             let solid_average_temp: ThermodynamicTemperature = 
-            steel_array_ptr_in_loop.deref_mut().get_bulk_temperature()
-                .unwrap();
+            steel_array_clone.get_bulk_temperature().unwrap();
 
+            // given these two, we can calculate an average conductance 
+            // value across all solid-fluid boundaries. 
+            //
+            // This is a time saving measure, rather than calculating 
+            // all the conductances node by node
+
+            // now, we make a cylindrical conductance interaction with 
+            // fluid inside
+
+            // we'll need the thickness 
+
+            let radial_thickness_thermal_conduction = 0.5*(od - id);
+            let radial_thickness_thermal_conduction: 
+            RadialCylindricalThicknessThermalConduction = 
+            radial_thickness_thermal_conduction.into();
+
+            let inner_diameter_thermal_conduction: InnerDiameterThermalConduction 
+            = id.into();
+
+
+            // need to change this the nusselt correlation for the actual 
+            // test
+            // heater 2.0
+            let h_to_therminol: HeatTransfer = 
+            _heat_transfer_coefficient_ciet_v_2_0(
+                therminol_mass_flowrate,
+                fluid_average_temp,
+                atmospheric_pressure);
+
+            let therminol_steel_conductance_interaction: HeatTransferInteractionType
+            = HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidInside(
+                    (steel, 
+                    radial_thickness_thermal_conduction,
+                    solid_average_temp,
+                    atmospheric_pressure),
+                    (h_to_therminol,
+                    inner_diameter_thermal_conduction,
+                    node_length.clone().into())
+            );
+
+            // now based on conductance interaction, 
+            // we can obtain thermal conductance, the temperatures 
+            // and pressures don't really matter
+            //
+            // this is because all the thermal conductance data 
+            // has already been loaded into the thermal conductance 
+            // interaction object
+
+            let therminol_steel_nodal_thermal_conductance: ThermalConductance = 
+            therminol_steel_conductance_interaction.try_get_thermal_conductance(
+                fluid_average_temp,
+                solid_average_temp,
+                atmospheric_pressure,
+                atmospheric_pressure,
+            ).unwrap();
+
+            // now, create conductance vector  for heater v2.0
+
+            let mut steel_therminol_conductance_vector: Array1<ThermalConductance> = 
+            Array::zeros(number_of_nodes);
+
+
+
+            steel_therminol_conductance_vector.fill(therminol_steel_nodal_thermal_conductance);
             // advance timestep
             current_time_simulation_time += timestep;
 
@@ -287,7 +363,7 @@ pub fn matrix_calculation_initial_test(){
 
 
 
-fn mfbs_power_signal_logspace_custom(simulation_time: Time) -> Power {
+fn _mfbs_power_signal_logspace_custom(simulation_time: Time) -> Power {
 
     // get simulation time in seconds 
 
@@ -299,7 +375,7 @@ fn mfbs_power_signal_logspace_custom(simulation_time: Time) -> Power {
     let mut power_vector: Vec<Power> = vec![];
 
     let angular_frequency_vector_values: Vec<f64> 
-    = logspace(0.001, 1_f64, 15);
+    = _logspace(0.001, 1_f64, 15);
 
     let mut angular_frequency_vector: Vec<AngularVelocity>
     = vec![];
@@ -344,7 +420,7 @@ fn mfbs_power_signal_logspace_custom(simulation_time: Time) -> Power {
 
 /// generated by perplexity AI,
 /// I still needed some mild correction
-fn logspace(start: f64, end: f64, n: usize) -> Vec<f64> {
+fn _logspace(start: f64, end: f64, n: usize) -> Vec<f64> {
     let base = 10.0_f64;
     let start_log = start.log10();
     let end_log = end.log10();
@@ -356,7 +432,7 @@ fn logspace(start: f64, end: f64, n: usize) -> Vec<f64> {
 
 // nusselt number correlation 
 #[inline]
-fn ciet_heater_v_2_0_nusselt_number(reynolds:Ratio, 
+fn _ciet_heater_v_2_0_nusselt_number(reynolds:Ratio, 
     prandtl:Ratio) -> Ratio {
 
     let reynolds_power_0_836 = reynolds.value.powf(0.836);
@@ -366,4 +442,51 @@ fn ciet_heater_v_2_0_nusselt_number(reynolds:Ratio,
     0.04179 * reynolds_power_0_836 * prandtl_power_0_333)
 
 }
+#[inline]
+fn _ciet_heater_v_2_0_reynolds_nunber(mass_flowrate: MassRate,
+    mu: DynamicViscosity) -> Ratio {
 
+    // Re = m* D_H/ A_{XS}/mu
+    let hydraulic_diameter = Length::new::<meter>(0.01467);
+    let flow_area = Area::new::<square_meter>(0.00105);
+
+    mass_flowrate*hydraulic_diameter/mu/flow_area
+}
+
+fn _heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
+    therminol_temperature: ThermodynamicTemperature,
+    pressure: Pressure) -> HeatTransfer {
+
+    // let's calculate mu and k 
+
+    let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+    let mu: DynamicViscosity = dynamic_viscosity(therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+    let k: ThermalConductivity = thermal_conductivity(
+        therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+
+    let reynolds: Ratio = _ciet_heater_v_2_0_reynolds_nunber(
+        mass_flowrate, mu);
+
+    let prandtl: Ratio = liquid_prandtl(
+        therminol,
+        therminol_temperature,
+        pressure).unwrap();
+
+    let nusselt: Ratio = _ciet_heater_v_2_0_nusselt_number(
+        reynolds,
+        prandtl);
+
+    let hydraulic_diameter = Length::new::<meter>(0.01467);
+
+    let heat_transfer_coeff: HeatTransfer = 
+    nusselt * k / hydraulic_diameter;
+
+    heat_transfer_coeff
+
+}

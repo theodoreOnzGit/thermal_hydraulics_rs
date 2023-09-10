@@ -303,3 +303,7 @@ pub enum HeatTransferInteractionType {
     Advection(DataAdvection),
 }
 
+/// contains public interface wrappers for the 
+/// HeatTransferInteractionType
+pub mod calculation_interface;
+pub use calculation_interface::*;
