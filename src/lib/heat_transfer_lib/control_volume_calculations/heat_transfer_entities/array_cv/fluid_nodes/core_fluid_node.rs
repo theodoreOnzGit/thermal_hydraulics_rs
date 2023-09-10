@@ -540,7 +540,7 @@ pub fn fluid_node_calculation_initial_test(){
 
     let calculation_time_elapsed = SystemTime::now();
     let calculation_loop = move || {
-        // derference ptrs 
+        // timestep
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
         let timestep = Time::new::<second>(0.01);
@@ -715,7 +715,7 @@ pub fn fluid_node_calculation_initial_test(){
             = id.into();
 
             let h: HeatTransfer = 
-            HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
+            HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
 
             let conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::

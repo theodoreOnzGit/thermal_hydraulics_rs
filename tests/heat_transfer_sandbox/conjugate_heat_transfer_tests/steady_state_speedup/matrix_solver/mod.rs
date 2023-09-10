@@ -6,6 +6,7 @@ use std::time::SystemTime;
 use csv::Writer;
 use ndarray::Array1;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::{DataUserSpecifiedConvectionResistance, DataAdvection};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -122,6 +123,7 @@ pub fn matrix_calculation_initial_test(){
     // heater is inclined 90 degrees upwards, not that this is 
     // particularly important for this scenario
     let pipe_incline_angle = Angle::new::<uom::si::angle::degree>(90.0);
+
     // now, to construct the heater
     //
     // I'll construct the inner fluid tube first 
@@ -139,12 +141,33 @@ pub fn matrix_calculation_initial_test(){
         pipe_incline_angle
     );
 
+    // now the outer steel array
 
+    let steel_shell_array: SolidColumn = 
+    SolidColumn::new_cylindrical_shell(
+        heated_length,
+        id,
+        od,
+        initial_temperature,
+        atmospheric_pressure,
+        SolidMaterial::SteelSS304L,
+        6
+    );
 
+    // move arrays to Arc ptrs 
 
-    // move the fluid temp arrays into arc ptrs with mutex lock 
-    // as well as the single cvs and such 
+    let fluid_array_ptr = Arc::new(Mutex::new(
+        therminol_array
+    ));
 
+    let solid_array_ptr = Arc::new(Mutex::new( 
+        steel_shell_array 
+    ));
+
+    // clone ptrs for moving into loop 
+    
+    let fluid_array_ptr_for_loop = fluid_array_ptr.clone();
+    let solid_array_ptr_for_loop = solid_array_ptr.clone();
 
     // time settings
     let max_time: Time = Time::new::<second>(0.02);
@@ -152,10 +175,69 @@ pub fn matrix_calculation_initial_test(){
 
     let calculation_time_elapsed = SystemTime::now();
     let calculation_loop = move || {
-        // derference ptrs 
+        // timestep settings
 
         let mut current_time_simulation_time = Time::new::<second>(0.0);
         let timestep = Time::new::<second>(0.01);
+
+
+        //csv writer
+
+        let mut time_wtr = Writer::from_path("fluid_node_calc_time_profile.csv")
+            .unwrap();
+
+        time_wtr.write_record(&["loop_calculation_time_nanoseconds",
+            "mutex_lock_time_ns",
+            "node_connection_time_ns",
+            "data_record_time_ns",
+            "timestep_advance_time_ns",])
+            .unwrap();
+
+        let mut temp_profile_wtr = Writer::from_path(
+            "fluid_node_temp_profile.csv")
+            .unwrap();
+
+        // this is code for writing the array of required temperatures
+        {
+
+            // I want the mid node length of this temperature
+
+            let node_length: Length = heated_length/number_of_nodes as f64;
+
+            let half_node_length: Length = 0.5 * node_length;
+
+            let mut header_vec: Vec<String> = vec![];
+
+            header_vec.push("simulation_time_seconds".to_string());
+            header_vec.push("elapsed_time_seconds".to_string());
+
+            for index in 0..number_of_nodes {
+
+                let mid_node_length: Length = 
+                index as f64 * node_length + half_node_length;
+
+                let prefix: String = "heater_temp_celsius_at_".to_string();
+
+                let suffix: String = "_cm".to_string();
+
+                let mid_node_length_cm: f64 = 
+                mid_node_length.get::<centimeter>();
+
+                let mid_node_length_string: String = 
+                mid_node_length_cm.to_string();
+
+                let header: String = prefix + &mid_node_length_string + &suffix;
+
+                header_vec.push(header);
+
+
+            }
+
+            temp_profile_wtr.write_record(&header_vec).unwrap();
+
+        }
+
+        // main calculation loop
 
         while current_time_simulation_time <= *max_time_ptr.deref(){
 
@@ -163,24 +245,32 @@ pub fn matrix_calculation_initial_test(){
             // obtain arc mutex locks 
 
 
-            // advance timestep
-            current_time_simulation_time += timestep;
-            
-            // time for arc mutex derefs
-            // this may cause race conditions
-            //let arc_mutex_lock_end = SystemTime::now();
+            let mut therminol_array_ptr_in_loop = 
+            fluid_array_ptr_for_loop.lock().unwrap();
 
-            //let arc_mutex_lock_elapsed_ms = 
-            //arc_mutex_lock_start.elapsed().unwrap().as_millis()
-            //- arc_mutex_lock_end.elapsed().unwrap().as_millis();
+            let mut steel_array_ptr_in_loop 
+            = solid_array_ptr_for_loop.lock().unwrap();
             
             let arc_mutex_lock_elapsed_ms = 
             arc_mutex_lock_start.elapsed().unwrap().as_millis();
+
+
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
+            // so we can get an average conductance value
             //
+            let node_connection_start = SystemTime::now();
 
+            let fluid_average_temp: ThermodynamicTemperature = 
+            therminol_array_ptr_in_loop.deref_mut().get_bulk_temperature()
+                .unwrap();
 
+            let solid_average_temp: ThermodynamicTemperature = 
+            steel_array_ptr_in_loop.deref_mut().get_bulk_temperature()
+                .unwrap();
+
+            // advance timestep
+            current_time_simulation_time += timestep;
 
             
         }
