@@ -270,6 +270,10 @@ impl SolidColumn {
                 power_ndarray_vector.push(power_ndarray);
 
             }
+            let debug = true;
+            if debug {
+                dbg!(&power_ndarray_vector);
+            }
 
             // this part construts
             // the sum_of_lateral_power_sources
@@ -595,7 +599,7 @@ impl SolidColumn {
                 let first_node: bool = node_idx == 0;
                 let last_node: bool = node_idx == number_of_nodes - 1;
                 // bulk node means 
-                let bulk_node: bool = !first_node  || !last_node;
+                let bulk_node: bool = !first_node  && !last_node;
 
                 // bulk nodes
                 if bulk_node {

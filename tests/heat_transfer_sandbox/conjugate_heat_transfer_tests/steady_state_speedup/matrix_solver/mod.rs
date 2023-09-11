@@ -425,6 +425,13 @@ pub fn matrix_calculation_initial_test(){
                     fluid_temp_vector
                 ).unwrap();
                 // we also want to add a heat source
+
+                //let debug = true;
+                //// power vectors okay till here
+                //if debug {
+                //    dbg!(&q_frac_arr);
+                //    dbg!(&heater_steady_state_power);
+                //}
                 
                 steel_array_clone.lateral_link_new_power_vector(
                     heater_steady_state_power,

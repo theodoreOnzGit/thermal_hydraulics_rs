@@ -704,7 +704,7 @@ impl FluidArray{
                 let bulk_node: bool = !first_node  && !last_node;
 
                 // debug okay here
-                let debug: bool = true;
+                let debug: bool = false;
                 if debug {
                     dbg!(&coefficient_matrix);
                     dbg!(&power_source_vector);
@@ -766,8 +766,8 @@ impl FluidArray{
 
                 }
 
-                // debug not okay here
-                let debug: bool = true;
+                // debug okay here
+                let debug: bool = false;
                 if debug {
                     dbg!(&coefficient_matrix);
                     dbg!(&power_source_vector);
@@ -805,7 +805,7 @@ impl FluidArray{
 
 
                 // debug not okay here
-                let debug: bool = true;
+                let debug: bool = false;
                 if debug {
                     dbg!(&coefficient_matrix);
                     dbg!(&power_source_vector);
