@@ -414,6 +414,13 @@ pub fn matrix_calculation_initial_test(){
                 let fluid_temp_vector: Vec<ThermodynamicTemperature> 
                 = therminol_array_clone.get_temperature_vector().unwrap();
 
+                //let debug = true; 
+
+                //if debug {
+                //    dbg!(&solid_temp_vector);
+                //    dbg!(&fluid_temp_vector);
+                //}
+
                 // second, fill them into the each array 
 
                 steel_array_clone.lateral_link_new_temperature_vector_avg_conductance(
@@ -722,6 +729,8 @@ pub fn matrix_calculation_initial_test(){
     let main_thread_handle = thread::spawn(calculation_loop);
 
     main_thread_handle.join().unwrap();
+
+    panic!("debugging");
 
 
     return ();

@@ -607,6 +607,7 @@ impl FluidArray{
             }
 
 
+
         }
 
         // note that this works for high peclet number flows
@@ -626,15 +627,6 @@ impl FluidArray{
 
         let peclet_number = reynolds * prandtl_number;
         let average_axial_conductance: ThermalConductance;
-
-        dbg!(&peclet_number);
-
-        // peclet number is zero, 
-        // careful that need to set peclet number to correct value 
-        // means set mass flowrate first
-
-        let peclet_number = Ratio::new::<ratio>(1000.0);
-
 
         // note: this part is quite buggy as in the peclet number correction 
         // bit
@@ -749,12 +741,14 @@ impl FluidArray{
 
                 // done modification for axial conduction
             }
-            // done peclet number check
-
-            new_temperature_array = 
-                solve_conductance_matrix_power_vector(
-                    coefficient_matrix,power_source_vector)?;
+            // done for loop
         }
+        // done peclet number check
+
+        
+        new_temperature_array = 
+            solve_conductance_matrix_power_vector(
+                coefficient_matrix,power_source_vector)?;
         // update the single cvs at the front and back with new enthalpies 
 
         // Todo: probably need to synchronise error types in future
