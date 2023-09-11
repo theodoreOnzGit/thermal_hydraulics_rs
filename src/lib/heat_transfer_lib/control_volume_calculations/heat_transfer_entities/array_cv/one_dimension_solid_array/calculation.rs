@@ -270,7 +270,7 @@ impl SolidColumn {
                 power_ndarray_vector.push(power_ndarray);
 
             }
-            let debug = true;
+            let debug = false;
             if debug {
                 dbg!(&power_ndarray_vector);
             }
@@ -319,6 +319,11 @@ impl SolidColumn {
                     }
 
                 }
+            let debug = false;
+            if debug {
+                dbg!(&sum_of_lateral_power_sources);
+                // power sources working okay
+            }
 
         }
         // end if for lateral_power_sources_connected
@@ -590,7 +595,7 @@ impl SolidColumn {
         // end code block for checking if we can neglect axial conduction
 
         // if we dont neglect axial conduction 
-
+        dbg!(&neglect_axial_conduction);
         if !neglect_axial_conduction {
 
             // construct matrices for axial conduction

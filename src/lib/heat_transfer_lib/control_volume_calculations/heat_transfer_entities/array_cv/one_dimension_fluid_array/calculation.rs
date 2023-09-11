@@ -3,6 +3,7 @@ use ndarray_linalg::error::LinalgError;
 use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
+use uom::si::ratio::ratio;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
 use crate::heat_transfer_lib::thermophysical_properties::prandtl;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
@@ -205,12 +206,6 @@ impl FluidArray{
                 }
             // end sum of conductances for loop
             
-            // for debugging 
-
-            // debug okay till here
-            //if debug {
-            //    dbg!(&sum_of_lateral_conductances);
-            //}
             
             // we also need the HT sum for the lateral temperatures 
             // this is power due to heat transfer (other than advection)
@@ -257,12 +252,6 @@ impl FluidArray{
 
                     }
 
-                    //if debug {
-                    //    dbg!(&power_arr);
-                    //    // power array has 8 nodes
-                    //}
-                    // once the power array is built, I can add it to 
-                    // the htsum array
 
                     sum_of_lateral_conductance_times_lateral_temperatures 
                     += &power_arr;
@@ -272,6 +261,9 @@ impl FluidArray{
 
         }
         // we need to do the same for the q and q fractions
+        //once the power array is built, I can add it to 
+        // the htsum array
+
 
         let lateral_power_sources_connected: bool 
         = self.q_vector.len() > 0; 
@@ -325,12 +317,6 @@ impl FluidArray{
 
                 power_ndarray_vector.push(power_ndarray);
 
-            }
-
-            let debug: bool = true;
-            if debug {
-                dbg!(&power_ndarray_vector);
-                // power_ndarray_vector  
             }
 
             // this part construts
@@ -401,12 +387,6 @@ impl FluidArray{
             // so we will need to determine sum H and sum HT_lateral
             // as sum H is the relevant coefficient in the coefficient_matrix
 
-            // coeff matrix okay: code is read
-            //let debug: bool = true;
-            //if debug {
-            //    dbg!(&coefficient_matrix);
-            //    // power_ndarray_vector  
-            //}
 
 
 
@@ -487,15 +467,6 @@ impl FluidArray{
             }
 
 
-            //let debug: bool = true;
-            //if debug {
-            //    dbg!(&coefficient_matrix);
-            //    dbg!(&power_source_vector);
-            //    dbg!(&new_temperature_array);
-            //    // check all vectors here...
-            //}
-            //
-            // debug okay till here
         }
 
         // bulk node calculations 
@@ -557,16 +528,6 @@ impl FluidArray{
                     h_fluid_adjacent_node * mass_flowrate.abs();
 
                 }
-
-                // debug okay till here
-                let debug: bool = false;
-                if debug {
-                    dbg!(&coefficient_matrix);
-                    dbg!(&power_source_vector);
-                    dbg!(&new_temperature_array);
-                    // check all vectors here...
-                }
-
 
             }
         }
@@ -646,14 +607,6 @@ impl FluidArray{
             }
 
 
-                // debug okay till here
-                let debug: bool = false;
-                if debug {
-                    dbg!(&coefficient_matrix);
-                    dbg!(&power_source_vector);
-                    dbg!(&new_temperature_array);
-                    // check all vectors here...
-                }
         }
 
         // note that this works for high peclet number flows
@@ -674,6 +627,17 @@ impl FluidArray{
         let peclet_number = reynolds * prandtl_number;
         let average_axial_conductance: ThermalConductance;
 
+        dbg!(&peclet_number);
+
+        // peclet number is zero, 
+        // careful that need to set peclet number to correct value 
+        // means set mass flowrate first
+
+        let peclet_number = Ratio::new::<ratio>(1000.0);
+
+
+        // note: this part is quite buggy as in the peclet number correction 
+        // bit
         if peclet_number.value < 100.0 {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 
@@ -700,23 +664,10 @@ impl FluidArray{
                 // last node, not OR, 
                 // otherwise every node is a bulk node
                 //
-                // debug here!
+                // debug note: major bug was solved here 
+                // with boolean operators, i used an OR operator 
+                // rather than the AND operator
                 let bulk_node: bool = !first_node  && !last_node;
-
-                // debug okay here
-                let debug: bool = false;
-                if debug {
-                    dbg!(&coefficient_matrix);
-                    dbg!(&power_source_vector);
-                    dbg!(&new_temperature_array);
-                    // check all vectors here...
-                    dbg!(&first_node);
-                    dbg!(&last_node);
-                    dbg!(&bulk_node);
-
-                    // check all booleans
-                    
-                }
                 // bulk nodes
                 if bulk_node {
 
@@ -766,14 +717,6 @@ impl FluidArray{
 
                 }
 
-                // debug okay here
-                let debug: bool = false;
-                if debug {
-                    dbg!(&coefficient_matrix);
-                    dbg!(&power_source_vector);
-                    dbg!(&new_temperature_array);
-                    // check all vectors here...
-                }
                 // first node 
                 if first_node {
 
@@ -804,14 +747,6 @@ impl FluidArray{
                 }
 
 
-                // debug not okay here
-                let debug: bool = false;
-                if debug {
-                    dbg!(&coefficient_matrix);
-                    dbg!(&power_source_vector);
-                    dbg!(&new_temperature_array);
-                    // check all vectors here...
-                }
                 // done modification for axial conduction
             }
             // done peclet number check

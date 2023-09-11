@@ -201,7 +201,7 @@ pub fn matrix_calculation_initial_test(){
             "timestep_seconds",])
             .unwrap();
 
-        let mut time_wtr = Writer::from_path("array_cv_test_heater_v_2_0_calc_time_profile.csv")
+        let mut time_wtr = Writer::from_path("array_cv_test_ciet_heater_v_2_0_calc_time_profile.csv")
             .unwrap();
 
         time_wtr.write_record(&["loop_calculation_time_nanoseconds",
@@ -212,7 +212,7 @@ pub fn matrix_calculation_initial_test(){
             .unwrap();
 
         let mut temp_profile_wtr = Writer::from_path(
-            "array_cv_test_heater_v_2_0_temp_profile.csv")
+            "array_cv_test_ciet_heater_v_2_0_temp_profile.csv")
             .unwrap();
 
         // this is code for writing the array of required temperatures
