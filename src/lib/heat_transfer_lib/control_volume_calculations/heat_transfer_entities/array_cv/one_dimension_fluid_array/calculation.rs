@@ -630,6 +630,7 @@ impl FluidArray{
 
         // note: this part is quite buggy as in the peclet number correction 
         // bit
+        
         if peclet_number.value < 100.0 {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 

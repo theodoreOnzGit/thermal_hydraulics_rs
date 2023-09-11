@@ -179,7 +179,7 @@ pub fn matrix_calculation_initial_test(){
     let solid_array_ptr_for_loop = solid_array_ptr.clone();
 
     // time settings
-    let max_time: Time = Time::new::<second>(50.0);
+    let max_time: Time = Time::new::<second>(200.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
@@ -414,12 +414,6 @@ pub fn matrix_calculation_initial_test(){
                 let fluid_temp_vector: Vec<ThermodynamicTemperature> 
                 = therminol_array_clone.get_temperature_vector().unwrap();
 
-                //let debug = true; 
-
-                //if debug {
-                //    dbg!(&solid_temp_vector);
-                //    dbg!(&fluid_temp_vector);
-                //}
 
                 // second, fill them into the each array 
 
@@ -433,13 +427,6 @@ pub fn matrix_calculation_initial_test(){
                     fluid_temp_vector
                 ).unwrap();
                 // we also want to add a heat source
-
-                //let debug = true;
-                //// power vectors okay till here
-                //if debug {
-                //    dbg!(&q_frac_arr);
-                //    dbg!(&heater_steady_state_power);
-                //}
                 
                 steel_array_clone.lateral_link_new_power_vector(
                     heater_steady_state_power,
@@ -555,16 +542,9 @@ pub fn matrix_calculation_initial_test(){
                 let steel_temperature_array = 
                 steel_column.get_temperature_vector().unwrap();
 
-                // debug: found that fluid temperature array was not getting 
-                // updated
-                let fluid_array: FluidArray 
-                = therminol_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
-
-                let fluid_temperature_array
-                = fluid_array.get_temperature_vector().unwrap();
 
 
-                for node_temp in fluid_temperature_array.iter() {
+                for node_temp in steel_temperature_array.iter() {
 
                     let node_temp_deg_c: f64 = 
                     node_temp.get::<degree_celsius>();
@@ -730,7 +710,6 @@ pub fn matrix_calculation_initial_test(){
 
     main_thread_handle.join().unwrap();
 
-    panic!("debugging");
 
 
     return ();
