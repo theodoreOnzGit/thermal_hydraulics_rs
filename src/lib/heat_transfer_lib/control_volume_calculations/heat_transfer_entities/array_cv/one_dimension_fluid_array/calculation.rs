@@ -205,6 +205,13 @@ impl FluidArray{
                 }
             // end sum of conductances for loop
             
+            // for debugging 
+
+            // debug okay till here
+            //if debug {
+            //    dbg!(&sum_of_lateral_conductances);
+            //}
+            
             // we also need the HT sum for the lateral temperatures 
             // this is power due to heat transfer (other than advection)
 
@@ -247,8 +254,13 @@ impl FluidArray{
                     for (node_idx, power) in power_arr.iter_mut().enumerate() {
 
                         *power = conductance_arr[node_idx] * temperature_arr[node_idx];
+
                     }
 
+                    //if debug {
+                    //    dbg!(&power_arr);
+                    //    // power array has 8 nodes
+                    //}
                     // once the power array is built, I can add it to 
                     // the htsum array
 
@@ -313,6 +325,12 @@ impl FluidArray{
 
                 power_ndarray_vector.push(power_ndarray);
 
+            }
+
+            let debug: bool = true;
+            if debug {
+                dbg!(&power_ndarray_vector);
+                // power_ndarray_vector  
             }
 
             // this part construts
@@ -383,6 +401,12 @@ impl FluidArray{
             // so we will need to determine sum H and sum HT_lateral
             // as sum H is the relevant coefficient in the coefficient_matrix
 
+            // coeff matrix okay: code is read
+            //let debug: bool = true;
+            //if debug {
+            //    dbg!(&coefficient_matrix);
+            //    // power_ndarray_vector  
+            //}
 
 
 
@@ -463,6 +487,15 @@ impl FluidArray{
             }
 
 
+            //let debug: bool = true;
+            //if debug {
+            //    dbg!(&coefficient_matrix);
+            //    dbg!(&power_source_vector);
+            //    dbg!(&new_temperature_array);
+            //    // check all vectors here...
+            //}
+            //
+            // debug okay till here
         }
 
         // bulk node calculations 
@@ -524,6 +557,16 @@ impl FluidArray{
                     h_fluid_adjacent_node * mass_flowrate.abs();
 
                 }
+
+                // debug okay till here
+                let debug: bool = false;
+                if debug {
+                    dbg!(&coefficient_matrix);
+                    dbg!(&power_source_vector);
+                    dbg!(&new_temperature_array);
+                    // check all vectors here...
+                }
+
 
             }
         }
@@ -601,6 +644,16 @@ impl FluidArray{
                 power_source_vector[i] -= 
                 mass_flowrate.abs() * h_fluid_last_timestep;
             }
+
+
+                // debug okay till here
+                let debug: bool = false;
+                if debug {
+                    dbg!(&coefficient_matrix);
+                    dbg!(&power_source_vector);
+                    dbg!(&new_temperature_array);
+                    // check all vectors here...
+                }
         }
 
         // note that this works for high peclet number flows
@@ -643,9 +696,27 @@ impl FluidArray{
                 // check if first or last node 
                 let first_node: bool = node_idx == 0;
                 let last_node: bool = node_idx == number_of_nodes - 1;
-                // bulk node means 
-                let bulk_node: bool = !first_node  || !last_node;
+                // bulk node means it's not the first node and not the 
+                // last node, not OR, 
+                // otherwise every node is a bulk node
+                //
+                // debug here!
+                let bulk_node: bool = !first_node  && !last_node;
 
+                // debug okay here
+                let debug: bool = true;
+                if debug {
+                    dbg!(&coefficient_matrix);
+                    dbg!(&power_source_vector);
+                    dbg!(&new_temperature_array);
+                    // check all vectors here...
+                    dbg!(&first_node);
+                    dbg!(&last_node);
+                    dbg!(&bulk_node);
+
+                    // check all booleans
+                    
+                }
                 // bulk nodes
                 if bulk_node {
 
@@ -694,6 +765,15 @@ impl FluidArray{
                     -= average_axial_conductance;
 
                 }
+
+                // debug not okay here
+                let debug: bool = true;
+                if debug {
+                    dbg!(&coefficient_matrix);
+                    dbg!(&power_source_vector);
+                    dbg!(&new_temperature_array);
+                    // check all vectors here...
+                }
                 // first node 
                 if first_node {
 
@@ -721,6 +801,16 @@ impl FluidArray{
                     += average_axial_conductance;
                     coefficient_matrix[[node_idx, node_idx-1]] 
                     -= average_axial_conductance;
+                }
+
+
+                // debug not okay here
+                let debug: bool = true;
+                if debug {
+                    dbg!(&coefficient_matrix);
+                    dbg!(&power_source_vector);
+                    dbg!(&new_temperature_array);
+                    // check all vectors here...
                 }
                 // done modification for axial conduction
             }
