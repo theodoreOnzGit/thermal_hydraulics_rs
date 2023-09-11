@@ -630,6 +630,12 @@ impl FluidArray{
 
         // note: this part is quite buggy as in the peclet number correction 
         // bit
+        //
+        // let peclet_number = Ratio::zero();
+        //
+        // I ascertained manually setting peclet number to zero does not 
+        // visibly change the results, hence, 
+        // it seems okay for now
         
         if peclet_number.value < 100.0 {
             // for low peclet number flows, consider conduction

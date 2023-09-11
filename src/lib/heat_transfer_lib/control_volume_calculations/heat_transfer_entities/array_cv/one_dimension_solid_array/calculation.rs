@@ -270,10 +270,6 @@ impl SolidColumn {
                 power_ndarray_vector.push(power_ndarray);
 
             }
-            let debug = false;
-            if debug {
-                dbg!(&power_ndarray_vector);
-            }
 
             // this part construts
             // the sum_of_lateral_power_sources
@@ -319,11 +315,6 @@ impl SolidColumn {
                     }
 
                 }
-            let debug = false;
-            if debug {
-                dbg!(&sum_of_lateral_power_sources);
-                // power sources working okay
-            }
 
         }
         // end if for lateral_power_sources_connected
@@ -461,7 +452,7 @@ impl SolidColumn {
         = average_thermal_conductivity * self.xs_area 
         / node_length;
 
-        let neglect_axial_conduction: bool = {
+        let mut neglect_axial_conduction: bool = {
 
             // how shall we know if the axial conduction is to be 
             // neglected?
@@ -595,7 +586,7 @@ impl SolidColumn {
         // end code block for checking if we can neglect axial conduction
 
         // if we dont neglect axial conduction 
-        dbg!(&neglect_axial_conduction);
+
         if !neglect_axial_conduction {
 
             // construct matrices for axial conduction
