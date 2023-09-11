@@ -233,8 +233,8 @@ fn fluid_solid_node_calculation_initial_test(){
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
     use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
     use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
-    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
-    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
     use crate::heat_transfer_lib::thermophysical_properties::Material;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
@@ -663,7 +663,7 @@ fn fluid_solid_node_calculation_initial_test(){
 
             for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
 
-                let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let fluid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     therminol,
                     *fluid_temp,
                     atmospheric_pressure
@@ -680,7 +680,7 @@ fn fluid_solid_node_calculation_initial_test(){
             for (index,solid_temp) in 
                 steel_temperature_array_present_timestep_ptr_in_loop.iter().enumerate() {
 
-                let solid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let solid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     steel,
                     *solid_temp,
                     atmospheric_pressure
@@ -695,7 +695,7 @@ fn fluid_solid_node_calculation_initial_test(){
             // outflows 
 
             let enthalpy_inflow_in_back_cv: Power 
-            = therminol_mass_flowrate * specific_enthalpy(
+            = therminol_mass_flowrate * try_get_h(
                 therminol,
                 inlet_temperature,
                 atmospheric_pressure,

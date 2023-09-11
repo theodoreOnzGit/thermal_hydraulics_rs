@@ -1,8 +1,8 @@
 use crate::fluid_mechanics_lib::prelude::FluidComponent;
 use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
+use crate::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
 use crate::heat_transfer_lib::thermophysical_properties::
-thermal_diffusivity::thermal_diffusivity;
+thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use ndarray::*;
@@ -61,7 +61,7 @@ impl FluidArray {
         = control_vol_temperature_array.map(
             |temperature_reference| {
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     *temperature_reference, 
                     control_vol_pressure).unwrap()
             }
@@ -122,7 +122,7 @@ impl FluidArray {
                 // diffusivity
                 // providing a fallback mechanism
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     bulk_temp, 
                     control_vol_pressure).unwrap()
             },
@@ -142,7 +142,7 @@ impl FluidArray {
         // for this, we need to get a reynold's number and prandtl number 
         // bulk fluid prandtl number will be used
 
-        let fluid_prandtl_number = liquid_prandtl(
+        let fluid_prandtl_number = try_get_prandtl(
             control_vol_material,
             bulk_temp,
             control_vol_pressure

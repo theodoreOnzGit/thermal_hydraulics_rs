@@ -15,9 +15,9 @@ use uom::si::area::square_meter;
 use uom::si::length::meter;
 
 use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
-use crate::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
-use crate::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
+use crate::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 
 
@@ -51,9 +51,9 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::OuterDiameterThermalConduction;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
     use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
-    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
     use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
-    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
     //
@@ -487,7 +487,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
 
             for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
 
-                let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let fluid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     therminol,
                     *fluid_temp,
                     atmospheric_pressure
@@ -504,7 +504,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
             for (index,solid_temp) in 
                 steel_temperature_array_present_timestep_ptr_in_loop.iter().enumerate() {
 
-                let solid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let solid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     steel,
                     *solid_temp,
                     atmospheric_pressure
@@ -519,7 +519,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
             // outflows 
 
             let enthalpy_inflow_in_back_cv: Power 
-            = therminol_mass_flowrate * specific_enthalpy(
+            = therminol_mass_flowrate * try_get_h(
                 therminol,
                 inlet_temperature,
                 atmospheric_pressure,
@@ -779,11 +779,11 @@ fn _heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     // let's calculate mu and k 
 
     let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
-    let mu: DynamicViscosity = dynamic_viscosity(therminol,
+    let mu: DynamicViscosity = try_get_mu_viscosity(therminol,
         therminol_temperature,
         pressure).unwrap();
 
-    let k: ThermalConductivity = thermal_conductivity(
+    let k: ThermalConductivity = try_get_kappa_thermal_conductivity(
         therminol,
         therminol_temperature,
         pressure).unwrap();
@@ -792,7 +792,7 @@ fn _heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     let reynolds: Ratio = _ciet_heater_v_2_0_reynolds_nunber(
         mass_flowrate, mu);
 
-    let prandtl: Ratio = liquid_prandtl(
+    let prandtl: Ratio = try_get_prandtl(
         therminol,
         therminol_temperature,
         pressure).unwrap();

@@ -1,4 +1,4 @@
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::density::density};
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::thermophysical_properties::density::try_get_rho};
 
 use super::HeatTransferEntity;
 use super::BCType;
@@ -155,7 +155,7 @@ impl HeatTransferEntity {
         let mut density_vector: Vec<MassDensity> = vec![];
 
         for temperature in temperature_vector {
-            let density = density(
+            let density = try_get_rho(
                 material,
                 temperature,
                 pressure

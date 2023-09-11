@@ -4,24 +4,15 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::FluidComponent;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction, OuterDiameterThermalConduction, BCType};
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::{SolidMaterial, Material};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::LiquidMaterial;
+
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 
 
 
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_meter;
-use uom::si::f64::*;
 use uom::si::length::{centimeter, meter};
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::power::{watt, kilowatt};
@@ -75,12 +66,6 @@ use uom::si::time::second;
 //#[ignore = "data collected"]
 pub fn matrix_calculation_initial_test(){
 
-    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
-    heat_transfer_interactions::data_enum_structs::DataAdvection;
-    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
-    heat_transfer_interactions::HeatTransferInteractionType;
-    use thermal_hydraulics_rs::heat_transfer_lib::
-    thermophysical_properties::Material;
 
     use uom::si::length::inch;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
@@ -807,11 +792,11 @@ fn _heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     // let's calculate mu and k 
 
     let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
-    let mu: DynamicViscosity = dynamic_viscosity(therminol,
+    let mu: DynamicViscosity = try_get_mu_viscosity(therminol,
         therminol_temperature,
         pressure).unwrap();
 
-    let k: ThermalConductivity = thermal_conductivity(
+    let k: ThermalConductivity = try_get_kappa_thermal_conductivity(
         therminol,
         therminol_temperature,
         pressure).unwrap();
@@ -820,7 +805,7 @@ fn _heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     let reynolds: Ratio = _ciet_heater_v_2_0_reynolds_nunber(
         mass_flowrate, mu);
 
-    let prandtl: Ratio = liquid_prandtl(
+    let prandtl: Ratio = try_get_prandtl(
         therminol,
         therminol_temperature,
         pressure).unwrap();

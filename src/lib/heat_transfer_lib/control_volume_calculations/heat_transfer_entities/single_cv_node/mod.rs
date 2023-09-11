@@ -7,9 +7,9 @@ use uom::si::pressure::atmosphere;
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::calculations::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
 use crate::heat_transfer_lib::
-thermophysical_properties::density::density;
+thermophysical_properties::density::try_get_rho;
 use crate::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::specific_enthalpy;
+thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 use crate::heat_transfer_lib::
@@ -107,7 +107,7 @@ impl SingleCVNode {
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
         let cv_enthalpy: AvailableEnergy = 
-        match specific_enthalpy(
+        match try_get_h(
             cv_material, 
             cv_temperature, 
             atmospheric_pressure) {
@@ -177,7 +177,7 @@ impl SingleCVNode {
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume)?;
 
-        let cv_density = density(
+        let cv_density = try_get_rho(
             self.material_control_volume, 
             cv_temperature, 
             self.pressure_control_volume)?;
@@ -214,7 +214,7 @@ impl SingleCVNode {
         let ball_volume: Volume = 4.0/3.0 * PI * 
         ball_radius * ball_radius * ball_radius;
 
-        let ball_density: MassDensity = density(
+        let ball_density: MassDensity = try_get_rho(
             material,
             cv_temperature,
             pressure)?;
@@ -222,7 +222,7 @@ impl SingleCVNode {
         let ball_mass: Mass = ball_density * ball_volume;
 
 
-        let enthalpy = specific_enthalpy(
+        let enthalpy = try_get_h(
             material, 
             cv_temperature, 
             pressure)?;
@@ -286,7 +286,7 @@ impl SingleCVNode {
         let one_dimension_volume: Volume = 
         basis_area * length;
 
-        let one_dimension_density: MassDensity = density(
+        let one_dimension_density: MassDensity = try_get_rho(
             material,
             cv_temperature,
             pressure)?;
@@ -295,7 +295,7 @@ impl SingleCVNode {
         one_dimension_density * one_dimension_volume;
 
 
-        let enthalpy = specific_enthalpy(
+        let enthalpy = try_get_h(
             material, 
             cv_temperature, 
             pressure)?;
@@ -365,7 +365,7 @@ impl SingleCVNode {
         let cylinder_vol: Volume = 
         cross_sectional_area * z;
 
-        let cylinder_density: MassDensity = density(
+        let cylinder_density: MassDensity = try_get_rho(
             material,
             cv_temperature,
             pressure)?;
@@ -374,7 +374,7 @@ impl SingleCVNode {
         cylinder_density * cylinder_vol;
 
 
-        let enthalpy = specific_enthalpy(
+        let enthalpy = try_get_h(
             material, 
             cv_temperature, 
             pressure)?;
@@ -454,7 +454,7 @@ impl SingleCVNode {
         let cylinder_vol: Volume = 
         cross_sectional_area * z;
 
-        let cylinder_density: MassDensity = density(
+        let cylinder_density: MassDensity = try_get_rho(
             material,
             cv_temperature,
             pressure)?;
@@ -463,7 +463,7 @@ impl SingleCVNode {
         cylinder_density * cylinder_vol;
 
 
-        let enthalpy = specific_enthalpy(
+        let enthalpy = try_get_h(
             material, 
             cv_temperature, 
             pressure)?;
@@ -526,7 +526,7 @@ impl SingleCVNode {
         let cylinder_vol: Volume = 
         cross_sectional_area * z;
 
-        let cylinder_density: MassDensity = density(
+        let cylinder_density: MassDensity = try_get_rho(
             material,
             cv_temperature,
             pressure)?;
@@ -535,7 +535,7 @@ impl SingleCVNode {
         cylinder_density * cylinder_vol;
 
 
-        let enthalpy = specific_enthalpy(
+        let enthalpy = try_get_h(
             material, 
             cv_temperature, 
             pressure)?;

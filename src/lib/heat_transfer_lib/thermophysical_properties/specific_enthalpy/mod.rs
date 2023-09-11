@@ -94,7 +94,7 @@ use temperature_from_specific_enthalpy::*;
 ///     max_relative=0.04);
 ///
 /// ``` 
-pub fn specific_enthalpy(material: Material, 
+pub fn try_get_h(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<AvailableEnergy, String> {
 

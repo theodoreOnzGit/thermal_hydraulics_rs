@@ -1,7 +1,7 @@
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::heat_transfer_lib::thermophysical_properties::density::density;
-use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+use crate::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
+use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::try_get_cp;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
 
 use super::SingleCVNode;
@@ -58,7 +58,7 @@ impl SingleCVNode {
 
 
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
-        thermal_diffusivity(control_vol_material, 
+        try_get_alpha_thermal_diffusivity(control_vol_material, 
             cv_temperature, 
             control_vol_pressure)?;
 
@@ -110,7 +110,7 @@ impl SingleCVNode {
         let cv_pressure_reference = &self.pressure_control_volume;
 
         let cv_density: MassDensity = 
-        density(*cv_material_reference,
+        try_get_rho(*cv_material_reference,
             cv_temperature,
             *cv_pressure_reference,
         )?;
@@ -157,7 +157,7 @@ impl SingleCVNode {
 
 
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
-        thermal_diffusivity(control_vol_material, 
+        try_get_alpha_thermal_diffusivity(control_vol_material, 
             cv_temperature, 
             control_vol_pressure)?;
 
@@ -211,7 +211,7 @@ impl SingleCVNode {
         let cv_temperature = self.get_temperature()?;
         let cv_pressure = self.pressure_control_volume.clone();
 
-        let cv_heat_capacity = specific_heat_capacity(
+        let cv_heat_capacity = try_get_cp(
             cv_material,
             cv_temperature,
             cv_pressure,

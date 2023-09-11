@@ -36,7 +36,7 @@ use super::LiquidMaterial::*;
 /// 
 /// ```
 #[inline]
-pub fn dynamic_viscosity(material: Material, 
+pub fn try_get_mu_viscosity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<DynamicViscosity, String> {
 
@@ -83,7 +83,7 @@ pub fn dynamic_viscosity_test_steel(){
     let temperature = ThermodynamicTemperature::new::<kelvin>(350.0);
     let pressure = Pressure::new::<atmosphere>(1.0);
 
-    let dynamic_viscosity = dynamic_viscosity(dowtherm_a, temperature, pressure);
+    let dynamic_viscosity = try_get_mu_viscosity(dowtherm_a, temperature, pressure);
 
     approx::assert_relative_eq!(
         0.001237,

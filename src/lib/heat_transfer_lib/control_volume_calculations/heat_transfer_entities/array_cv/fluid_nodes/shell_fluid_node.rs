@@ -6,7 +6,7 @@ use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
 
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
@@ -202,7 +202,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
                 // first, get enthalpy of the node in front 
 
                 let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[1],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -247,7 +247,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
                 // assume back cv and front cv material are the same
 
                 let h_fluid_last_timestep: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[i],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -269,7 +269,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
                     // enthalpy must be based on the the cv at i-1
 
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         back_single_cv.material_control_volume,
                         last_timestep_temperature_fluid[i-1],
                         back_single_cv.pressure_control_volume).unwrap();
@@ -282,7 +282,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
 
                     // enthalpy must be based on cv at i+1
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         back_single_cv.material_control_volume,
                         last_timestep_temperature_fluid[i+1],
                         back_single_cv.pressure_control_volume).unwrap();
@@ -343,7 +343,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
                 // back
 
                 let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[i-1],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -385,7 +385,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
 
     // Todo: probably need to synchronise error types in future
     let back_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
+    try_get_h(
         back_single_cv.material_control_volume,
         temperature_vector[0],
         back_single_cv.pressure_control_volume).unwrap();
@@ -394,7 +394,7 @@ fn _advance_timestep_fluid_shell_array_high_peclet_number(
     = back_node_enthalpy_next_timestep;
 
     let front_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
+    try_get_h(
         front_single_cv.material_control_volume,
         temperature_vector[number_of_nodes-1],
         front_single_cv.pressure_control_volume).unwrap();

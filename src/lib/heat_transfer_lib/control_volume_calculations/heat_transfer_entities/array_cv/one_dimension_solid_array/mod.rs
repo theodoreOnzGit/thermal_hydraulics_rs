@@ -1,7 +1,7 @@
 use ndarray::*;
 use uom::si::f64::*;
 
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::heat_transfer_lib::control_volume_calculations::
 heat_transfer_entities::SingleCVNode;
 use crate::heat_transfer_lib::
@@ -182,13 +182,13 @@ impl SolidColumn {
         let material = self.material_control_volume;
         let pressure = self.pressure_control_volume;
 
-        let back_cv_enthalpy = specific_enthalpy(
+        let back_cv_enthalpy = try_get_h(
             material,
             back_cv_temperature,
             pressure
         )?;
 
-        let front_cv_enthalpy = specific_enthalpy(
+        let front_cv_enthalpy = try_get_h(
             material,
             front_cv_temperature,
             pressure

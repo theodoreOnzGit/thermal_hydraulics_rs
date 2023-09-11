@@ -8,15 +8,15 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::SolidMaterial::{self};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{Material, LiquidMaterial};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
     SingleCVNode, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
 
 
@@ -742,13 +742,13 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_2_three_nodes(){
                 ).unwrap();
 
 
-                let fluid_node_idx_density = density(
+                let fluid_node_idx_density = try_get_rho(
                     therminol,
                     fluid_node_idx_temperature,
                     atmospheric_pressure
                 ).unwrap();
 
-                let fluid_node_idx_plus_one_density = density(
+                let fluid_node_idx_plus_one_density = try_get_rho(
                     therminol,
                     fluid_node_idx_plus_one_temperature,
                     atmospheric_pressure
@@ -782,7 +782,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_2_three_nodes(){
                 let therminol_inlet_temperature = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
 
-                let therminol_inlet_density = density(
+                let therminol_inlet_density = try_get_rho(
                     therminol,
                     therminol_inlet_temperature,
                     atmospheric_pressure
@@ -1170,11 +1170,11 @@ fn heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     // let's calculate mu and k 
 
     let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
-    let mu: DynamicViscosity = dynamic_viscosity(therminol,
+    let mu: DynamicViscosity = try_get_mu_viscosity(therminol,
         therminol_temperature,
         pressure).unwrap();
 
-    let k: ThermalConductivity = thermal_conductivity(
+    let k: ThermalConductivity = try_get_kappa_thermal_conductivity(
         therminol,
         therminol_temperature,
         pressure).unwrap();
@@ -1183,7 +1183,7 @@ fn heat_transfer_coefficient_ciet_v_2_0(mass_flowrate: MassRate,
     let reynolds: Ratio = ciet_heater_v_2_0_reynolds_nunber(
         mass_flowrate, mu);
 
-    let prandtl: Ratio = liquid_prandtl(
+    let prandtl: Ratio = try_get_prandtl(
         therminol,
         therminol_temperature,
         pressure).unwrap();

@@ -2,9 +2,9 @@ use super::CartesianConduction1DArray;
 use uom::si::{f64::*, area::square_meter};
 use ndarray::*;
 use crate::heat_transfer_lib::{
-thermophysical_properties::{thermal_diffusivity::thermal_diffusivity, Material, thermal_conductivity::thermal_conductivity}, control_volume_calculations::heat_transfer_interactions::calculations::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS};
+thermophysical_properties::{thermal_diffusivity::try_get_alpha_thermal_diffusivity, Material, thermal_conductivity::try_get_kappa_thermal_conductivity}, control_volume_calculations::heat_transfer_interactions::calculations::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS};
 use approx::assert_relative_eq;
-use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
 
 impl CartesianConduction1DArray {
 
@@ -29,7 +29,7 @@ impl CartesianConduction1DArray {
         = control_vol_temperature_array.map(
             |temperature_reference| {
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     *temperature_reference, 
                     control_vol_pressure).unwrap()
             }
@@ -72,7 +72,7 @@ impl CartesianConduction1DArray {
                 // providing a fallback mechanism
                 let bulk_temp =self.get_bulk_temperature().unwrap();
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     bulk_temp, 
                     control_vol_pressure).unwrap()
             },
@@ -222,7 +222,7 @@ impl CartesianConduction1DArray {
                 let temperature = *temperature_reference;
 
                 let rho_cp: VolumetricHeatCapacity 
-                = rho_cp( material, temperature, pressure).unwrap();
+                = try_get_rho_cp( material, temperature, pressure).unwrap();
 
                 return rho_cp;
             }
@@ -323,7 +323,7 @@ impl CartesianConduction1DArray {
                 let temperature = *temperature_reference;
 
                 let k: ThermalConductivity 
-                = thermal_conductivity( 
+                = try_get_kappa_thermal_conductivity( 
                     material, temperature, pressure).unwrap();
 
                 return k;

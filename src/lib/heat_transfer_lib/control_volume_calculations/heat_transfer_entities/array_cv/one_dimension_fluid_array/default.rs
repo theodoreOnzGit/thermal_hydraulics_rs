@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use crate::fluid_mechanics_lib::fluid_component_calculation::enums::DimensionlessDarcyLossCorrelations;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
-use crate::heat_transfer_lib::thermophysical_properties::prandtl::liquid_prandtl;
+use crate::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
 use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
 use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
 use crate::heat_transfer_lib::thermophysical_properties::Material;
@@ -61,7 +61,7 @@ impl Default for FluidArray {
             pipe_default_form_loss,
         );
         
-        let pipe_prandtl = liquid_prandtl(
+        let pipe_prandtl = try_get_prandtl(
             therminol,
             default_temp,
             default_pressure

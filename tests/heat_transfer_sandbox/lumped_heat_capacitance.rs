@@ -14,9 +14,9 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::{specific_enthalpy, temperature_from_specific_enthalpy};
+thermophysical_properties::specific_enthalpy::{try_get_h, temperature_from_specific_enthalpy};
 
 
 
@@ -325,7 +325,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     // might want a constructor which shortens this process
     // of making the HeatTransferEntity
 
-    let steel_initial_enthalpy = specific_enthalpy(
+    let steel_initial_enthalpy = try_get_h(
         steel, 
         steel_initial_temperature, 
         pressure)?;
@@ -338,7 +338,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
     let steel_ball_volume: Volume = 4.0/3.0 * PI * 
         steel_ball_radius * steel_ball_radius * steel_ball_radius;
 
-    let steel_ball_density: MassDensity = density(
+    let steel_ball_density: MassDensity = try_get_rho(
         steel,
         steel_initial_temperature,
         pressure)?;

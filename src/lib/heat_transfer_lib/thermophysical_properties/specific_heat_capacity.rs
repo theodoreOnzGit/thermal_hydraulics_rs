@@ -45,7 +45,7 @@ use peroxide::prelude::*;
 ///
 /// ``` 
 #[inline]
-pub fn specific_heat_capacity(material: Material, 
+pub fn try_get_cp(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<SpecificHeatCapacity, String> {
 

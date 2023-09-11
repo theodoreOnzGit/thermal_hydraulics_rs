@@ -15,7 +15,7 @@ control_volume_calculations::heat_transfer_entities::{HeatTransferEntity,
     SurfaceArea, SingleCVNode, CVType, BCType};
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::density;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
 
 
@@ -234,7 +234,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 
 
 
-            let therminol_inlet_density = density(
+            let therminol_inlet_density = try_get_rho(
                 therminol,
                 therminol_inlet_temperature,
                 atmospheric_pressure
@@ -551,7 +551,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
 
 
-            let therminol_inlet_density = density(
+            let therminol_inlet_density = try_get_rho(
                 therminol,
                 therminol_inlet_temperature,
                 atmospheric_pressure
@@ -868,7 +868,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
 
 
 
-            let therminol_inlet_density = density(
+            let therminol_inlet_density = try_get_rho(
                 therminol,
                 therminol_inlet_temperature,
                 atmospheric_pressure

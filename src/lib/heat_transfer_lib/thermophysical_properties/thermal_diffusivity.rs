@@ -43,24 +43,24 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 /// epsilon = 0.001);
 /// ```
 #[inline]
-pub fn thermal_diffusivity(material: Material, 
+pub fn try_get_alpha_thermal_diffusivity(material: Material, 
     temperature: ThermodynamicTemperature,
     pressure: Pressure) -> Result<DiffusionCoefficient,String> {
 
     let material_thermal_conductivity: ThermalConductivity = 
-    thermal_conductivity::thermal_conductivity(
+    thermal_conductivity::try_get_kappa_thermal_conductivity(
         material, 
         temperature, 
         pressure)?;
     
     let material_density: MassDensity = 
-    density::density(
+    density::try_get_rho(
         material, 
         temperature, 
         pressure)?;
     
     let material_specific_heat_capacity: SpecificHeatCapacity = 
-    specific_heat_capacity::specific_heat_capacity(
+    specific_heat_capacity::try_get_cp(
         material, 
         temperature, 
         pressure)?;

@@ -2,7 +2,7 @@ use super::CartesianConduction1DArray;
 use uom::si::{f64::*, area::square_meter, power::watt};
 use ndarray::*;
 use crate::heat_transfer_lib::thermophysical_properties::
-specific_enthalpy::specific_enthalpy;
+specific_enthalpy::try_get_h;
 use crate::heat_transfer_lib::
 control_volume_calculations::heat_transfer_interactions::calculations::
 UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
@@ -96,7 +96,7 @@ impl CartesianConduction1DArray {
         // enthalpies for the two nested control volumes
         {
             let inner_node_enthalpy_next_timestep: AvailableEnergy = 
-            specific_enthalpy(
+            try_get_h(
                 self.inner_single_cv.material_control_volume,
                 new_temperature_array[0],
                 self.inner_single_cv.pressure_control_volume).unwrap();
@@ -106,7 +106,7 @@ impl CartesianConduction1DArray {
 
             // do the same for the outer node
             let outer_node_enthalpy_next_timestep: AvailableEnergy = 
-            specific_enthalpy(
+            try_get_h(
                 self.outer_single_cv.material_control_volume,
                 new_temperature_array[total_number_of_nodes-1],
                 self.outer_single_cv.pressure_control_volume).unwrap();

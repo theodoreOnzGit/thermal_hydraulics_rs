@@ -82,3 +82,5 @@ extern crate peroxide;
 /// provides error types for thermal_hydraulics_rs
 pub mod thermal_hydraulics_error;
 
+/// prelude, for easy importing 
+pub mod prelude;

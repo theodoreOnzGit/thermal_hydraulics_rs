@@ -5,7 +5,7 @@ use ndarray::*;
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 
 use crate::heat_transfer_lib::thermophysical_properties::
-thermal_diffusivity::thermal_diffusivity;
+thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 
 use uom::si::thermodynamic_temperature::kelvin;
 
@@ -57,7 +57,7 @@ impl SolidColumn {
         = control_vol_temperature_array.map(
             |temperature_reference| {
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     *temperature_reference, 
                     control_vol_pressure).unwrap()
             }
@@ -129,7 +129,7 @@ impl SolidColumn {
                 // diffusivity
                 // providing a fallback mechanism
 
-                thermal_diffusivity(control_vol_material, 
+                try_get_alpha_thermal_diffusivity(control_vol_material, 
                     bulk_temp, 
                     control_vol_pressure).unwrap()
             },

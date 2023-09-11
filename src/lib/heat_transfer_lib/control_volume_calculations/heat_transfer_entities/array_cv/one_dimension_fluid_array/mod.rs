@@ -9,7 +9,7 @@ use crate::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// this is essentially a 1D pipe array containing two CVs 
@@ -204,13 +204,13 @@ impl FluidArray{
         let material = self.material_control_volume;
         let pressure = self.pressure_control_volume;
 
-        let back_cv_enthalpy = specific_enthalpy(
+        let back_cv_enthalpy = try_get_h(
             material,
             back_cv_temperature,
             pressure
         )?;
 
-        let front_cv_enthalpy = specific_enthalpy(
+        let front_cv_enthalpy = try_get_h(
             material,
             front_cv_temperature,
             pressure

@@ -649,7 +649,7 @@ fn thermal_conductance_test_convection_conduction_boundary(){
     use uom::si::{f64::*, pressure::atmosphere};
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use crate::heat_transfer_lib::thermophysical_properties::
-    thermal_conductivity::thermal_conductivity;
+    thermal_conductivity::try_get_kappa_thermal_conductivity;
     use crate::heat_transfer_lib::thermophysical_properties::Material;
     use std::f64::consts::PI;
     // first we can use the existing common_functions 
@@ -722,7 +722,7 @@ fn thermal_conductance_test_convection_conduction_boundary(){
     let copper_pressure = Pressure::new::<atmosphere>(1.0);
 
     let average_thermal_conductivity = 
-    thermal_conductivity(copper, copper_temperature, copper_pressure)
+    try_get_kappa_thermal_conductivity(copper, copper_temperature, copper_pressure)
         .unwrap();
 
     // now let's obtain the power, 

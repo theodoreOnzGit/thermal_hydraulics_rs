@@ -6,7 +6,7 @@ use uom::si::f64::*;
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 
 pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
     control_vol: &mut SingleCVNode,
@@ -31,7 +31,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
 
     
     let cv_alpha: DiffusionCoefficient = 
-    thermal_diffusivity(cv_material,
+    try_get_alpha_thermal_diffusivity(cv_material,
         cv_temperature,
         cv_pressure)?;
 
@@ -88,7 +88,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // the given material here overrides the normal 
                 // material 
                 let cv_alpha: DiffusionCoefficient = 
-                thermal_diffusivity(material,
+                try_get_alpha_thermal_diffusivity(material,
                     cv_temperature,
                     cv_pressure)?;
 
@@ -129,12 +129,12 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // the other consideration is to take the shorter of 
                 // the two time steps and put it into the cv timestep 
                 let alpha_1: DiffusionCoefficient = 
-                thermal_diffusivity(material_1,
+                try_get_alpha_thermal_diffusivity(material_1,
                     cv_temperature,
                     cv_pressure)?;
 
                 let alpha_2: DiffusionCoefficient = 
-                thermal_diffusivity(material_2,
+                try_get_alpha_thermal_diffusivity(material_2,
                     cv_temperature,
                     cv_pressure)?;
 
@@ -181,12 +181,12 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // the other consideration is to take the shorter of 
                 // the two time steps and put it into the cv timestep 
                 let alpha_1: DiffusionCoefficient = 
-                thermal_diffusivity(material_1,
+                try_get_alpha_thermal_diffusivity(material_1,
                     cv_temperature,
                     cv_pressure)?;
 
                 let alpha_2: DiffusionCoefficient = 
-                thermal_diffusivity(material_2,
+                try_get_alpha_thermal_diffusivity(material_2,
                     cv_temperature,
                     cv_pressure)?;
 
@@ -245,12 +245,12 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // the other consideration is to take the shorter of 
                 // the two time steps and put it into the cv timestep 
                 let alpha_1: DiffusionCoefficient = 
-                thermal_diffusivity(material_1,
+                try_get_alpha_thermal_diffusivity(material_1,
                     cv_temperature,
                     cv_pressure)?;
 
                 let alpha_2: DiffusionCoefficient = 
-                thermal_diffusivity(material_2,
+                try_get_alpha_thermal_diffusivity(material_2,
                     cv_temperature,
                     cv_pressure)?;
 
@@ -294,7 +294,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // or just use the generic timestep
 
                 let alpha_1: DiffusionCoefficient = 
-                thermal_diffusivity(material,
+                try_get_alpha_thermal_diffusivity(material,
                     temperature,
                     pressure)?;
 
@@ -332,7 +332,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
                 // or just use the generic timestep
 
                 let alpha_1: DiffusionCoefficient = 
-                thermal_diffusivity(material,
+                try_get_alpha_thermal_diffusivity(material,
                     temperature,
                     pressure)?;
 

@@ -1,6 +1,6 @@
 
-use crate::heat_transfer_lib::thermophysical_properties::density::density;
-use crate::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
+use crate::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
+use crate::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 use crate::fluid_mechanics_lib::fluid_component_calculation::fluid_component_trait;
 use fluid_component_trait::FluidComponent;
 
@@ -118,7 +118,7 @@ impl FluidComponent for FluidArray{
     fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
         let temperature = self.get_bulk_temperature().unwrap();
 
-        let viscosity = dynamic_viscosity(
+        let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
             temperature,
             self.pressure_control_volume).unwrap();
@@ -129,7 +129,7 @@ impl FluidComponent for FluidArray{
     fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
         let temperature = self.clone().get_bulk_temperature().unwrap();
 
-        let viscosity = dynamic_viscosity(
+        let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
             temperature,
             self.pressure_control_volume).unwrap();
@@ -140,7 +140,7 @@ impl FluidComponent for FluidArray{
     fn get_fluid_density(&mut self) -> MassDensity {
         let temperature = self.get_bulk_temperature().unwrap();
 
-        let density = density(
+        let density = try_get_rho(
             self.material_control_volume,
             temperature,
             self.pressure_control_volume).unwrap();
@@ -151,7 +151,7 @@ impl FluidComponent for FluidArray{
     fn get_fluid_density_immutable(&self) -> MassDensity {
         let temperature = self.clone().get_bulk_temperature().unwrap();
 
-        let density = density(
+        let density = try_get_rho(
             self.material_control_volume,
             temperature,
             self.pressure_control_volume).unwrap();

@@ -13,7 +13,7 @@ thermophysical_properties::Material;
 use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
 
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 use uom::si::f64::*;
 use uom::si::length::centimeter;
 use uom::si::pressure::atmosphere;
@@ -467,7 +467,7 @@ fn lumped_capacitance_timestep_adjustment()
             // autocalculate time step
 
             let steel_diffusivity: DiffusionCoefficient = 
-            thermal_diffusivity(steel.clone(), 
+            try_get_alpha_thermal_diffusivity(steel.clone(), 
                 temperature_for_export, pressure).unwrap();
 
 
@@ -744,7 +744,7 @@ fn lumped_capacitance_timestep_adjustment_improved_api()
             // autocalculate time step
 
             let steel_diffusivity: DiffusionCoefficient = 
-            thermal_diffusivity(steel.clone(), 
+            try_get_alpha_thermal_diffusivity(steel.clone(), 
                 temperature_for_export, pressure).unwrap();
 
 
@@ -1037,7 +1037,7 @@ fn short_version_lumped_capacitance_timestep_adjustment_improved_api()
             // autocalculate time step
 
             let steel_diffusivity: DiffusionCoefficient = 
-            thermal_diffusivity(steel.clone(), 
+            try_get_alpha_thermal_diffusivity(steel.clone(), 
                 temperature_for_export, pressure).unwrap();
 
 

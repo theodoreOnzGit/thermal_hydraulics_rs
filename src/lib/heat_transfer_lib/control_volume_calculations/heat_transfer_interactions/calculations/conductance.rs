@@ -5,7 +5,7 @@ use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib::control_volume_calculations::common_functions::obtain_thermal_conductance_annular_cylinder;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
 use crate::heat_transfer_lib::thermophysical_properties ::Material;
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
@@ -71,7 +71,7 @@ fn get_conductance_single_cartesian_one_dimension(
     ThermodynamicTemperature::new::<kelvin>(average_material_temperature_kelvin);
 
 
-    let material_thermal_conductivity = thermal_conductivity(
+    let material_thermal_conductivity = try_get_kappa_thermal_conductivity(
         material, 
         average_material_temperature, 
         average_material_pressure)?;    
@@ -128,13 +128,13 @@ fn get_conductance_dual_cartesian_three_dimensions(
 
 
 
-    let material_1_thermal_conductivity = thermal_conductivity(
+    let material_1_thermal_conductivity = try_get_kappa_thermal_conductivity(
         material_1, 
         material_temperature_1, 
         material_pressure_1)?;    
 
 
-    let material_2_thermal_conductivity = thermal_conductivity(
+    let material_2_thermal_conductivity = try_get_kappa_thermal_conductivity(
         material_2, 
         material_temperature_2, 
         material_pressure_2)?;    
@@ -235,12 +235,12 @@ fn get_conductance_cylindrical_radial_two_materials(
     // so we have inner layer thermal conductance 
     // the question mark propagates the error with match statement
 
-    let inner_thermal_conductivity = thermal_conductivity(
+    let inner_thermal_conductivity = try_get_kappa_thermal_conductivity(
         material_inner_shell,
         material_temperature_inner_shell,
         material_pressure_inner_shell)?;
 
-    let outer_thermal_conductivity = thermal_conductivity(
+    let outer_thermal_conductivity = try_get_kappa_thermal_conductivity(
         material_outer_shell,
         material_temperature_outer_shell,
         material_pressure_outer_shell)?;
@@ -348,7 +348,7 @@ fn get_conductance_single_cylindrical_radial_solid_liquid(
 
 
     let solid_thermal_conductivity: ThermalConductivity = 
-    thermal_conductivity(solid, 
+    try_get_kappa_thermal_conductivity(solid, 
         solid_temperature, 
         solid_pressure)?;
 

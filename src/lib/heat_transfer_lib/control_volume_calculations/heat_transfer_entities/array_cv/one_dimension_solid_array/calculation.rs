@@ -1,10 +1,10 @@
 use super::SolidColumn;
 use uom::{si::{f64::*, thermodynamic_temperature::kelvin, temperature_interval::degree_celsius, ratio::percent}, num_traits::Zero};
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::{thermophysical_properties::{thermal_conductivity::thermal_conductivity, specific_enthalpy::specific_enthalpy}, control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector}};
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::{thermophysical_properties::{thermal_conductivity::try_get_kappa_thermal_conductivity, specific_enthalpy::try_get_h}, control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector}};
 use ndarray_linalg::error::LinalgError;
 use ndarray::*;
 use uom::si::power::watt;
-use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
 
 /// This deals with the calculations of the solid column array
 /// at the end of the connection phase, one can then use 
@@ -101,7 +101,7 @@ impl SolidColumn {
         let rho_cp: Array1<VolumetricHeatCapacity> = 
         self.temperature_array_current_timestep.iter().map(
             |&temperature| {
-                rho_cp(material, temperature, pressure).unwrap()
+                try_get_rho_cp(material, temperature, pressure).unwrap()
             }
         ).collect();
 
@@ -435,7 +435,7 @@ impl SolidColumn {
         // resistance
 
         let average_thermal_conductivity = 
-        thermal_conductivity(
+        try_get_kappa_thermal_conductivity(
             material,
             bulk_temperature,
             pressure,
@@ -682,7 +682,7 @@ impl SolidColumn {
 
         // Todo: probably need to synchronise error types in future
         let back_node_enthalpy_next_timestep: AvailableEnergy = 
-        specific_enthalpy(
+        try_get_h(
             self.back_single_cv.material_control_volume,
             new_temperature_array[0],
             self.back_single_cv.pressure_control_volume).unwrap();
@@ -691,7 +691,7 @@ impl SolidColumn {
             = back_node_enthalpy_next_timestep;
 
         let front_node_enthalpy_next_timestep: AvailableEnergy = 
-        specific_enthalpy(
+        try_get_h(
             self.front_single_cv.material_control_volume,
             new_temperature_array[number_of_nodes-1],
             self.front_single_cv.pressure_control_volume).unwrap();

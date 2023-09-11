@@ -11,7 +11,7 @@ use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy
-::specific_enthalpy;
+::try_get_h;
 
 // for spline method
 use peroxide::prelude::*;
@@ -127,7 +127,7 @@ fn fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
             temperature_value);
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let fiberglass_enthalpy_result = specific_enthalpy(fiberglass, 
+        let fiberglass_enthalpy_result = try_get_h(fiberglass, 
             fiberglass_temp, pressure);
 
         let fiberglass_enthalpy_value = match fiberglass_enthalpy_result {
@@ -173,7 +173,7 @@ fn fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
             <kelvin>(temp_degrees_c_value) ;
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let rhs = specific_enthalpy(fiberglass, 
+        let rhs = try_get_h(fiberglass, 
             fiberglass_temp, pressure);
 
         let rhs_value = match rhs {
@@ -221,7 +221,7 @@ pub fn fiberglass_temperature_from_enthalpy_test_spline_1(){
     let fiberglass_temp = ThermodynamicTemperature::new::<kelvin>(375.0);
     let pressure = Pressure::new::<atmosphere>(1.0);
 
-    let enthalpy_spline_zweibaum_375k = specific_enthalpy(
+    let enthalpy_spline_zweibaum_375k = try_get_h(
         fiberglass,fiberglass_temp,pressure).unwrap();
 
     // now we have an enthalpy, let's check the temperature 
@@ -298,7 +298,7 @@ fn copper_spline_temp_attempt_2_from_specific_enthalpy(
             temperature_value);
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let copper_enthalpy_result = specific_enthalpy(copper, 
+        let copper_enthalpy_result = try_get_h(copper, 
             copper_temp, pressure);
 
         let copper_enthalpy_value = match copper_enthalpy_result {
@@ -344,7 +344,7 @@ fn copper_spline_temp_attempt_2_from_specific_enthalpy(
             <kelvin>(temp_degrees_c_value) ;
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let rhs = specific_enthalpy(copper, 
+        let rhs = try_get_h(copper, 
             copper_temp, pressure);
 
         let rhs_value = match rhs {
@@ -392,7 +392,7 @@ pub fn copper_temperature_from_enthalpy_test_spline_2(){
     let copper_temp = ThermodynamicTemperature::new::<kelvin>(375.0);
     let pressure = Pressure::new::<atmosphere>(1.0);
 
-    let enthalpy_spline_zweibaum_375k = specific_enthalpy(
+    let enthalpy_spline_zweibaum_375k = try_get_h(
         copper,copper_temp,pressure).unwrap();
 
     // now we have an enthalpy, let's check the temperature 
@@ -473,7 +473,7 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
             temperature_value);
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let steel_enthalpy_result = specific_enthalpy(steel, 
+        let steel_enthalpy_result = try_get_h(steel, 
             steel_temp, pressure);
 
         let steel_enthalpy_value = match steel_enthalpy_result {
@@ -514,7 +514,7 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
             <kelvin>(temp_degrees_c_value) ;
         let pressure = Pressure::new::<atmosphere>(1.0);
 
-        let rhs = specific_enthalpy(copper, 
+        let rhs = try_get_h(copper, 
             copper_temp, pressure);
 
         let rhs_value = match rhs {
@@ -579,7 +579,7 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
     let steel_temp = ThermodynamicTemperature::new::<kelvin>(375.0);
     let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
-    let enthalpy_spline_zweibaum_375k = specific_enthalpy(
+    let enthalpy_spline_zweibaum_375k = try_get_h(
         steel,steel_temp,atmospheric_pressure).unwrap();
 
     // now we have an enthalpy, let's check the temperature 
@@ -604,7 +604,7 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
         let steel_temp = ThermodynamicTemperature::new::<kelvin>(
             *temperature_val_kelvin);
 
-        let enthalpy_spline_zweibaum = specific_enthalpy(steel, 
+        let enthalpy_spline_zweibaum = try_get_h(steel, 
             steel_temp, atmospheric_pressure).unwrap();
 
         let temperature_from_enthalpy_test = 

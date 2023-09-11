@@ -1,18 +1,18 @@
 
 use uom::si::length::meter;
-use crate::heat_transfer_lib::thermophysical_properties::density::density;
+use crate::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
 
 use uom::si::f64::*;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::thermal_diffusivity;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 
 
 use crate::heat_transfer_lib::control_volume_calculations
 ::heat_transfer_interactions::*;
 use crate::heat_transfer_lib::thermophysical_properties::Material
 ::{Solid,Liquid};
-use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::specific_heat_capacity;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::try_get_cp;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
 
 
 /// calculates a suitable timescale when two single cv nodes interact
@@ -42,22 +42,22 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
     // volumes
 
     let alpha_1: DiffusionCoefficient = 
-    thermal_diffusivity(material_1,
+    try_get_alpha_thermal_diffusivity(material_1,
         temperature_1,
         pressure_1)?;
 
     let alpha_2: DiffusionCoefficient = 
-    thermal_diffusivity(material_2,
+    try_get_alpha_thermal_diffusivity(material_2,
         temperature_2,
         pressure_2)?;
 
     // we also want to get the ratios of the two thermal inertias 
 
-    let cp_1: SpecificHeatCapacity = specific_heat_capacity(
+    let cp_1: SpecificHeatCapacity = try_get_cp(
         material_1,
         temperature_1,
         pressure_1)?;
-    let cp_2: SpecificHeatCapacity = specific_heat_capacity(
+    let cp_2: SpecificHeatCapacity = try_get_cp(
         material_2,
         temperature_2,
         pressure_2)?;
@@ -175,10 +175,10 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // let's get timescale 1 and 2 estimate 
 
                 let density_1: MassDensity 
-                = density(material_1, temperature_1, pressure_1)?;
+                = try_get_rho(material_1, temperature_1, pressure_1)?;
 
                 let density_2: MassDensity 
-                = density(material_2, temperature_2, pressure_2)?;
+                = try_get_rho(material_2, temperature_2, pressure_2)?;
 
                 let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
                 let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
@@ -300,7 +300,7 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // I'll just set it to material 1 by default
 
                 let mut liquid_thermal_conductivity: ThermalConductivity
-                = thermal_conductivity(
+                = try_get_kappa_thermal_conductivity(
                     material_1,
                     temperature_1,
                     pressure_1)?;
@@ -309,13 +309,13 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // 2 
                 // if we are wrong, swop it around
                 let mut alpha_liquid: DiffusionCoefficient = 
-                thermal_diffusivity(
+                try_get_alpha_thermal_diffusivity(
                     material_1,
                     temperature_1,
                     pressure_1)?;
                 
                 let mut alpha_solid: DiffusionCoefficient = 
-                thermal_diffusivity(
+                try_get_alpha_thermal_diffusivity(
                     material_2,
                     temperature_2,
                     pressure_2)?;
@@ -324,18 +324,18 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                     Solid(_) => {
                         // if material 1 is solid, then we should obtain 
                         // liquid thermal conductivity from material 2
-                        liquid_thermal_conductivity = thermal_conductivity(
+                        liquid_thermal_conductivity = try_get_kappa_thermal_conductivity(
                             material_2,
                             temperature_2,
                             pressure_2
                         )?;
 
-                        alpha_solid = thermal_diffusivity(
+                        alpha_solid = try_get_alpha_thermal_diffusivity(
                                 material_1,
                                 temperature_1,
                                 pressure_1)?;
 
-                        alpha_liquid = thermal_diffusivity(
+                        alpha_liquid = try_get_alpha_thermal_diffusivity(
                                 material_2,
                                 temperature_2,
                                 pressure_2)?;
@@ -464,7 +464,7 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // I'll just set it to material 1 by default
 
                 let mut liquid_thermal_conductivity: ThermalConductivity
-                = thermal_conductivity(
+                = try_get_kappa_thermal_conductivity(
                     material_1,
                     temperature_1,
                     pressure_1)?;
@@ -476,13 +476,13 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // 2 
                 // if we are wrong, swop it around
                 let mut alpha_liquid: DiffusionCoefficient = 
-                thermal_diffusivity(
+                try_get_alpha_thermal_diffusivity(
                     material_1,
                     temperature_1,
                     pressure_1)?;
                 
                 let mut alpha_solid: DiffusionCoefficient = 
-                thermal_diffusivity(
+                try_get_alpha_thermal_diffusivity(
                     material_2,
                     temperature_2,
                     pressure_2)?;
@@ -491,18 +491,18 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                     Solid(_) => {
                         // if material 1 is solid, then we should obtain 
                         // liquid thermal conductivity from material 2
-                        liquid_thermal_conductivity = thermal_conductivity(
+                        liquid_thermal_conductivity = try_get_kappa_thermal_conductivity(
                             material_2,
                             temperature_2,
                             pressure_2
                         )?;
 
-                        alpha_solid = thermal_diffusivity(
+                        alpha_solid = try_get_alpha_thermal_diffusivity(
                                 material_1,
                                 temperature_1,
                                 pressure_1)?;
 
-                        alpha_liquid = thermal_diffusivity(
+                        alpha_liquid = try_get_alpha_thermal_diffusivity(
                                 material_2,
                                 temperature_2,
                                 pressure_2)?;
@@ -633,12 +633,12 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 
 
                 let alpha_inner: DiffusionCoefficient = 
-                thermal_diffusivity(inner_shell_material,
+                try_get_alpha_thermal_diffusivity(inner_shell_material,
                     inner_shell_temperature,
                     inner_shell_pressure)?;
 
                 let alpha_outer: DiffusionCoefficient = 
-                thermal_diffusivity(outer_shell_material,
+                try_get_alpha_thermal_diffusivity(outer_shell_material,
                     outer_shell_temperature,
                     outer_shell_pressure)?;
 
@@ -909,10 +909,10 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
                 // let's get timescale 1 and 2 estimate 
 
                 let density_1: MassDensity 
-                = density(material_1, temperature_1, pressure_1)?;
+                = try_get_rho(material_1, temperature_1, pressure_1)?;
 
                 let density_2: MassDensity 
-                = density(material_2, temperature_2, pressure_2)?;
+                = try_get_rho(material_2, temperature_2, pressure_2)?;
 
                 let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
                 let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;

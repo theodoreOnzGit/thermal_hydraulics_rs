@@ -46,7 +46,7 @@ use peroxide::prelude::*;
 ///
 /// ``` 
 #[inline]
-pub fn thermal_conductivity(material: Material, 
+pub fn try_get_kappa_thermal_conductivity(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<ThermalConductivity,String> {
 

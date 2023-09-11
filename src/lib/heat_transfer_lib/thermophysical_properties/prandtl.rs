@@ -1,31 +1,31 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use super::Material;
-use super::dynamic_viscosity::dynamic_viscosity;
-use super::specific_heat_capacity::specific_heat_capacity;
-use super::thermal_conductivity::thermal_conductivity;
+use super::dynamic_viscosity::try_get_mu_viscosity;
+use super::specific_heat_capacity::try_get_cp;
+use super::thermal_conductivity::try_get_kappa_thermal_conductivity;
 
 
 /// provides the prandtl number
 #[inline]
-pub fn liquid_prandtl(material: Material,
+pub fn try_get_prandtl(material: Material,
     temperature: ThermodynamicTemperature,
     pressure: Pressure) -> Result<Ratio, ThermalHydraulicsLibError> {
 
     // get mu 
-    let mu: DynamicViscosity = dynamic_viscosity(
+    let mu: DynamicViscosity = try_get_mu_viscosity(
         material,
         temperature,
         pressure)?;
 
     // get cp 
-    let cp: SpecificHeatCapacity = specific_heat_capacity(
+    let cp: SpecificHeatCapacity = try_get_cp(
         material,
         temperature,
         pressure)?;
 
     // get k 
-    let k: ThermalConductivity = thermal_conductivity(
+    let k: ThermalConductivity = try_get_kappa_thermal_conductivity(
         material,
         temperature,
         pressure)?;

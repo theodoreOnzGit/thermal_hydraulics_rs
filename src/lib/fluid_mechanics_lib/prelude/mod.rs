@@ -1273,6 +1273,8 @@ fluid_component_calculation::custom_component_calc::
 /// ```
 pub use crate::fluid_mechanics_lib::fluid_component_collection::*;
 
+/// enums within fluid mechanics lib 
+pub use crate::fluid_mechanics_lib::fluid_component_calculation::enums::*;
 
 /// Last but not least, we also have fluid thermophsyical properties as
 /// a trait
@@ -1289,7 +1291,7 @@ pub use std::f64::consts::PI;
 pub use uom::si::f64::*;
 pub use uom::si::length::{meter, inch, millimeter};
 pub use uom::si::mass_rate::kilogram_per_second;
-pub use uom::si::pressure::{pascal};
+pub use uom::si::pressure::pascal;
 pub use uom::si::angle::degree;
 pub use uom::si::mass_density::kilogram_per_cubic_meter;
 pub use uom::si::thermodynamic_temperature::degree_celsius;

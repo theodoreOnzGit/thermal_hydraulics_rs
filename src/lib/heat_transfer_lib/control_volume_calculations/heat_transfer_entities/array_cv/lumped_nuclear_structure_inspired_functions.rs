@@ -6,7 +6,7 @@ use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 
 use super::calculation::solve_conductance_matrix_power_vector;
 /// This is mostly a direct translation of GeN-Foam code, 
@@ -164,7 +164,7 @@ fn _advance_timestep_for_externally_cooled_array_cv_no_insulation(
 
     // Todo: probably need to synchronise error types in future
     let inner_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
+    try_get_h(
         inner_single_cv.material_control_volume,
         T[0],
         inner_single_cv.pressure_control_volume).unwrap();

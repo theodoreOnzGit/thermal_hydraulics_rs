@@ -38,7 +38,7 @@ use super::LiquidMaterial::*;
 /// 
 /// ```
 #[inline]
-pub fn density(material: Material, 
+pub fn try_get_rho(material: Material, 
     temperature: ThermodynamicTemperature,
     _pressure: Pressure) -> Result<MassDensity, String> {
 
@@ -159,7 +159,7 @@ pub fn density_test_steel(){
     let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
     let pressure = Pressure::new::<atmosphere>(1.0);
 
-    let density = density(steel, temperature, pressure);
+    let density = try_get_rho(steel, temperature, pressure);
 
     approx::assert_relative_eq!(
         8030_f64,

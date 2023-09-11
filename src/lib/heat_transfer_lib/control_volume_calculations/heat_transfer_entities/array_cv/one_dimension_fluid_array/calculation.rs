@@ -5,9 +5,9 @@ use uom::si::f64::*;
 use uom::si::power::watt;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
 use crate::heat_transfer_lib::thermophysical_properties::prandtl;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
-use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::thermal_conductivity;
-use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::FluidArray;
@@ -138,7 +138,7 @@ impl FluidArray{
         let rho_cp: Array1<VolumetricHeatCapacity> = 
         self.temperature_array_current_timestep.iter().map(
             |&temperature| {
-                rho_cp(material, temperature, pressure).unwrap()
+                try_get_rho_cp(material, temperature, pressure).unwrap()
             }
         ).collect();
         // energy balance is: 
@@ -434,7 +434,7 @@ impl FluidArray{
                 // first, get enthalpy of the node in front 
 
                 let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     self.back_single_cv.material_control_volume,
                     self.temperature_array_current_timestep[1],
                     self.back_single_cv.pressure_control_volume).unwrap();
@@ -477,7 +477,7 @@ impl FluidArray{
                 // assume back cv and front cv material are the same
 
                 let h_fluid_last_timestep: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     self.back_single_cv.material_control_volume,
                     self.temperature_array_current_timestep[i],
                     self.back_single_cv.pressure_control_volume).unwrap();
@@ -497,7 +497,7 @@ impl FluidArray{
                     // enthalpy must be based on the the cv at i-1
 
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         self.back_single_cv.material_control_volume,
                         self.temperature_array_current_timestep[i-1],
                         self.back_single_cv.pressure_control_volume).unwrap();
@@ -510,7 +510,7 @@ impl FluidArray{
 
                     // enthalpy must be based on cv at i+1
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         self.back_single_cv.material_control_volume,
                         self.temperature_array_current_timestep[i+1],
                         self.back_single_cv.pressure_control_volume).unwrap();
@@ -567,7 +567,7 @@ impl FluidArray{
                 // back
 
                 let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     self.back_single_cv.material_control_volume,
                     self.temperature_array_current_timestep[i-1],
                     self.back_single_cv.pressure_control_volume).unwrap();
@@ -611,7 +611,7 @@ impl FluidArray{
 
         let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
 
-        let prandtl_number: Ratio = prandtl::liquid_prandtl(
+        let prandtl_number: Ratio = prandtl::try_get_prandtl(
             material,
             bulk_temperature,
             pressure
@@ -634,7 +634,7 @@ impl FluidArray{
             // which means we need to get axial conductance 
             // between nodes 
 
-            let average_fluid_conductivity = thermal_conductivity(
+            let average_fluid_conductivity = try_get_kappa_thermal_conductivity(
                 material,
                 bulk_temperature,
                 pressure
@@ -752,7 +752,7 @@ impl FluidArray{
 
         // Todo: probably need to synchronise error types in future
         let back_node_enthalpy_next_timestep: AvailableEnergy = 
-        specific_enthalpy(
+        try_get_h(
             self.back_single_cv.material_control_volume,
             new_temperature_array[0],
             self.back_single_cv.pressure_control_volume).unwrap();
@@ -761,7 +761,7 @@ impl FluidArray{
             = back_node_enthalpy_next_timestep;
 
         let front_node_enthalpy_next_timestep: AvailableEnergy = 
-        specific_enthalpy(
+        try_get_h(
             self.front_single_cv.material_control_volume,
             new_temperature_array[number_of_nodes-1],
             self.front_single_cv.pressure_control_volume).unwrap();

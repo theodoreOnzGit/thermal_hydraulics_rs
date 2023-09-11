@@ -4,7 +4,7 @@ use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
 
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
@@ -177,7 +177,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 // first, get enthalpy of the node in front 
 
                 let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[1],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -221,7 +221,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 // assume back cv and front cv material are the same
 
                 let h_fluid_last_timestep: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[i],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -241,7 +241,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                     // enthalpy must be based on the the cv at i-1
 
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         back_single_cv.material_control_volume,
                         last_timestep_temperature_fluid[i-1],
                         back_single_cv.pressure_control_volume).unwrap();
@@ -254,7 +254,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
 
                     // enthalpy must be based on cv at i+1
                     let h_fluid_adjacent_node: AvailableEnergy = 
-                    specific_enthalpy(
+                    try_get_h(
                         back_single_cv.material_control_volume,
                         last_timestep_temperature_fluid[i+1],
                         back_single_cv.pressure_control_volume).unwrap();
@@ -312,7 +312,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 // back
 
                 let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
-                specific_enthalpy(
+                try_get_h(
                     back_single_cv.material_control_volume,
                     last_timestep_temperature_fluid[i-1],
                     back_single_cv.pressure_control_volume).unwrap();
@@ -354,7 +354,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
 
     // Todo: probably need to synchronise error types in future
     let back_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
+    try_get_h(
         back_single_cv.material_control_volume,
         temperature_vector[0],
         back_single_cv.pressure_control_volume).unwrap();
@@ -363,7 +363,7 @@ pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
     = back_node_enthalpy_next_timestep;
 
     let front_node_enthalpy_next_timestep: AvailableEnergy = 
-    specific_enthalpy(
+    try_get_h(
         front_single_cv.material_control_volume,
         temperature_vector[number_of_nodes-1],
         front_single_cv.pressure_control_volume).unwrap();
@@ -412,10 +412,10 @@ pub fn fluid_node_calculation_initial_test(){
     use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
-    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
     use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
     use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
-    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
     use crate::heat_transfer_lib::thermophysical_properties::Material;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
@@ -792,7 +792,7 @@ pub fn fluid_node_calculation_initial_test(){
 
             for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
 
-                let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let fluid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     steel,
                     *fluid_temp,
                     atmospheric_pressure
@@ -806,7 +806,7 @@ pub fn fluid_node_calculation_initial_test(){
             // outflows 
 
             let enthalpy_inflow_in_back_cv: Power 
-            = therminol_mass_flowrate * specific_enthalpy(
+            = therminol_mass_flowrate * try_get_h(
                 therminol,
                 inlet_temperature,
                 atmospheric_pressure,
@@ -940,10 +940,10 @@ fn fluid_node_backflow_calculation_initial_test(){
     use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
-    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
     use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
     use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
-    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
     use crate::heat_transfer_lib::thermophysical_properties::Material;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
@@ -1309,7 +1309,7 @@ fn fluid_node_backflow_calculation_initial_test(){
 
             for (index,fluid_temp) in fluid_temp_vec_ptr_in_loop.iter().enumerate() {
 
-                let fluid_nodal_rho_cp: VolumetricHeatCapacity = rho_cp(
+                let fluid_nodal_rho_cp: VolumetricHeatCapacity = try_get_rho_cp(
                     steel,
                     *fluid_temp,
                     atmospheric_pressure
@@ -1328,7 +1328,7 @@ fn fluid_node_backflow_calculation_initial_test(){
             // flow leaving the back cv
 
             let enthalpy_inflow_from_bc: Power 
-            = therminol_mass_flowrate.abs() * specific_enthalpy(
+            = therminol_mass_flowrate.abs() * try_get_h(
                 therminol,
                 inlet_temperature,
                 atmospheric_pressure,

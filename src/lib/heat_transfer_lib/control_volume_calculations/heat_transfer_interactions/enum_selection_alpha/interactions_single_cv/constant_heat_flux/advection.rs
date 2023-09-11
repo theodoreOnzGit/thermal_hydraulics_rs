@@ -5,8 +5,8 @@ use uom::si::f64::*;
 
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_interactions::enum_selection_alpha::*;
-use crate::heat_transfer_lib::thermophysical_properties::density::density;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
@@ -43,7 +43,7 @@ fn calculate_cv_front_bc_back_advection(
     let control_vol_pressure = control_vol.pressure_control_volume;
     let control_vol_temperature = control_vol.get_temperature()?;
 
-    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = specific_enthalpy(
+    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,
         control_vol_temperature,
         control_vol_pressure
@@ -66,7 +66,7 @@ fn calculate_cv_front_bc_back_advection(
     // now this doesn't quite work well for compressible flow but for 
     // now I'll let it be
 
-    let density_bc: MassDensity = density(
+    let density_bc: MassDensity = try_get_rho(
         control_vol_material,
         control_vol_temperature,
         control_vol_pressure
@@ -130,7 +130,7 @@ fn calculate_bc_front_cv_back_advection(
     let control_vol_pressure = control_vol.pressure_control_volume;
     let control_vol_temperature = control_vol.get_temperature()?;
 
-    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = specific_enthalpy(
+    let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,
         control_vol_temperature,
         control_vol_pressure
@@ -153,7 +153,7 @@ fn calculate_bc_front_cv_back_advection(
     // now this doesn't quite work well for compressible flow but for 
     // now I'll let it be
 
-    let density_bc: MassDensity = density(
+    let density_bc: MassDensity = try_get_rho(
         control_vol_material,
         control_vol_temperature,
         control_vol_pressure
