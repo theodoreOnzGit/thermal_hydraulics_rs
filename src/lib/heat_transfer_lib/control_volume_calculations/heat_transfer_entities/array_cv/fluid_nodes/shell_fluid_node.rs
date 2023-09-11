@@ -1,19 +1,17 @@
-use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
 
-use csv::Writer;
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
-use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin}, num_traits::Zero};
+use ndarray_linalg::*;
+use ndarray_linalg::error::LinalgError;
+use uom::num_traits::Zero;
+use uom::si::f64::*;
+use uom::si::power::watt;
 
-use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp}, control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction};
-use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::CVType::*;
 
-use super::core_fluid_node::_advance_timestep_fluid_node_array_pipe_high_peclet_number;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
+
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction within the fluid
@@ -46,7 +44,7 @@ use super::core_fluid_node::_advance_timestep_fluid_node_array_pipe_high_peclet_
 ///
 ///
 pub (in crate) 
-fn advance_timestep_fluid_shell_array_high_peclet_number(
+fn _advance_timestep_fluid_shell_array_high_peclet_number(
     back_single_cv: &mut SingleCVNode,
     front_single_cv: &mut SingleCVNode,
     number_of_nodes: usize,
