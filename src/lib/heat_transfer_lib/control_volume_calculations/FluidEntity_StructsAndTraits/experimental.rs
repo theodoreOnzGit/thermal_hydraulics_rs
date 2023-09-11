@@ -1,4 +1,3 @@
-extern crate uom;
 use uom::si::f64::*;
 /// This struct contains information for Fluid
 /// Temperatures in a Pipe (ie one inlet and

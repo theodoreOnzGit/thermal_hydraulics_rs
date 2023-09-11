@@ -1,4 +1,5 @@
 # thermal_hydraulics_rs
+
 A thermal hydraulics library primarily for the Compact 
 Integral Effects Test (CIET) and the Fluoride Salt 
 Cooled High Temperature Reactor (FHR).
@@ -21,8 +22,46 @@ extern crate thermal_hydraulics_rs;
 use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::*;
 ```
 
+If you want the full thermal hydraulics library: 
+
+```rust 
+extern crate thermal_hydraulics_rs;
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+```
+
+Do note that the alpha nightly API 
+is still highly unstable and subject to change.
+
 Please refer to crate documentation for more details,
-especially the prelude docuemntation for more examples
+especially the prelude documentation for more examples
+
+# tests 
+If you want to use cargo watch for testing, 
+this is because you will likely run into csv files. When Rust 
+produces csv files, cargo watch catches those new csv files and thinks 
+you've produced new code. Therefore, cargo watch will re run the tests,
+resulting in an infinite loop.
+
+```bash 
+cargo watch -x test --ignore '*.csv'
+```
+
+To test in release mode (for faster performance):
+
+```bash 
+cargo watch -x "test --release" --ignore '*.csv'
+```
+
+This will ensure that csv files generated to not mess up with cargo 
+causing tests to restart in an endless loop.
+
+Secondly, if you want to track the csv files eg. 'myfile.csv':
+
+```bash 
+tail -f myfile.csv
+```
+
+This is a classic OpenFOAM tutorial method to track test data.
 
 ## Licensing
 
@@ -33,10 +72,16 @@ many free and open source libraries such as:
 2. Peroxide
 3. Roots
 4. GeN-Foam and OpenFOAM
+5. ndarray-linalg, and therefore, Intel Math Kernel Library
+and OpenBLAS
+6. thiserror
+7. csv 
 
-They are released under Apache 2.0 and MIT (uom and peroxide)
+Most are released under Apache 2.0 and MIT 
+(uom, ndarray-linalg, OpenBLAS, thiserror and peroxide)
 and roots is released under BSD 2 clause. The licensing notices
-is provided in the licensing file.
+is provided in the licensing file. The csv crate is licensed 
+under MIT or the unlicense. I'll just leave the MIT license here. 
 
 This library is released as part of a larger thermal hydraulics
 library which has some code taken from GeN-Foam, an OpenFOAM
@@ -44,6 +89,14 @@ derivative.
 OpenFOAM and GeN-Foam are released under GNU GPL v3.0. 
 As I am reliant on these libraries under the GNU GPL v3.0
 license, this software is also released under GNU GPL v3.0.
+
+The Intel math kernel library (intel-mkl) is used for linear algebra calculations 
+on windows machines, and therefore is subject to the intel simplified 
+software license. Neither I nor the writers of the crate 
+are associated with or represent Intel.
+
+I'm also not a representative of the Rust Foundation, nor am I affiliated 
+with them.
 
 ## Principles
 
@@ -174,6 +227,8 @@ many free and open source libraries such as:
 2. Peroxide
 3. Roots
 4. GeN-Foam and OpenFOAM
+5. ndarray-linalg (which depends on intel-mkl for Windows/MacOS or OpenBLAS 
+for Linux machines)
 
 They are released under Apache 2.0 and MIT (uom and peroxide)
 and roots is released under BSD 2 clause. The licensing notices
@@ -1298,3 +1353,203 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+## Intel MKL License 
+
+Intel Simplified Software License for Intel(R) Math Kernel Library,
+Intel(R) Integrated Performance Primitives Library,
+Intel(R) Machine Learning Scaling Library, and
+Intel(R) Distribution for Python* (version January 2017)
+
+Copyright (c) 2017 Intel Corporation.
+
+Use and Redistribution. You may use and redistribute the software (the
+"Software"), without modification, provided the following conditions are met:
+
+* Redistributions must reproduce the above copyright notice and the following
+  terms of use in the Software and in the documentation and/or other materials
+  provided with the distribution.
+* Neither the name of Intel nor the names of its suppliers may be used to 
+  endorse or promote products derived from this Software without specific prior
+  written permission.
+* No reverse engineering, decompilation, or disassembly of this Software is
+  permitted.
+
+Limited patent license. Intel grants you a world-wide, royalty-free,
+non-exclusive license under patents it now or hereafter owns or controls to
+make, have made, use, import, offer to sell and sell ("Utilize") this Software,
+but solely to the extent that any such patent is necessary to Utilize the
+Software alone. The patent license shall not apply to any combinations which
+include this software. No hardware per se is licensed hereunder.
+
+Third party and other Intel programs. "Third Party Programs" are the files
+listed in the "third-party-programs.txt" text file that is included with the
+Software and may include Intel programs under separate license terms. Third
+Party Programs, even if included with the distribution of the Materials, are
+governed by separate license terms and those license terms solely govern your
+use of those programs.
+
+DISCLAIMER. THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT ARE
+DISCLAIMED. THIS SOFTWARE IS NOT INTENDED NOR AUTHORIZED FOR USE IN SYSTEMS OR
+APPLICATIONS WHERE FAILURE OF THE SOFTWARE MAY CAUSE PERSONAL INJURY OR DEATH.
+
+LIMITATION OF LIABILITY. IN NO EVENT WILL INTEL BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. YOU AGREE TO INDEMNIFY AND HOLD
+INTEL HARMLESS AGAINST ANY CLAIMS AND EXPENSES RESULTING FROM YOUR USE OR
+UNAUTHORIZED USE OF THE SOFTWARE.
+
+No support. Intel may make changes to the Software, at any time without notice,
+and is not obligated to support, update or provide training for the Software.
+
+Termination. Intel may terminate your right to use the Software in the event of
+your breach of this Agreement and you fail to cure the breach within a
+reasonable period of time.
+
+Feedback. Should you provide Intel with comments, modifications, corrections,
+enhancements or other input ("Feedback") related to the Software Intel will be
+free to use, disclose, reproduce, license or otherwise distribute or exploit the
+Feedback in its sole discretion without any obligations or restrictions of any
+kind, including without limitation, intellectual property rights or licensing
+obligations.
+
+Compliance with laws. You agree to comply with all relevant laws and
+regulations governing your use, transfer, import or export (or prohibition
+thereof) of the Software.
+
+Governing law. All disputes will be governed by the laws of the United States
+of America and the State of Delaware without reference to conflict of law
+principles and subject to the exclusive jurisdiction of the state or federal
+courts sitting in the State of Delaware, and each party agrees that it submits
+to the personal jurisdiction and venue of those courts and waives any
+objections. The United Nations Convention on Contracts for the International
+Sale of Goods (1980) is specifically excluded and will not apply to the
+Software.
+
+*Other names and brands may be claimed as the property of others.
+
+
+
+# csv crate license (MIT) 
+The MIT License (MIT)
+
+Copyright (c) 2015 Andrew Gallant
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+# ndarray-linalg license (MIT)
+Copyright 2016 The ndarray-linalg Developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the “Software”), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# OpenBLAS License 
+Copyright 2015–2021 The openblas-src Developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the “Software”), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+# ndarray license (MIT)
+
+Copyright (c) 2015 - 2021 Ulrik Sverdrup "bluss",
+			  Jim Turner,
+			  and ndarray developers
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+# thiserror license (MIT)
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.

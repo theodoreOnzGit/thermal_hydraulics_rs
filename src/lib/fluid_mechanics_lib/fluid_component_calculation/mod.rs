@@ -89,4 +89,7 @@ pub mod tests_and_examples_concurrency_multithreading;
 pub use tests_and_examples_concurrency_multithreading::*;
 
 
+/// contains correlations for dimensionless losses 
+/// encased inside an enum 
+pub mod enums;
 

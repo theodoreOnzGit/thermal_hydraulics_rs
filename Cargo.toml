@@ -3,7 +3,7 @@ name = "thermal_hydraulics_rs"
 version = "0.0.5"
 edition = "2021"
 license = "GPL-3.0"
-description = "A Thermal Hydraulics Library with some useful traits and functions for heat transfer and fluid mechanics"
+description = "A Thermal Hydraulics Library with some useful traits,enums and functions for heat transfer and fluid mechanics"
 homepage = "https://github.com/theodoreOnzGit/thermal_hydraulics_rs"
 repository ="https://github.com/theodoreOnzGit/thermal_hydraulics_rs"
 readme = "README.md"
@@ -13,10 +13,21 @@ categories = ["science"]
 
 [dependencies]
 approx = "0.5.1"
+csv = "1.2.2"
 ndarray = "0.15.6"
-peroxide = "0.31.6"
+peroxide = "0.34.0"
 roots = "0.0.8"
-uom = "0.34.0"
+thiserror = "1.0.46"
+uom = "0.35.0"
+
+[target.'cfg(windows)'.dependencies]
+ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
+
+[target.'cfg(macos)'.dependencies]
+ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
+
+[target.'cfg(unix)'.dependencies]
+ndarray-linalg = { version = "0.16.0", features = ["openblas-static"] }
 
 # library and binary key
 [[bin]]

@@ -104,6 +104,7 @@ fn churchillInnerTerm(Re: f64, roughnessRatio: f64) -> f64 {
 
 // this particular implementation uses the churchill correlation
 #[allow(non_snake_case)]
+#[inline]
 fn fanning(ReynoldsNumber: f64, roughnessRatio: f64) -> f64{
 
     if ReynoldsNumber == 0.0 {
@@ -125,6 +126,7 @@ fn fanning(ReynoldsNumber: f64, roughnessRatio: f64) -> f64{
 }
 
 #[allow(non_snake_case)]
+#[inline]
 /// calculates darcy friction factor using churchill correlation
 pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
     return 4.0*fanning(ReynoldsNumber, roughnessRatio);

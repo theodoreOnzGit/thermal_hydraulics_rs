@@ -240,6 +240,8 @@ pub trait ConstantCompositionSinglePhaseFluidPropertiesAssociatedFunctions
 /// because i want it to be made into objects. Therefore, it takes
 /// an immutable reference to self
 ///
+///
+/// probably going to be deprecated as an interface in future
 pub trait FluidProperties {
     /// fluid density based on temperature,
     fn density(&self,

@@ -34,13 +34,13 @@
 //!    Research and Safety Initiative, Per F. Peterson, University of 
 //!    California, Berkeley Thermal Hydraulics Laboratory
 //!
-//!    thermal_hydrualics_rs is free software; you can 
+//!    thermal_hydraulics_rs is free software; you can 
 //!    redistribute it and/or modify it
 //!    under the terms of the GNU General Public License as published by the
 //!    Free Software Foundation; either version 2 of the License, or (at your
 //!    option) any later version.
 //!
-//!    thermal_hydrualics_rs is distributed in the hope 
+//!    thermal_hydraulics_rs is distributed in the hope 
 //!    that it will be useful, but WITHOUT
 //!    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 //!    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
@@ -75,19 +75,12 @@ pub mod fluid_mechanics_lib;
 /// Heat Transfer Module
 pub mod heat_transfer_lib;
 
-/// placeholder function
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+/// use peroxide macros 
+#[macro_use]
+extern crate peroxide;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// provides error types for thermal_hydraulics_rs
+pub mod thermal_hydraulics_error;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
-
+/// prelude, for easy importing 
+pub mod prelude;

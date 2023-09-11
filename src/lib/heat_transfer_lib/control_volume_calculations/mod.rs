@@ -46,6 +46,14 @@
 /// Implicit timestep calculations
 pub mod common_functions;
 
+/// heat_transfer_entities contain the structs and enums which describe 
+/// control volumes and boundary conditions
+pub mod heat_transfer_entities;
+
+/// heat_transfer_interactions contains the structs and enums 
+/// which describe behaviour for how control volumes and BCs 
+/// (heat_transfer_entities) interact with each other
+pub mod heat_transfer_interactions;
 
 ///// This module contains traits useful for constructing control volumes
 /////
