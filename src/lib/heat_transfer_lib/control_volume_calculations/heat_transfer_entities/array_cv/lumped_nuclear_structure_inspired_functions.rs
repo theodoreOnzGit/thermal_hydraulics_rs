@@ -36,7 +36,7 @@ use super::calculation::solve_conductance_matrix_power_vector;
 #[inline]
 #[allow(non_snake_case)]
 pub (in crate::heat_transfer_lib::control_volume_calculations)
-fn advance_timestep_for_externally_cooled_array_cv_no_insulation(
+fn _advance_timestep_for_externally_cooled_array_cv_no_insulation(
     inner_single_cv: &mut SingleCVNode,
     nodesNumber: usize,
     dt: Time,

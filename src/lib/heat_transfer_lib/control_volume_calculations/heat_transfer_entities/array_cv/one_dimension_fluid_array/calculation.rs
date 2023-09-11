@@ -3,7 +3,6 @@ use ndarray_linalg::error::LinalgError;
 use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
-use uom::si::ratio::ratio;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
 use crate::heat_transfer_lib::thermophysical_properties::prandtl;
 use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
@@ -105,14 +104,7 @@ impl FluidArray{
         // as the initial guess (i think?)
         //
 
-        let mut new_temperature_array: Array1<ThermodynamicTemperature> = 
-        self.get_temperature_array()?.map(
-            |temp_kelvin_ptr: &ThermodynamicTemperature| {
-
-                return *temp_kelvin_ptr;
-            }
-
-        );
+        let new_temperature_array: Array1<ThermodynamicTemperature>;
         // now let's start calculation 
         //
         let mut coefficient_matrix: Array2<ThermalConductance> = 

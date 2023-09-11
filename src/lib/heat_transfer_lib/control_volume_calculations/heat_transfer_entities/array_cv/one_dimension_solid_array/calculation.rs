@@ -71,14 +71,7 @@ impl SolidColumn {
         // process, so we just copy the old temperature array over 
         // as the initial guess (i think?)
 
-        let mut new_temperature_array: Array1<ThermodynamicTemperature> = 
-        self.get_temperature_array()?.map(
-            |temp_kelvin_ptr: &ThermodynamicTemperature| {
-
-                return *temp_kelvin_ptr;
-            }
-
-        );
+        let new_temperature_array: Array1<ThermodynamicTemperature>;
         // now let's start calculation 
         //
         let mut coefficient_matrix: Array2<ThermalConductance> = 
@@ -452,7 +445,7 @@ impl SolidColumn {
         = average_thermal_conductivity * self.xs_area 
         / node_length;
 
-        let mut neglect_axial_conduction: bool = {
+        let neglect_axial_conduction: bool = {
 
             // how shall we know if the axial conduction is to be 
             // neglected?
