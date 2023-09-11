@@ -1,4 +1,3 @@
-use uom::si::f64::*;
 
 /// Contains entities which transfer heat and interact with each 
 /// other
@@ -10,6 +9,17 @@ pub enum HeatTransferEntity {
     ControlVolume(CVType),
     /// Contains a list of Boundary conditions
     BoundaryConditions(BCType)
+}
+
+impl HeatTransferEntity {
+
+    /// allows the user to override the heat transfer entity 
+    pub fn set(&mut self, 
+        user_input_hte: HeatTransferEntity) -> Result<(), ThermalHydraulicsLibError>{
+        *self = user_input_hte;
+
+        Ok(())
+    }
 }
 
 /// To determine heat transfer between two control volumes or 
@@ -74,42 +84,10 @@ pub enum CVType {
 }
 
 
-/// Contains all the types of Boundary Conditions (BCs) you can use 
-#[derive(Debug,Clone,Copy,PartialEq)]
-pub enum BCType {
-    /// The user specifies a fixed temperature for the BC
-    UserSpecifiedTemperature(ThermodynamicTemperature),
-    /// The user specifies a heat flux for the BC
-    /// the uom type is heat flux density in power/area
-    UserSpecifiedHeatFlux(HeatFluxDensity),
-    /// The user Specifies a heat Addition for the BC
-    /// The uom type is Power
-    UserSpecifiedHeatAddition(Power),
-}
 
-impl BCType {
-    /// creates a new constant temperature BC
-    pub fn new_const_temperature(temperature:ThermodynamicTemperature)
-        -> HeatTransferEntity {
-        return HeatTransferEntity::BoundaryConditions(
-        BCType::UserSpecifiedTemperature(temperature));
-    }
-
-    /// creates a new constant heat flux bc
-    pub fn new_const_heat_flux(heat_flux: HeatFluxDensity)
-        -> HeatTransferEntity {
-        return HeatTransferEntity::BoundaryConditions(
-        BCType::UserSpecifiedHeatFlux(heat_flux));
-    }
-
-    /// creates a new constant heat addition bc
-    pub fn new_const_heat_addition(heat_addition: Power)
-        -> HeatTransferEntity {
-        return HeatTransferEntity::BoundaryConditions(
-        BCType::UserSpecifiedHeatAddition(heat_addition));
-    }
-
-}
+/// contains codes for boundary conditions
+pub mod boundary_conditions;
+pub use boundary_conditions::BCType;
 
 
 
@@ -172,6 +150,8 @@ pub use postprocessing::*;
 /// calculation modules contain methods to advance timestep 
 pub mod calculation;
 pub use calculation::*;
+
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
 

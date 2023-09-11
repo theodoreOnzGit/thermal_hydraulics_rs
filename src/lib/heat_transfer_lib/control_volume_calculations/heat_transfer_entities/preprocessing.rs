@@ -1,4 +1,4 @@
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::prelude::FluidComponent};
+use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::prelude::FluidComponent, heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{HeatTransferInteractionType, link_heat_transfer_entity}};
 
 use super::{HeatTransferEntity, CVType};
 use uom::si::f64::*;
@@ -98,5 +98,44 @@ impl HeatTransferEntity {
             heat transfer entity"),
         }
 
+    }
+
+    /// wrapper for linking, makes it easier to link 
+    pub fn link_to_front(&mut self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            self,
+            other_hte,
+            interaction).unwrap();
+
+        Ok(())
+    }
+
+    /// wrapper for linking, makes it easier to link 
+    pub fn link_to_back(&mut self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            other_hte,
+            self,
+            interaction).unwrap();
+
+        Ok(())
+    }
+
+    /// wrapper for linking, makes it easier to link 
+    pub fn link(entity: &mut HeatTransferEntity,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            entity,
+            other_hte,
+            interaction).unwrap();
+
+        Ok(())
     }
 }

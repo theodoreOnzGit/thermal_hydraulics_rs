@@ -2,10 +2,9 @@ use uom::si::f64::MassDensity;
 use uom::si::f64::Pressure;
 use uom::si::f64::ThermodynamicTemperature;
 use uom::si::mass_density::kilogram_per_cubic_meter;
-use uom::si::pressure::atmosphere;
 use crate::fluid_mechanics_lib::therminol_component::
 dowtherm_a_properties::getDowthermADensity;
-use uom::si::thermodynamic_temperature::kelvin;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::LiquidMaterial;
 use super::Material;
@@ -51,6 +50,24 @@ pub fn density(material: Material,
     return Ok(density);
 }
 
+impl Material {
+    /// returns density of the material
+    pub fn density(&self,
+        temperature: ThermodynamicTemperature,
+        _pressure: Pressure) -> Result<MassDensity, ThermalHydraulicsLibError>{
+
+    let density: MassDensity = match self {
+        Material::Solid(_) => solid_density(self.clone(), temperature),
+        Material::Liquid(_) => liquid_density(self.clone(), temperature)
+    };
+
+    return Ok(density);
+        
+
+    }
+
+}
+
 // should the material happen to be a solid, use this function
 fn solid_density(material: Material,
     _temperature: ThermodynamicTemperature) -> MassDensity{
@@ -75,6 +92,9 @@ fn solid_density(material: Material,
 
 }
 
+
+
+
 // should the material happen to be a liquid, use this function
 fn liquid_density(material: Material, 
     fluid_temp: ThermodynamicTemperature) -> MassDensity {
@@ -91,6 +111,23 @@ fn liquid_density(material: Material,
     };
 
     return density;
+}
+
+impl LiquidMaterial {
+
+    /// returns density of liquid material
+    pub fn density(&self,
+        fluid_temp: ThermodynamicTemperature,) -> 
+    Result<MassDensity,ThermalHydraulicsLibError> {
+
+        let density: MassDensity = match &self.clone() {
+            DowthermA => dowtherm_a_density(fluid_temp),
+            TherminolVP1 => dowtherm_a_density(fluid_temp)
+        };
+
+        Ok(density)
+
+    }
 }
 
 #[inline]
@@ -116,6 +153,8 @@ fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> MassDensity{
 #[test]
 pub fn density_test_steel(){
 
+    use uom::si::thermodynamic_temperature::kelvin;
+    use uom::si::pressure::atmosphere;
     let steel = Material::Solid(SteelSS304L);
     let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
     let pressure = Pressure::new::<atmosphere>(1.0);

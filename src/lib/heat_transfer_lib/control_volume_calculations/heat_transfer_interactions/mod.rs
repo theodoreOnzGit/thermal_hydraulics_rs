@@ -93,6 +93,7 @@ use uom::si::f64::*;
 /// The function will then calculate the heat transfer between the two 
 /// control volumes, and either return a value or mutate the CV objects 
 /// using mutable borrows
+#[inline]
 pub fn link_heat_transfer_entity(entity_1: &mut HeatTransferEntity,
     entity_2: &mut HeatTransferEntity,
     interaction: HeatTransferInteractionType)-> Result<(), String>{

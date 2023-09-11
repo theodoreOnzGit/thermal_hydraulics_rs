@@ -4,9 +4,10 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction, OuterDiameterThermalConduction, BCType};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
+use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{SolidMaterial, Material};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -117,6 +118,8 @@ pub fn matrix_calculation_initial_test(){
     let heater_steady_state_power = Power::new::<kilowatt>(8.0);
     let therminol_mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
     let node_length: Length = heated_length/number_of_nodes as f64;
+    let inlet_temperature = ThermodynamicTemperature::new::<degree_celsius>
+        (79.12);
 
     // the form loss of the pipe is meant to help construct the inner 
     // pipe object, that is to help it return the nusselt number 
@@ -187,8 +190,18 @@ pub fn matrix_calculation_initial_test(){
 
 
         //csv writer
+        //
+        let mut wtr = Writer::from_path("array_cv_test_ciet_heater_v_2_0_steady_state.csv")
+            .unwrap();
 
-        let mut time_wtr = Writer::from_path("fluid_node_calc_time_profile.csv")
+        wtr.write_record(&["time_seconds",
+            "heater_power_kilowatts",
+            "therminol_temperature_celsius",
+            "shell_temperature_celsius",
+            "timestep_seconds",])
+            .unwrap();
+
+        let mut time_wtr = Writer::from_path("array_cv_test_heater_v_2_0_calc_time_profile.csv")
             .unwrap();
 
         time_wtr.write_record(&["loop_calculation_time_nanoseconds",
@@ -199,7 +212,7 @@ pub fn matrix_calculation_initial_test(){
             .unwrap();
 
         let mut temp_profile_wtr = Writer::from_path(
-            "fluid_node_temp_profile.csv")
+            "array_cv_test_heater_v_2_0_temp_profile.csv")
             .unwrap();
 
         // this is code for writing the array of required temperatures
@@ -337,14 +350,164 @@ pub fn matrix_calculation_initial_test(){
                 atmospheric_pressure,
             ).unwrap();
 
-            // now, create conductance vector  for heater v2.0
 
-            let mut steel_therminol_conductance_vector: Array1<ThermalConductance> = 
-            Array::zeros(number_of_nodes);
+            // now we need conductance for steel and air, the procedure 
+            // is quite similar
+            let radial_thickness_thermal_conduction = 0.5*(od - id);
+            let radial_thickness_thermal_conduction: 
+            RadialCylindricalThicknessThermalConduction = 
+            radial_thickness_thermal_conduction.into();
+
+            let outer_diameter_thermal_conduction: OuterDiameterThermalConduction
+            = od.into();
+
+            let h_to_air: HeatTransfer = 
+            HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+
+
+            let steel_air_conductance_interaction: HeatTransferInteractionType
+            = HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidOutside(
+                    (steel, 
+                    radial_thickness_thermal_conduction,
+                    solid_average_temp,
+                    atmospheric_pressure),
+                    (h_to_air,
+                    outer_diameter_thermal_conduction,
+                    node_length.clone().into())
+            );
+
+            let steel_air_nodal_thermal_conductance: ThermalConductance = 
+            steel_air_conductance_interaction.try_get_thermal_conductance(
+                fluid_average_temp,
+                solid_average_temp,
+                atmospheric_pressure,
+                atmospheric_pressure,
+            ).unwrap();
+
+            // we need a heat source also, and for that, a suitable 
+            // heat source distribution within the tube (assumed uniform)
+            
+            let q_fraction_per_node: f64 = 1.0/ number_of_nodes as f64;
+            let mut q_frac_arr: Array1<f64> = Array::default(number_of_nodes);
+            q_frac_arr.fill(q_fraction_per_node);
 
 
 
-            steel_therminol_conductance_vector.fill(therminol_steel_nodal_thermal_conductance);
+
+            // lateral connections 
+            {
+                // first i will need to create temperature vectors 
+
+                let mut ambient_temperature_vector: Vec<ThermodynamicTemperature> 
+                = Array1::default(number_of_nodes)
+                    .iter().map( |&temp| {
+                        temp
+                    }
+                    ).collect();
+
+                ambient_temperature_vector.fill(ambient_air_temp);
+
+                let solid_temp_vector: Vec<ThermodynamicTemperature> 
+                = steel_array_clone.get_temperature_vector().unwrap();
+
+                let fluid_temp_vector: Vec<ThermodynamicTemperature> 
+                = therminol_array_clone.get_temperature_vector().unwrap();
+
+                // second, fill them into the each array 
+
+                steel_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                    steel_air_nodal_thermal_conductance,
+                    ambient_temperature_vector
+                ).unwrap();
+
+                steel_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                    therminol_steel_nodal_thermal_conductance,
+                    fluid_temp_vector
+                ).unwrap();
+                // we also want to add a heat source
+                
+                steel_array_clone.lateral_link_new_power_vector(
+                    heater_steady_state_power,
+                    q_frac_arr
+                ).unwrap();
+
+                therminol_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                    therminol_steel_nodal_thermal_conductance,
+                    solid_temp_vector
+                ).unwrap();
+
+
+
+                // now that lateral connections are done, 
+                // modify the heat transfer entity 
+                therminol_entity_ptr_in_loop.deref_mut()
+                    .set(therminol_array_clone.clone().into()).unwrap();
+
+                steel_entity_ptr_in_loop.deref_mut()
+                    .set(steel_array_clone.clone().into()).unwrap();
+                
+
+            }
+
+            
+
+            // axial connection 
+            {
+
+                // now I'm going to make adiabatic bcs and ambient temp 
+                // bcs 
+                let mut adiabatic_bc: HeatTransferEntity 
+                = BCType::new_adiabatic_bc();
+                let mut inlet_temperature_bc: HeatTransferEntity 
+                = BCType::new_const_temperature(
+                    inlet_temperature);
+
+                // the axial interactions are constant power heat addition
+                // and then advection
+
+                let constant_heat_addition: HeatTransferInteractionType 
+                = HeatTransferInteractionType::UserSpecifiedHeatAddition;
+
+                let inlet_advection_interaction: HeatTransferInteractionType 
+                = DataAdvection::new_from_heat_transfer_entity(
+                    therminol_mass_flowrate,
+                    LiquidMaterial::TherminolVP1.into(),
+                    &mut inlet_temperature_bc,
+                    &mut therminol_array_clone.back_single_cv.clone().into()
+                ).into();
+
+                let outlet_advection_interaction: HeatTransferInteractionType
+                = DataAdvection::new_from_temperature_and_liquid_material(
+                    therminol_mass_flowrate,
+                    LiquidMaterial::TherminolVP1.into(),
+                    therminol_array_clone.front_single_cv.get_temperature().unwrap(),
+                    therminol_array_clone.front_single_cv.get_temperature().unwrap(),
+                ).into();
+                
+                therminol_entity_ptr_in_loop.deref_mut().link_to_back(
+                    &mut inlet_temperature_bc,
+                    inlet_advection_interaction).unwrap();
+
+                therminol_entity_ptr_in_loop.deref_mut().link_to_front(
+                    &mut adiabatic_bc,
+                    outlet_advection_interaction).unwrap();
+
+                steel_entity_ptr_in_loop.deref_mut().link_to_front(
+                    &mut adiabatic_bc,
+                    constant_heat_addition).unwrap();
+
+                steel_entity_ptr_in_loop.deref_mut().link_to_back(
+                    &mut adiabatic_bc,
+                    constant_heat_addition).unwrap();
+                
+            }
+
+            // end loop timer
+            
+            let node_connection_end_ns = 
+            node_connection_start.elapsed().unwrap().as_nanos();
+
             // advance timestep
             current_time_simulation_time += timestep;
 

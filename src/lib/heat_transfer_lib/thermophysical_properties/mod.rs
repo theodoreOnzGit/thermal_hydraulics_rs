@@ -1,6 +1,8 @@
 //! This module contains a library of liquid and solid 
 //! thermophysical properties
 
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
 /// basically,
 /// insert this enum into a thermophysical property function 
 /// or something
@@ -21,6 +23,35 @@ impl Default for Material{
     }
 }
 
+impl TryInto<SolidMaterial> for Material {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_into(self) -> Result<SolidMaterial, Self::Error> {
+        match self {
+            Material::Solid(material) => {
+                Ok(material)
+            },
+            Material::Liquid(_) => {
+                Err(ThermalHydraulicsLibError::TypeConversionErrorMaterial)
+            },
+        }
+    }
+}
+
+impl TryInto<LiquidMaterial> for Material {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_into(self) -> Result<LiquidMaterial, Self::Error> {
+        match self {
+            Material::Solid(_) => {
+                Err(ThermalHydraulicsLibError::TypeConversionErrorMaterial)
+            },
+            Material::Liquid(material) => {
+                Ok(material)
+            },
+        }
+    }
+}
 
 /// Contains a selection of solids with predefined material properties
 #[derive(Debug,Clone,Copy,PartialEq)]
@@ -38,6 +69,12 @@ pub enum SolidMaterial {
     Fiberglass
 }
 
+impl Into<Material> for SolidMaterial {
+    fn into(self) -> Material {
+        Material::Solid(self)
+    }
+}
+
 /// Contains a selection of liquids with predefined material properties
 #[derive(Debug,Clone,Copy,PartialEq)]
 pub enum LiquidMaterial {
@@ -45,6 +82,12 @@ pub enum LiquidMaterial {
     TherminolVP1,
     /// DowthermA, using 
     DowthermA
+}
+
+impl Into<Material> for LiquidMaterial {
+    fn into(self) -> Material {
+        Material::Liquid(self)
+    }
 }
 
 /// Density calculation

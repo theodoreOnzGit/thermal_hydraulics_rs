@@ -28,9 +28,13 @@ pub enum ThermalHydraulicsLibError {
     #[error("{0}")]
     NotImplementedForBoundaryConditions(String),
 
-    /// error for type conversions 
+    /// error for type conversions for heat transfer entity
     #[error("heat transfer entity is of the wrong type")]
     TypeConversionErrorHeatTransferEntity,
+
+    /// error for type conversions for material
+    #[error("material is of the wrong type")]
+    TypeConversionErrorMaterial,
 }
 
 /// 
@@ -56,6 +60,9 @@ impl Into<String> for ThermalHydraulicsLibError {
                 string
             },
             ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity => {
+                self.to_string()
+            },
+            ThermalHydraulicsLibError::TypeConversionErrorMaterial => {
                 self.to_string()
             },
         }
