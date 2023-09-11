@@ -400,8 +400,9 @@ fn get_conductance_single_cylindrical_radial_solid_liquid(
 
 
 /// calculates enthalpy flow between two heat transfer entities
+/// hardly ever used though
 pub(in crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions) 
-fn calculate_enthalpy_flow_between_two_heat_transfer_entities(
+fn _calculate_enthalpy_flow_between_two_heat_transfer_entities(
     front_entity: FrontHeatTransferEntity,
     back_entity: BackHeatTransferEntity,
     mass_flowrate_from_back_to_front_cv: MassRate) -> Result<Power, String>{

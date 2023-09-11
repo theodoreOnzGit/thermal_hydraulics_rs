@@ -13,7 +13,7 @@ use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entitie
 use crate::heat_transfer_lib::control_volume_calculations:: 
 heat_transfer_entities::CVType::*;
 
-use super::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number;
+use super::core_fluid_node::_advance_timestep_fluid_node_array_pipe_high_peclet_number;
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction within the fluid

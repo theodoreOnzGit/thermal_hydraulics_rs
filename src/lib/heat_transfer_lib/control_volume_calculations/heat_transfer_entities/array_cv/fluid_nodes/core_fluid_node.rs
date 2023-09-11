@@ -1,17 +1,14 @@
-use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
-
-use csv::Writer;
 use ndarray::*;
 use ndarray_linalg::{*, error::LinalgError};
-use uom::{si::{f64::*, power::{watt, kilowatt}, length::{meter, centimeter}, thermodynamic_temperature::{degree_celsius, kelvin}, pressure::atmosphere, area::square_meter, mass_rate::kilogram_per_second, time::second, heat_transfer::watt_per_square_meter_kelvin}, num_traits::Zero};
+use uom::num_traits::Zero;
+use uom::si::f64::*;
+use uom::si::power::watt;
 
-use crate::heat_transfer_lib::{thermophysical_properties::{specific_enthalpy::specific_enthalpy, LiquidMaterial, SolidMaterial, specific_heat_capacity::specific_heat_capacity, volumetric_heat_capacity::rho_cp}, control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction};
-use crate::heat_transfer_lib::thermophysical_properties::Material;
-use crate::heat_transfer_lib::control_volume_calculations::{heat_transfer_interactions::HeatTransferInteractionType};
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{SingleCVNode, array_cv::calculation::solve_conductance_matrix_power_vector, HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction};
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::CVType::{SingleCV, ArrayCV};
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
+
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction
@@ -38,7 +35,7 @@ heat_transfer_entities::CVType::{SingleCV, ArrayCV};
 /// generating heat, but you can also set it to zero
 ///
 ///
-pub fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
+pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
     back_single_cv: &mut SingleCVNode,
     front_single_cv: &mut SingleCVNode,
     number_of_nodes: usize,
@@ -399,6 +396,35 @@ pub fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
 #[test]
 pub fn fluid_node_calculation_initial_test(){
 
+    use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
+
+    use csv::Writer;
+    use ndarray::*;
+    use uom::si::f64::*;
+    use uom::si::power::kilowatt;
+    use uom::si::length::meter;
+    use uom::si::length::centimeter;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::time::second;
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::area::square_meter;
+    use uom::si::pressure::atmosphere;
+    use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
+
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::Material;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::RadialCylindricalThicknessThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
+
+    use crate::heat_transfer_lib::control_volume_calculations:: 
+    heat_transfer_entities::CVType::{SingleCV, ArrayCV};
 
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
@@ -843,7 +869,7 @@ pub fn fluid_node_calculation_initial_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let new_temperature_vec = 
-            advance_timestep_fluid_node_array_pipe_high_peclet_number(
+            _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
@@ -897,6 +923,33 @@ pub fn fluid_node_calculation_initial_test(){
 #[test]
 fn fluid_node_backflow_calculation_initial_test(){
 
+    use std::{sync::{Arc, Mutex}, time::SystemTime, ops::{Deref, DerefMut}, thread};
+
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::CVType;
+    use csv::Writer;
+    use ndarray::*;
+    use uom::si::f64::*;
+    use uom::si::power::kilowatt;
+    use uom::si::length::meter;
+    use uom::si::length::centimeter;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::time::second;
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::area::square_meter;
+    use uom::si::pressure::atmosphere;
+    use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
+
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
+    use crate::heat_transfer_lib::thermophysical_properties::volumetric_heat_capacity::rho_cp;
+    use crate::heat_transfer_lib::thermophysical_properties::SolidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
+    use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
+    use crate::heat_transfer_lib::thermophysical_properties::Material;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::InnerDiameterThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::RadialCylindricalThicknessThermalConduction;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::SingleCVNode;
 
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
@@ -949,10 +1002,10 @@ fn fluid_node_backflow_calculation_initial_test(){
     let fluid_back_cv: SingleCVNode = match fluid_back_entity {
         HeatTransferEntity::ControlVolume(cv_type) => {
             match cv_type {
-                SingleCV(cv) => {
+                CVType::SingleCV(cv) => {
                     cv
                 },
-                ArrayCV(_) => {
+                CVType::ArrayCV(_) => {
                     panic!()
                 },
             }
@@ -1342,7 +1395,7 @@ fn fluid_node_backflow_calculation_initial_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let new_temperature_vec = 
-            advance_timestep_fluid_node_array_pipe_high_peclet_number(
+            _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,

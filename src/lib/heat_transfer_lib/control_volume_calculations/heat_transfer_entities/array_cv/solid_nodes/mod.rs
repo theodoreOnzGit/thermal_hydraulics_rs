@@ -47,7 +47,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
     use uom::si::length::{meter, centimeter, inch};
     use uom::si::power::{watt, kilowatt};
 
-    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::fluid_nodes::core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number;
+    use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::fluid_nodes::core_fluid_node::_advance_timestep_fluid_node_array_pipe_high_peclet_number;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::OuterDiameterThermalConduction;
     use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::get_thermal_conductance_based_on_interaction;
     use crate::heat_transfer_lib::thermophysical_properties::LiquidMaterial;
@@ -679,7 +679,7 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let _new_therminol_temperature_vec = 
-            advance_timestep_fluid_node_array_pipe_high_peclet_number(
+            _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
