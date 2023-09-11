@@ -15,20 +15,38 @@ use super::pipe_correlations::gnielinski_correlation_interpolated_uniform_heat_f
 /// d is the prandtl_power,
 /// e is the prandtl_correction_factor_power
 #[derive(Clone,Copy,Debug, PartialEq)]
-pub (in crate) struct NusseltPrandtlReynoldsData {
+pub struct NusseltPrandtlReynoldsData {
+
+    /// reynolds number input
     pub reynolds: Ratio,
+
+    /// bulk fluid prandtl number
     pub prandtl_bulk: Ratio,
+
+    /// wall prandtl number based on wall tmeperature
     pub prandtl_wall: Ratio,
+    /// a in 
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     pub constant: Ratio,
+    /// b in 
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     pub reynolds_prandtl_coefficient: Ratio,
+    /// c in 
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     pub reynolds_power: f64,
+    /// d in 
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     pub prandtl_power: f64,
     /// power for prandtl number correction factor
+    /// e in 
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     pub prandtl_correction_factor_power: f64,
 }
 
 impl NusseltPrandtlReynoldsData {
 
+    /// obtains nusselt based on:
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
     #[inline]
     pub fn custom_reynolds_prandtl(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
@@ -49,6 +67,10 @@ impl NusseltPrandtlReynoldsData {
         return Ok(nusselt);
     }
 
+    /// obtains nusselt based on:
+    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
+    ///
+    /// ignores the coefficients, a,b,c,d,e in the struct
     #[inline]
     pub fn ciet_version_2_heater_uncorrected(&self) -> 
     Result<Ratio, ThermalHydraulicsLibError>{
@@ -64,6 +86,13 @@ impl NusseltPrandtlReynoldsData {
         Ok(nusselt)
     }
 
+
+    /// ciet heater correlation for version 2, 
+    ///
+    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
+    /// * (Pr_wall/Pr_bulk)^0.11
+    ///
+    /// ignores the coefficients, a,b,c,d,e in the struct
     #[inline]
     pub fn ciet_version_2_heater_prandtl_corrected(&self) -> 
     Result<Ratio, ThermalHydraulicsLibError>{
@@ -101,13 +130,22 @@ impl NusseltPrandtlReynoldsData {
 /// transfer coefficients in packed beds: correlation of 
 /// Sherwood numbers. Chemical Engineering Science, 33(10), 1375-1384.
 #[derive(Clone,Copy,Debug, PartialEq)]
-pub (in crate) struct WakaoData {
+pub struct WakaoData {
+    /// reynolds number based on sphere diameter 
     pub reynolds: Ratio,
+    /// prandtl number of the fluid
     pub prandtl_bulk: Ratio,
 }
 
 impl WakaoData {
-
+    /// Returns: 
+    ///
+    /// Nu = 2.0 + 1.1 * Re^0.333 Pr^0.6
+    /// note that reynolds number 
+    /// and nusselt are based on pebble or particle 
+    /// diameter
+    ///
+    /// for bed of packed spheres
     #[inline]
     pub fn get(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
@@ -130,16 +168,25 @@ impl WakaoData {
 /// contains data for gnielinski 
 /// correlation of various
 #[derive(Clone,Copy,Debug, PartialEq)]
-pub (in crate) struct GnielinskiData {
+pub struct GnielinskiData {
+    /// reynolds number based on hydraulic_diameter
     pub reynolds: Ratio,
+    /// bulk fluid prandtl number
     pub prandtl_bulk: Ratio,
+    /// wall prandtl number based on wall temperature
     pub prandtl_wall: Ratio,
+    /// friction factor, set by user
     pub darcy_friction_factor: Ratio,
+    /// pipe length to diameter ratio 
     pub length_to_diameter: Ratio
 }
 
 impl GnielinskiData {
 
+
+    /// Gnielinski correlation but for developing flows 
+    ///
+    /// suitable for laminar, turbulent and transition flows
     #[inline]
     pub fn get_nusselt_for_developing_flow(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{

@@ -4,15 +4,62 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::input_structs::{NusseltPrandtlReynoldsData, WakaoData, GnielinskiData};
 
+/// Contains a collection of nusselt number correlations for use 
+///
+/// still under experimentation, so quite unstable
+///
+/// for now, you are supposed to construct a struct containing Pr and Re 
+/// and etc and fit them into the enum,
+///
+/// use the get method to obtain the Nusselt Number
 #[derive(Debug,Clone,Copy,Default, PartialEq)]
-pub(crate) enum NusseltCorrelation {
+pub enum NusseltCorrelation {
+
+    /// pipe nusselt number using Gnielinski Correlation 
+    /// for laminar, turbulent and transition region
+    ///
+    /// laminar flow assumes constant heat flux
     PipeGnielinskiGeneric(GnielinskiData),
+
+    /// nusselt number only for turbulent
+    /// flow in pipes
     PipeGnielinskiTurbulent(GnielinskiData),
+
+    /// nusselt number for porous media 
+    /// especially packed beds
+    /// based on Wakao Correlation
+    ///
+    /// note: reynolds number based on pebble diameter
+    /// Wakao, N., & Funazkri, T. (1978). Effect 
+    /// of fluid dispersion coefficients on particle-to-fluid mass 
+    /// transfer coefficients in packed beds: correlation of 
+    /// Sherwood numbers. Chemical Engineering Science, 33(10), 1375-1384.
     Wakao(WakaoData),
+
+    /// generic reynolds prandtl power correlation
+    /// usually in the form:
+    ///
+    /// Nu = a + b * Re^c * Pr^d (Pr/Pr_wall)^e
+    ///
+    /// a is the constant 
+    /// b is the reynolds_prandtl_coefficient
+    /// c is the reynolds_power,
+    /// d is the prandtl_power,
+    /// e is the prandtl_correction_factor_power
     ReynoldsPrandtl(NusseltPrandtlReynoldsData),
+
+    /// returns a nusselt number of 4.36 for fully developed 
+    /// constant heat flux flow
     #[default]
     PipeConstantHeatFluxFullyDeveloped,
+    /// returns a nusselt number of 3.66 for fully developed 
+    /// constant temperature flow
     PipeConstantTemperatureFullyDeveloped,
+
+    /// ciet heater correlation for version 2, 
+    ///
+    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
+    /// * (Pr_wall/Pr_bulk)^0.11
     CIETHeaterVersion2(NusseltPrandtlReynoldsData),
 }
 
@@ -166,7 +213,7 @@ impl NusseltCorrelation {
     ///
     /// [`PipeConstantHeatFlux`]: NusseltCorrelation::PipeConstantHeatFlux
     #[must_use]
-    pub(crate) fn is_pipe_constant_heat_flux(&self) -> bool {
+    pub(crate) fn _is_pipe_constant_heat_flux(&self) -> bool {
         matches!(self, Self::PipeConstantHeatFluxFullyDeveloped)
     }
 
