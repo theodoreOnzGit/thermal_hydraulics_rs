@@ -1,15 +1,8 @@
 use uom::si::f64::*;
-use uom::si::mass_density::kilogram_per_cubic_meter;
-use uom::si::pressure::atmosphere;
-use crate::fluid_mechanics_lib::therminol_component::
-dowtherm_a_properties::getDowthermADensity;
 use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAViscosity;
-use uom::si::thermodynamic_temperature::kelvin;
 
 use super::LiquidMaterial;
 use super::Material;
-use super::SolidMaterial;
-use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 
 /// returns a dynamic_viscosity given a material, temperature and pressure
@@ -84,6 +77,8 @@ fn dowtherm_a_dynamic_viscosity(fluid_temp: ThermodynamicTemperature) -> Dynamic
 #[test]
 pub fn dynamic_viscosity_test_steel(){
 
+    use uom::si::pressure::atmosphere;
+    use uom::si::thermodynamic_temperature::kelvin;
     let dowtherm_a = Material::Liquid(DowthermA);
     let temperature = ThermodynamicTemperature::new::<kelvin>(350.0);
     let pressure = Pressure::new::<atmosphere>(1.0);

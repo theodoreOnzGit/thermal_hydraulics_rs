@@ -1,6 +1,5 @@
 
 use uom::si::f64::*;
-use uom::si::pressure::atmosphere;
 
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::HeatTransferEntity;
 use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::heat_transfer_dimensions::SurfaceArea;

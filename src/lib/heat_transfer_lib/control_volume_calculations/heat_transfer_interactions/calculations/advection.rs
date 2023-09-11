@@ -1,4 +1,4 @@
-use uom::si::{f64::*, mass_rate::kilogram_per_second, available_energy::joule_per_kilogram};
+use uom::si::f64::*;
 /// now, advection is quite tricky because for conduction, the 
 /// heat transfer formula is for two control volumes cv_a and cv_b
 /// can be as follows 
@@ -64,6 +64,8 @@ pub fn advection_heat_rate(mass_flow_from_a_to_b: MassRate,
 ///
 #[test]
 pub fn test_advection_signs(){
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::available_energy::joule_per_kilogram;
 
     let forward_mass_flow: MassRate = 
     MassRate::new::<kilogram_per_second>(5.0);

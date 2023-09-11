@@ -1,10 +1,7 @@
 use roots::SimpleConvergency;
-use uom::si::available_energy::joule_per_gram;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
 use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties;
-use crate::fluid_mechanics_lib::therminol_component::
-dowtherm_a_properties::getDowthermAEnthalpy;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::LiquidMaterial;
@@ -594,9 +591,9 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
     // we are basically off by less than 0.05K, which is 
     // within measurement error!
     approx::assert_abs_diff_eq!(
-        temperature_from_enthalpy_test.get::<kelvin>(),
-        375.0,
-        epsilon=0.00005);
+    temperature_from_enthalpy_test.get::<kelvin>(),
+    375.0,
+    epsilon=0.00005);
 
     // let's test from 325, 425, 525, 625, 725, 825, 925
     let temperature_vec_kelvin: Vec<f64> = 
@@ -617,9 +614,9 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
         // we are basically off by less than 0.5K, which is 
         // within measurement error!
         approx::assert_abs_diff_eq!(
-            temperature_from_enthalpy_test.get::<kelvin>(),
-            *temperature_val_kelvin,
-            epsilon=0.00005);
+        temperature_from_enthalpy_test.get::<kelvin>(),
+        *temperature_val_kelvin,
+        epsilon=0.00005);
     };
 
 

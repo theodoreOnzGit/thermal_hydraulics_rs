@@ -3,7 +3,6 @@ use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_l
 use super::HeatTransferEntity;
 use super::BCType;
 use super::CVType;
-use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::ArrayCVType;
 
 
 use uom::si::f64::*;

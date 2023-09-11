@@ -8,7 +8,6 @@ use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::FluidComponent;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction, OuterDiameterThermalConduction, BCType};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::specific_enthalpy::specific_enthalpy;
 use thermal_hydraulics_rs::heat_transfer_lib::
 thermophysical_properties::{SolidMaterial, Material};
 use thermal_hydraulics_rs::heat_transfer_lib::
@@ -79,19 +78,12 @@ pub fn matrix_calculation_initial_test(){
     use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
     heat_transfer_interactions::data_enum_structs::DataAdvection;
     use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
-    heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
-    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
     heat_transfer_interactions::HeatTransferInteractionType;
-    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::
-    heat_transfer_interactions::link_heat_transfer_entity;
     use thermal_hydraulics_rs::heat_transfer_lib::
     thermophysical_properties::Material;
 
     use uom::si::length::inch;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-    use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-    ::heat_transfer_entities::BCType::*;
-    use uom::si::thermodynamic_temperature::kelvin;
 
     use ndarray::*;
     // okay, let's make two control volumes 
@@ -99,7 +91,7 @@ pub fn matrix_calculation_initial_test(){
     //
     // cylinder needs diameter and z 
     // shell needs id, od and z
-    let therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
+    let _therminol = Material::Liquid(LiquidMaterial::TherminolVP1);
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);

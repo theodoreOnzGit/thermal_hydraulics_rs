@@ -8,8 +8,6 @@ heat_transfer_entities::*;
 /// for the HeatTransferInteractionType enum
 pub mod data_enum_structs;
 
-use crate::heat_transfer_lib::control_volume_calculations:: 
-heat_transfer_entities::HeatTransferEntity;
 
 use self::data_enum_structs::DataAdvection;
 use self::data_enum_structs::DataUserSpecifiedConvectionResistance;

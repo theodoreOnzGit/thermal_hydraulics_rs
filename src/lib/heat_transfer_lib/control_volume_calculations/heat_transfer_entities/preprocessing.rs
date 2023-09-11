@@ -39,15 +39,13 @@ impl HeatTransferEntity {
     ///
     /// only works in the case of the fluid array 
     /// everything else does not matter
-    pub fn set_mass_flowrate(
+    pub fn try_set_mass_flowrate(
     entity: &mut HeatTransferEntity,
     mass_flowrate: MassRate) -> Result<(),ThermalHydraulicsLibError> {
 
         match entity {
             HeatTransferEntity::ControlVolume(cv_type) => {
                 match cv_type {
-                    CVType::SingleCV(_) => unimplemented!(
-                    "single cvs dont have mass flowrates"),
                     CVType::ArrayCV(array_cv) => {
                         match array_cv {
                             super::ArrayCVType::GenericPipe(fluid_arr) => {
@@ -79,8 +77,6 @@ impl HeatTransferEntity {
         match entity {
             HeatTransferEntity::ControlVolume(cv_type) => {
                 match cv_type {
-                    CVType::SingleCV(_) => unimplemented!(
-                    "single cvs dont have mass flowrates"),
                     CVType::ArrayCV(array_cv) => {
                         match array_cv {
                             super::ArrayCVType::GenericPipe(fluid_arr) => {

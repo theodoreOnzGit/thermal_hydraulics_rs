@@ -1,4 +1,5 @@
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::{churchill_friction_factor, get_reynolds_number}};
+use crate::fluid_mechanics_lib::churchill_friction_factor;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use roots::*;
 use uom::{si::{f64::*, ratio::ratio}, num_traits::Zero, typenum::P2};
 

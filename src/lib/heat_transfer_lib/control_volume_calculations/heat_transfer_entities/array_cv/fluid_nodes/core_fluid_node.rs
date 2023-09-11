@@ -868,7 +868,7 @@ pub fn fluid_node_calculation_initial_test(){
 
             let timestep_advance_start = 
             SystemTime::now();
-            let new_temperature_vec = 
+            let _new_temperature_vec = 
             _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
@@ -960,7 +960,7 @@ fn fluid_node_backflow_calculation_initial_test(){
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);
-    let inner_tube_od = Length::new::<centimeter>(3.175);
+    let _inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
     let _total_length = Length::new::<meter>(1.983333);
     let heated_length = Length::new::<meter>(1.676);
@@ -1016,7 +1016,6 @@ fn fluid_node_backflow_calculation_initial_test(){
     };
 
     let fluid_front_cv: SingleCVNode = fluid_back_cv.clone();
-    let timestep_placeholder = Time::new::<second>(0.01);
     let total_volume = flow_area * heated_length;
 
 
@@ -1394,7 +1393,7 @@ fn fluid_node_backflow_calculation_initial_test(){
 
             let timestep_advance_start = 
             SystemTime::now();
-            let new_temperature_vec = 
+            let _new_temperature_vec = 
             _advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
