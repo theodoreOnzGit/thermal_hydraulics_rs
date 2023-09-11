@@ -20,7 +20,7 @@
 /// approx::assert_relative_eq!(8.0, Nu_laminar_test, max_relative=0.001);
 ///
 /// // the following two tests are taken from table 3-1 of:
-/// // http://fhr.nuc.berkeley.edu/wp-content/uploads/2015/04/14-009_CIET-IRP-Final-Report.pdf
+/// // <http://fhr.nuc.berkeley.edu/wp-content/uploads/2015/04/14-009_CIET-IRP-Final-Report.pdf>
 /// // this is page 33 out of 103 for the document
 ///
 /// // this test is accurate to within 1% of stated value
@@ -60,7 +60,7 @@ pub fn nusselt_ciet_heater_v1_0(Re: f64)-> f64 {
 
 /// Dittus Boelter Correlation
 ///
-/// https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf
+/// <https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf>
 ///
 ///
 /// Meant for turbulent flow
@@ -70,7 +70,7 @@ pub fn nusselt_ciet_heater_v1_0(Re: f64)-> f64 {
 /// liquids. Industrial & Engineering Chemistry, 43(5), 1226-1229.
 ///
 ///
-/// http://herve.lemonnier.sci.free.fr/TPF/NE/Winterton.pdf
+/// <http://herve.lemonnier.sci.free.fr/TPF/NE/Winterton.pdf>
 ///
 /// The original paper is here
 ///
@@ -123,7 +123,7 @@ pub fn nusselt_ciet_heater_v1_0(Re: f64)-> f64 {
 /// max_relative=0.01);
 /// ```
 ///
-///https://www.nuclear-power.com/nuclear-engineering/heat-transfer/convection-convective-heat-transfer/sieder-tate-equation/
+///<https://www.nuclear-power.com/nuclear-engineering/heat-transfer/convection-convective-heat-transfer/sieder-tate-equation/>
 ///
 /// Unfortunately, Dittus Boelter correlation is valid
 /// only for small to moderate temperature differences
@@ -148,9 +148,9 @@ pub fn dittus_boelter_correlation(Re: f64, Pr: f64,
 
 /// Sieder Tate Relationship
 ///
-/// https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf
+/// <https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf>
 ///
-/// https://www.nuclear-power.com/nuclear-engineering/heat-transfer/convection-convective-heat-transfer/sieder-tate-equation/
+/// <https://www.nuclear-power.com/nuclear-engineering/heat-transfer/convection-convective-heat-transfer/sieder-tate-equation/>
 ///
 /// Note that properties here are evaluated at Tavg (ie average bulk fluid
 /// temperature)
@@ -261,7 +261,7 @@ pub fn sieder_tate_correlation(Re: f64, Pr: f64,
 /// Gnielinski Equation for liquids
 ///
 ///
-/// https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf
+/// <https://www.e3s-conferences.org/articles/e3sconf/pdf/2017/01/e3sconf_wtiue2017_02008.pdf>
 ///
 /// turbulent flow, all kinds of tubes
 ///

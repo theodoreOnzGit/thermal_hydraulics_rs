@@ -13,7 +13,7 @@ use uom::si::f64::*;
 /// to make these quantities easy to implement, I will use 
 /// a macro to initiate construction of these objects 
 /// credit:
-/// // https://stackoverflow.com/questions/63306731/can-a-macro-simplify-trait-impl
+/// // <https://stackoverflow.com/questions/63306731/can-a-macro-simplify-trait-impl>
 
 
 /// XThicknessThermalConduction is essentially a struct containing 

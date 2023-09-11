@@ -70,8 +70,6 @@ pub mod error_traits;
 /// should have the following properties accessed
 /// via get and set methods
 ///
-/// ```rust
-/// ```
 ///
 pub mod fluid_component_trait;
 pub use fluid_component_trait::*;
