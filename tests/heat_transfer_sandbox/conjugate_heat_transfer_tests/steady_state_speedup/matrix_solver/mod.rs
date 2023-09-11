@@ -156,7 +156,7 @@ pub fn matrix_calculation_initial_test(){
     let solid_array_ptr_for_loop = solid_array_ptr.clone();
 
     // time settings
-    let max_time: Time = Time::new::<second>(200.0);
+    let max_time: Time = Time::new::<second>(75.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();

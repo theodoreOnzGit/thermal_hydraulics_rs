@@ -30,7 +30,7 @@ fn calculate_single_cv_node_constant_temperature_conductance(
     let cv_pressure = control_vol.pressure_control_volume;
 
     let cv_temperature = heat_transfer_lib::thermophysical_properties:: 
-        specific_enthalpy::temperature_from_specific_enthalpy(
+        specific_enthalpy::try_get_temperature_from_h(
             cv_material, 
             cv_enthalpy, 
             cv_pressure)?;

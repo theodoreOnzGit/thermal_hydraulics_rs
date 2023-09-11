@@ -14,7 +14,7 @@ use super::LiquidMaterial::*;
 /// use uom::si::pressure::atmosphere;
 /// use uom::si::thermodynamic_temperature::kelvin;
 /// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::dynamic_viscosity::dynamic_viscosity;
+/// thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 ///
 /// use thermal_hydraulics_rs::heat_transfer_lib::
 /// thermophysical_properties::LiquidMaterial::DowthermA;
@@ -27,7 +27,7 @@ use super::LiquidMaterial::*;
 /// let pressure = Pressure::new::<atmosphere>(1.0);
 ///
 /// let dynamic_viscosity_result = 
-/// dynamic_viscosity(dowtherm_a, temperature, pressure);
+/// try_get_mu_viscosity(dowtherm_a, temperature, pressure);
 ///
 /// approx::assert_relative_eq!(
 ///     0.001237,

@@ -23,7 +23,7 @@ use peroxide::prelude::*;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
 /// Material;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// specific_heat_capacity::specific_heat_capacity;
+/// specific_heat_capacity::try_get_cp;
 ///
 /// use uom::si::pressure::atmosphere;
 ///
@@ -35,7 +35,7 @@ use peroxide::prelude::*;
 /// // 470 W/(m K)
 ///
 /// let steel_thermal_cond: SpecificHeatCapacity = 
-/// specific_heat_capacity(steel, steel_temp, pressure).unwrap();
+/// try_get_cp(steel, steel_temp, pressure).unwrap();
 ///
 ///
 /// approx::assert_relative_eq!(

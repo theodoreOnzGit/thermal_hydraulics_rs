@@ -27,7 +27,7 @@ use temperature_from_specific_enthalpy::*;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
 /// Material;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// specific_enthalpy::specific_enthalpy;
+/// specific_enthalpy::try_get_h;
 ///
 /// use uom::si::pressure::atmosphere;
 ///
@@ -38,7 +38,7 @@ use temperature_from_specific_enthalpy::*;
 /// // enthalpy should be zero at 273.15 K
 ///
 /// let steel_enthalpy_273_15_kelvin = 
-/// specific_enthalpy(steel, steel_temp, pressure);
+/// try_get_h(steel, steel_temp, pressure);
 ///
 /// approx::assert_relative_eq!(
 ///     0.0,
@@ -55,8 +55,8 @@ use temperature_from_specific_enthalpy::*;
 /// let copper = Material::Solid(Copper);
 ///
 /// let copper_enthalpy_change = 
-/// specific_enthalpy(copper, test_temperature_2, pressure).unwrap()
-/// - specific_enthalpy(copper, test_temperature_1, pressure).unwrap();
+/// try_get_h(copper, test_temperature_2, pressure).unwrap()
+/// - try_get_h(copper, test_temperature_1, pressure).unwrap();
 ///
 /// // http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/sphtt.html
 /// // https://www.engineeringtoolbox.com/specific-heat-metals-d_152.html
@@ -123,12 +123,12 @@ pub fn try_get_h(material: Material,
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
 /// Material;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// specific_enthalpy::specific_enthalpy;
+/// specific_enthalpy::try_get_h;
 ///
 /// use uom::si::pressure::atmosphere;
 ///
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// specific_enthalpy::temperature_from_specific_enthalpy;
+/// specific_enthalpy::try_get_temperature_from_h;
 ///
 ///
 /// // let's get steel at 20 degree_celsius
@@ -137,7 +137,7 @@ pub fn try_get_h(material: Material,
 /// let steel_temp = ThermodynamicTemperature::new::<degree_celsius>(20.0);
 /// let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 ///
-/// let enthalpy_spline_zweibaum = specific_enthalpy(
+/// let enthalpy_spline_zweibaum = try_get_h(
 ///     steel,steel_temp,atmospheric_pressure).unwrap();
 ///
 /// // now this enthalpy value is about 
@@ -154,7 +154,7 @@ pub fn try_get_h(material: Material,
 /// // let's use this enthalpy value to get a ThermodynamicTemperature
 ///
 /// let steel_temperature_test = 
-/// temperature_from_specific_enthalpy(steel,
+/// try_get_temperature_from_h(steel,
 /// enthalpy_spline_zweibaum,
 /// atmospheric_pressure).unwrap();
 /// 
@@ -165,7 +165,7 @@ pub fn try_get_h(material: Material,
 ///     20_f64,
 ///     epsilon=0.001);
 /// ```
-pub fn temperature_from_specific_enthalpy(material: Material, 
+pub fn try_get_temperature_from_h(material: Material, 
     material_enthalpy: AvailableEnergy,
     _pressure: Pressure) -> Result<ThermodynamicTemperature, String> {
 

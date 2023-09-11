@@ -16,7 +16,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::
 control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
 use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::{try_get_h, temperature_from_specific_enthalpy};
+thermophysical_properties::specific_enthalpy::{try_get_h, try_get_temperature_from_h};
 
 
 
@@ -494,7 +494,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             };
 
             let temperature_for_export = 
-            temperature_from_specific_enthalpy(
+            try_get_temperature_from_h(
                 single_cv.material_control_volume, 
                 single_cv.current_timestep_control_volume_specific_enthalpy, 
                 pressure).unwrap();

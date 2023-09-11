@@ -2,7 +2,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 use crate::heat_transfer_lib::thermophysical_properties::specific_heat_capacity::try_get_cp;
 use crate::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
-use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
+use crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
 
 use super::SingleCVNode;
 use uom::si::f64::*;
@@ -51,7 +51,7 @@ impl SingleCVNode {
 
         let control_vol_material = self.material_control_volume.clone();
         let control_vol_pressure = self.pressure_control_volume.clone();
-        let cv_temperature = temperature_from_specific_enthalpy(
+        let cv_temperature = try_get_temperature_from_h(
             self.material_control_volume, 
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume)?;
@@ -150,7 +150,7 @@ impl SingleCVNode {
 
         let control_vol_material = self.material_control_volume.clone();
         let control_vol_pressure = self.pressure_control_volume.clone();
-        let cv_temperature = temperature_from_specific_enthalpy(
+        let cv_temperature = try_get_temperature_from_h(
             self.material_control_volume, 
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume)?;

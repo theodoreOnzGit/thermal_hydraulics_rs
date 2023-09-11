@@ -21,7 +21,7 @@ use super::LiquidMaterial::*;
 /// use uom::si::pressure::atmosphere;
 /// use uom::si::thermodynamic_temperature::kelvin;
 /// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::density::density;
+/// thermophysical_properties::density::try_get_rho;
 ///
 /// use thermal_hydraulics_rs::heat_transfer_lib::
 /// thermophysical_properties::SolidMaterial::SteelSS304L;
@@ -33,7 +33,7 @@ use super::LiquidMaterial::*;
 /// let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
 /// let pressure = Pressure::new::<atmosphere>(1.0);
 ///
-/// let density_result = density(steel, temperature, pressure);
+/// let density_result = try_get_rho(steel, temperature, pressure);
 ///
 /// 
 /// ```

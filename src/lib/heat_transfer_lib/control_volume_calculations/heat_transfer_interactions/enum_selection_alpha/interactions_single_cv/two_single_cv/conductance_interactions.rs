@@ -1,7 +1,7 @@
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
 use crate::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
+thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
 
 
 
@@ -31,11 +31,11 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     let single_cv_2_pressure = single_cv_2.pressure_control_volume.clone();
 
     // we will now get their respective temperatures 
-    let single_cv_1_temperature = temperature_from_specific_enthalpy(
+    let single_cv_1_temperature = try_get_temperature_from_h(
         single_cv_1_material, 
         single_cv_1_enthalpy, 
         single_cv_1_pressure)?;
-    let single_cv_2_temperature = temperature_from_specific_enthalpy(
+    let single_cv_2_temperature = try_get_temperature_from_h(
         single_cv_2_material, 
         single_cv_2_enthalpy, 
         single_cv_2_pressure)?;

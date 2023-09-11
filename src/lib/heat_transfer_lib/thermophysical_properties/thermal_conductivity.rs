@@ -22,7 +22,7 @@ use peroxide::prelude::*;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
 /// Material;
 /// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
-/// thermal_conductivity::thermal_conductivity;
+/// thermal_conductivity::try_get_kappa_thermal_conductivity;
 ///
 /// use uom::si::pressure::atmosphere;
 ///
@@ -34,7 +34,7 @@ use peroxide::prelude::*;
 /// // 15.58 W/(m K)
 ///
 /// let steel_thermal_cond: ThermalConductivity = 
-/// thermal_conductivity(steel, steel_temp, pressure).unwrap();
+/// try_get_kappa_thermal_conductivity(steel, steel_temp, pressure).unwrap();
 ///
 /// // Residuals from Graves et al. was about 3% at 350K for least 
 /// // squares regression. So 2.8% error is reasonable

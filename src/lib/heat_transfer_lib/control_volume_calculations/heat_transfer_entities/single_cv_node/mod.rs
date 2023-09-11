@@ -11,7 +11,7 @@ thermophysical_properties::density::try_get_rho;
 use crate::heat_transfer_lib::
 thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::temperature_from_specific_enthalpy;
+thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
 use crate::heat_transfer_lib::
 thermophysical_properties::Material;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
@@ -155,7 +155,7 @@ impl SingleCVNode {
     pub fn get_temperature(&self) -> 
     Result<ThermodynamicTemperature, String>{
 
-        let cv_temperature = temperature_from_specific_enthalpy(
+        let cv_temperature = try_get_temperature_from_h(
             self.material_control_volume, 
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume);
@@ -172,7 +172,7 @@ impl SingleCVNode {
     fn set_liquid_cv_mass_from_temperature(&mut self) 
     -> Result<(), String>{
 
-        let cv_temperature = temperature_from_specific_enthalpy(
+        let cv_temperature = try_get_temperature_from_h(
             self.material_control_volume, 
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume)?;
