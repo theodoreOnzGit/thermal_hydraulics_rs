@@ -268,9 +268,8 @@ pub fn matrix_calculation_initial_test(){
             let mut steel_entity_ptr_in_loop 
             = solid_array_ptr_for_loop.lock().unwrap();
             
-            let arc_mutex_lock_elapsed_ms = 
-            arc_mutex_lock_start.elapsed().unwrap().as_millis();
-
+            let arc_mutex_lock_elapsed_ns = 
+            arc_mutex_lock_start.elapsed().unwrap().as_nanos();
 
             // next, obtain average temperature 
             // average by volume for both fluid and solid vec
@@ -508,10 +507,182 @@ pub fn matrix_calculation_initial_test(){
             let node_connection_end_ns = 
             node_connection_start.elapsed().unwrap().as_nanos();
 
-            // advance timestep
-            current_time_simulation_time += timestep;
+            // auto calculate timestep (not done)
+            //
+            // and also writing temperature profile 
+            let data_recording_time_start = SystemTime::now();
 
-            
+            // record current fluid temperature profile
+            {
+                let mut temp_profile_data_vec: Vec<String> = vec![];
+
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                // next simulation time string 
+                let elapsed_calc_time_seconds_string = 
+                calculation_time_elapsed.elapsed().unwrap().as_secs().to_string();
+                temp_profile_data_vec.push(current_time_string);
+                temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
+
+                let steel_column: SolidColumn = 
+                steel_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
+
+                let steel_temperature_array = 
+                steel_column.get_temperature_vector().unwrap();
+
+                for node_temp in steel_temperature_array.iter() {
+
+                    let node_temp_deg_c: f64 = 
+                    node_temp.get::<degree_celsius>();
+
+                    let node_temp_c_string: String = 
+                    node_temp_deg_c.to_string();
+
+                    temp_profile_data_vec.push(node_temp_c_string);
+                }
+
+                temp_profile_wtr.write_record(&temp_profile_data_vec).unwrap();
+            }
+
+            // outlet temperature profile 
+            {
+                // csv data writing
+
+                let therminol_fluid_arr: FluidArray = 
+                therminol_entity_ptr_in_loop.deref_mut().clone().
+                    try_into().unwrap();
+
+
+                let therminol_outlet_temp:ThermodynamicTemperature = 
+                therminol_fluid_arr.front_single_cv.get_temperature().unwrap();
+
+                let therminol_outlet_temp_string = 
+                therminol_outlet_temp.get::<degree_celsius>().to_string();
+
+                let current_time_string = 
+                current_time_simulation_time.get::<second>().to_string();
+
+                let heater_power_kilowatt_string = 
+                heater_steady_state_power.get::<kilowatt>().to_string();
+
+                // for st 11 
+
+                // code block for recording inlet, shell and outlet 
+                // temperatures
+                //
+                // now for shell temperatures, we are going to assume that 
+                // ST-11 is used. 
+                //
+                // ST-11 is the thermocouple measuring surface temperature 
+                // roughly 19 inches from the bottom of the heater 
+                // The entire heated length excluding heater top and 
+                // bottom heads is about 64 inches 
+                //
+                // So 19/64 is about 0.30 of the way through
+                let st_11_length: Length = Length::new::<inch>(19_f64);
+
+
+                // now I want to find out which node it is,
+                // so i need the node length first 
+                //
+                
+                let node_length: Length = heated_length/number_of_nodes as f64;
+
+                // then use st_11 divide by node length 
+
+                let st_11_rough_node_number: Ratio = st_11_length / node_length;
+
+                // now, st_11 is about 19 inches, out of 64, and we have 
+                // 8 equal nodes, each node is 
+                // 12.5% of the heated length
+                //
+                // so this is about 30% of the way through
+                //
+                // so this is node three. 
+                //
+                // if we take st_11_length/node_length 
+                // we would get about 2.375 for this ratio 
+                //
+                // we need to round up to get 3 
+                // but the third node is the 2nd index in the matrix 
+                // because the index starts from zero
+                //
+                //
+                // so round it up and then minus 1 
+                // most of the time, round down is ok, but rounding up 
+                // makes more logical sense given this derivation
+
+                let st_11_node_number: usize = 
+                st_11_rough_node_number.get::<ratio>().ceil() as usize;
+
+                let st_11_index_number: usize = st_11_node_number - 1;
+
+                // now that we got the index number, we can get the 
+                // outer surface temperature 
+                let steel_column: SolidColumn = 
+                steel_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
+
+                let steel_temperature_array = 
+                steel_column.get_temperature_vector().unwrap();
+
+                let st_11_node_temp: ThermodynamicTemperature = 
+                steel_temperature_array.deref()[st_11_index_number];
+
+                let shell_celsius_string = 
+                st_11_node_temp.get::<degree_celsius>().to_string();
+                
+                // timestep in seconds
+                //
+
+                let timestep_string = 
+                timestep.get::<second>().to_string();
+
+
+                wtr.write_record(&[current_time_string,
+                    heater_power_kilowatt_string,
+                    therminol_outlet_temp_string,
+                    shell_celsius_string,
+                    timestep_string])
+                    .unwrap();
+
+            }
+            let data_recording_time_end_ns = 
+            data_recording_time_start.elapsed().unwrap().as_nanos();
+
+            // advance timestep
+            let timestep_advance_start = SystemTime::now();
+            //
+            {
+                therminol_entity_ptr_in_loop.deref_mut().
+                advance_timestep_mut_self(timestep).unwrap();
+
+                steel_entity_ptr_in_loop.deref_mut().
+                advance_timestep_mut_self(timestep).unwrap();
+
+                current_time_simulation_time += timestep;
+            }
+            // end advance timestep
+            let timestep_advance_end_ns = 
+            timestep_advance_start.elapsed().unwrap().as_nanos();
+
+            //time statistics 
+            {
+                let total_time_ns = 
+                arc_mutex_lock_elapsed_ns 
+                + node_connection_end_ns 
+                + data_recording_time_end_ns 
+                + timestep_advance_end_ns;
+
+                time_wtr.write_record(&[total_time_ns.to_string(),
+                    arc_mutex_lock_elapsed_ns.to_string(),
+                    node_connection_end_ns.to_string(),
+                    data_recording_time_end_ns.to_string(),
+                    timestep_advance_end_ns.to_string()])
+                    .unwrap();
+                // timestep addition to current simulation time
+                current_time_simulation_time += timestep;
+            } // end time statistics
         }
     };
 
