@@ -4,6 +4,7 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
+use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::FluidComponent;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, RadialCylindricalThicknessThermalConduction, InnerDiameterThermalConduction, OuterDiameterThermalConduction, BCType};
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_fluid_array::FluidArray;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_entities::one_dimension_solid_array::SolidColumn;
@@ -443,6 +444,13 @@ pub fn matrix_calculation_initial_test(){
                     solid_temp_vector
                 ).unwrap();
 
+                // note, must set mass flowrate first 
+                // otherwise there is by default zero flow through 
+                // the array
+
+                therminol_array_clone.set_mass_flowrate(
+                    therminol_mass_flowrate);
+
 
 
                 // now that lateral connections are done, 
@@ -452,6 +460,8 @@ pub fn matrix_calculation_initial_test(){
 
                 steel_entity_ptr_in_loop.deref_mut()
                     .set(steel_array_clone.clone().into()).unwrap();
+
+                
                 
 
             }
@@ -538,7 +548,16 @@ pub fn matrix_calculation_initial_test(){
                 let steel_temperature_array = 
                 steel_column.get_temperature_vector().unwrap();
 
-                for node_temp in steel_temperature_array.iter() {
+                // debug: found that fluid temperature array was not getting 
+                // updated
+                let fluid_array: FluidArray 
+                = therminol_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
+
+                let fluid_temperature_array
+                = fluid_array.get_temperature_vector().unwrap();
+
+
+                for node_temp in fluid_temperature_array.iter() {
 
                     let node_temp_deg_c: f64 = 
                     node_temp.get::<degree_celsius>();
