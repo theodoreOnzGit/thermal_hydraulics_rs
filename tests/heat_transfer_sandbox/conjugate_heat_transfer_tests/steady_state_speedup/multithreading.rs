@@ -125,7 +125,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 /// 
 ///
 #[test]
-//#[ignore = "data collected"]
+#[ignore = "data collected, for now debug (remove later)"]
 pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
 
@@ -138,7 +138,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
     let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let id = Length::new::<meter>(0.0381);
     let od = Length::new::<meter>(0.04);
-    let inner_tube_od = Length::new::<centimeter>(3.175);
+    let _inner_tube_od = Length::new::<centimeter>(3.175);
     // z is heated length
     let _total_length = Length::new::<meter>(1.983333);
     let heated_length = Length::new::<meter>(1.676);

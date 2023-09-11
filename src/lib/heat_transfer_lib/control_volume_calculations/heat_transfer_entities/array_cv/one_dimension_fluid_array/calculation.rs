@@ -57,7 +57,6 @@ impl FluidArray{
         // there will always be at least 2 nodes
 
         let number_of_nodes = self.len();
-
         if number_of_nodes <= 1 {
             return Err(LinalgError::Shape(
                 ShapeError::from_kind(

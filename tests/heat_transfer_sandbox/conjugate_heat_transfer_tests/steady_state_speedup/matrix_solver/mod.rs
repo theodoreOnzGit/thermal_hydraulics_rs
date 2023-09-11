@@ -178,7 +178,7 @@ pub fn matrix_calculation_initial_test(){
     let solid_array_ptr_for_loop = solid_array_ptr.clone();
 
     // time settings
-    let max_time: Time = Time::new::<second>(0.02);
+    let max_time: Time = Time::new::<second>(50.0);
     let max_time_ptr = Arc::new(max_time);
 
     let calculation_time_elapsed = SystemTime::now();
@@ -684,6 +684,13 @@ pub fn matrix_calculation_initial_test(){
                 current_time_simulation_time += timestep;
             } // end time statistics
         }
+        // end for loop 
+
+        // with csvs being written,
+        // use cargo watch -x test --ignore '*.csv'
+        time_wtr.flush().unwrap();
+        temp_profile_wtr.flush().unwrap();
+        wtr.flush().unwrap();
     };
 
     let main_thread_handle = thread::spawn(calculation_loop);
