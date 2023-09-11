@@ -26,6 +26,7 @@ pub use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_int
 pub use heat_transfer_interactions::HeatTransferInteractionType;
 pub use heat_transfer_interactions::data_enum_structs;
 pub use data_enum_structs::*;
+pub use heat_transfer_interactions::link_heat_transfer_entity;
 
 
 /// thermal hydraulics library error 

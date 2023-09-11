@@ -4,28 +4,11 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataAdvection;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::link_heat_transfer_entity;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::{self};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::Material;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::LiquidMaterial;
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SingleCVNode, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
-
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
-use uom::si::f64::*;
 use uom::si::area::square_meter;
 use uom::si::length::{centimeter, meter, inch};
 use uom::si::mass_rate::kilogram_per_second;
@@ -36,8 +19,7 @@ use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
+use BCType::*;
 
 /// In this test, we have a nodalised representation of the 
 /// this is 8 nodes in the axial direction and 2 nodes for metal 
@@ -125,7 +107,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 /// 
 ///
 #[test]
-#[ignore = "data collected, for now debug (remove later)"]
+//#[ignore = "data collected, for now debug (remove later)"]
 pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
 
@@ -286,7 +268,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(79.12)
         ));
 
@@ -295,7 +277,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
     );
 
     let ambient_temperature_bc = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ambient_air_temp
         ));
 
