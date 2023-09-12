@@ -69,6 +69,10 @@
 extern crate uom;
 use thermal_hydraulics_rs::fluid_mechanics_lib;
 mod manual_tests;
+/// this contains examples on how to use the thermal_hydraulics_rs 
+/// library
+/// to make your own components and simulations
+mod examples;
 
 use crate::manual_tests::*;
 
@@ -83,6 +87,11 @@ fn main() {
     test_therminol_pipe();
     test_therminol_fldk_custom_component();
     factory_test();
+
+    // heater example 
+
+    use examples::ciet::heater::example_heater;
+    example_heater();
 }
 
 
