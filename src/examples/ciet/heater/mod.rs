@@ -8,13 +8,9 @@ pub struct HeaterVersion1;
 /// it has twisted tape
 pub struct HeaterVersion2;
 
-/// represents heater version 2 without insulation 
-/// This is because during 2018-ish, the heater insulation 
-/// got burnt off and a lot of frequency response tests were done 
-/// with insulation removed
-pub struct HeaterVersion2Bare;
+pub mod heater_version_2_bare;
+pub use heater_version_2_bare::*;
 
-//use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 
 pub fn example_heater(){
 
@@ -22,6 +18,6 @@ pub fn example_heater(){
 
     let _heater_v1 = HeaterVersion1{};
     let _heater_v2 = HeaterVersion2{};
-    let _heater_v2_bare = HeaterVersion2Bare{};
+    //let _heater_v2_bare = HeaterVersion2Bare{};
 
 }
