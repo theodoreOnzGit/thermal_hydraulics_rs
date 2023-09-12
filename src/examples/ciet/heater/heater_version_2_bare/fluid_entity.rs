@@ -4,7 +4,10 @@ use super::HeaterVersion2Bare;
 
 impl FluidComponent for HeaterVersion2Bare {
     fn get_mass_flowrate(&mut self) -> MassRate  {
-        todo!()
+        let mut therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_mass_flowrate()
     }
 
     fn set_mass_flowrate(&mut self, mass_flowrate: MassRate) {
@@ -25,81 +28,139 @@ impl FluidComponent for HeaterVersion2Bare {
 
     fn get_mass_flowrate_from_pressure_loss_immutable(
         &self, pressure_loss: Pressure) -> MassRate {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_mass_flowrate_from_pressure_loss_immutable(
+            pressure_loss)
     }
 
     fn get_pressure_loss(&mut self) -> Pressure {
-        todo!()
+        let mut therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_pressure_loss()
     }
 
     fn set_pressure_loss(&mut self, pressure_loss: Pressure) {
-        todo!()
+        let mut therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.set_pressure_loss(pressure_loss)
     }
 
     fn get_pressure_loss_immutable(
         &self, mass_flowrate: MassRate) -> Pressure {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_pressure_loss_immutable(mass_flowrate)
     }
 
     fn get_cross_sectional_area(&mut self) -> Area {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_cross_sectional_area_immutable()
     }
 
     fn get_cross_sectional_area_immutable(&self) -> Area {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_cross_sectional_area_immutable()
     }
 
     fn get_hydraulic_diameter(&mut self) -> Length {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_hydraulic_diameter_immutable()
     }
 
     fn get_hydraulic_diameter_immutable(&self) -> Length {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_hydraulic_diameter_immutable()
     }
 
     fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_fluid_viscosity_immutable()
     }
 
     fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_fluid_viscosity_immutable()
     }
 
     fn get_fluid_density(&mut self) -> MassDensity {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_fluid_density_immutable()
     }
 
     fn get_fluid_density_immutable(&self) -> MassDensity {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_fluid_density_immutable()
     }
 
     fn get_component_length(&mut self) -> Length {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_component_length_immutable()
     }
 
     fn get_component_length_immutable(&self) -> Length {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_component_length_immutable()
     }
 
     fn get_incline_angle(&mut self) -> Angle {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_incline_angle_immutable()
     }
 
     fn get_incline_angle_immutable(&self) -> Angle {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_incline_angle_immutable()
     }
 
     fn get_internal_pressure_source(&mut self) -> Pressure {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_internal_pressure_source_immutable()
     }
 
     fn get_internal_pressure_source_immutable(&self) -> Pressure {
-        todo!()
+        let therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.get_internal_pressure_source_immutable()
     }
 
     fn set_internal_pressure_source(
         &mut self,
         internal_pressure: Pressure) {
-        todo!()
+        let mut therminol_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        therminol_array.set_pressure_loss(internal_pressure)
     }
 }
