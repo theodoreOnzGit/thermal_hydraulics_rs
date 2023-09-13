@@ -1,5 +1,6 @@
 use super::HeaterVersion2Bare;
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::si::area::square_inch;
 
 impl HeaterVersion2Bare {
 
@@ -96,6 +97,28 @@ impl HeaterVersion2Bare {
         // Can't really do much until someone does a separate 
         // effects test (SET)
         // 
+
+        // find suitable heat transfer area
+        let heated_length = Length::new::<inch>(66.0);
+        let heated_length_plus_heads = Length::new::<inch>(78.0);
+
+        let heat_transfer_area_heated_length_plus_heads: Area = 
+        Area::new::<square_inch>(719.0);
+
+        let heat_transfer_area_heated_length_only: Area
+        = heated_length/ heated_length_plus_heads * 
+        heat_transfer_area_heated_length_plus_heads;
+
+        // next, need the nusselt number based on Wakao Correlation 
+        let mass_flowrate = self.get_mass_flowrate();
+        let flow_area: Area = Area::new::<square_inch>(1.63);
+        let viscosity = self.get_fluid_viscosity();
+        let hydraulic_diameter = Length::new::<inch>(0.5776);
+
+        // need to convert hydraulic diameter to an equivalent 
+        // spherical diameter
+        
+
         todo!()
     }
 }
