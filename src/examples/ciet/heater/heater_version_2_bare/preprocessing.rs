@@ -15,7 +15,7 @@ impl HeaterVersion2Bare {
     }
 
     pub fn get_therminol_node_twisted_tape_conductance(
-    &mut self) -> ThermalConductance {
+    &self) -> ThermalConductance {
 
         // the twisted tape itself acts as a thermal 
         // mass and effectively the twisted tape in the 
@@ -109,10 +109,18 @@ impl HeaterVersion2Bare {
         = heated_length/ heated_length_plus_heads * 
         heat_transfer_area_heated_length_plus_heads;
 
+
+        // before any calculations, I will first need a clone of 
+        // the therminol fluid array and twisted tape array
+        let mut therminol_fluid_array_clone: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        let mut twisted_tape_array_clone: SolidColumn = 
+        self.twisted_tape_interior.clone().try_into().unwrap();
         // next, need the nusselt number based on Wakao Correlation 
-        let mass_flowrate = self.get_mass_flowrate();
+        let mass_flowrate = therminol_fluid_array_clone.get_mass_flowrate();
         let flow_area: Area = Area::new::<square_inch>(1.63);
-        let viscosity = self.get_fluid_viscosity();
+        let viscosity = therminol_fluid_array_clone.get_fluid_viscosity();
         let hydraulic_diameter = Length::new::<inch>(0.5776);
 
         // need to convert hydraulic diameter to an equivalent 
@@ -123,28 +131,64 @@ impl HeaterVersion2Bare {
         //
         let reynolds: Ratio = 
         mass_flowrate/flow_area*hydraulic_diameter / viscosity;
-        
+
         // need to get prandtl number of fluid 
         // so I need fluid temperature 
-        let mut therminol_fluid_array: FluidArray = 
-        self.therminol_array.clone().try_into().unwrap();
 
         let fluid_average_temperature: ThermodynamicTemperature 
-        = therminol_fluid_array.get_bulk_temperature().unwrap();
+        = therminol_fluid_array_clone.get_bulk_temperature().unwrap();
 
         let fluid_average_pressure: Pressure 
-        = therminol_fluid_array.pressure_control_volume;
+        = therminol_fluid_array_clone.pressure_control_volume;
 
         let fluid_material: LiquidMaterial = 
-        therminol_fluid_array.material_control_volume.try_into().unwrap();
+        therminol_fluid_array_clone.material_control_volume.try_into().unwrap();
 
         let fluid_prandtl: Ratio = fluid_material.try_get_prandtl_liquid
-            (fluid_average_temperature, fluid_average_pressure)
-            .unwrap();
+            (fluid_average_temperature, fluid_average_pressure) .unwrap();
 
-        
+        let twisted_tape_temperature: ThermodynamicTemperature 
+        = twisted_tape_array_clone.get_bulk_temperature().unwrap();
 
-        todo!()
+        let twisted_tape_wall_prandtl: Ratio = 
+        fluid_material.try_get_prandtl_liquid(
+            twisted_tape_temperature, fluid_average_pressure).unwrap();
+
+        // with Pr and Re, get nusselt estimate 
+        //
+
+        let nusselt_estimate: Ratio = 
+        therminol_fluid_array_clone.get_nusselt(
+            reynolds,
+            fluid_prandtl,
+            twisted_tape_wall_prandtl,
+        ).unwrap();
+
+        // with nusselt estimate done, (I didn't convert the 
+        // hydraulic diameter to an equivalent particle diameter)
+        // Now I can get a heat transfer coeff 
+        //
+        // conductance is that times the area
+
+
+        let h: HeatTransfer;
+
+        let k_fluid_average: ThermalConductivity = 
+        fluid_material.try_get_thermal_conductivity(
+            fluid_average_temperature).unwrap();
+
+        h = nusselt_estimate * k_fluid_average / hydraulic_diameter;
+
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+
+        let heat_transfer_area_per_node: Area 
+        = heat_transfer_area_heated_length_only / 
+        number_of_temperature_nodes as f64;
+
+        let average_node_conductance: ThermalConductance 
+        = h * heat_transfer_area_per_node;
+
+        return average_node_conductance;
     }
 }
 
