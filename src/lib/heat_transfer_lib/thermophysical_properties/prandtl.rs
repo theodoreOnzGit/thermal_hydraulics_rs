@@ -1,6 +1,6 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use super::Material;
+use super::{Material, LiquidMaterial};
 use super::dynamic_viscosity::try_get_mu_viscosity;
 use super::specific_heat_capacity::try_get_cp;
 use super::thermal_conductivity::try_get_kappa_thermal_conductivity;
@@ -32,4 +32,17 @@ pub fn try_get_prandtl(material: Material,
 
     Ok(mu*cp/k)
 
+}
+
+impl LiquidMaterial {
+    pub fn try_get_prandtl_liquid(&self,
+    temperature: ThermodynamicTemperature,
+    pressure: Pressure) -> Result<Ratio, ThermalHydraulicsLibError>{
+
+        let material : Material = self.clone().into();
+
+        try_get_prandtl(material, temperature, pressure)
+
+
+    }
 }

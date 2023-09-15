@@ -83,6 +83,38 @@ pub enum CVType {
     ArrayCV(ArrayCVType),
 }
 
+impl TryFrom<HeatTransferEntity> for CVType {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_from(value: HeatTransferEntity) -> Result<Self, Self::Error> {
+        match value {
+            HeatTransferEntity::ControlVolume(cv) => {
+                return Ok(cv);
+            },
+            HeatTransferEntity::BoundaryConditions(_) => {
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+            },
+        }
+    }
+}
+
+impl CVType {
+    #[inline]
+    /// gets the material 
+    pub fn get_material(&mut self) -> Result<Material,ThermalHydraulicsLibError>{
+
+
+        match self {
+            CVType::SingleCV(single_cv_node) => {
+                return Ok(single_cv_node.material_control_volume);
+            },
+            CVType::ArrayCV(array_cv) => {
+                array_cv.get_array_cv_material()
+            },
+        }
+    }
+}
+
 
 
 /// contains codes for boundary conditions
@@ -151,6 +183,7 @@ pub use postprocessing::*;
 pub mod calculation;
 pub use calculation::*;
 
+use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 

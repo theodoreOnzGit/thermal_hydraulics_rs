@@ -117,6 +117,31 @@ impl HeaterVersion2Bare {
 
         // need to convert hydraulic diameter to an equivalent 
         // spherical diameter
+        //
+        // but for now, I'm going to use Re and Nu using hydraulic diameter 
+        // and live with it for the time being
+        //
+        let reynolds: Ratio = 
+        mass_flowrate/flow_area*hydraulic_diameter / viscosity;
+        
+        // need to get prandtl number of fluid 
+        // so I need fluid temperature 
+        let mut therminol_fluid_array: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+        let fluid_average_temperature: ThermodynamicTemperature 
+        = therminol_fluid_array.get_bulk_temperature().unwrap();
+
+        let fluid_average_pressure: Pressure 
+        = therminol_fluid_array.pressure_control_volume;
+
+        let fluid_material: LiquidMaterial = 
+        therminol_fluid_array.material_control_volume.try_into().unwrap();
+
+        let fluid_prandtl: Ratio = fluid_material.try_get_prandtl_liquid
+            (fluid_average_temperature, fluid_average_pressure)
+            .unwrap();
+
         
 
         todo!()
