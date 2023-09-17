@@ -83,7 +83,7 @@ impl SolidColumn {
         // obtain some important parameters for calculation
         let material = self.material_control_volume;
         let pressure = self.pressure_control_volume;
-        let bulk_temperature = self.get_bulk_temperature()?;
+        let bulk_temperature = self.try_get_bulk_temperature()?;
         let total_volume = self.total_length *  self.xs_area;
         let dt = timestep;
         let node_length = self.total_length / number_of_nodes as f64;

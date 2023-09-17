@@ -124,6 +124,21 @@ impl NusseltPrandtlReynoldsData {
     }
 }
 
+impl Default for NusseltPrandtlReynoldsData {
+    fn default() -> Self {
+        NusseltPrandtlReynoldsData{
+            reynolds: Ratio::default(),
+            prandtl_bulk: Ratio::default(),
+            prandtl_wall: Ratio::default(),
+            constant: Ratio::default(),
+            reynolds_prandtl_coefficient: Ratio::default(),
+            reynolds_power: 0.0,
+            prandtl_power: 0.0,
+            prandtl_correction_factor_power: 0.0,
+        }
+    }
+}
+
 
 /// Wakao, N., & Funazkri, T. (1978). Effect 
 /// of fluid dispersion coefficients on particle-to-fluid mass 

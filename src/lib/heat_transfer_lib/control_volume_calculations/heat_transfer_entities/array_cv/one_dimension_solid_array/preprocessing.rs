@@ -119,7 +119,7 @@ impl SolidColumn {
                 a.total_cmp(b)
             });
 
-        let bulk_temp = self.get_bulk_temperature()?;
+        let bulk_temp = self.try_get_bulk_temperature()?;
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
         match thermal_diffusivity_coeff_opt {
             Some(alpha_reference) => *alpha_reference,
@@ -164,7 +164,7 @@ impl SolidColumn {
     /// may work well for liquids
     ///
     #[inline]
-    pub fn get_bulk_temperature(&mut self) -> 
+    pub fn try_get_bulk_temperature(&mut self) -> 
     Result<ThermodynamicTemperature,ThermalHydraulicsLibError>{
 
         // for now, doing it quick and dirty, i'm going to obtain a volume 

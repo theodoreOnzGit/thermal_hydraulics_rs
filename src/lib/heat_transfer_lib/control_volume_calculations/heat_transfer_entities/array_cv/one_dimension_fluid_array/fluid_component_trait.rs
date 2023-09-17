@@ -116,7 +116,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
-        let temperature = self.get_bulk_temperature().unwrap();
+        let temperature = self.try_get_bulk_temperature().unwrap();
 
         let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
@@ -127,7 +127,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
-        let temperature = self.clone().get_bulk_temperature().unwrap();
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
 
         let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
@@ -138,7 +138,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_density(&mut self) -> MassDensity {
-        let temperature = self.get_bulk_temperature().unwrap();
+        let temperature = self.try_get_bulk_temperature().unwrap();
 
         let density = try_get_rho(
             self.material_control_volume,
@@ -149,7 +149,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_density_immutable(&self) -> MassDensity {
-        let temperature = self.clone().get_bulk_temperature().unwrap();
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
 
         let density = try_get_rho(
             self.material_control_volume,

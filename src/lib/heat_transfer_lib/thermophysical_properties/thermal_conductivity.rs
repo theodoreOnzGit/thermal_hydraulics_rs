@@ -59,6 +59,8 @@ pub fn try_get_kappa_thermal_conductivity(material: Material,
     return Ok(thermal_conductivity);
 }
 
+
+
 // should the material happen to be a solid, use this function
 fn solid_thermal_conductivity(material: Material,
     temperature: ThermodynamicTemperature) -> ThermalConductivity{
@@ -93,6 +95,24 @@ impl LiquidMaterial {
         let thermal_conductivity: ThermalConductivity = match self {
             DowthermA => dowtherm_a_thermal_conductivity(fluid_temp),
             TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)
+        };
+
+        Ok(thermal_conductivity)
+    }
+
+}
+
+impl SolidMaterial {
+    /// returns the liquid thermal conductivity in a result enum 
+    #[inline]
+    pub fn try_get_thermal_conductivity(&self,
+        solid_temp: ThermodynamicTemperature,) 
+        -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
+
+        let thermal_conductivity: ThermalConductivity = match self {
+        Fiberglass => fiberglass_thermal_conductivity(solid_temp) ,
+        SteelSS304L => steel_304_l_spline_thermal_conductivity(solid_temp),
+        Copper => copper_thermal_conductivity(solid_temp),
         };
 
         Ok(thermal_conductivity)

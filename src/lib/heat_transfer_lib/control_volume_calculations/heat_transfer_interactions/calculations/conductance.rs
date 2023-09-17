@@ -4,7 +4,7 @@ use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
-use crate::heat_transfer_lib::control_volume_calculations::common_functions::obtain_thermal_conductance_annular_cylinder;
+use crate::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
 use crate::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
 use crate::heat_transfer_lib::thermophysical_properties ::Material;
 
@@ -255,14 +255,14 @@ fn get_conductance_cylindrical_radial_two_materials(
     // inner        interim             outer 
     //
     let inner_layer_conductance: ThermalConductance = 
-    obtain_thermal_conductance_annular_cylinder(
+    try_get_thermal_conductance_annular_cylinder(
         id,
         interim_diameter,
         l,
         inner_thermal_conductivity)?;
 
     let outer_layer_conductance: ThermalConductance = 
-    obtain_thermal_conductance_annular_cylinder(
+    try_get_thermal_conductance_annular_cylinder(
         interim_diameter,
         od,
         l,
@@ -353,7 +353,7 @@ fn get_conductance_single_cylindrical_radial_solid_liquid(
         solid_pressure)?;
 
     let solid_layer_conductance: ThermalConductance = 
-    obtain_thermal_conductance_annular_cylinder(
+    try_get_thermal_conductance_annular_cylinder(
         id,
         od,
         l,

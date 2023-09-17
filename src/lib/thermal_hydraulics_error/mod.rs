@@ -33,11 +33,22 @@ pub enum ThermalHydraulicsLibError {
     TypeConversionErrorHeatTransferEntity,
 
     /// error for type conversions for material
-    #[error("material is of the wrong type")]
+    #[error("material is of the wrong type for proper conversion")]
     TypeConversionErrorMaterial,
+
+    /// error for temperature out of range for 
+    /// thermophysical thermophysical_properties
+    #[error("Temperature supplied for thermophysical_properties\n 
+        function was out of range")]
+    ThermophysicalPropertyTemperatureRangeError,
+
+    /// generic thermophysical property error
+    #[error("Thermophysical Property Error")]
+    ThermophysicalPropertyError,
+    
 }
 
-/// 
+///  converts ThermalHydraulicsLibError from string error
 impl From<String> for ThermalHydraulicsLibError {
     fn from(value: String) -> Self {
         Self::GenericStringError(value)
@@ -65,6 +76,14 @@ impl Into<String> for ThermalHydraulicsLibError {
             ThermalHydraulicsLibError::TypeConversionErrorMaterial => {
                 self.to_string()
             },
+            ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError => {
+                self.to_string()
+            },
+            ThermalHydraulicsLibError::ThermophysicalPropertyError => {
+                self.to_string()
+            },
+
+
         }
     }
 }

@@ -417,7 +417,8 @@ pub fn obtain_power_through_wall_thermal_resistance(
 ///
 ///
 ///
-pub fn obtain_thermal_conductance_annular_cylinder(
+#[inline]
+pub fn try_get_thermal_conductance_annular_cylinder(
     inner_diameter: Length,
     outer_diameter: Length, 
     cylinder_length: Length,
