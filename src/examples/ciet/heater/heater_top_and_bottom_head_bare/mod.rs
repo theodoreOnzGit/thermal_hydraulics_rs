@@ -51,6 +51,8 @@ impl HeaterTopBottomHead {
     ///
     /// It's only a rough guess
     ///
+    ///
+    ///
     pub fn new_top_head(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature) -> Self {
 
