@@ -34,19 +34,12 @@ pub struct HeaterVersion2Bare {
 
 impl HeaterVersion2Bare {
 
-    /// traditional callibrated heater constructor 
-    /// with 20 W/(m^2 K) of heat loss  to air
-    ///
-    /// uses RELAP and SAM model rather than DeWet's Transform 
-    /// model as reference
-    ///
-    ///
     pub fn new(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         user_specified_inner_nodes: usize) -> Self {
 
         let flow_area = Area::new::<square_meter>(0.00105);
-        let heated_length = Length::new::<meter>(1.6383);
+        let heated_length = Length::new::<meter>(1.676);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
 

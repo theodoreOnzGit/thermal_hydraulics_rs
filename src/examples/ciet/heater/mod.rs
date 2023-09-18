@@ -21,3 +21,7 @@ pub fn example_heater(){
     //let _heater_v2_bare = HeaterVersion2Bare{};
 
 }
+#[test]
+pub fn example_heater_test(){
+
+}
