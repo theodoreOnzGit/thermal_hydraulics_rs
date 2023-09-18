@@ -19,7 +19,7 @@ pub struct StaticMixerMX10 {
 
     inner_nodes: usize,
 
-    pub insulation: HeatTransferEntity,
+    pub insulation_array: HeatTransferEntity,
 
     pub steel_shell: HeatTransferEntity,
 
@@ -34,13 +34,34 @@ pub struct StaticMixerMX10 {
 
 impl StaticMixerMX10 {
 
+
+    /// constructs the static mixer using the RELAP/SAM model 
+    /// as a basis 
+    ///
+    /// length = 0.33 m 
+    /// d_h = 2.79e-2
+    /// Insulation thickness: 5.08 cm
+    /// (fiberglass)
+    /// number of nodes (including two ends): 2
+    ///
+    /// Nusselt Number Correlation: same as heater (assumed)
+    /// because there is quite a lot of mixing going on
+    /// within the mixer
+    ///
+    /// Reynolds Number Correlation: unimplemented!()
+    ///
+    ///
+    /// Unheated Structure Thermal Inertia: ignored
     pub fn new_static_mixer(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature) -> Self {
 
         let user_specified_inner_nodes: usize = 0;
-        let flow_area = Area::new::<square_meter>(0.00105);
-        let head_length = Length::new::<meter>(0.0889);
+        let _flow_area = Area::new::<square_meter>(6.11e-4);
+        let component_length = Length::new::<meter>(0.33);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+
+        // form losses not implemented yet
         let pipe_form_loss = Ratio::new::<ratio>(3.75);
 
         // heater is inclined 90 degrees upwards, not that this is 
@@ -53,15 +74,21 @@ impl StaticMixerMX10 {
         //
         let h_to_air: HeatTransfer = 
         HeatTransfer::new::<watt_per_square_meter_kelvin>(6.0);
-        let id = Length::new::<meter>(0.0381);
-        let od = Length::new::<meter>(0.04);
+
+        let fiberglass_thickness = Length::new::<meter>(0.0508);
+
+        let steel_id = Length::new::<meter>(0.0381);
+        let steel_od = Length::new::<meter>(0.04);
+        let fiberglass_id = steel_od;
+        let fiberglass_od = fiberglass_id + 
+        fiberglass_thickness + fiberglass_thickness;
 
 
         // inner therminol array
         let therminol_array: FluidArray = 
-        FluidArray::new_odd_shaped_pipe(
-            head_length,
-            flow_area,
+        FluidArray::new_cylinder(
+            component_length,
+            hydraulic_diameter,
             initial_temperature,
             atmospheric_pressure,
             SolidMaterial::SteelSS304L,
@@ -73,31 +100,28 @@ impl StaticMixerMX10 {
         // now the outer steel array
         let steel_shell_array = 
         SolidColumn::new_cylindrical_shell(
-            head_length,
-            id,
-            od,
+            component_length,
+            steel_id,
+            steel_od,
             initial_temperature,
             atmospheric_pressure,
             SolidMaterial::SteelSS304L,
             user_specified_inner_nodes 
         );
-        // now twisted_tape (TBC)
-        let twisted_tape_width: Length = Length::new::<inch>(1.0);
-        let twisted_tape_thickness = Length::new::<inch>(0.048);
-        let twisted_tape_height = head_length;
-        let twisted_tape = 
-        SolidColumn::new_block(
-            twisted_tape_height,
-            twisted_tape_thickness,
-            twisted_tape_width,
+        // insulation
+        let insulation = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            fiberglass_id,
+            fiberglass_od,
             initial_temperature,
             atmospheric_pressure,
-            SolidMaterial::SteelSS304L,
+            SolidMaterial::Fiberglass,
             user_specified_inner_nodes 
         );
 
         return Self { inner_nodes: user_specified_inner_nodes,
-            insulation: twisted_tape.into(),
+            insulation_array: insulation.into(),
             steel_shell: steel_shell_array.into(),
             therminol_array: therminol_array.into(),
             ambient_temperature,

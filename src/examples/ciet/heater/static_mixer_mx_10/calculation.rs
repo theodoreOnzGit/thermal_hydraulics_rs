@@ -12,7 +12,7 @@ impl StaticMixerMX10 {
 
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
         self.steel_shell.advance_timestep_mut_self(timestep).unwrap();
-        self.insulation.advance_timestep_mut_self(timestep).unwrap();
+        self.insulation_array.advance_timestep_mut_self(timestep).unwrap();
     }
 
     /// advances timestep for each HeatTransferEntity within the 
@@ -32,7 +32,7 @@ impl StaticMixerMX10 {
         Arc::new(Mutex::new(self.steel_shell.clone()));
 
         let twisted_tape_mutex =
-        Arc::new(Mutex::new(self.insulation.clone()));
+        Arc::new(Mutex::new(self.insulation_array.clone()));
 
         // now create clones of the pointers so that we can access them 
         // later 
@@ -97,7 +97,7 @@ impl StaticMixerMX10 {
         steel_shell_mutex.lock().as_deref_mut()
         .unwrap().clone()).unwrap();
 
-        self.insulation.set(
+        self.insulation_array.set(
         twisted_tape_mutex.lock().as_deref_mut()
         .unwrap().clone()).unwrap();
 
