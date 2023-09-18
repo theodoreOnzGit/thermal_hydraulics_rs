@@ -4,9 +4,62 @@ use uom::si::{area::square_inch, pressure::atmosphere};
 
 impl HeaterVersion2Bare {
 
-    pub fn get_air_steel_shell_conductance(&mut self) 
+    pub fn get_air_steel_shell_conductance(&mut self,
+    h_air_to_steel_surf: HeatTransfer) 
         -> ThermalConductance {
-        todo!()
+        // first, let's get a clone of the steel shell surface
+        let mut steel_shell_clone: SolidColumn = 
+        self.steel_shell.clone().try_into().unwrap();
+
+
+
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let heated_length = Length::new::<inch>(66.0);
+        let heated_length_plus_heads = Length::new::<inch>(78.0);
+        let id = Length::new::<meter>(0.0381);
+        let od = Length::new::<meter>(0.04);
+
+
+        let heat_transfer_area_heated_length_plus_heads: Area = 
+        heated_length_plus_heads* od * PI;
+        let heat_transfer_area_heated_length_only: Area
+        = heated_length/ heated_length_plus_heads * 
+        heat_transfer_area_heated_length_plus_heads;
+
+        let node_area: Area = heat_transfer_area_heated_length_only 
+        / number_of_temperature_nodes as f64;
+
+
+        let air_to_surface_node_conductance: ThermalConductance = 
+        h_air_to_steel_surf * node_area;
+
+        // next is to have steel inner conductance
+
+        let steel_surf_temperature: ThermodynamicTemperature 
+        = steel_shell_clone.try_get_bulk_temperature().unwrap();
+
+        let cylinder_mid_diameter: Length = 0.5*(id+od);
+
+        let steel_conductivity: ThermalConductivity = 
+        SolidMaterial::SteelSS304L.try_get_thermal_conductivity(
+            steel_surf_temperature
+        ).unwrap();
+
+        let node_length = heated_length / 
+            number_of_temperature_nodes as f64;
+
+        let cylinder_node_conductance: ThermalConductance 
+        = try_get_thermal_conductance_annular_cylinder(
+            cylinder_mid_diameter,
+            od,
+            node_length,
+            steel_conductivity
+        ).unwrap();
+
+        let air_to_steel_resistance = 1.0/cylinder_node_conductance 
+        + 1.0/air_to_surface_node_conductance;
+
+        return 1.0/air_to_steel_resistance;
     }
 
     pub fn get_therminol_node_steel_shell_conductance(&mut self) 
@@ -121,7 +174,7 @@ impl HeaterVersion2Bare {
         let therminol_to_steel_shell_average_conductance: ThermalConductance 
         = h * heat_transfer_area_per_node;
 
-        let therminol_to_steel_shell_node_resistance = 
+        let therminol_to_steel_shell_surface_node_resistance = 
         1.0/therminol_to_steel_shell_average_conductance;
 
         // now I need to calculate resistance of the half length of the 
@@ -143,8 +196,16 @@ impl HeaterVersion2Bare {
         ).unwrap();
 
 
+        let cylinder_node_resistance = 
+        1.0/cylinder_node_conductance;
 
-        todo!()
+        let cylinder_to_therminol_resistance = 
+        cylinder_node_resistance + therminol_to_steel_shell_surface_node_resistance;
+
+        let cylinder_to_therminol_conductance: ThermalConductance 
+        = 1.0/cylinder_to_therminol_resistance;
+
+        return cylinder_to_therminol_conductance;
     }
 
     #[inline]
