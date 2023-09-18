@@ -1,9 +1,53 @@
 use super::HeaterVersion2Bare;
 use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
-use uom::si::{area::square_inch, pressure::atmosphere};
+use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
 
 impl HeaterVersion2Bare {
 
+    /// the end of each node should have a zero power boundary condition 
+    /// connected to each of them at the bare minimum
+    ///
+    /// this function does exactly that
+    #[inline]
+    fn zero_power_bc_connection(&mut self){
+
+        let zero_power: Power = Power::ZERO;
+
+        let mut zero_power_bc: HeatTransferEntity = 
+        BCType::UserSpecifiedHeatAddition(zero_power).into();
+
+        // constant heat addition interaction 
+
+        let interaction: HeatTransferInteractionType = 
+        HeatTransferInteractionType::UserSpecifiedHeatAddition;
+
+        // now connect the twisted tape 
+
+        self.twisted_tape_interior.link_to_back(&mut zero_power_bc,
+            interaction).unwrap();
+
+
+        self.twisted_tape_interior.link_to_front(&mut zero_power_bc,
+            interaction).unwrap();
+
+        self.therminol_array.link_to_front(&mut zero_power_bc,
+            interaction).unwrap();
+
+        self.therminol_array.link_to_back(&mut zero_power_bc,
+            interaction).unwrap();
+
+        self.steel_shell.link_to_front(&mut zero_power_bc,
+            interaction).unwrap();
+
+        self.steel_shell.link_to_back(&mut zero_power_bc,
+            interaction).unwrap();
+    }
+
+
+
+
+    /// obtains air to steel shell conductance
+    #[inline]
     pub fn get_air_steel_shell_conductance(&mut self,
     h_air_to_steel_surf: HeatTransfer) 
         -> ThermalConductance {
@@ -23,7 +67,7 @@ impl HeaterVersion2Bare {
         let heat_transfer_area_heated_length_plus_heads: Area = 
         heated_length_plus_heads* od * PI;
         let heat_transfer_area_heated_length_only: Area
-        = heated_length/ heated_length_plus_heads * 
+        = heated_length / heated_length_plus_heads * 
         heat_transfer_area_heated_length_plus_heads;
 
         let node_area: Area = heat_transfer_area_heated_length_only 
@@ -62,6 +106,9 @@ impl HeaterVersion2Bare {
         return 1.0/air_to_steel_resistance;
     }
 
+
+    /// obtains therminol to steel shell conductance
+    #[inline]
     pub fn get_therminol_node_steel_shell_conductance(&mut self) 
         -> ThermalConductance {
 
@@ -231,6 +278,10 @@ impl HeaterVersion2Bare {
 
     }
 
+
+    /// obtains therminol to twisted tape conductance 
+    /// based on approx wakao correlation
+    #[inline]
     pub fn get_therminol_node_twisted_tape_conductance(
     &self) -> ThermalConductance {
 
