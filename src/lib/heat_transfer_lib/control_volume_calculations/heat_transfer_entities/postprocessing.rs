@@ -120,10 +120,10 @@ impl HeatTransferEntity {
     /// gets temperature vector of this HeatTransferEntity 
     #[inline]
     pub fn get_temperature_vector(&mut self) ->
-    Result<ThermodynamicTemperature, ThermalHydraulicsLibError>{
+    Result<Vec<ThermodynamicTemperature>, ThermalHydraulicsLibError>{
 
-        let temp_vec: ThermodynamicTemperature = 
-        HeatTransferEntity::temperature(self)?;
+        let temp_vec = 
+        HeatTransferEntity::get_temperature_vector(self).unwrap();
 
         Ok(temp_vec)
     }

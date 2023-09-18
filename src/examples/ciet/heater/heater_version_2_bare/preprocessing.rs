@@ -1,8 +1,139 @@
 use super::HeaterVersion2Bare;
 use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
 use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
+use ndarray::*;
 
 impl HeaterVersion2Bare {
+
+
+    /// used to connect the arrays laterally 
+    /// assuming there is a set mass flowrate
+    #[inline]
+    fn start_lateral_connections(&mut self,
+        mass_flowrate: MassRate,
+        h_air_to_steel_surf: HeatTransfer,
+        heater_steady_state_power: Power){
+
+
+        // first let's get all the conductances 
+
+        let steel_to_air_conductance: ThermalConductance 
+        = self.get_air_steel_shell_conductance(
+            h_air_to_steel_surf
+        );
+
+        self.set_mass_flowrate(mass_flowrate);
+
+        let steel_surf_to_therminol_conductance: ThermalConductance 
+        = self.get_therminol_node_steel_shell_conductance();
+
+        let twisted_tape_to_therminol_conductance: ThermalConductance 
+        = self.get_therminol_node_twisted_tape_conductance();
+
+        // other stuff 
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let q_fraction_per_node: f64 = 1.0/ number_of_temperature_nodes as f64;
+        let mut q_frac_arr: Array1<f64> = Array::default(number_of_temperature_nodes);
+        q_frac_arr.fill(q_fraction_per_node);
+
+        // then get the ambient temperature 
+
+        let ambient_air_temp = self.ambient_temperature;
+
+        // lateral connections 
+        {
+            // first i will need to create temperature vectors 
+
+            let mut ambient_temperature_vector: Vec<ThermodynamicTemperature> 
+            = Array1::default(number_of_temperature_nodes)
+                .iter().map( |&temp| {
+                    temp
+                }
+                ).collect();
+
+            ambient_temperature_vector.fill(ambient_air_temp);
+
+            let solid_temp_vector: Vec<ThermodynamicTemperature> 
+            = self.steel_shell.get_temperature_vector().unwrap();
+
+            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
+            = self.therminol_array.get_temperature_vector().unwrap();
+
+            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
+            = self.twisted_tape_interior.get_temperature_vector().unwrap();
+
+            // clone each array and set them later
+
+            let mut steel_shell_clone: SolidColumn = 
+            self.steel_shell.clone().try_into() .unwrap();
+
+            let mut therminol_array_clone: FluidArray = 
+            self.therminol_array.clone().try_into().unwrap();
+
+            let mut twisted_tape_array_clone: SolidColumn = 
+            self.twisted_tape_interior.clone().try_into().unwrap();
+
+            // second, fill them into the each array 
+            
+            // steel to air interaction
+
+            steel_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
+                steel_to_air_conductance,
+                ambient_temperature_vector
+            ).unwrap();
+
+            // steel shell to therminol interaction
+
+            steel_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
+                steel_surf_to_therminol_conductance,
+                fluid_temp_vector.clone()
+            ).unwrap();
+
+            therminol_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                steel_surf_to_therminol_conductance,
+                solid_temp_vector
+            ).unwrap();
+
+            // we also want to add a heat source to steel shell
+
+            steel_shell_clone.lateral_link_new_power_vector(
+                heater_steady_state_power,
+                q_frac_arr
+            ).unwrap();
+
+            // now therminol to twisted tape interaction
+
+            therminol_array_clone.
+                lateral_link_new_temperature_vector_avg_conductance(
+                    twisted_tape_to_therminol_conductance,
+                    twisted_tape_temp_vector).unwrap();
+
+            twisted_tape_array_clone. 
+                lateral_link_new_temperature_vector_avg_conductance(
+                    twisted_tape_to_therminol_conductance,
+                    fluid_temp_vector).unwrap();
+
+            // note, must set mass flowrate first 
+            // otherwise there is by default zero flow through 
+            // the array
+
+            therminol_array_clone.set_mass_flowrate(
+                mass_flowrate);
+
+
+            // now that lateral connections are done, 
+            // modify the heat transfer entity 
+
+            self.therminol_array.set(therminol_array_clone.into()).unwrap();
+
+            self.steel_shell.set(steel_shell_clone.into()).unwrap();
+
+            self.twisted_tape_interior.set(twisted_tape_array_clone.into()
+                ).unwrap();
+
+
+        }
+    }
 
 
     /// the end of each node should have a zero power boundary condition 
