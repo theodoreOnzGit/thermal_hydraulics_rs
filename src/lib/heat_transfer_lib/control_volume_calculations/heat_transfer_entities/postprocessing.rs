@@ -122,10 +122,16 @@ impl HeatTransferEntity {
     pub fn get_temperature_vector(&mut self) ->
     Result<Vec<ThermodynamicTemperature>, ThermalHydraulicsLibError>{
 
-        let temp_vec = 
-        HeatTransferEntity::get_temperature_vector(self).unwrap();
+        match self {
+            HeatTransferEntity::ControlVolume(cv) => {
+                // cv should return a temperature_vec here
+                return cv.get_temperature_vector();
+            },
+            HeatTransferEntity::BoundaryConditions(bc) => {
+                return bc.get_temperature_vector();
+            },
+        }
 
-        Ok(temp_vec)
     }
 
     /// density vector 

@@ -1,4 +1,4 @@
-
+use uom::si::f64::*;
 /// Contains entities which transfer heat and interact with each 
 /// other
 ///
@@ -110,6 +110,26 @@ impl CVType {
             },
             CVType::ArrayCV(array_cv) => {
                 array_cv.get_array_cv_material()
+            },
+        }
+    }
+
+    #[inline]
+    fn get_temperature_vector(&mut self) -> 
+    Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
+        match self {
+            CVType::SingleCV(single_cv) => {
+                let temperature = single_cv.get_temperature()?;
+
+                let mut temp_vec: Vec<ThermodynamicTemperature> = vec![];
+
+                temp_vec.push(temperature);
+
+                return Ok(temp_vec);
+
+            },
+            CVType::ArrayCV(array_cv) => {
+                return array_cv.get_temperature_vector();
             },
         }
     }
