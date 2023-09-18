@@ -1,8 +1,8 @@
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use super::HeaterVersion2Bare;
+use super::HeaterTopBottomHead;
 
 
-impl FluidComponent for HeaterVersion2Bare {
+impl FluidComponent for HeaterTopBottomHead {
     fn get_mass_flowrate(&mut self) -> MassRate  {
         let mut therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();

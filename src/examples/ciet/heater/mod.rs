@@ -11,6 +11,9 @@ pub struct HeaterVersion2;
 pub mod heater_version_2_bare;
 pub use heater_version_2_bare::*;
 
+pub mod heater_top_and_bottom_head_bare;
+pub use heater_top_and_bottom_head_bare::*;
+
 
 pub fn example_heater(){
 

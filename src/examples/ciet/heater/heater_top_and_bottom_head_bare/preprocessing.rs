@@ -1,9 +1,9 @@
-use super::HeaterVersion2Bare;
+use super::HeaterTopBottomHead;
 use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
 use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
 use ndarray::*;
 
-impl HeaterVersion2Bare {
+impl HeaterTopBottomHead {
 
 
     /// used to connect the arrays laterally 
@@ -285,7 +285,7 @@ impl HeaterVersion2Bare {
         // firstly, reynolds 
 
         let reynolds_number: Ratio = 
-        HeaterVersion2Bare::heater_v2_hydraulic_diameter_reynolds(
+        HeaterTopBottomHead::heater_v2_hydraulic_diameter_reynolds(
             mass_flowrate,
             bulk_temperature,
         );

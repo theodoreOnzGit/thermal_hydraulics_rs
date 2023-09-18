@@ -1,10 +1,10 @@
 use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use super::HeaterVersion2Bare;
+use super::HeaterTopBottomHead;
 
 
-impl HeaterVersion2Bare {
+impl HeaterTopBottomHead {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     pub fn advance_timestep(&mut self, 

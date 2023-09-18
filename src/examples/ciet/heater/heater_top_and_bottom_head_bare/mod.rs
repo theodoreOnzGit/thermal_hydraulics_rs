@@ -15,7 +15,7 @@ use uom::si::pressure::atmosphere;
 ///
 /// note that it only contains the heated section, not the top nor 
 /// bottom heads
-pub struct HeaterVersion2Bare {
+pub struct HeaterTopBottomHead {
 
     inner_nodes: usize,
 
@@ -32,28 +32,44 @@ pub struct HeaterVersion2Bare {
 
 }
 
-impl HeaterVersion2Bare {
+impl HeaterTopBottomHead {
 
-    pub fn new(initial_temperature: ThermodynamicTemperature,
-        ambient_temperature: ThermodynamicTemperature,
-        user_specified_inner_nodes: usize) -> Self {
+    /// synthesiszes a new heater top head
+    ///
+    /// K = 3.75 (this is in addition to pipe form losses)
+    /// l = 0.0889m 
+    /// d_h = 6.60e-3 m (hydraulic diameter)
+    ///
+    /// no insulation is assumed for this because 
+    /// currently the ciet model has no insulation
+    ///
+    /// now, we can attach heat structures to either one of the control volumes 
+    ///
+    /// However, it should be attached to a heat structure 
+    /// (perhaps a SteelSS304L single CV with appropriate conductance 
+    /// 0.25 in^2 area, and callibrate length)
+    ///
+    /// It's only a rough guess
+    ///
+    pub fn new_top_head(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature) -> Self {
 
+        let user_specified_inner_nodes: usize = 0;
         let flow_area = Area::new::<square_meter>(0.00105);
-        let heated_length = Length::new::<meter>(1.676);
+        let head_length = Length::new::<meter>(0.0889);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
-        let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
+        let pipe_form_loss = Ratio::new::<ratio>(3.75);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
 
         let pipe_incline_angle = Angle::new::<uom::si::angle::degree>(90.0);
 
-        // default is a 20 W/(m^2 K) callibrated heat transfer coeff 
         // theoretically it's 6 W/(m^2 K) but then we'll have to manually 
         // input wall structures for additional heat loss
         //
         let h_to_air: HeatTransfer = 
-        HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(6.0);
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
 
@@ -61,20 +77,20 @@ impl HeaterVersion2Bare {
         // inner therminol array
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
-            heated_length,
+            head_length,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
             SolidMaterial::SteelSS304L,
             LiquidMaterial::TherminolVP1,
-            dummy_pipe_form_loss,
+            pipe_form_loss,
             user_specified_inner_nodes,
             pipe_incline_angle
         );
         // now the outer steel array
         let steel_shell_array = 
         SolidColumn::new_cylindrical_shell(
-            heated_length,
+            head_length,
             id,
             od,
             initial_temperature,
@@ -85,7 +101,92 @@ impl HeaterVersion2Bare {
         // now twisted_tape (TBC)
         let twisted_tape = 
         SolidColumn::new_cylindrical_shell(
-            heated_length,
+            head_length,
+            id,
+            od,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            user_specified_inner_nodes 
+        );
+
+        return Self { inner_nodes: user_specified_inner_nodes,
+            twisted_tape_interior: twisted_tape.into(),
+            steel_shell: steel_shell_array.into(),
+            therminol_array: therminol_array.into(),
+            ambient_temperature,
+            heat_transfer_to_air: h_to_air,
+        };
+    }
+
+    /// synthesiszes a new heater bottom head
+    ///
+    /// K = 3.95 (this is in addition to pipe form losses)
+    /// l = 0.19685m 
+    /// d_h = 6.60e-3 m (hydraulic diameter)
+    ///
+    /// no insulation is assumed for this because 
+    /// currently the ciet model has no insulation
+    ///
+    /// now, we can attach heat structures to either one of the control volumes 
+    ///
+    /// However, it should be attached to a heat structure 
+    /// (perhaps a SteelSS304L single CV with appropriate conductance 
+    /// 0.25 in^2 area, and callibrate length)
+    ///
+    /// It's only a rough guess
+    ///
+    pub fn new_bottom_head(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature) -> Self {
+
+        let user_specified_inner_nodes: usize = 0;
+        let flow_area = Area::new::<square_meter>(0.00105);
+        let head_length = Length::new::<meter>(0.19685);
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let pipe_form_loss = Ratio::new::<ratio>(3.95);
+
+        // heater is inclined 90 degrees upwards, not that this is 
+        // particularly important for this scenario
+
+        let pipe_incline_angle = Angle::new::<uom::si::angle::degree>(90.0);
+
+        // theoretically it's 6 W/(m^2 K) but then we'll have to manually 
+        // input wall structures for additional heat loss
+        //
+        let h_to_air: HeatTransfer = 
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(6.0);
+        let id = Length::new::<meter>(0.0381);
+        let od = Length::new::<meter>(0.04);
+
+
+        // inner therminol array
+        let therminol_array: FluidArray = 
+        FluidArray::new_odd_shaped_pipe(
+            head_length,
+            flow_area,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            LiquidMaterial::TherminolVP1,
+            pipe_form_loss,
+            user_specified_inner_nodes,
+            pipe_incline_angle
+        );
+        // now the outer steel array
+        let steel_shell_array = 
+        SolidColumn::new_cylindrical_shell(
+            head_length,
+            id,
+            od,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            user_specified_inner_nodes 
+        );
+        // now twisted_tape (TBC)
+        let twisted_tape = 
+        SolidColumn::new_cylindrical_shell(
+            head_length,
             id,
             od,
             initial_temperature,
