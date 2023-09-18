@@ -15,6 +15,12 @@ impl HeaterVersion2Bare {
         self.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
     }
 
+    /// advances timestep for each HeatTransferEntity within the 
+    /// HeaterVersion2Bare
+    ///
+    /// parallel implementation, spawns three threads to do it,
+    /// however, it relies heavily upon cloning, so it may or may not 
+    /// be faster
     pub fn advance_timestep_parallel(&mut self, 
     timestep: Time) {
         // advances timestep in parallel, 
