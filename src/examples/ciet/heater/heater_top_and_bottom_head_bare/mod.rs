@@ -102,7 +102,7 @@ impl HeaterTopBottomHead {
             SolidMaterial::SteelSS304L,
             user_specified_inner_nodes 
         );
-        // now twisted_tape (TBC)
+        // now twisted_tape 
 
         // the twisted tape width is assumed to be the twisted 
         // tape diameter in De Wet's dissertation

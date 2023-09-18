@@ -82,11 +82,14 @@ impl StaticMixerMX10 {
             user_specified_inner_nodes 
         );
         // now twisted_tape (TBC)
-        let insulation = 
-        SolidColumn::new_cylindrical_shell(
-            head_length,
-            id,
-            od,
+        let twisted_tape_width: Length = Length::new::<inch>(1.0);
+        let twisted_tape_thickness = Length::new::<inch>(0.048);
+        let twisted_tape_height = head_length;
+        let twisted_tape = 
+        SolidColumn::new_block(
+            twisted_tape_height,
+            twisted_tape_thickness,
+            twisted_tape_width,
             initial_temperature,
             atmospheric_pressure,
             SolidMaterial::SteelSS304L,
@@ -94,7 +97,7 @@ impl StaticMixerMX10 {
         );
 
         return Self { inner_nodes: user_specified_inner_nodes,
-            insulation: insulation.into(),
+            insulation: twisted_tape.into(),
             steel_shell: steel_shell_array.into(),
             therminol_array: therminol_array.into(),
             ambient_temperature,
