@@ -342,6 +342,81 @@ impl SingleCVNode {
         return Ok(one_dimension_cv);
     }
 
+    /// this function constructs a block
+    /// dimensions, length, width and thickness
+    ///
+    #[inline]
+    pub fn new_block(z: Length, 
+        width: Length,
+        thickness: Length,
+        material: Material,
+        cv_temperature: ThermodynamicTemperature,
+        pressure: Pressure) -> Result<HeatTransferEntity,
+    ThermalHydraulicsLibError>{
+
+
+        // diameter is pi D^2/4
+        let cross_sectional_area: Area = width * thickness;
+
+        let block_vol: Volume = 
+        cross_sectional_area * z;
+
+        let block_density: MassDensity = try_get_rho(
+            material,
+            cv_temperature,
+            pressure)?;
+
+        let one_dimension_mass: Mass = 
+        block_density * block_vol;
+
+
+        let enthalpy = try_get_h(
+            material, 
+            cv_temperature, 
+            pressure)?;
+
+        // set time step
+        let initial_timestep_vector: Vec<Time> = vec![];
+        let mut conduction_stability_lengthscale_vector: 
+        Vec<Length> = vec![];
+
+        // if it's a sphere, push the radius to the 
+        // conduction_stability_lengthscale_vector
+
+        // we do not discretise along theta or phi 
+
+        conduction_stability_lengthscale_vector.push(z);
+
+
+
+        let block = 
+        HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(
+                    SingleCVNode { 
+                    current_timestep_control_volume_specific_enthalpy: 
+                    enthalpy, 
+                    next_timestep_specific_enthalpy: 
+                    enthalpy, 
+                    rate_enthalpy_change_vector: 
+                    vec![], 
+                    mass_control_volume: one_dimension_mass, 
+                    material_control_volume: material, 
+                    pressure_control_volume: pressure,
+                    volume: block_vol, 
+                    max_timestep_vector: 
+                    initial_timestep_vector,
+                    mesh_stability_lengthscale_vector:
+                    conduction_stability_lengthscale_vector,
+                    volumetric_flowrate_vector:
+                    vec![],
+                }
+            )
+        );
+
+
+        return Ok(block);
+    }
+
     /// this function constructs cylinder based on length 
     /// dimensions, d and z 
     ///

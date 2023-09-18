@@ -186,7 +186,7 @@ impl HeaterVersion2Bare {
         );
 
         return Self { inner_nodes: user_specified_inner_nodes,
-            twisted_tape_interior: twisted_tape.into(),
+            twisted_tape_interior: todo!(),
             steel_shell: steel_shell_array.into(),
             therminol_array: therminol_array.into(),
             ambient_temperature,

@@ -50,6 +50,9 @@ pub use heater_version_2_bare::*;
 pub mod heater_top_and_bottom_head_bare;
 pub use heater_top_and_bottom_head_bare::*;
 
+pub mod static_mixer_mx_10;
+pub use static_mixer_mx_10::*;
+
 
 pub fn example_heater(){
 
