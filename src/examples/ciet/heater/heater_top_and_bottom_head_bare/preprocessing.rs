@@ -16,9 +16,9 @@ impl HeaterTopBottomHead {
     #[inline]
     pub fn start_lateral_connections(&mut self,
         mass_flowrate: MassRate,
-        h_air_to_steel_surf: HeatTransfer,
-        heater_steady_state_power: Power){
+        h_air_to_steel_surf: HeatTransfer){
 
+        let heater_steady_state_power: Power = Power::ZERO;
 
         // first let's get all the conductances 
 
@@ -199,7 +199,7 @@ impl HeaterTopBottomHead {
 
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = Length::new::<inch>(66.0);
+        let heated_length = Length::new::<meter>(1.6383);
         let heated_length_plus_heads = Length::new::<inch>(78.0);
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
@@ -339,7 +339,7 @@ impl HeaterTopBottomHead {
 
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = Length::new::<inch>(66.0);
+        let heated_length = Length::new::<meter>(1.6383);
         let heated_length_plus_heads = Length::new::<inch>(78.0);
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
@@ -508,7 +508,7 @@ impl HeaterTopBottomHead {
         // 
 
         // find suitable heat transfer area
-        let heated_length = Length::new::<inch>(66.0);
+        let heated_length = Length::new::<meter>(1.6383);
         let heated_length_plus_heads = Length::new::<inch>(78.0);
 
         let heat_transfer_area_heated_length_plus_heads: Area = 

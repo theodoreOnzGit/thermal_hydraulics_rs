@@ -51,7 +51,9 @@ impl HeaterTopBottomHead {
     ///
     /// It's only a rough guess
     ///
-    ///
+    /// We can callibrate until the outlet temperature at MX-10 is 102.45C 
+    /// That was the steady state temperature not considering other 
+    /// parasitic losses
     ///
     pub fn new_top_head(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature) -> Self {

@@ -15,6 +15,10 @@ use uom::si::pressure::atmosphere;
 ///
 /// note that it only contains the heated section, not the top nor 
 /// bottom heads
+///
+/// note: the pressure drop correlations are not yet properly implemented 
+/// so it behaves like a pipe in terms of pressure drop
+/// For now, I did not do anything special with it
 pub struct HeaterVersion2Bare {
 
     inner_nodes: usize,
@@ -31,6 +35,7 @@ pub struct HeaterVersion2Bare {
 
 
 }
+
 
 impl HeaterVersion2Bare {
 
