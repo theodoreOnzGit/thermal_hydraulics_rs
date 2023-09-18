@@ -4,10 +4,15 @@ use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
 
 impl HeaterVersion2Bare {
 
+
     /// the end of each node should have a zero power boundary condition 
     /// connected to each of them at the bare minimum
     ///
     /// this function does exactly that
+    ///
+    /// to connect the rest of the heat transfer entities, 
+    /// use the link to front or back methods within the 
+    /// FluidArray or SolidColumn
     #[inline]
     fn zero_power_bc_connection(&mut self){
 
