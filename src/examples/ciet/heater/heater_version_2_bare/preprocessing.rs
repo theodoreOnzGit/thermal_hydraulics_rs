@@ -7,9 +7,14 @@ impl HeaterVersion2Bare {
 
 
     /// used to connect the arrays laterally 
-    /// assuming there is a set mass flowrate
+    /// you'll need to set the mass flowrate and heater power
+    ///
+    /// executes serially, and uses lots of cloning, so it's 
+    /// heavier in resource usage,
+    ///
+    /// unoptimised in this regard
     #[inline]
-    fn start_lateral_connections(&mut self,
+    pub fn start_lateral_connections(&mut self,
         mass_flowrate: MassRate,
         h_air_to_steel_surf: HeatTransfer,
         heater_steady_state_power: Power){
