@@ -18,6 +18,7 @@ impl StaticMixerMX10 {
         mass_flowrate: MassRate,
         h_air_to_steel_surf: HeatTransfer){
 
+        todo!();
         let heater_steady_state_power: Power = Power::ZERO;
 
         // first let's get all the conductances 
@@ -324,7 +325,10 @@ impl StaticMixerMX10 {
         mx10_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
         mx10_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
 
-        mx10_prandtl_reynolds_data.darcy_friction_factor = todo!();
+        mx10_prandtl_reynolds_data.darcy_friction_factor = 
+            self.darcy_loss_correlation.darcy_friction_factor_fldk(
+                reynolds_number).unwrap();
+
         mx10_prandtl_reynolds_data.length_to_diameter = 
         length/hydraulic_diameter;
 
@@ -349,24 +353,18 @@ impl StaticMixerMX10 {
 
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
+        let length = therminol_fluid_array_clone.get_component_length();
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
 
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        heated_length_plus_heads* id * PI;
-
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length/ heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
-
+        let heat_transfer_area_total: Area = 
+        length * id * PI;
 
         let heat_transfer_area_per_node: Area 
-        = heat_transfer_area_heated_length_only / 
+        = heat_transfer_area_total / 
         number_of_temperature_nodes as f64;
 
-        let node_length = heated_length / 
+        let node_length = length / 
             number_of_temperature_nodes as f64;
 
         let therminol_to_steel_shell_average_conductance: ThermalConductance 
@@ -398,7 +396,8 @@ impl StaticMixerMX10 {
         1.0/cylinder_node_conductance;
 
         let cylinder_to_therminol_resistance = 
-        cylinder_node_resistance + therminol_to_steel_shell_surface_node_resistance;
+        cylinder_node_resistance + 
+        therminol_to_steel_shell_surface_node_resistance;
 
         let cylinder_to_therminol_conductance: ThermalConductance 
         = 1.0/cylinder_to_therminol_resistance;
