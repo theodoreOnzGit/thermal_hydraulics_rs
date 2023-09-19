@@ -23,7 +23,7 @@ impl StaticMixerMX10 {
         // first let's get all the conductances 
 
         let steel_to_air_conductance: ThermalConductance 
-        = self.get_air_steel_shell_conductance(
+        = self.get_air_insulation_shell_conductance(
             h_air_to_steel_surf
         );
 
@@ -189,62 +189,67 @@ impl StaticMixerMX10 {
 
     /// obtains air to steel shell conductance
     #[inline]
-    pub fn get_air_steel_shell_conductance(&mut self,
-    h_air_to_steel_surf: HeatTransfer) 
+    pub fn get_air_insulation_shell_conductance(&mut self,
+    h_air_to_insulation_surf: HeatTransfer) 
         -> ThermalConductance {
-        // first, let's get a clone of the steel shell surface
+
+        // first, make a clone of steel 
+
+        let mut fiberglass_clone: SolidColumn = 
+        self.insulation_array.clone().try_into().unwrap();
+
         let mut steel_shell_clone: SolidColumn = 
         self.steel_shell.clone().try_into().unwrap();
 
+        let mut therminol_clone: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
 
+        // find parameters for fiberglass conductance
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
-        let id = Length::new::<meter>(0.0381);
-        let od = Length::new::<meter>(0.04);
+        let component_length: Length = therminol_clone.get_component_length();
 
+        let fiberglass_shell_temperature = fiberglass_clone.try_get_bulk_temperature() 
+            .unwrap();
 
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        heated_length_plus_heads* od * PI;
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length / heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
+        let fiberglass: SolidMaterial = fiberglass_clone.material_control_volume
+            .try_into().unwrap();
 
-        let node_area: Area = heat_transfer_area_heated_length_only 
-        / number_of_temperature_nodes as f64;
-
-
-        let air_to_surface_node_conductance: ThermalConductance = 
-        h_air_to_steel_surf * node_area;
-
-        // next is to have steel inner conductance
-
-        let steel_surf_temperature: ThermodynamicTemperature 
-        = steel_shell_clone.try_get_bulk_temperature().unwrap();
-
-        let cylinder_mid_diameter: Length = 0.5*(id+od);
-
-        let steel_conductivity: ThermalConductivity = 
-        SolidMaterial::SteelSS304L.try_get_thermal_conductivity(
-            steel_surf_temperature
+        let fiberglass_conductivity: ThermalConductivity 
+        = fiberglass.try_get_thermal_conductivity(
+            fiberglass_shell_temperature
         ).unwrap();
 
-        let node_length = heated_length / 
-            number_of_temperature_nodes as f64;
+        let node_length: Length  = component_length / 
+        number_of_temperature_nodes as f64;
 
-        let cylinder_node_conductance: ThermalConductance 
-        = try_get_thermal_conductance_annular_cylinder(
-            cylinder_mid_diameter,
+        let od: Length = self.insulation_outer_diameter;
+
+        let insulation_mid_length: Length 
+        = 0.5 * (od + self.insulation_inner_diameter);
+
+        let fiberglass_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            insulation_mid_length,
             od,
             node_length,
-            steel_conductivity
+            fiberglass_conductivity
         ).unwrap();
 
-        let air_to_steel_resistance = 1.0/cylinder_node_conductance 
-        + 1.0/air_to_surface_node_conductance;
+        // find parameters for conductance due to convection 
+        // resistance 
 
-        return 1.0/air_to_steel_resistance;
+        let node_area: Area = od * PI * node_length;
+
+        let air_convection_conductance: ThermalConductance
+        = node_area * h_air_to_insulation_surf;
+
+        let total_resistance = 
+        1.0/air_convection_conductance + 
+        1.0/fiberglass_layer_conductance;
+
+        return 1.0/total_resistance;
+
     }
 
 
