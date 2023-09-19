@@ -37,7 +37,9 @@ pub struct StaticMixerMX10 {
 
     insulation_outer_diameter: Length,
 
+    flow_area: Area,
 
+    darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
 }
 
 impl StaticMixerMX10 {
@@ -64,7 +66,7 @@ impl StaticMixerMX10 {
         ambient_temperature: ThermodynamicTemperature) -> Self {
 
         let user_specified_inner_nodes: usize = 0;
-        let _flow_area = Area::new::<square_meter>(6.11e-4);
+        let flow_area = Area::new::<square_meter>(6.11e-4);
         let component_length = Length::new::<meter>(0.33);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let hydraulic_diameter = Length::new::<meter>(2.79e-2);
@@ -128,6 +130,15 @@ impl StaticMixerMX10 {
             user_specified_inner_nodes 
         );
 
+        // f + L/D K = 21 + 4000/Re
+        let darcy_loss_correlation = 
+        DimensionlessDarcyLossCorrelations::
+            new_simple_reynolds_power_component(
+                Ratio::new::<ratio>(21.0),
+                Ratio::new::<ratio>(4000.0),
+                -1.0
+            );
+
         return Self { inner_nodes: user_specified_inner_nodes,
             insulation_array: insulation.into(),
             steel_shell: steel_shell_array.into(),
@@ -138,7 +149,8 @@ impl StaticMixerMX10 {
             tube_outer_diameter: steel_od,
             insulation_inner_diameter: fiberglass_id,
             insulation_outer_diameter: fiberglass_od,
-
+            flow_area,
+            darcy_loss_correlation,
         };
     }
 

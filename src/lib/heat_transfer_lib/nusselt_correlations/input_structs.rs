@@ -1,4 +1,4 @@
-use uom::si::{f64::*, ratio::ratio};
+use uom::{si::{f64::*, ratio::ratio}, ConstZero};
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
@@ -194,6 +194,18 @@ pub struct GnielinskiData {
     pub darcy_friction_factor: Ratio,
     /// pipe length to diameter ratio 
     pub length_to_diameter: Ratio
+}
+
+impl Default for GnielinskiData {
+    fn default() -> Self {
+        Self {
+            reynolds: Ratio::ZERO,
+            prandtl_bulk: Ratio::ZERO,
+            prandtl_wall: Ratio::ZERO,
+            darcy_friction_factor: Ratio::ZERO,
+            length_to_diameter: Ratio::new::<ratio>(1.0),
+        }
+    }
 }
 
 impl GnielinskiData {

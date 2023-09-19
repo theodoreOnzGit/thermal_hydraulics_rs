@@ -1,5 +1,5 @@
 use super::StaticMixerMX10;
-use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
+use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::{NusseltPrandtlReynoldsData, GnielinskiData}}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
 use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
 use ndarray::*;
 
@@ -198,9 +198,6 @@ impl StaticMixerMX10 {
         let mut fiberglass_clone: SolidColumn = 
         self.insulation_array.clone().try_into().unwrap();
 
-        let mut steel_shell_clone: SolidColumn = 
-        self.steel_shell.clone().try_into().unwrap();
-
         let mut therminol_clone: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
 
@@ -287,10 +284,12 @@ impl StaticMixerMX10 {
         let hydraulic_diameter = 
         therminol_fluid_array_clone.get_hydraulic_diameter();
 
+        let length = therminol_fluid_array_clone.get_component_length();
+
         // firstly, reynolds 
 
         let reynolds_number: Ratio = 
-        StaticMixerMX10::heater_v2_hydraulic_diameter_reynolds(
+        self.mx10_hydraulic_diameter_reynolds(
             mass_flowrate,
             bulk_temperature,
         );
@@ -311,22 +310,28 @@ impl StaticMixerMX10 {
             atmospheric_pressure
         ).unwrap();
 
-        // for this case, I will have the ciet heater nusselt 
-        // number correlation
+        // for this case, I will have the Gnielinksi 
+        // Correlation
         //
-        // constants are ignored, so we use the default method
-        // and manually adjust the reynolds and prandtl numbers
+        // However, for that, I will need the length to diameter 
+        // ratio, and the darcy_friction_factor
 
-        let mut heater_prandtl_reynolds_data: NusseltPrandtlReynoldsData 
-        = NusseltPrandtlReynoldsData::default();
 
-        heater_prandtl_reynolds_data.reynolds = reynolds_number;
-        heater_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        heater_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
+        let mut mx10_prandtl_reynolds_data: GnielinskiData 
+        = GnielinskiData::default();
+
+        mx10_prandtl_reynolds_data.reynolds = reynolds_number;
+        mx10_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
+        mx10_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
+
+        mx10_prandtl_reynolds_data.darcy_friction_factor = todo!();
+        mx10_prandtl_reynolds_data.length_to_diameter = 
+        length/hydraulic_diameter;
+
 
         let heater_nusselt_correlation: NusseltCorrelation 
-        =  NusseltCorrelation::CIETHeaterVersion2(
-            heater_prandtl_reynolds_data
+        =  NusseltCorrelation::PipeGnielinskiGeneric(
+            mx10_prandtl_reynolds_data
         );
 
         let nusselt_estimate: Ratio = 
@@ -402,11 +407,12 @@ impl StaticMixerMX10 {
     }
 
     #[inline]
-    pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
+    pub fn mx10_hydraulic_diameter_reynolds(&mut self, 
+        mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {
 
-        let flow_area: Area = Area::new::<square_inch>(1.63);
-        let hydraulic_diameter = Length::new::<inch>(0.5776);
+        let flow_area: Area = self.flow_area;
+        let hydraulic_diameter = self.get_hydraulic_diameter();
         let viscosity: DynamicViscosity = 
         LiquidMaterial::TherminolVP1.try_get_dynamic_viscosity(
             temperature).unwrap();

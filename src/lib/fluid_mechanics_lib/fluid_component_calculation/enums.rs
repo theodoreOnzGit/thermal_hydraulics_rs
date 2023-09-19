@@ -62,7 +62,7 @@ impl DimensionlessDarcyLossCorrelations {
     /// creates a new simple reynolds power correlation object 
     /// in the form
     /// Reynold's power correlation in the form 
-    /// f_darcy = A + B Re^(C)
+    /// f_darcy = a + b Re^(c)
     pub fn new_simple_reynolds_power_component(
         a: Ratio,
         b: Ratio,
