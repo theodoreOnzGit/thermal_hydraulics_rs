@@ -14,7 +14,7 @@ impl StaticMixerMX10 {
     ///
     /// unoptimised in this regard
     #[inline]
-    pub fn start_lateral_connections(&mut self,
+    pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate,
         h_air_to_steel_surf: HeatTransfer){
 
@@ -139,6 +139,9 @@ impl StaticMixerMX10 {
         self.insulation_array.set(insulation_array_clone.into()
         ).unwrap();
 
+        // adiabatic bc connections to make things finished 
+
+        self.zero_power_bc_connection();
     }
 
 

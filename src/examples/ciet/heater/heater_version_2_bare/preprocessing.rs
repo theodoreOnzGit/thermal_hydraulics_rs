@@ -14,7 +14,7 @@ impl HeaterVersion2Bare {
     ///
     /// unoptimised in this regard
     #[inline]
-    pub fn start_lateral_connections(&mut self,
+    pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate,
         heater_steady_state_power: Power){
 
@@ -137,6 +137,9 @@ impl HeaterVersion2Bare {
 
 
         }
+        // axial connections 
+
+        self.zero_power_bc_connection();
     }
 
 

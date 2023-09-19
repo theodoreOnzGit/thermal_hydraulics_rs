@@ -14,7 +14,7 @@ impl HeaterTopBottomHead {
     ///
     /// unoptimised in this regard
     #[inline]
-    pub fn start_lateral_connections(&mut self,
+    pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate,
         h_air_to_steel_surf: HeatTransfer){
 
@@ -138,6 +138,9 @@ impl HeaterTopBottomHead {
 
 
         }
+        // axial connections 
+
+        self.zero_power_bc_connection();
     }
 
 
