@@ -29,6 +29,14 @@ pub struct StaticMixerMX10 {
 
     pub heat_transfer_to_air: HeatTransfer,
 
+    tube_inner_diameter: Length,
+
+    tube_outer_diameter: Length, 
+
+    insulation_inner_diameter: Length,
+
+    insulation_outer_diameter: Length,
+
 
 }
 
@@ -126,6 +134,11 @@ impl StaticMixerMX10 {
             therminol_array: therminol_array.into(),
             ambient_temperature,
             heat_transfer_to_air: h_to_air,
+            tube_inner_diameter: steel_id,
+            tube_outer_diameter: steel_od,
+            insulation_inner_diameter: fiberglass_id,
+            insulation_outer_diameter: fiberglass_od,
+
         };
     }
 

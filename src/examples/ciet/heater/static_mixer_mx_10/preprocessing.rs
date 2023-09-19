@@ -446,9 +446,69 @@ impl StaticMixerMX10 {
         let node_length = array_length / 
         number_of_temperature_nodes as f64;
 
-        // 
+        // then we need to find the surface area of each node 
+        // for steel to fiberglass, it will be 
+        // the steel outer diameter or insulation inner_diameter
+        
+        let steel_mid_section_diameter = 0.5 * (self.tube_outer_diameter 
+        + self.tube_inner_diameter);
 
-        todo!()
+        let fiberglass_mid_section_diameter = 0.5 * (self.insulation_inner_diameter
+        + self.insulation_outer_diameter);
+
+        let steel_od = self.tube_outer_diameter;
+
+        // next, thermal conductivities of both steel and fiberglass 
+
+        let steel_shell_temperature = steel_clone.try_get_bulk_temperature() 
+            .unwrap();
+
+        let steel: SolidMaterial = steel_clone.material_control_volume
+            .try_into().unwrap();
+
+        let steel_conductivity: ThermalConductivity 
+        = steel.try_get_thermal_conductivity(
+            steel_shell_temperature
+        ).unwrap();
+
+        let fiberglass_shell_temperature = fiberglass_clone.try_get_bulk_temperature() 
+            .unwrap();
+
+        let fiberglass: SolidMaterial = fiberglass_clone.material_control_volume
+            .try_into().unwrap();
+
+        let fiberglass_conductivity: ThermalConductivity 
+        = fiberglass.try_get_thermal_conductivity(
+            fiberglass_shell_temperature
+        ).unwrap();
+
+        // we should be able to get the conductance now
+
+        let fiberglass_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            steel_od,
+            fiberglass_mid_section_diameter,
+            node_length,
+            fiberglass_conductivity
+        ).unwrap();
+        
+        let steel_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            steel_mid_section_diameter,
+            steel_od,
+            node_length,
+            steel_conductivity
+        ).unwrap();
+
+        // now that we have the conductances, we get the resistances 
+
+        let fiberglass_resistance = 1.0/fiberglass_layer_conductance;
+        let steel_resistance = 1.0/steel_layer_conductance;
+
+        let total_resistance = fiberglass_resistance + steel_resistance;
+
+
+        return 1.0/total_resistance;
     }
 }
 
