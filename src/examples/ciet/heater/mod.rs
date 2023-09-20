@@ -310,7 +310,7 @@ pub fn example_heater(){
     // once simulation completed, write data
 
 
-    todo!("haven't coded csv writing file")
+    //todo!("haven't coded csv writing file")
 
 }
 

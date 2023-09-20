@@ -796,11 +796,6 @@ impl FluidArray{
 
         self.back_single_cv.clear_vectors()?;
         self.front_single_cv.clear_vectors()?;
-        
-        let mesh_stability_lengthscale_vector = 
-        self.back_single_cv.mesh_stability_lengthscale_vector.clone();
-        dbg!(mesh_stability_lengthscale_vector);
-
 
         Ok(())
     }
