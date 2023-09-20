@@ -93,6 +93,9 @@ impl NusseltPrandtlReynoldsData {
     /// * (Pr_wall/Pr_bulk)^0.11
     ///
     /// ignores the coefficients, a,b,c,d,e in the struct
+    ///
+    /// If reynolds number is negative, doesn't matter, just 
+    /// take the absolute value of reynolds number
     #[inline]
     pub fn ciet_version_2_heater_prandtl_corrected(&self) -> 
     Result<Ratio, ThermalHydraulicsLibError>{
@@ -100,7 +103,7 @@ impl NusseltPrandtlReynoldsData {
         =  {
             let ref this = self;
 
-            let reynolds = this.reynolds;
+            let reynolds = this.reynolds.abs();
             let prandtl = this.prandtl_bulk;
             let reynolds_power_0_836 = reynolds.value.powf(0.836);
             let prandtl_power_0_333 = prandtl.value.powf(0.333333333333333);

@@ -183,20 +183,22 @@ pub fn example_heater(){
         let loop_time_end = loop_time_start.elapsed().unwrap();
 
         // print outlet temperature 
-        println!("Exit Temp {:?}", front_cv_temperature
+        dbg!("Exit Temp ", front_cv_temperature
         .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
         // print surface temperature 
-        println!("Steel array Temp: \n {:?} \n", steel_array_temperature);
+        dbg!("Steel array Temp: ", steel_array_temperature);
 
         // print therminol temperature 
-        println!("Therminol Array Temp: \n{:?}", therminol_array_temperature);
+        dbg!("Therminol Array Temp: ", therminol_array_temperature);
 
         // print twisted tape temperature 
-        println!("twisted tape Temp: \n{:?}", twisted_tape_temperature);
+        dbg!("twisted tape Temp: 
+        note: conduction occurs, so first node is hotter\n 
+        than the therminol fluid", twisted_tape_temperature);
 
         // print loop time 
-        println!("time taken for loop: {:?}", loop_time_end);
+        dbg!("time taken for loop: ", loop_time_end);
     }
 
     // once simulation completed, write data

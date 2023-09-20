@@ -21,6 +21,8 @@ impl HeaterVersion2Bare {
     /// parallel implementation, spawns three threads to do it,
     /// however, it relies heavily upon cloning, so it may or may not 
     /// be faster
+    ///
+    /// Note: BUGGY
     pub fn advance_timestep_parallel(&mut self, 
     timestep: Time) {
         // advances timestep in parallel, 

@@ -1,5 +1,6 @@
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 
+use uom::ConstZero;
 use uom::si::area::square_meter;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::ratio::ratio;
@@ -70,16 +71,27 @@ impl HeaterVersion2Bare {
         let od = Length::new::<meter>(0.04);
 
 
-        // inner therminol array
+        // inner therminol array 
+        //
+        // the darcy loss correlation is f = 17.9 *Re^{-0.34}
+        // accurate to within 4% (Lukas et al)
+        // Improved Heat Transfer and Volume Scaling through 
+        // Novel Heater Design
+        // 
+
+        let a = Ratio::ZERO;
+        let b = Ratio::new::<ratio>(17.9);
+        let c: f64  = -0.34;
         let therminol_array: FluidArray = 
-        FluidArray::new_odd_shaped_pipe(
+        FluidArray::new_custom_component(
             heated_length,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
-            SolidMaterial::SteelSS304L,
             LiquidMaterial::TherminolVP1,
-            dummy_pipe_form_loss,
+            a,
+            b,
+            c,
             user_specified_inner_nodes,
             pipe_incline_angle
         );
