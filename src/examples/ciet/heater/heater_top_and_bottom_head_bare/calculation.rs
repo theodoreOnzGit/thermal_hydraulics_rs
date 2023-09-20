@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
+use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut}};
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 use super::HeaterTopBottomHead;
