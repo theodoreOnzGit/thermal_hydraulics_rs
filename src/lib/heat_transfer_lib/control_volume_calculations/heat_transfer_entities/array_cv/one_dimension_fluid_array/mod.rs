@@ -233,14 +233,12 @@ impl FluidArray{
     temperature_arr: Array1<ThermodynamicTemperature>) -> Result<(),
     ThermalHydraulicsLibError> {
 
-        // we'll convert the temperature array into vector form 
-        // and use the existing method 
-        let mut temperature_vec: Vec<ThermodynamicTemperature> 
-        = vec![];
-
-        for temperature in temperature_arr.iter() {
-            temperature_vec.push(*temperature)
-        }
+        let temperature_vec: Vec<ThermodynamicTemperature> 
+        = temperature_arr.into_iter().map(
+            |temperature_val| {
+                temperature_val
+            }
+        ).collect();
 
         self.set_temperature_vector(temperature_vec)
 

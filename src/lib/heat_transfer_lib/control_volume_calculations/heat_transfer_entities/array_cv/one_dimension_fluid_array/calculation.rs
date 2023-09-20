@@ -777,10 +777,14 @@ impl FluidArray{
         self.back_single_cv.set_liquid_cv_mass_from_temperature()?;
         self.back_single_cv.rate_enthalpy_change_vector.clear();
         self.back_single_cv.max_timestep_vector.clear();
+        self.back_single_cv.mesh_stability_lengthscale_vector.clear();
+        self.back_single_cv.volumetric_flowrate_vector.clear();
 
         self.front_single_cv.set_liquid_cv_mass_from_temperature()?;
         self.front_single_cv.rate_enthalpy_change_vector.clear();
         self.front_single_cv.max_timestep_vector.clear();
+        self.front_single_cv.mesh_stability_lengthscale_vector.clear();
+        self.front_single_cv.volumetric_flowrate_vector.clear();
         self.clear_vectors()?;
 
         // all done

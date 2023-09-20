@@ -25,10 +25,11 @@ impl HeaterVersion2Bare {
 
 
         // first let's get all the conductances 
+        let heat_transfer_to_air = self.heat_transfer_to_air;
 
         let steel_to_air_conductance: ThermalConductance 
         = self.get_air_steel_shell_conductance(
-            self.heat_transfer_to_air
+            heat_transfer_to_air
         );
 
         self.set_mass_flowrate(mass_flowrate);
