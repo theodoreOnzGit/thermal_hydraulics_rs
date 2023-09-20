@@ -158,13 +158,13 @@ pub fn example_heater(){
 
         // make axial connections to BCs 
 
-        heater_bottom_head_bare.therminol_array.link_to_back(
-            &mut inlet_bc,
-            generic_advection_interaction
-        ).unwrap();
+        //heater_bottom_head_bare.therminol_array.link_to_back(
+        //    &mut inlet_bc,
+        //    generic_advection_interaction
+        //).unwrap();
 
         heater_v2_bare.therminol_array.link_to_back(
-            &mut heater_bottom_head_bare.therminol_array,
+            &mut inlet_bc,
             generic_advection_interaction
         ).unwrap();
 
@@ -228,7 +228,7 @@ pub fn example_heater(){
         .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
         // print surface temperature 
-        dbg!(heater_surface_array_temp);
+        dbg!(heater_v2_bare.therminol_array_temperature());
 
         //// print therminol temperature 
         //dbg!("Therminol Array Temp: ", therminol_array_temperature);
