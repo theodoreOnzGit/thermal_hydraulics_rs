@@ -17,8 +17,7 @@ impl HeaterTopBottomHead {
     /// unoptimised in this regard
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
-        mass_flowrate: MassRate,
-        h_air_to_steel_surf: HeatTransfer){
+        mass_flowrate: MassRate){
 
         let heater_steady_state_power: Power = Power::ZERO;
 
@@ -26,16 +25,21 @@ impl HeaterTopBottomHead {
 
         let steel_to_air_conductance: ThermalConductance 
         = self.get_air_steel_shell_conductance(
-            h_air_to_steel_surf
+            self.heat_transfer_to_air
         );
 
         self.set_mass_flowrate(mass_flowrate);
 
-        let steel_surf_to_therminol_conductance: ThermalConductance 
+        let heater_head_steel_surf_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_steel_shell_conductance();
+
 
         let twisted_tape_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_twisted_tape_conductance();
+
+        dbg!(heater_head_steel_surf_to_therminol_conductance);
+        dbg!(self.get_mass_flowrate());
+        dbg!(twisted_tape_to_therminol_conductance);
 
         // other stuff 
         let number_of_temperature_nodes = self.inner_nodes + 2;
@@ -92,12 +96,12 @@ impl HeaterTopBottomHead {
             // steel shell to therminol interaction
 
             steel_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                steel_surf_to_therminol_conductance,
+                heater_head_steel_surf_to_therminol_conductance,
                 fluid_temp_vector.clone()
             ).unwrap();
 
             therminol_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                steel_surf_to_therminol_conductance,
+                heater_head_steel_surf_to_therminol_conductance,
                 solid_temp_vector
             ).unwrap();
 
@@ -303,13 +307,6 @@ impl HeaterTopBottomHead {
             atmospheric_pressure
         ).unwrap();
 
-        // surface prandtl number
-        //
-        let surface_prandtl_number: Ratio 
-        = LiquidMaterial::TherminolVP1.try_get_prandtl_liquid(
-            steel_surf_temperature,
-            atmospheric_pressure
-        ).unwrap();
 
         // for this case, I will have the ciet heater nusselt 
         // number correlation
@@ -322,7 +319,7 @@ impl HeaterTopBottomHead {
 
         heater_prandtl_reynolds_data.reynolds = reynolds_number;
         heater_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        heater_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
+        heater_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
 
         let heater_nusselt_correlation: NusseltCorrelation 
         =  NusseltCorrelation::CIETHeaterVersion2(
@@ -611,8 +608,7 @@ impl HeaterTopBottomHead {
     /// once that is done, the join handle is returned 
     /// which when unwrapped, returns the heater object
     pub fn lateral_connection_thread_spawn(&self,
-    mass_flowrate: MassRate,
-    h_air_to_surf: HeatTransfer) -> JoinHandle<Self>{
+    mass_flowrate: MassRate) -> JoinHandle<Self>{
 
         // make an Arc Ptr 
         let heater_peripherals_arc_ptr = Arc::new(Mutex::new(
@@ -628,8 +624,7 @@ impl HeaterTopBottomHead {
                 // carry out the connection calculations
                 heater_ptr_in_thread.deref_mut().
                     lateral_and_miscellaneous_connections(
-                        mass_flowrate,
-                        h_air_to_surf);
+                        mass_flowrate);
                 
                 let heater_clone = 
                 heater_ptr_in_thread.deref_mut().clone();

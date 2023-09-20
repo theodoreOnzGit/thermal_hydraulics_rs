@@ -56,7 +56,7 @@ pub mod static_mixer_mx_10;
 pub use static_mixer_mx_10::*;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::second, power::kilowatt}, ConstZero};
+use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin}, ConstZero};
 
 pub mod heated_section_example;
 
@@ -68,7 +68,7 @@ pub fn example_heater(){
     let _heater_v2 = HeaterVersion2{};
 
 
-    // bare heater example
+    // bare heater plus heads exaample
     let initial_temperature: ThermodynamicTemperature = 
     ThermodynamicTemperature::new::<degree_celsius>(79.12);
     let inlet_temperature = initial_temperature;
@@ -83,10 +83,23 @@ pub fn example_heater(){
         number_of_temperature_nodes
     );
 
+
+    let mut heater_top_head_bare: HeaterTopBottomHead 
+    = HeaterTopBottomHead::new_bottom_head(
+        initial_temperature,
+        ambient_air_temp);
+
+    let mut heater_bottom_head_bare: HeaterTopBottomHead 
+    = HeaterTopBottomHead::new_top_head(
+        initial_temperature,
+        ambient_air_temp);
+
     let mut inlet_bc: HeatTransferEntity = BCType::new_const_temperature( 
         inlet_temperature).into();
 
     let mut outlet_bc: HeatTransferEntity = BCType::new_adiabatic_bc().into();
+
+    
 
     // time settings 
 
@@ -106,7 +119,12 @@ pub fn example_heater(){
         // create interactions 
 
 
-        // first node of heater fluid density 
+        // let's get heater temperatures for post processing
+        // as well as the interaction
+        // for simplicity, i use the boussineseq approximation,
+        // which assumes that heat transfer is governed by 
+        // average density (which doesn't change much for liquid 
+        // anyway)
 
         let mut therminol_array_clone: FluidArray 
         = heater_v2_bare.therminol_array.clone().try_into().unwrap();
@@ -131,11 +149,6 @@ pub fn example_heater(){
         LiquidMaterial::TherminolVP1.density(
             heater_fluid_bulk_temp).unwrap();
 
-        // for simplicity, i use the boussineseq approximation,
-        // which assumes that heat transfer is governed by 
-        // average density (which doesn't change much for liquid 
-        // anyway)
-
         let generic_advection_interaction = 
         HeatTransferInteractionType::new_advection_interaction(
             mass_flowrate,
@@ -145,8 +158,13 @@ pub fn example_heater(){
 
         // make axial connections to BCs 
 
-        heater_v2_bare.therminol_array.link_to_back(
+        heater_bottom_head_bare.therminol_array.link_to_back(
             &mut inlet_bc,
+            generic_advection_interaction
+        ).unwrap();
+
+        heater_v2_bare.therminol_array.link_to_back(
+            &mut heater_bottom_head_bare.therminol_array,
             generic_advection_interaction
         ).unwrap();
 
@@ -154,6 +172,7 @@ pub fn example_heater(){
             &mut outlet_bc,
             generic_advection_interaction
         ).unwrap();
+
 
         // make other connections
         //
@@ -171,7 +190,14 @@ pub fn example_heater(){
                 mass_flowrate,
                 heater_power);
 
+        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+        = heater_bottom_head_bare. 
+            lateral_connection_thread_spawn(
+                mass_flowrate);
+
+
         heater_v2_bare = heater_2_join_handle.join().unwrap();
+        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
 
         //// calculate timestep (serial method)
         //heater_v2_bare.advance_timestep(
@@ -182,11 +208,20 @@ pub fn example_heater(){
         = heater_v2_bare.advance_timestep_thread_spawn(
             timestep);
 
+        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+        = heater_bottom_head_bare. 
+            advance_timestep_thread_spawn(
+                timestep);
+
         heater_v2_bare = heater_2_join_handle.join().unwrap();
+        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
 
         simulation_time += timestep;
 
         let time_taken_for_calculation_loop = loop_time_start.elapsed().unwrap();
+
+        // prints therminol temperature 
+        dbg!(heater_bottom_head_bare.therminol_array_temperature());
 
         // print outlet temperature 
         dbg!(heated_section_exit_temperature
