@@ -794,13 +794,14 @@ impl FluidArray{
         self.q_vector.clear();
         self.q_fraction_vector.clear();
 
-        self.back_single_cv.rate_enthalpy_change_vector.clear();
-        self.back_single_cv.max_timestep_vector.clear();
-        self.back_single_cv.volumetric_flowrate_vector.clear();
+        self.back_single_cv.clear_vectors()?;
+        self.front_single_cv.clear_vectors()?;
+        
+        let mesh_stability_lengthscale_vector = 
+        self.back_single_cv.mesh_stability_lengthscale_vector.clone();
+        dbg!(mesh_stability_lengthscale_vector);
 
-        self.front_single_cv.rate_enthalpy_change_vector.clear();
-        self.front_single_cv.max_timestep_vector.clear();
-        self.front_single_cv.volumetric_flowrate_vector.clear();
+
         Ok(())
     }
 }

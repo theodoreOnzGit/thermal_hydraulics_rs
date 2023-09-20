@@ -138,6 +138,7 @@ impl CartesianConduction1DArray {
 
             self.inner_single_cv.clear_vectors().unwrap();
             self.outer_single_cv.clear_vectors().unwrap();
+            
         }
 
         self.temperature_array_current_timestep = new_temperature_array;
