@@ -112,6 +112,12 @@ pub fn example_heater(){
         let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
         therminol_array_clone.get_temperature_vector().unwrap();
 
+        let steel_array_clone: SolidColumn 
+        = heater_v2_bare.steel_shell.clone().try_into().unwrap();
+
+        let steel_array_temperature: Vec<ThermodynamicTemperature> = 
+        steel_array_clone.get_temperature_vector().unwrap();
+
         let back_cv_temperature: ThermodynamicTemperature = 
             therminol_array_temperature[0];
 
@@ -167,10 +173,13 @@ pub fn example_heater(){
         simulation_time += timestep;
 
         // print outlet temperature 
-        println!("{:?}", front_cv_temperature);
+        println!("Exit Temp {:?}", front_cv_temperature);
 
         // print surface temperature 
-        println!("{:?}", therminol_array_temperature);
+        println!("Steel array Temp: \n {:?} \n", steel_array_temperature);
+
+        // print surface temperature 
+        println!("Therminol Array Temp: \n{:?}", therminol_array_temperature);
     }
 
     // once simulation completed, write data

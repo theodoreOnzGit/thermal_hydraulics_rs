@@ -31,6 +31,8 @@ impl HeaterVersion2Bare {
         let steel_surf_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_steel_shell_conductance();
 
+        dbg!(steel_surf_to_therminol_conductance);
+
         let twisted_tape_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_twisted_tape_conductance();
 
@@ -57,14 +59,6 @@ impl HeaterVersion2Bare {
 
             ambient_temperature_vector.fill(ambient_air_temp);
 
-            let solid_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.steel_shell.get_temperature_vector().unwrap();
-
-            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.therminol_array.get_temperature_vector().unwrap();
-
-            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.twisted_tape_interior.get_temperature_vector().unwrap();
 
             // clone each array and set them later
 
@@ -77,6 +71,23 @@ impl HeaterVersion2Bare {
             let mut twisted_tape_array_clone: SolidColumn = 
             self.twisted_tape_interior.clone().try_into().unwrap();
 
+            // note, must set mass flowrate first 
+            // otherwise there is by default zero flow through 
+            // the array
+
+            therminol_array_clone.set_mass_flowrate(
+                mass_flowrate);
+
+            // temperature vectors
+
+            let steel_temp_vector: Vec<ThermodynamicTemperature> 
+            = steel_shell_clone.get_temperature_vector().unwrap();
+
+            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
+            = therminol_array_clone.get_temperature_vector().unwrap();
+
+            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
+            = twisted_tape_array_clone.get_temperature_vector().unwrap();
             // second, fill them into the each array 
             
             // steel to air interaction
@@ -95,7 +106,7 @@ impl HeaterVersion2Bare {
 
             therminol_array_clone.lateral_link_new_temperature_vector_avg_conductance(
                 steel_surf_to_therminol_conductance,
-                solid_temp_vector
+                steel_temp_vector
             ).unwrap();
 
             // we also want to add a heat source to steel shell
@@ -117,12 +128,6 @@ impl HeaterVersion2Bare {
                     twisted_tape_to_therminol_conductance,
                     fluid_temp_vector).unwrap();
 
-            // note, must set mass flowrate first 
-            // otherwise there is by default zero flow through 
-            // the array
-
-            therminol_array_clone.set_mass_flowrate(
-                mass_flowrate);
 
 
             // now that lateral connections are done, 
@@ -272,6 +277,8 @@ impl HeaterVersion2Bare {
 
         let mass_flowrate: MassRate = 
         therminol_fluid_array_clone.get_mass_flowrate();
+
+        dbg!(mass_flowrate);
 
         let bulk_temperature: ThermodynamicTemperature 
         = therminol_fluid_array_clone.try_get_bulk_temperature().unwrap();

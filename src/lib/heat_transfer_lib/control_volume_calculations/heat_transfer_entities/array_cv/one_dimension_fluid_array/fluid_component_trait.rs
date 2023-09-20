@@ -9,16 +9,6 @@ use uom::si::f64::*;
 
 impl FluidComponent for FluidArray{
     fn get_mass_flowrate(&mut self) -> MassRate  {
-
-        // utilise existing pressure loss to get mass flowrate 
-
-        let pressure_loss = self.pressure_loss;
-
-        let mass_flowrate = self.get_mass_flowrate_from_pressure_loss_immutable(
-            pressure_loss);
-
-        self.set_mass_flowrate(mass_flowrate);
-
         self.mass_flowrate
     }
 
