@@ -110,7 +110,7 @@ impl HeaterTopBottomHead {
     pub fn advance_timestep_thread_spawn(&self,
         timestep: Time,) -> JoinHandle<Self> {
 
-        // make an Arc Ptr 
+        // make a clone
         let mut heater_peripherals_clone = self.clone();
 
         // move ptr into a new thread 

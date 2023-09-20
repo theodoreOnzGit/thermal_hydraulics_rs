@@ -109,14 +109,14 @@ pub fn example_heater(){
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
     let heater_power = Power::new::<kilowatt>(8.0);
 
+    let loop_time = SystemTime::now();
     // main loop
     // note: possible memory leak
     
     while max_time > simulation_time {
 
         // time start 
-        let loop_time_start = SystemTime::now();
-
+        let loop_time_start = loop_time.elapsed().unwrap();
         
         
         // create interactions 
@@ -184,43 +184,61 @@ pub fn example_heater(){
         //    mass_flowrate,
         //    heater_power
         //);
+        let parallel_calc: bool = true;
 
-        // make other connections by spawning a new thread 
-        // this is the parallel version
-        let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-        = heater_v2_bare.
-            lateral_connection_thread_spawn(
+        // parallel calc probably not the cause of memory leak
+        if parallel_calc {
+            // make other connections by spawning a new thread 
+            // this is the parallel version
+            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+            = heater_v2_bare.
+                lateral_connection_thread_spawn(
+                    mass_flowrate,
+                    heater_power);
+
+            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+            = heater_bottom_head_bare. 
+                lateral_connection_thread_spawn(
+                    mass_flowrate);
+
+
+            heater_v2_bare = heater_2_join_handle.join().unwrap();
+            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+            //// calculate timestep (serial method)
+            //heater_v2_bare.advance_timestep(
+            //    timestep);
+
+            // calculate timestep (thread spawn method, parallel) 
+
+            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+            = heater_v2_bare.advance_timestep_thread_spawn(
+                timestep);
+
+            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+            = heater_bottom_head_bare. 
+                advance_timestep_thread_spawn(
+                    timestep);
+
+            heater_v2_bare = heater_2_join_handle.join().unwrap();
+            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+        } else {
+
+            heater_v2_bare.lateral_and_miscellaneous_connections(
                 mass_flowrate,
                 heater_power);
 
-        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-        = heater_bottom_head_bare. 
-            lateral_connection_thread_spawn(
+            heater_bottom_head_bare.lateral_and_miscellaneous_connections(
                 mass_flowrate);
 
+            heater_v2_bare.advance_timestep(timestep);
+            heater_bottom_head_bare.advance_timestep(timestep);
 
-        heater_v2_bare = heater_2_join_handle.join().unwrap();
-        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-        //// calculate timestep (serial method)
-        //heater_v2_bare.advance_timestep(
-        //    timestep);
-
-        // calculate timestep (thread spawn method, parallel) 
-        let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-        = heater_v2_bare.advance_timestep_thread_spawn(
-            timestep);
-
-        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-        = heater_bottom_head_bare. 
-            advance_timestep_thread_spawn(
-                timestep);
-
-        heater_v2_bare = heater_2_join_handle.join().unwrap();
-        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+        }
 
         simulation_time += timestep;
 
-        let time_taken_for_calculation_loop = loop_time_start.elapsed().unwrap();
+        let time_taken_for_calculation_loop = loop_time.elapsed().unwrap()
+        - loop_time_start;
 
         // prints therminol temperature 
         dbg!(heater_bottom_head_bare.therminol_array_temperature());
