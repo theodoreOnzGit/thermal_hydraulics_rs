@@ -19,7 +19,7 @@ impl HeaterTopBottomHead {
     pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate){
 
-        let heater_steady_state_power: Power = Power::ZERO;
+        let heater_steady_state_power = Power::ZERO;
 
         // first let's get all the conductances 
 
@@ -30,16 +30,13 @@ impl HeaterTopBottomHead {
 
         self.set_mass_flowrate(mass_flowrate);
 
-        let heater_head_steel_surf_to_therminol_conductance: ThermalConductance 
+        let steel_surf_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_steel_shell_conductance();
 
+        dbg!(steel_surf_to_therminol_conductance);
 
         let twisted_tape_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_twisted_tape_conductance();
-
-        dbg!(heater_head_steel_surf_to_therminol_conductance);
-        dbg!(self.get_mass_flowrate());
-        dbg!(twisted_tape_to_therminol_conductance);
 
         // other stuff 
         let number_of_temperature_nodes = self.inner_nodes + 2;
@@ -64,14 +61,6 @@ impl HeaterTopBottomHead {
 
             ambient_temperature_vector.fill(ambient_air_temp);
 
-            let solid_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.steel_shell.get_temperature_vector().unwrap();
-
-            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.therminol_array.get_temperature_vector().unwrap();
-
-            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
-            = self.twisted_tape_interior.get_temperature_vector().unwrap();
 
             // clone each array and set them later
 
@@ -84,6 +73,23 @@ impl HeaterTopBottomHead {
             let mut twisted_tape_array_clone: SolidColumn = 
             self.twisted_tape_interior.clone().try_into().unwrap();
 
+            // note, must set mass flowrate first 
+            // otherwise there is by default zero flow through 
+            // the array
+
+            therminol_array_clone.set_mass_flowrate(
+                mass_flowrate);
+
+            // temperature vectors
+
+            let steel_temp_vector: Vec<ThermodynamicTemperature> 
+            = steel_shell_clone.get_temperature_vector().unwrap();
+
+            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
+            = therminol_array_clone.get_temperature_vector().unwrap();
+
+            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
+            = twisted_tape_array_clone.get_temperature_vector().unwrap();
             // second, fill them into the each array 
             
             // steel to air interaction
@@ -96,13 +102,13 @@ impl HeaterTopBottomHead {
             // steel shell to therminol interaction
 
             steel_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                heater_head_steel_surf_to_therminol_conductance,
+                steel_surf_to_therminol_conductance,
                 fluid_temp_vector.clone()
             ).unwrap();
 
             therminol_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                heater_head_steel_surf_to_therminol_conductance,
-                solid_temp_vector
+                steel_surf_to_therminol_conductance,
+                steel_temp_vector
             ).unwrap();
 
             // we also want to add a heat source to steel shell
@@ -124,12 +130,6 @@ impl HeaterTopBottomHead {
                     twisted_tape_to_therminol_conductance,
                     fluid_temp_vector).unwrap();
 
-            // note, must set mass flowrate first 
-            // otherwise there is by default zero flow through 
-            // the array
-
-            therminol_array_clone.set_mass_flowrate(
-                mass_flowrate);
 
 
             // now that lateral connections are done, 
@@ -205,22 +205,16 @@ impl HeaterTopBottomHead {
         let mut steel_shell_clone: SolidColumn = 
         self.steel_shell.clone().try_into().unwrap();
 
-
+        let mut therminol_array_clone: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
+        let component_length = therminol_array_clone.get_component_length();
+        let hydraulic_diameter = therminol_array_clone.get_hydraulic_diameter();
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
 
-
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        heated_length_plus_heads* od * PI;
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length / heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
-
-        let node_area: Area = heat_transfer_area_heated_length_only 
+        let node_area: Area = PI *  hydraulic_diameter * component_length
         / number_of_temperature_nodes as f64;
 
 
@@ -239,7 +233,7 @@ impl HeaterTopBottomHead {
             steel_surf_temperature
         ).unwrap();
 
-        let node_length = heated_length / 
+        let node_length = component_length / 
             number_of_temperature_nodes as f64;
 
         let cylinder_node_conductance: ThermalConductance 
@@ -294,7 +288,7 @@ impl HeaterTopBottomHead {
         // firstly, reynolds 
 
         let reynolds_number: Ratio = 
-        HeaterTopBottomHead::heater_v2_hydraulic_diameter_reynolds(
+        self.heater_v2_hydraulic_diameter_reynolds(
             mass_flowrate,
             bulk_temperature,
         );
@@ -399,11 +393,18 @@ impl HeaterTopBottomHead {
     }
 
     #[inline]
-    pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
+    pub fn heater_v2_hydraulic_diameter_reynolds(&self,
+        mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {
 
-        let flow_area: Area = Area::new::<square_inch>(1.63);
-        let hydraulic_diameter = Length::new::<inch>(0.5776);
+        let mut therminol_fluid_array_clone: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
+
+
+        let flow_area: Area = 
+        therminol_fluid_array_clone.get_cross_sectional_area();
+        let hydraulic_diameter = 
+        therminol_fluid_array_clone.get_hydraulic_diameter();
         let viscosity: DynamicViscosity = 
         LiquidMaterial::TherminolVP1.try_get_dynamic_viscosity(
             temperature).unwrap();
@@ -510,15 +511,13 @@ impl HeaterTopBottomHead {
         // 
 
         // find suitable heat transfer area
-        let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
+        let mut therminol_fluid_array_clone: FluidArray = 
+        self.therminol_array.clone().try_into().unwrap();
 
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        Area::new::<square_inch>(719.0);
+        let component_length = 
+        therminol_fluid_array_clone.get_component_length();
 
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length/ heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
+
 
 
         // before any calculations, I will first need a clone of 
@@ -593,7 +592,7 @@ impl HeaterTopBottomHead {
         let number_of_temperature_nodes = self.inner_nodes + 2;
 
         let heat_transfer_area_per_node: Area 
-        = heat_transfer_area_heated_length_only / 
+        = PI * hydraulic_diameter * component_length / 
         number_of_temperature_nodes as f64;
 
         let average_node_conductance: ThermalConductance 
