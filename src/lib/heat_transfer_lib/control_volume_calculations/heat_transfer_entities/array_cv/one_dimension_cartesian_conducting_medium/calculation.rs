@@ -133,12 +133,11 @@ impl CartesianConduction1DArray {
             // probably also need to update error types in future
             // so I don't keep using unwrap
             self.inner_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
-            self.inner_single_cv.rate_enthalpy_change_vector.clear();
-            self.inner_single_cv.max_timestep_vector.clear();
 
             self.outer_single_cv.set_liquid_cv_mass_from_temperature().unwrap();
-            self.outer_single_cv.rate_enthalpy_change_vector.clear();
-            self.outer_single_cv.max_timestep_vector.clear();
+
+            self.inner_single_cv.clear_vectors().unwrap();
+            self.outer_single_cv.clear_vectors().unwrap();
         }
 
         self.temperature_array_current_timestep = new_temperature_array;

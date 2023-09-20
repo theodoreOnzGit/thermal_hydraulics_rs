@@ -705,12 +705,7 @@ impl SolidColumn {
         // set liquid cv mass 
         // probably also need to update error types in future
         self.back_single_cv.set_liquid_cv_mass_from_temperature()?;
-        self.back_single_cv.rate_enthalpy_change_vector.clear();
-        self.back_single_cv.max_timestep_vector.clear();
-
         self.front_single_cv.set_liquid_cv_mass_from_temperature()?;
-        self.front_single_cv.rate_enthalpy_change_vector.clear();
-        self.front_single_cv.max_timestep_vector.clear();
         self.clear_vectors()?;
 
         // all done
@@ -726,6 +721,11 @@ impl SolidColumn {
 
         self.q_vector.clear();
         self.q_fraction_vector.clear();
+
+        self.back_single_cv.clear_vectors()?;
+
+        self.front_single_cv.clear_vectors()?;
+
         Ok(())
     }
 }
