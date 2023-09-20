@@ -45,7 +45,8 @@ pub struct HeaterVersion1;
 pub struct HeaterVersion2;
 
 pub mod heater_version_2_bare;
-use std::{time::SystemTime, thread::JoinHandle};
+use core::time;
+use std::{time::SystemTime, thread::{JoinHandle, self}};
 
 pub use heater_version_2_bare::*;
 
@@ -113,156 +114,198 @@ pub fn example_heater(){
     // main loop
     // note: possible memory leak
     
-    while max_time > simulation_time {
+    let main_loop = thread::spawn( move || {
+        while max_time > simulation_time {
 
-        // time start 
-        let loop_time_start = loop_time.elapsed().unwrap();
-        
-        
-        // create interactions 
-
-
-        // let's get heater temperatures for post processing
-        // as well as the interaction
-        // for simplicity, i use the boussineseq approximation,
-        // which assumes that heat transfer is governed by 
-        // average density (which doesn't change much for liquid 
-        // anyway)
-
-        let mut therminol_array_clone: FluidArray 
-        = heater_v2_bare.therminol_array.clone().try_into().unwrap();
-
-        let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
-        therminol_array_clone.get_temperature_vector().unwrap();
-
-        let heater_surface_array_clone: SolidColumn 
-        = heater_v2_bare.steel_shell.clone().try_into().unwrap();
-
-        let heater_surface_array_temp: Vec<ThermodynamicTemperature> = 
-        heater_surface_array_clone.get_temperature_vector().unwrap();
-
-        let heater_fluid_bulk_temp: ThermodynamicTemperature = 
-        therminol_array_clone.try_get_bulk_temperature().unwrap();
+            // time start 
+            let loop_time_start = loop_time.elapsed().unwrap();
+            // create interactions 
 
 
-        let heated_section_exit_temperature: ThermodynamicTemperature = 
-        *therminol_array_temperature.iter().last().unwrap();
+            // let's get heater temperatures for post processing
+            // as well as the interaction
+            // for simplicity, i use the boussineseq approximation,
+            // which assumes that heat transfer is governed by 
+            // average density (which doesn't change much for liquid 
+            // anyway)
 
-        let heater_therminol_avg_density: MassDensity = 
-        LiquidMaterial::TherminolVP1.density(
-            heater_fluid_bulk_temp).unwrap();
+            let mut therminol_array_clone: FluidArray 
+            = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
-        let generic_advection_interaction = 
-        HeatTransferInteractionType::new_advection_interaction(
-            mass_flowrate,
-            heater_therminol_avg_density,
-            heater_therminol_avg_density,
+            let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
+            therminol_array_clone.get_temperature_vector().unwrap();
+
+            let heater_surface_array_clone: SolidColumn 
+            = heater_v2_bare.steel_shell.clone().try_into().unwrap();
+
+            let heater_surface_array_temp: Vec<ThermodynamicTemperature> = 
+            heater_surface_array_clone.get_temperature_vector().unwrap();
+
+            let heater_fluid_bulk_temp: ThermodynamicTemperature = 
+            therminol_array_clone.try_get_bulk_temperature().unwrap();
+
+
+            let heated_section_exit_temperature: ThermodynamicTemperature = 
+            *therminol_array_temperature.iter().last().unwrap();
+
+            let heater_therminol_avg_density: MassDensity = 
+            LiquidMaterial::TherminolVP1.density(
+                heater_fluid_bulk_temp).unwrap();
+
+            let generic_advection_interaction = 
+            HeatTransferInteractionType::new_advection_interaction(
+                mass_flowrate,
+                heater_therminol_avg_density,
+                heater_therminol_avg_density,
             );
+            // drop all unused values to try and mitigate memory leaking
+            {
+                // prints therminol temperature 
+                dbg!(heater_bottom_head_bare.therminol_array_temperature());
 
-        // make axial connections to BCs 
+                // print outlet temperature 
+                dbg!(heated_section_exit_temperature
+                .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
-        heater_bottom_head_bare.therminol_array.link_to_back(
-            &mut inlet_bc,
-            generic_advection_interaction
-        ).unwrap();
+                // print surface temperature 
+                dbg!(heater_v2_bare.therminol_array_temperature());
 
-        heater_v2_bare.therminol_array.link_to_back(
-            &mut heater_bottom_head_bare.therminol_array,
-            generic_advection_interaction
-        ).unwrap();
+                //// print therminol temperature 
+                //dbg!("Therminol Array Temp: ", therminol_array_temperature);
 
-        heater_v2_bare.therminol_array.link_to_front(
-            &mut outlet_bc,
-            generic_advection_interaction
-        ).unwrap();
+                //// print twisted tape temperature 
+                //dbg!("twisted tape Temp: 
+                //note: conduction occurs, so first node is hotter\n 
+                //than the therminol fluid", twisted_tape_temperature);
+
+                // print loop time 
+                // dbg diagnostics probably not the cause of mem leaks
+                //println!("{:?}",time_taken_for_calculation_loop.as_micros());
+                drop(therminol_array_clone);
+                drop(therminol_array_temperature);
+                drop(heater_surface_array_clone);
+                drop(heater_surface_array_temp);
+                drop(heater_fluid_bulk_temp);
+                drop(heated_section_exit_temperature);
+                drop(heater_therminol_avg_density);
+            }
+
+            // make axial connections to BCs 
+
+            heater_bottom_head_bare.therminol_array.link_to_back(
+                &mut inlet_bc,
+                generic_advection_interaction
+            ).unwrap();
+
+            heater_v2_bare.therminol_array.link_to_back(
+                &mut heater_bottom_head_bare.therminol_array,
+                generic_advection_interaction
+            ).unwrap();
+
+            heater_v2_bare.therminol_array.link_to_front(
+                &mut outlet_bc,
+                generic_advection_interaction
+            ).unwrap();
+
+            // free more memory
+            {
+                drop(heater_therminol_avg_density);
+                drop(generic_advection_interaction);
+            }
 
 
-        // make other connections
-        //
-        // this is the serial version
-        //heater_v2_bare.lateral_and_miscellaneous_connections(
-        //    mass_flowrate,
-        //    heater_power
-        //);
-        let parallel_calc: bool = true;
+            // make other connections
+            //
+            // this is the serial version
+            //heater_v2_bare.lateral_and_miscellaneous_connections(
+            //    mass_flowrate,
+            //    heater_power
+            //);
+            let parallel_calc: bool = true;
+            let wait: bool = false;
 
-        // parallel calc probably not the cause of memory leak
-        if parallel_calc {
-            // make other connections by spawning a new thread 
-            // this is the parallel version
-            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-            = heater_v2_bare.
-                lateral_connection_thread_spawn(
+            // parallel calc probably not the cause of memory leak
+            if wait {
+
+                let ten_millis = time::Duration::from_millis(10);
+
+                thread::sleep(ten_millis);
+
+            } else if parallel_calc {
+                // make other connections by spawning a new thread 
+                // this is the parallel version
+                let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+                = heater_v2_bare.
+                    lateral_connection_thread_spawn(
+                        mass_flowrate,
+                        heater_power);
+
+                let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+                = heater_bottom_head_bare. 
+                    lateral_connection_thread_spawn(
+                        mass_flowrate);
+
+
+                heater_v2_bare = heater_2_join_handle.join().unwrap();
+                heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+                //// calculate timestep (serial method)
+                //heater_v2_bare.advance_timestep(
+                //    timestep);
+
+                // calculate timestep (thread spawn method, parallel) 
+
+                let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+                = heater_v2_bare.advance_timestep_thread_spawn(
+                    timestep);
+
+                let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+                = heater_bottom_head_bare. 
+                    advance_timestep_thread_spawn(
+                        timestep);
+
+                heater_v2_bare = heater_2_join_handle.join().unwrap();
+                heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+
+
+            } else if !parallel_calc {
+
+                heater_v2_bare.lateral_and_miscellaneous_connections(
                     mass_flowrate,
                     heater_power);
 
-            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-            = heater_bottom_head_bare. 
-                lateral_connection_thread_spawn(
+                heater_bottom_head_bare.lateral_and_miscellaneous_connections(
                     mass_flowrate);
 
+                heater_v2_bare.advance_timestep(timestep);
+                heater_bottom_head_bare.advance_timestep(timestep);
 
-            heater_v2_bare = heater_2_join_handle.join().unwrap();
-            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-            //// calculate timestep (serial method)
-            //heater_v2_bare.advance_timestep(
-            //    timestep);
+            }
 
-            // calculate timestep (thread spawn method, parallel) 
+            simulation_time += timestep;
 
-            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-            = heater_v2_bare.advance_timestep_thread_spawn(
-                timestep);
+            let time_taken_for_calculation_loop = loop_time.elapsed().unwrap()
+            - loop_time_start;
 
-            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-            = heater_bottom_head_bare. 
-                advance_timestep_thread_spawn(
-                    timestep);
+            {
+                // free memory
+                dbg!(time_taken_for_calculation_loop);
+                drop(time_taken_for_calculation_loop);
+                drop(parallel_calc);
+                drop(loop_time_start);
+            }
 
-            heater_v2_bare = heater_2_join_handle.join().unwrap();
-            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-        } else {
-
-            heater_v2_bare.lateral_and_miscellaneous_connections(
-                mass_flowrate,
-                heater_power);
-
-            heater_bottom_head_bare.lateral_and_miscellaneous_connections(
-                mass_flowrate);
-
-            heater_v2_bare.advance_timestep(timestep);
-            heater_bottom_head_bare.advance_timestep(timestep);
 
         }
 
-        simulation_time += timestep;
+    });
 
-        let time_taken_for_calculation_loop = loop_time.elapsed().unwrap()
-        - loop_time_start;
+    main_loop.join().unwrap();
 
-        // prints therminol temperature 
-        dbg!(heater_bottom_head_bare.therminol_array_temperature());
 
-        // print outlet temperature 
-        dbg!(heated_section_exit_temperature
-        .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
+    let ten_seconds = time::Duration::from_millis(10000);
 
-        // print surface temperature 
-        dbg!(heater_v2_bare.therminol_array_temperature());
+    thread::sleep(ten_seconds);
 
-        //// print therminol temperature 
-        //dbg!("Therminol Array Temp: ", therminol_array_temperature);
-
-        //// print twisted tape temperature 
-        //dbg!("twisted tape Temp: 
-        //note: conduction occurs, so first node is hotter\n 
-        //than the therminol fluid", twisted_tape_temperature);
-
-        // print loop time 
-        dbg!(time_taken_for_calculation_loop);
-        // dbg diagnostics probably not the cause of mem leaks
-        //println!("{:?}",time_taken_for_calculation_loop.as_micros());
-    }
 
     // once simulation completed, write data
 
