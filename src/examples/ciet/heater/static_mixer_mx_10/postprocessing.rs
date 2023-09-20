@@ -11,7 +11,7 @@ impl StaticMixerMX10 {
         self.therminol_array.get_temperature_vector().unwrap()
     }
 
-    pub fn twisted_tape_temperature(&mut self) -> Vec<ThermodynamicTemperature>{
+    pub fn insulation_array_temperature(&mut self) -> Vec<ThermodynamicTemperature>{
         self.insulation_array.get_temperature_vector().unwrap()
     }
 }
