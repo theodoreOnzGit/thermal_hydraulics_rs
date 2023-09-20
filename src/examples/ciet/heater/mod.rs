@@ -260,6 +260,8 @@ pub fn example_heater(){
 
         // print loop time 
         dbg!(time_taken_for_calculation_loop);
+        // dbg diagnostics probably not the cause of mem leaks
+        //println!("{:?}",time_taken_for_calculation_loop.as_micros());
     }
 
     // once simulation completed, write data
