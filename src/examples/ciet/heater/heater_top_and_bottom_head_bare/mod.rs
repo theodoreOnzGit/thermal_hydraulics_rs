@@ -15,6 +15,7 @@ use uom::si::pressure::atmosphere;
 ///
 /// note that it only contains the heated section, not the top nor 
 /// bottom heads
+#[derive(Debug,Clone,PartialEq)]
 pub struct HeaterTopBottomHead {
 
     inner_nodes: usize,
