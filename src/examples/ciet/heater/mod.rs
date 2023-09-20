@@ -88,7 +88,7 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(75.0);
+    let max_time = Time::new::<second>(200.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
@@ -122,6 +122,9 @@ pub fn example_heater(){
 
         let steel_array_temperature: Vec<ThermodynamicTemperature> = 
         steel_array_clone.get_temperature_vector().unwrap();
+
+        let twisted_tape_temperature: Vec<ThermodynamicTemperature>
+        = heater_v2_bare.twisted_tape_temperature();
 
         let back_cv_temperature: ThermodynamicTemperature = 
             therminol_array_temperature[0];
@@ -171,7 +174,7 @@ pub fn example_heater(){
         );
 
         // calculate timestep
-        heater_v2_bare.advance_timestep_parallel(
+        heater_v2_bare.advance_timestep(
             timestep);
 
 
@@ -180,13 +183,17 @@ pub fn example_heater(){
         let loop_time_end = loop_time_start.elapsed().unwrap();
 
         // print outlet temperature 
-        println!("Exit Temp {:?}", front_cv_temperature);
+        println!("Exit Temp {:?}", front_cv_temperature
+        .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
         // print surface temperature 
         println!("Steel array Temp: \n {:?} \n", steel_array_temperature);
 
-        // print surface temperature 
+        // print therminol temperature 
         println!("Therminol Array Temp: \n{:?}", therminol_array_temperature);
+
+        // print twisted tape temperature 
+        println!("twisted tape Temp: \n{:?}", twisted_tape_temperature);
 
         // print loop time 
         println!("time taken for loop: {:?}", loop_time_end);
