@@ -190,15 +190,27 @@ pub fn example_heater(){
                 mass_flowrate,
                 heater_power);
 
-        //let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-        //= heater_bottom_head_bare. 
-        //    lateral_connection_thread_spawn(
-        //        mass_flowrate);
+        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+        = heater_bottom_head_bare. 
+            lateral_connection_thread_spawn(
+                mass_flowrate);
 
 
         heater_v2_bare = heater_2_join_handle.join().unwrap();
-        //heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+        // debug
+        {
+            let therminol_array_clone: FluidArray 
+            = heater_bottom_head_bare.therminol_array.clone().try_into().unwrap();
 
+            let power_heater_btm_head_node_0 = 
+            therminol_array_clone.back_single_cv.rate_enthalpy_change_vector;
+            let power_heater_btm_head_node_1 = 
+            therminol_array_clone.front_single_cv.rate_enthalpy_change_vector;
+
+            dbg!(power_heater_btm_head_node_0);
+            dbg!(power_heater_btm_head_node_1);
+        }
         //// calculate timestep (serial method)
         //heater_v2_bare.advance_timestep(
         //    timestep);
@@ -208,13 +220,13 @@ pub fn example_heater(){
         = heater_v2_bare.advance_timestep_thread_spawn(
             timestep);
 
-        //let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-        //= heater_bottom_head_bare. 
-        //    advance_timestep_thread_spawn(
-        //        timestep);
+        let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+        = heater_bottom_head_bare. 
+            advance_timestep_thread_spawn(
+                timestep);
 
         heater_v2_bare = heater_2_join_handle.join().unwrap();
-        //heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+        heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
 
         simulation_time += timestep;
 

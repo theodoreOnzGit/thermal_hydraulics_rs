@@ -36,8 +36,6 @@ impl HeaterVersion2Bare {
         let steel_surf_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_steel_shell_conductance();
 
-        dbg!(steel_surf_to_therminol_conductance);
-
         let twisted_tape_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_twisted_tape_conductance();
 
@@ -282,8 +280,6 @@ impl HeaterVersion2Bare {
 
         let mass_flowrate: MassRate = 
         therminol_fluid_array_clone.get_mass_flowrate();
-
-        dbg!(mass_flowrate);
 
         let bulk_temperature: ThermodynamicTemperature 
         = therminol_fluid_array_clone.try_get_bulk_temperature().unwrap();
