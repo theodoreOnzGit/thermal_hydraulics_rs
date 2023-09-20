@@ -7,6 +7,7 @@ use super::HeaterVersion2Bare;
 impl HeaterVersion2Bare {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
+    #[inline]
     pub fn advance_timestep(&mut self, 
     timestep: Time) {
 
@@ -15,6 +16,37 @@ impl HeaterVersion2Bare {
         self.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
     }
 
+    /// advances timestep by spawning a thread 
+    /// 
+    pub fn advance_timestep_thread_spawn(&self,
+        timestep: Time,) -> JoinHandle<Self> {
+
+        // make an Arc Ptr 
+        let heater_arc_ptr = Arc::new(Mutex::new(
+            self.clone()));
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+                let mut heater_ptr_in_thread = 
+                heater_arc_ptr.lock().unwrap();
+
+                // carry out the connection calculations
+                heater_ptr_in_thread.therminol_array.advance_timestep_mut_self(timestep).unwrap();
+                heater_ptr_in_thread.steel_shell.advance_timestep_mut_self(timestep).unwrap();
+                heater_ptr_in_thread.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
+                
+                let heater_clone = 
+                heater_ptr_in_thread.deref_mut().clone();
+                heater_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     ///

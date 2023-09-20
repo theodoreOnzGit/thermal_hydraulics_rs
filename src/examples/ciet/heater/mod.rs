@@ -45,7 +45,7 @@ pub struct HeaterVersion1;
 pub struct HeaterVersion2;
 
 pub mod heater_version_2_bare;
-use std::time::SystemTime;
+use std::{time::SystemTime, thread::JoinHandle};
 
 pub use heater_version_2_bare::*;
 
@@ -166,17 +166,34 @@ pub fn example_heater(){
             outlet_interaction
         ).unwrap();
 
-        // make other connections 
+        // make other connections
+        //
+        // this is the serial version
+        //heater_v2_bare.lateral_and_miscellaneous_connections(
+        //    mass_flowrate,
+        //    heater_power
+        //);
 
-        heater_v2_bare.lateral_and_miscellaneous_connections(
-            mass_flowrate,
-            heater_power
-        );
+        // make other connections by spawning a new thread 
+        // this is the parallel version
+        let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+        = heater_v2_bare.
+            lateral_connection_thread_spawn(
+                mass_flowrate,
+                heater_power);
 
-        // calculate timestep
-        heater_v2_bare.advance_timestep(
+        heater_v2_bare = heater_2_join_handle.join().unwrap();
+
+        //// calculate timestep (serial method)
+        //heater_v2_bare.advance_timestep(
+        //    timestep);
+
+        // calculate timestep (thread spawn method, parallel) 
+        let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+        = heater_v2_bare.advance_timestep_thread_spawn(
             timestep);
 
+        heater_v2_bare = heater_2_join_handle.join().unwrap();
 
         simulation_time += timestep;
 

@@ -1,3 +1,5 @@
+use std::{sync::{Mutex, Arc}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
+
 use super::HeaterVersion2Bare;
 use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
 use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::input_structs::NusseltPrandtlReynoldsData;
@@ -618,6 +620,44 @@ impl HeaterVersion2Bare {
 
         return average_node_conductance;
     }
+
+    /// spawns a thread and moves the entire heater object into the 
+    /// thread, "locking" it for parallel computation
+    ///
+    /// once that is done, the join handle is returned 
+    /// which when unwrapped, returns the heater object
+    pub fn lateral_connection_thread_spawn(&self,
+    mass_flowrate: MassRate,
+    heater_steady_state_power: Power) -> JoinHandle<Self>{
+
+        // make an Arc Ptr 
+        let heater_arc_ptr = Arc::new(Mutex::new(
+            self.clone()));
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+                let mut heater_ptr_in_thread = 
+                heater_arc_ptr.lock().unwrap();
+
+                // carry out the connection calculations
+                heater_ptr_in_thread.deref_mut().
+                    lateral_and_miscellaneous_connections(
+                        mass_flowrate,
+                        heater_steady_state_power);
+                
+                let heater_clone = 
+                heater_ptr_in_thread.deref_mut().clone();
+                heater_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
+
 }
 
 

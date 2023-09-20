@@ -20,6 +20,7 @@ use uom::si::pressure::atmosphere;
 /// note: the pressure drop correlations are not yet properly implemented 
 /// so it behaves like a pipe in terms of pressure drop
 /// For now, I did not do anything special with it
+#[derive(Debug,Clone,PartialEq)]
 pub struct HeaterVersion2Bare {
 
     inner_nodes: usize,
