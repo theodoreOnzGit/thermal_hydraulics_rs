@@ -160,11 +160,17 @@ pub fn example_heater(){
         );
 
         // calculate timestep
-        heater_v2_bare.advance_timestep_parallel(
+        heater_v2_bare.advance_timestep(
             timestep);
 
 
         simulation_time += timestep;
+
+        // print outlet temperature 
+        println!("{:?}", front_cv_temperature);
+
+        // print surface temperature 
+        println!("{:?}", therminol_array_temperature);
     }
 
     // once simulation completed, write data
