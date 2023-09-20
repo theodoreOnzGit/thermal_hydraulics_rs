@@ -203,16 +203,16 @@ pub fn example_heater(){
         dbg!("Exit Temp ", front_cv_temperature
         .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
-        // print surface temperature 
-        dbg!("Steel array Temp: ", steel_array_temperature);
+        //// print surface temperature 
+        //dbg!("Steel array Temp: ", steel_array_temperature);
 
-        // print therminol temperature 
-        dbg!("Therminol Array Temp: ", therminol_array_temperature);
+        //// print therminol temperature 
+        //dbg!("Therminol Array Temp: ", therminol_array_temperature);
 
-        // print twisted tape temperature 
-        dbg!("twisted tape Temp: 
-        note: conduction occurs, so first node is hotter\n 
-        than the therminol fluid", twisted_tape_temperature);
+        //// print twisted tape temperature 
+        //dbg!("twisted tape Temp: 
+        //note: conduction occurs, so first node is hotter\n 
+        //than the therminol fluid", twisted_tape_temperature);
 
         // print loop time 
         dbg!("time taken for loop: ", loop_time_end);
