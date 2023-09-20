@@ -129,7 +129,7 @@ pub fn example_heater(){
         let back_cv_temperature: ThermodynamicTemperature = 
             therminol_array_temperature[0];
 
-        let front_cv_temperature: ThermodynamicTemperature = 
+        let heated_section_exit_temperature: ThermodynamicTemperature = 
         *therminol_array_temperature.iter().last().unwrap();
 
         let back_cv_density: MassDensity = 
@@ -138,7 +138,7 @@ pub fn example_heater(){
 
         let front_cv_density: MassDensity = 
         LiquidMaterial::TherminolVP1.density(
-            front_cv_temperature).unwrap();
+            heated_section_exit_temperature).unwrap();
 
         // probably want to make this bit a little more user friendly
         let inlet_interaction: HeatTransferInteractionType = 
@@ -197,10 +197,10 @@ pub fn example_heater(){
 
         simulation_time += timestep;
 
-        let loop_time_end = loop_time_start.elapsed().unwrap();
+        let time_taken_for_calculation_loop = loop_time_start.elapsed().unwrap();
 
         // print outlet temperature 
-        dbg!("Exit Temp ", front_cv_temperature
+        dbg!(heated_section_exit_temperature
         .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
         //// print surface temperature 
@@ -215,7 +215,7 @@ pub fn example_heater(){
         //than the therminol fluid", twisted_tape_temperature);
 
         // print loop time 
-        dbg!("time taken for loop: ", loop_time_end);
+        dbg!(time_taken_for_calculation_loop);
     }
 
     // once simulation completed, write data
