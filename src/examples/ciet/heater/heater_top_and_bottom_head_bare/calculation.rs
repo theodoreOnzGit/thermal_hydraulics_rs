@@ -111,24 +111,19 @@ impl HeaterTopBottomHead {
         timestep: Time,) -> JoinHandle<Self> {
 
         // make an Arc Ptr 
-        let heater_arc_ptr = Arc::new(Mutex::new(
-            self.clone()));
+        let mut heater_peripherals_clone = self.clone();
 
         // move ptr into a new thread 
 
         let join_handle = thread::spawn(
             move || -> Self {
-                let mut heater_ptr_in_thread = 
-                heater_arc_ptr.lock().unwrap();
 
                 // carry out the connection calculations
-                heater_ptr_in_thread.therminol_array.advance_timestep_mut_self(timestep).unwrap();
-                heater_ptr_in_thread.steel_shell.advance_timestep_mut_self(timestep).unwrap();
-                heater_ptr_in_thread.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
+                heater_peripherals_clone.therminol_array.advance_timestep_mut_self(timestep).unwrap();
+                heater_peripherals_clone.steel_shell.advance_timestep_mut_self(timestep).unwrap();
+                heater_peripherals_clone.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
                 
-                let heater_clone = 
-                heater_ptr_in_thread.deref_mut().clone();
-                heater_clone
+                heater_peripherals_clone
 
             }
         );

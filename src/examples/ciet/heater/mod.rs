@@ -110,11 +110,14 @@ pub fn example_heater(){
     let heater_power = Power::new::<kilowatt>(8.0);
 
     // main loop
+    // note: possible memory leak
     
     while max_time > simulation_time {
 
         // time start 
         let loop_time_start = SystemTime::now();
+
+        
         
         // create interactions 
 
@@ -198,19 +201,6 @@ pub fn example_heater(){
 
         heater_v2_bare = heater_2_join_handle.join().unwrap();
         heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-        // debug
-        {
-            let therminol_array_clone: FluidArray 
-            = heater_bottom_head_bare.therminol_array.clone().try_into().unwrap();
-
-            let power_heater_btm_head_node_0 = 
-            therminol_array_clone.back_single_cv.rate_enthalpy_change_vector;
-            let power_heater_btm_head_node_1 = 
-            therminol_array_clone.front_single_cv.rate_enthalpy_change_vector;
-
-            dbg!(power_heater_btm_head_node_0);
-            dbg!(power_heater_btm_head_node_1);
-        }
         //// calculate timestep (serial method)
         //heater_v2_bare.advance_timestep(
         //    timestep);

@@ -33,8 +33,6 @@ impl HeaterTopBottomHead {
         let steel_surf_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_steel_shell_conductance();
 
-        dbg!(steel_surf_to_therminol_conductance);
-
         let twisted_tape_to_therminol_conductance: ThermalConductance 
         = self.get_therminol_node_twisted_tape_conductance();
 
@@ -610,24 +608,19 @@ impl HeaterTopBottomHead {
     mass_flowrate: MassRate) -> JoinHandle<Self>{
 
         // make an Arc Ptr 
-        let heater_peripherals_arc_ptr = Arc::new(Mutex::new(
-            self.clone()));
+        let mut heater_peripherals_clone = self.clone();
 
         // move ptr into a new thread 
 
         let join_handle = thread::spawn(
             move || -> Self {
-                let mut heater_ptr_in_thread = 
-                heater_peripherals_arc_ptr.lock().unwrap();
 
                 // carry out the connection calculations
-                heater_ptr_in_thread.deref_mut().
+                heater_peripherals_clone.
                     lateral_and_miscellaneous_connections(
                         mass_flowrate);
                 
-                let heater_clone = 
-                heater_ptr_in_thread.deref_mut().clone();
-                heater_clone
+                heater_peripherals_clone
 
             }
         );
