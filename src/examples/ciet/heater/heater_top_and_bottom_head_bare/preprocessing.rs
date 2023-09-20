@@ -529,9 +529,9 @@ impl HeaterTopBottomHead {
         self.twisted_tape_interior.clone().try_into().unwrap();
         // next, need the nusselt number based on Wakao Correlation 
         let mass_flowrate = therminol_fluid_array_clone.get_mass_flowrate();
-        let flow_area: Area = Area::new::<square_inch>(1.63);
+        let flow_area: Area = therminol_fluid_array_clone.get_cross_sectional_area();
         let viscosity = therminol_fluid_array_clone.get_fluid_viscosity();
-        let hydraulic_diameter = Length::new::<inch>(0.5776);
+        let hydraulic_diameter = therminol_fluid_array_clone.get_hydraulic_diameter();
 
         // need to convert hydraulic diameter to an equivalent 
         // spherical diameter
