@@ -45,6 +45,8 @@ pub struct HeaterVersion1;
 pub struct HeaterVersion2;
 
 pub mod heater_version_2_bare;
+use std::time::SystemTime;
+
 pub use heater_version_2_bare::*;
 
 pub mod heater_top_and_bottom_head_bare;
@@ -96,6 +98,9 @@ pub fn example_heater(){
     
     while max_time > simulation_time {
 
+        // time start 
+        let loop_time_start = SystemTime::now();
+        
         // create interactions 
 
         // inlet fluid density 
@@ -166,11 +171,13 @@ pub fn example_heater(){
         );
 
         // calculate timestep
-        heater_v2_bare.advance_timestep(
+        heater_v2_bare.advance_timestep_parallel(
             timestep);
 
 
         simulation_time += timestep;
+
+        let loop_time_end = loop_time_start.elapsed().unwrap();
 
         // print outlet temperature 
         println!("Exit Temp {:?}", front_cv_temperature);
@@ -180,12 +187,15 @@ pub fn example_heater(){
 
         // print surface temperature 
         println!("Therminol Array Temp: \n{:?}", therminol_array_temperature);
+
+        // print loop time 
+        println!("time taken for loop: {:?}", loop_time_end);
     }
 
     // once simulation completed, write data
 
 
-    todo!()
+    todo!("haven't coded csv writing file")
 
 }
 #[test]

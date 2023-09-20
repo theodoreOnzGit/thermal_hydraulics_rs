@@ -307,13 +307,20 @@ impl HeaterVersion2Bare {
             atmospheric_pressure
         ).unwrap();
 
-        // surface prandtl number
+        //// surface prandtl number
+        ////
+        //let surface_prandtl_number: Ratio 
+        //= LiquidMaterial::TherminolVP1.try_get_prandtl_liquid(
+        //    steel_surf_temperature,
+        //    atmospheric_pressure
+        //).unwrap();
+        ////note: we have an error here because therminol 
+        // properties only range from 20 C to 180C,
         //
-        let surface_prandtl_number: Ratio 
-        = LiquidMaterial::TherminolVP1.try_get_prandtl_liquid(
-            steel_surf_temperature,
-            atmospheric_pressure
-        ).unwrap();
+        // However, steel surface temperatures far exceed 180C 
+        //
+        // So the process will panic.
+        // For now, we shall live within this temperature range
 
         // for this case, I will have the ciet heater nusselt 
         // number correlation
@@ -326,7 +333,7 @@ impl HeaterVersion2Bare {
 
         heater_prandtl_reynolds_data.reynolds = reynolds_number;
         heater_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        heater_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
+        heater_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
 
         let heater_nusselt_correlation: NusseltCorrelation 
         =  NusseltCorrelation::CIETHeaterVersion2(

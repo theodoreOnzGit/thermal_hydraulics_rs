@@ -7,6 +7,7 @@ use fluid_component_trait::FluidComponent;
 use super::FluidArray;
 use uom::si::f64::*;
 
+/// need to relook at this for the time being
 impl FluidComponent for FluidArray{
     fn get_mass_flowrate(&mut self) -> MassRate  {
         self.mass_flowrate
