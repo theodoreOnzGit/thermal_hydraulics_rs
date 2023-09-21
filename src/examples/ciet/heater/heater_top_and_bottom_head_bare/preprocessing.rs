@@ -1,8 +1,13 @@
-use std::{sync::{Arc, Mutex}, thread::{JoinHandle, self}, ops::DerefMut};
+use std::thread::{self};
+use std::thread::JoinHandle;
 
 use super::HeaterTopBottomHead;
-use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
-use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
+use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::input_structs::NusseltPrandtlReynoldsData;
+use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::ConstZero;
+use uom::si::pressure::atmosphere;
 use ndarray::*;
 
 impl HeaterTopBottomHead {
