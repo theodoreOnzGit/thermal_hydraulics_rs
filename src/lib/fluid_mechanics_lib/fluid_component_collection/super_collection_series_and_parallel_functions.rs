@@ -375,11 +375,11 @@ pub trait FluidComponentSuperCollectionSeriesAssociatedFunctions {
                 // i can check for max values, infinite values or NaN
                 // values... These might indicate check valve behaviour
 
-                if max_pressure_loss_at_specified_flow == f64::NAN {
+                if max_pressure_loss_at_specified_flow.is_nan() {
                     return Ok(true);
                 }
 
-                if min_pressure_loss_at_specified_flow == f64::NAN {
+                if min_pressure_loss_at_specified_flow.is_nan() {
                     return Ok(true);
                 }
 
@@ -460,8 +460,7 @@ pub trait FluidComponentSuperCollectionSeriesAssociatedFunctions {
 
                 // the the pressure loss at backward flow is NAN, infinity, max or
                 // 1000 times greater than the backflow, we have forward bias
-                if pressure_loss_at_specified_backward_flow.value.abs() 
-                    == f64::NAN {
+                if pressure_loss_at_specified_backward_flow.value.abs().is_nan() {
                         forward_bias = true;
                     }
 
