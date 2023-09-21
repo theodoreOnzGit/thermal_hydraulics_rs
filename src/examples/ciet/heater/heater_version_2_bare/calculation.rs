@@ -8,7 +8,7 @@ impl HeaterVersion2Bare {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     #[inline]
-    pub fn advance_timestep(&mut self, 
+    pub fn _advance_timestep(&mut self, 
     timestep: Time) {
 
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
@@ -52,8 +52,9 @@ impl HeaterVersion2Bare {
     /// be faster
     ///
     /// Note: BUGGY
-    pub fn advance_timestep_parallel(&mut self, 
+    pub fn _advance_timestep_parallel_buggy(&mut self, 
     timestep: Time) {
+
         // advances timestep in parallel, 
         // but must clone first
         let therminol_array_mutex = 

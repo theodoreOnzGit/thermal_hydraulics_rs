@@ -1,8 +1,12 @@
 use std::thread::{self, JoinHandle};
 
 use super::StaticMixerMX10;
-use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::{NusseltPrandtlReynoldsData, GnielinskiData}}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
-use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
+use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
+use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::input_structs::GnielinskiData;
+use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::ConstZero;
+use uom::si::pressure::atmosphere;
 use ndarray::*;
 
 impl StaticMixerMX10 {

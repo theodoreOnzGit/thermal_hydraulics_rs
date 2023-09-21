@@ -7,7 +7,7 @@ use super::HeaterTopBottomHead;
 impl HeaterTopBottomHead {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
-    pub fn advance_timestep(&mut self, 
+    pub fn _advance_timestep(&mut self, 
     timestep: Time) {
 
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
@@ -21,7 +21,9 @@ impl HeaterTopBottomHead {
     /// parallel implementation, spawns three threads to do it,
     /// however, it relies heavily upon cloning, so it may or may not 
     /// be faster
-    pub fn advance_timestep_parallel(&mut self, 
+    ///
+    /// note: buggy, not debugged yet
+    pub fn _advance_timestep_parallel_buggy(&mut self, 
     timestep: Time) {
         // advances timestep in parallel, 
         // but must clone first

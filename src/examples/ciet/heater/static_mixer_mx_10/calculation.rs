@@ -1,4 +1,8 @@
-use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread::{self};
+use std::thread::JoinHandle;
+use std::ops::DerefMut;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 use super::StaticMixerMX10;
@@ -7,7 +11,7 @@ use super::StaticMixerMX10;
 impl StaticMixerMX10 {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
-    pub fn advance_timestep(&mut self, 
+    pub fn _advance_timestepp(&mut self, 
     timestep: Time) {
 
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
@@ -49,7 +53,9 @@ impl StaticMixerMX10 {
     /// parallel implementation, spawns three threads to do it,
     /// however, it relies heavily upon cloning, so it may or may not 
     /// be faster
-    pub fn advance_timestep_parallel(&mut self, 
+    ///
+    /// note: buggy, not debugged yet
+    pub fn _advance_timestep_parallel_buggy(&mut self, 
     timestep: Time) {
         // advances timestep in parallel, 
         // but must clone first

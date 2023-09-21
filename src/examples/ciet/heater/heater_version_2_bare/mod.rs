@@ -55,7 +55,6 @@ impl HeaterVersion2Bare {
         let flow_area = Area::new::<square_meter>(0.00105);
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
-        let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -138,7 +137,7 @@ impl HeaterVersion2Bare {
     ///
     /// it was increased to 20 W/(m^2 K) because of the support structures 
     /// and other such losses
-    pub fn new_six_watts_per_m2_kelvin_model(initial_temperature: ThermodynamicTemperature,
+    pub fn _new_six_watts_per_m2_kelvin_model(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         user_specified_inner_nodes: usize) -> Self {
 

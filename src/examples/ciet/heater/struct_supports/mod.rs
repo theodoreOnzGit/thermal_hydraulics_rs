@@ -1,8 +1,6 @@
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 
-use uom::si::area::square_meter;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
 /// represents heater version 2 without insulation 
 /// This is because during 2018-ish, the heater insulation 
