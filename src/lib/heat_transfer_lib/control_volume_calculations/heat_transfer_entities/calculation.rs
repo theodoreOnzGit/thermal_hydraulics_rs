@@ -1,3 +1,5 @@
+use std::thread::{self, JoinHandle};
+
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::{HeatTransferEntity, CVType};
@@ -75,6 +77,32 @@ impl HeatTransferEntity {
             };
 
         return cv_advance_result;
+    }
+
+    /// spawns a handle to advance the timestep
+    /// for parallel computation
+    pub fn advance_timestep_mut_self_thread_spawn(&self,
+        timestep: Time,) -> JoinHandle<Self> {
+
+        // make a clone of the HeatTransferEntity (hte)
+        let mut hte_clone = self.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+
+                // carry out the connection calculations
+                hte_clone.advance_timestep_mut_self(timestep).unwrap();
+                
+                hte_clone
+
+            }
+        );
+
+        return join_handle;
+
     }
 
 }

@@ -382,11 +382,23 @@ pub fn example_heater(){
                 static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
                     timestep);
 
+                let structural_support_heater_bottom_head_join_handle = 
+                structural_support_heater_bottom_head.
+                advance_timestep_mut_self_thread_spawn(timestep);
+
+                let structural_support_heater_top_head_join_handle = 
+                structural_support_heater_top_head.
+                advance_timestep_mut_self_thread_spawn(timestep);
+
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
                 heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
                 static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
                 static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+                structural_support_heater_bottom_head 
+                =  structural_support_heater_bottom_head_join_handle.join().unwrap();
+                structural_support_heater_top_head 
+                =  structural_support_heater_top_head_join_handle.join().unwrap();
 
             } 
             simulation_time += timestep;
