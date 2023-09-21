@@ -15,6 +15,8 @@ use uom::si::pressure::atmosphere;
 ///
 /// note that it only contains the heated section, not the top nor 
 /// bottom heads
+///
+/// Note: need to check for memory leaks
 #[derive(Debug,Clone,PartialEq)]
 pub struct StaticMixerMX10 {
 
