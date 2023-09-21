@@ -181,10 +181,7 @@ impl SingleCVNode {
     fn set_liquid_cv_mass_from_temperature(&mut self) 
     -> Result<(), String>{
 
-        let cv_temperature = try_get_temperature_from_h(
-            self.material_control_volume, 
-            self.current_timestep_control_volume_specific_enthalpy, 
-            self.pressure_control_volume)?;
+        let cv_temperature = self.temperature;
 
         let cv_density = try_get_rho(
             self.material_control_volume, 
