@@ -251,6 +251,8 @@ pub fn example_heater(){
             }
 
             // make axial connections to BCs 
+            //
+            // note: need to speed up this part, too slow
 
             heater_bottom_head_bare.therminol_array.link_to_back(
                 &mut inlet_bc,
@@ -284,6 +286,8 @@ pub fn example_heater(){
             
             // and axial connections for heater top and bottom heads 
             // to support 
+            //
+            // parallelise this
 
             heater_bottom_head_bare.steel_shell.link_to_back(
                 &mut structural_support_heater_bottom_head,
@@ -296,6 +300,7 @@ pub fn example_heater(){
             ).unwrap();
 
             // link the top and bottom head support to the environment 
+            // parallelise this
 
             structural_support_heater_bottom_head.link_to_front(
                 &mut ambient_air_temp_bc,
