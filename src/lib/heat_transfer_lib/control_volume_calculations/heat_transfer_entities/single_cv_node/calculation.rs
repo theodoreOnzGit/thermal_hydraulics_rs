@@ -18,18 +18,18 @@ impl SingleCVNode {
         Power::new::<watt>(0.0);
 
         for enthalpy_chg_rate in 
-            self.rate_enthalpy_change_vector.clone().iter() {
+            self.rate_enthalpy_change_vector.iter() {
 
                 total_enthalpy_rate_change += *enthalpy_chg_rate;
             }
 
         let enthalpy_next_timestep = total_enthalpy_rate_change * 
-        timestep.clone() +
-        self.current_timestep_control_volume_specific_enthalpy.
-            clone()* self.mass_control_volume.clone();
+        timestep +
+        self.current_timestep_control_volume_specific_enthalpy
+            * self.mass_control_volume;
 
         let specific_enthalpy_next_timestep = 
-        enthalpy_next_timestep/self.mass_control_volume.clone();
+        enthalpy_next_timestep/self.mass_control_volume;
 
 
         self.next_timestep_specific_enthalpy 
