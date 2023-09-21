@@ -15,6 +15,7 @@ use uom::si::pressure::atmosphere;
 ///
 /// note that it only contains the heated section, not the top nor 
 /// bottom heads
+#[derive(Debug,Clone,PartialEq)]
 pub struct StaticMixerMX10 {
 
     inner_nodes: usize,
@@ -58,7 +59,7 @@ impl StaticMixerMX10 {
     /// because there is quite a lot of mixing going on
     /// within the mixer
     ///
-    /// Reynolds Number Correlation: unimplemented!()
+    /// Reynolds Number Correlation: 21 + 4000/Re
     ///
     ///
     /// Unheated Structure Thermal Inertia: ignored
@@ -69,10 +70,8 @@ impl StaticMixerMX10 {
         let flow_area = Area::new::<square_meter>(6.11e-4);
         let component_length = Length::new::<meter>(0.33);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
-        let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+        let _hydraulic_diameter = Length::new::<meter>(2.79e-2);
 
-        // form losses not implemented yet
-        let pipe_form_loss = Ratio::new::<ratio>(3.75);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -93,17 +92,25 @@ impl StaticMixerMX10 {
         let fiberglass_od = fiberglass_id + 
         fiberglass_thickness + fiberglass_thickness;
 
+        // correlation 
+
+        let correlation_constant_a = Ratio::new::<ratio>(21.0);
+        let correlation_coeff_b = Ratio::new::<ratio>(4000.0);
+        let reynolds_power_c: f64 = -1.0;
+
+
 
         // inner therminol array
         let therminol_array: FluidArray = 
-        FluidArray::new_cylinder(
+        FluidArray::new_custom_component(
             component_length,
-            hydraulic_diameter,
+            flow_area,
             initial_temperature,
             atmospheric_pressure,
-            SolidMaterial::SteelSS304L,
             LiquidMaterial::TherminolVP1,
-            pipe_form_loss,
+            correlation_constant_a,
+            correlation_coeff_b,
+            reynolds_power_c,
             user_specified_inner_nodes,
             pipe_incline_angle
         );

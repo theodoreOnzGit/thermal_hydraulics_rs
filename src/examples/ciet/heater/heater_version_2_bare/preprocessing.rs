@@ -618,7 +618,7 @@ impl HeaterVersion2Bare {
         return average_node_conductance;
     }
 
-    /// spawns a thread and moves the entire heater object into the 
+    /// spawns a thread and moves the clone of the entire heater object into the 
     /// thread, "locking" it for parallel computation
     ///
     /// once that is done, the join handle is returned 

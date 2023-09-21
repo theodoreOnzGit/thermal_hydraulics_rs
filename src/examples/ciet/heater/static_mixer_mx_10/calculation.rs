@@ -15,6 +15,34 @@ impl StaticMixerMX10 {
         self.insulation_array.advance_timestep_mut_self(timestep).unwrap();
     }
 
+    /// advances timestep by spawning a thread 
+    /// 
+    pub fn advance_timestep_thread_spawn(&self,
+        timestep: Time,) -> JoinHandle<Self> {
+
+        // make clone
+        let mut component_clone = self.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+
+                // carry out the connection calculations
+                component_clone.therminol_array.advance_timestep_mut_self(timestep).unwrap();
+                component_clone.steel_shell.advance_timestep_mut_self(timestep).unwrap();
+                component_clone.insulation_array.advance_timestep_mut_self(timestep).unwrap();
+                
+                component_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
+
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     ///

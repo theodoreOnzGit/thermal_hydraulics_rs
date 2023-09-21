@@ -1,3 +1,5 @@
+use std::thread::{self, JoinHandle};
+
 use super::StaticMixerMX10;
 use thermal_hydraulics_rs::{prelude::alpha_nightly::*, heat_transfer_lib::{nusselt_correlations::{enums::NusseltCorrelation, input_structs::{NusseltPrandtlReynoldsData, GnielinskiData}}, control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder}};
 use uom::{si::{area::square_inch, pressure::atmosphere}, ConstZero};
@@ -15,9 +17,9 @@ impl StaticMixerMX10 {
     /// unoptimised in this regard
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
-        mass_flowrate: MassRate,
-        h_air_to_steel_surf: HeatTransfer){
+        mass_flowrate: MassRate){
 
+        let h_air_to_steel_surf = self.heat_transfer_to_air;
         let heater_steady_state_power: Power = Power::ZERO;
 
         // clone each array and set them later
@@ -522,6 +524,35 @@ impl StaticMixerMX10 {
 
 
         return 1.0/total_resistance;
+    }
+
+    /// spawns a thread and moves the clone of the entire heater object into the 
+    /// thread, "locking" it for parallel computation
+    ///
+    /// once that is done, the join handle is returned 
+    /// which when unwrapped, returns the heater object
+    pub fn lateral_connection_thread_spawn(&self,
+    mass_flowrate: MassRate) -> JoinHandle<Self>{
+
+        let mut component_clone = self.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+                // carry out the connection calculations
+                component_clone.
+                    lateral_and_miscellaneous_connections(
+                        mass_flowrate);
+                
+                component_clone
+
+            }
+        );
+
+        return join_handle;
+
     }
 }
 
