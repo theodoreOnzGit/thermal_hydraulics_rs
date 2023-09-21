@@ -175,7 +175,7 @@ pub fn example_heater(){
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
-            let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
+            let _therminol_array_temperature: Vec<ThermodynamicTemperature> = 
             therminol_array_clone.get_temperature_vector().unwrap();
 
             let heater_surface_array_clone: SolidColumn 
@@ -197,7 +197,7 @@ pub fn example_heater(){
             let static_mixer_therminol_clone: FluidArray = 
             static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
 
-            let static_mixer_exit_temperature: ThermodynamicTemperature
+            let _static_mixer_exit_temperature: ThermodynamicTemperature
             = static_mixer_therminol_clone.get_temperature_vector().unwrap()
                 .into_iter().last().unwrap();
 
@@ -284,43 +284,6 @@ pub fn example_heater(){
             ).unwrap();
 
             
-            //// and axial connections for heater top and bottom heads 
-            //// to support 
-            ////
-            //// parallelise this
-
-            //heater_bottom_head_bare.steel_shell.link_to_back(
-            //    &mut structural_support_heater_bottom_head,
-            //    support_conductance_interaction
-            //).unwrap();
-
-            //heater_top_head_bare.steel_shell.link_to_front(
-            //    &mut structural_support_heater_top_head,
-            //    support_conductance_interaction
-            //).unwrap();
-
-            //// link the top and bottom head support to the environment 
-            //// parallelise this
-            //
-            //plus potential memory leak here
-
-            //structural_support_heater_bottom_head.link_to_front(
-            //    &mut ambient_air_temp_bc,
-            //    support_conductance_interaction
-            //).unwrap();
-            //structural_support_heater_top_head.link_to_front(
-            //    &mut ambient_air_temp_bc,
-            //    support_conductance_interaction
-            //).unwrap();
-
-
-            // make other connections
-            //
-            // this is the serial version
-            //heater_v2_bare.lateral_and_miscellaneous_connections(
-            //    mass_flowrate,
-            //    heater_power
-            //);
             let wait: bool = false;
 
             // parallel calc probably not the cause of memory leak
@@ -359,6 +322,7 @@ pub fn example_heater(){
 
                 if connect_struct_support {
                     // link struct supports to ambient air
+                    // axially 
                     let struct_support_top_head_join_handle = 
                     structural_support_heater_top_head.front_axial_connection_thread_spawn(
                         &mut ambient_air_temp_bc,
@@ -398,10 +362,22 @@ pub fn example_heater(){
                         &mut heater_bottom_head_bare.steel_shell,
                         support_conductance_interaction
                     );
+                    //
 
                     // note, the heater top and bottom head area changed 
                     // during course of this interaction, so should be okay
 
+                    // now link it laterally to ambient 
+                    // bc later on
+                    structural_support_heater_top_head = 
+                        struct_support_top_head_join_handle.join().unwrap();
+                    structural_support_heater_bottom_head = 
+                        structural_support_heater_bottom_head_join_handle.join().unwrap();
+
+                    let struct_support_top_head_join_handle = 
+                    structural_support_heater_top_head.lateral_connection_thread_spawn();
+                    let structural_support_heater_bottom_head_join_handle = 
+                    structural_support_heater_bottom_head.lateral_connection_thread_spawn();
                     structural_support_heater_top_head = 
                         struct_support_top_head_join_handle.join().unwrap();
                     structural_support_heater_bottom_head = 

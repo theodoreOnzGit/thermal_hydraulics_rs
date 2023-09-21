@@ -1,4 +1,5 @@
-use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
+use std::thread::JoinHandle;
+use std::thread;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 use super::StructuralSupport;
@@ -7,7 +8,7 @@ use super::StructuralSupport;
 impl StructuralSupport {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
-    pub fn advance_timestep(&mut self, 
+    pub fn _advance_timestep(&mut self, 
     timestep: Time) {
 
         self.support_array.advance_timestep_mut_self(timestep).unwrap();
