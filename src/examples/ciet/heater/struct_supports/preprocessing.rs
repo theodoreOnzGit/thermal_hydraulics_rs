@@ -150,20 +150,6 @@ impl StructuralSupport {
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let component_length: Length = steel_support_clone.get_component_length();
 
-        let steel_bulk_temperature = steel_support_clone.try_get_bulk_temperature() 
-            .unwrap();
-
-        let steel: SolidMaterial = steel_support_clone.material_control_volume
-            .try_into().unwrap();
-
-        let steel_conductivity: ThermalConductivity 
-        = steel.try_get_thermal_conductivity(
-            steel_bulk_temperature
-        ).unwrap();
-
-        let node_length: Length  = component_length / 
-        number_of_temperature_nodes as f64;
-
         // treat this as a lumped heat capacitance model, 
         // ie no conductive resistance
 
@@ -178,6 +164,36 @@ impl StructuralSupport {
 
         return air_convection_conductance;
 
+    }
+
+    /// obtains node to bc conductance 
+    #[inline]
+    pub fn get_axial_node_to_bc_conductance(&mut self) -> ThermalConductance {
+
+        let mut steel_support_clone: SolidColumn = 
+        self.support_array.clone().try_into().unwrap();
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let component_length: Length = steel_support_clone.get_component_length();
+        let steel_bulk_temperature = steel_support_clone.try_get_bulk_temperature() 
+            .unwrap();
+
+        let steel: SolidMaterial = steel_support_clone.material_control_volume
+            .try_into().unwrap();
+
+        let steel_conductivity: ThermalConductivity 
+        = steel.try_get_thermal_conductivity(
+            steel_bulk_temperature
+        ).unwrap();
+
+        let node_length: Length  = component_length / 
+        number_of_temperature_nodes as f64;
+
+        let node_xs_area = steel_support_clone.get_component_xs_area();
+
+        let conductance: ThermalConductance 
+        = steel_conductivity * node_xs_area / node_length *0.5;
+
+        return conductance;
     }
 
 

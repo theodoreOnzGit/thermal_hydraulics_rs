@@ -211,5 +211,10 @@ impl SolidColumn {
     }
 
 
+    /// obtains cross sectional area of the array
+    #[inline]
+    pub fn get_component_xs_area(&self) -> Area {
+        self.xs_area
+    }
 
 }
