@@ -61,6 +61,13 @@ Secondly, if you want to track the csv files eg. 'myfile.csv':
 tail -f myfile.csv
 ```
 
+For profiling, cargo flamegraph is an easy tool to use. It generates 
+a svg file which can be read in a browser
+
+```bash 
+CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph
+```
+
 This is a classic OpenFOAM tutorial method to track test data.
 
 ## Patch Notes 
