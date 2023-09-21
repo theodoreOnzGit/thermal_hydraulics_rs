@@ -5,7 +5,7 @@ pub fn test_inclusive_heater_top_bottom_head(){
     use std::{time::SystemTime, thread::{JoinHandle, self}};
 
     use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-    use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin, pressure::atmosphere, length::foot}, ConstZero};
+    use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
     use crate::examples::ciet::heater::*;
     // construct structs
@@ -52,7 +52,7 @@ pub fn test_inclusive_heater_top_bottom_head(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(90.0);
+    let max_time = Time::new::<second>(10.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);

@@ -28,7 +28,7 @@ pub fn example_heated_section_test(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(200.0);
+    let max_time = Time::new::<second>(10.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
