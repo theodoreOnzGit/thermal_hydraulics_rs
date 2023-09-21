@@ -57,7 +57,7 @@ pub mod static_mixer_mx_10;
 pub use static_mixer_mx_10::*;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin}, ConstZero};
+use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin, pressure::atmosphere, length::foot}, ConstZero};
 
 pub mod heated_section_example;
 
@@ -105,12 +105,50 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
+    let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
+    let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
+
+    let mut structural_support_heater_bottom_head: HeatTransferEntity 
+    = SingleCVNode::new_cylinder(
+        struc_support_equiv_length,
+        struct_support_equiv_diameter,
+        SolidMaterial::SteelSS304L.into(),
+        initial_temperature,
+        Pressure::new::<atmosphere>(1.0),
+    ).unwrap();
+
+    let mut structural_support_heater_top_head: HeatTransferEntity = 
+    structural_support_heater_bottom_head.clone();
+
+    let approx_support_conductance: ThermalConductance = {
+
+        // for conductance, it is the half length that counts 
+        //
+        // bc -------- (support cv) ------------- heater head
+
+        let conductivity = SolidMaterial::SteelSS304L.try_get_thermal_conductivity(
+            initial_temperature
+        ).unwrap();
+
+        let xs_area_support = PI * 0.25 * struct_support_equiv_diameter 
+        * struct_support_equiv_diameter;
+        
+
+        0.5 * conductivity * xs_area_support / struc_support_equiv_length
+
+    };
+
+    let support_conductance_interaction = HeatTransferInteractionType::
+        UserSpecifiedThermalConductance(approx_support_conductance);
+
+
     let mut inlet_bc: HeatTransferEntity = BCType::new_const_temperature( 
         inlet_temperature).into();
 
     let mut outlet_bc: HeatTransferEntity = BCType::new_adiabatic_bc().into();
 
-    
+    let mut ambient_air_temp_bc: HeatTransferEntity = 
+    inlet_bc.clone();
 
     // time settings 
 
@@ -243,7 +281,30 @@ pub fn example_heater(){
                 &mut outlet_bc,
                 generic_advection_interaction
             ).unwrap();
+            
+            // and axial connections for heater top and bottom heads 
+            // to support 
 
+            heater_bottom_head_bare.steel_shell.link_to_back(
+                &mut structural_support_heater_bottom_head,
+                support_conductance_interaction
+            ).unwrap();
+
+            heater_top_head_bare.steel_shell.link_to_front(
+                &mut structural_support_heater_top_head,
+                support_conductance_interaction
+            ).unwrap();
+
+            // link the top and bottom head support to the environment 
+
+            structural_support_heater_bottom_head.link_to_front(
+                &mut ambient_air_temp_bc,
+                support_conductance_interaction
+            ).unwrap();
+            structural_support_heater_top_head.link_to_front(
+                &mut ambient_air_temp_bc,
+                support_conductance_interaction
+            ).unwrap();
 
 
             // make other connections
