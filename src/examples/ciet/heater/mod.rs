@@ -96,16 +96,16 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
-    //// note: mx10 potentially has a memory leak
-    //let mut static_mixer_mx_10_object: StaticMixerMX10 
-    //= StaticMixerMX10::new_static_mixer(
-    //    initial_temperature,
-    //    ambient_air_temp);
+    // note: mx10 potentially has a memory leak
+    let mut static_mixer_mx_10_object: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer(
+        initial_temperature,
+        ambient_air_temp);
 
-    //let mut static_mixer_mx_10_pipe: StaticMixerMX10 
-    //= StaticMixerMX10::new_static_mixer_pipe(
-    //    initial_temperature,
-    //    ambient_air_temp);
+    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer_pipe(
+        initial_temperature,
+        ambient_air_temp);
 
     //let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
     //let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
@@ -179,6 +179,8 @@ pub fn example_heater(){
             // average density (which doesn't change much for liquid 
             // anyway)
 
+            let connect_static_mixer_10 = true; 
+
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
@@ -201,20 +203,26 @@ pub fn example_heater(){
             heater_top_head_bare_therminol_clone.get_temperature_vector()
                 .unwrap().into_iter().last().unwrap();
 
+            if connect_static_mixer_10 {
+                let static_mixer_therminol_clone: FluidArray = 
+                static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
 
-            //let static_mixer_therminol_clone: FluidArray = 
-            //static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
+                let static_mixer_exit_temperature: ThermodynamicTemperature
+                = static_mixer_therminol_clone.get_temperature_vector().unwrap()
+                    .into_iter().last().unwrap();
 
-            //let static_mixer_exit_temperature: ThermodynamicTemperature
-            //= static_mixer_therminol_clone.get_temperature_vector().unwrap()
-            //    .into_iter().last().unwrap();
+                let static_mixer_pipe_therminol_clone: FluidArray = 
+                static_mixer_mx_10_pipe.therminol_array.clone().try_into().unwrap();
 
-            //let static_mixer_pipe_therminol_clone: FluidArray = 
-            //static_mixer_mx_10_pipe.therminol_array.clone().try_into().unwrap();
+                let bt_12_temperature: ThermodynamicTemperature = 
+                static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 
+                    .into_iter().last().unwrap();
 
-            //let bt_12_temperature: ThermodynamicTemperature = 
-            //static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 
-            //    .into_iter().last().unwrap();
+                // bt_12_temperature, which is actually the output temperature of static 
+                // mixer 10
+                dbg!(bt_12_temperature
+                .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
+            }
 
             let heater_therminol_avg_density: MassDensity = 
             LiquidMaterial::TherminolVP1.density(
@@ -233,8 +241,6 @@ pub fn example_heater(){
                 // print outlet temperature 
                 dbg!(heater_top_head_exit_temperature
                 .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
-                //dbg!(bt_12_temperature
-                //.into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
                 // print surface temperature 
                 dbg!(heater_surface_array_temp);
@@ -271,25 +277,30 @@ pub fn example_heater(){
                 generic_advection_interaction
             ).unwrap();
 
-            heater_top_head_bare.therminol_array.link_to_front(
-                &mut outlet_bc,
-                generic_advection_interaction
-            ).unwrap();
+            
+            if connect_static_mixer_10 {
+                heater_top_head_bare.therminol_array.link_to_front(
+                    &mut static_mixer_mx_10_object.therminol_array,
+                    generic_advection_interaction
+                ).unwrap();
 
-            //heater_top_head_bare.therminol_array.link_to_front(
-            //    &mut static_mixer_mx_10_object.therminol_array,
-            //    generic_advection_interaction
-            //).unwrap();
+                static_mixer_mx_10_object.therminol_array.link_to_front(
+                    &mut static_mixer_mx_10_pipe.therminol_array,
+                    generic_advection_interaction
+                ).unwrap();
 
-            //static_mixer_mx_10_object.therminol_array.link_to_front(
-            //    &mut static_mixer_mx_10_pipe.therminol_array,
-            //    generic_advection_interaction
-            //).unwrap();
+                static_mixer_mx_10_pipe.therminol_array.link_to_front(
+                    &mut outlet_bc,
+                    generic_advection_interaction
+                ).unwrap();
 
-            //static_mixer_mx_10_pipe.therminol_array.link_to_front(
-            //    &mut outlet_bc,
-            //    generic_advection_interaction
-            //).unwrap();
+            } else {
+
+                heater_top_head_bare.therminol_array.link_to_front(
+                    &mut outlet_bc,
+                    generic_advection_interaction
+                ).unwrap();
+            }
             
             //// and axial connections for heater top and bottom heads 
             //// to support 
@@ -355,20 +366,25 @@ pub fn example_heater(){
                 heater_top_head_bare.lateral_connection_thread_spawn(
                     mass_flowrate);
 
-                //let static_mixer_join_handle = 
-                //static_mixer_mx_10_object.lateral_connection_thread_spawn(
-                //    mass_flowrate);
+                if connect_static_mixer_10 {
 
-                //let static_mixer_pipe_join_handle = 
-                //static_mixer_mx_10_pipe.lateral_connection_thread_spawn(
-                //    mass_flowrate);
+                    let static_mixer_join_handle = 
+                    static_mixer_mx_10_object.lateral_connection_thread_spawn(
+                        mass_flowrate);
+
+                    let static_mixer_pipe_join_handle = 
+                    static_mixer_mx_10_pipe.lateral_connection_thread_spawn(
+                        mass_flowrate);
+
+                    static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
+                    static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+                }
 
 
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
                 heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
-                //static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
-                //static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+
                 //// calculate timestep (serial method)
                 //heater_v2_bare.advance_timestep(
                 //    timestep);
@@ -388,13 +404,18 @@ pub fn example_heater(){
                 heater_top_head_bare.advance_timestep_thread_spawn(
                     timestep);
 
-                //let static_mixer_join_handle = 
-                //static_mixer_mx_10_object.advance_timestep_thread_spawn(
-                //    timestep);
+                if connect_static_mixer_10 {
+                    let static_mixer_join_handle = 
+                    static_mixer_mx_10_object.advance_timestep_thread_spawn(
+                        timestep);
 
-                //let static_mixer_pipe_join_handle = 
-                //static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
-                //    timestep);
+                    let static_mixer_pipe_join_handle = 
+                    static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
+                        timestep);
+                    static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
+                    static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+
+                }
 
                 //let structural_support_heater_bottom_head_join_handle = 
                 //structural_support_heater_bottom_head.
@@ -407,8 +428,6 @@ pub fn example_heater(){
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
                 heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
-                //static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
-                //static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
 
                 //structural_support_heater_bottom_head 
                 //=  structural_support_heater_bottom_head_join_handle.join().unwrap();
