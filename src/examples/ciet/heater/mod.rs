@@ -102,7 +102,6 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
-    // note: mx10 potentially has a memory leak
     let mut static_mixer_mx_10_object: StaticMixerMX10 
     = StaticMixerMX10::new_static_mixer(
         initial_temperature,
@@ -146,14 +145,17 @@ pub fn example_heater(){
     // time settings 
 
     let max_time = Time::new::<second>(9000.0);
-    let timestep = Time::new::<second>(0.01);
+    // on my pc, the simulation time using 
+    // cargo run --release 
+    // is about 10-12 ms at most 
+    // timestep at 10ms or 15 ms was tested to be stable
+    let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
     let heater_power = Power::new::<kilowatt>(8.0);
 
     let loop_time = SystemTime::now();
     // main loop
-    // note: possible memory leak
     
     let main_loop = thread::spawn( move || {
         while max_time > simulation_time {
@@ -215,7 +217,6 @@ pub fn example_heater(){
                 heater_therminol_avg_density,
                 heater_therminol_avg_density,
             );
-            // all unused values to try and mitigate memory leaking
             {
                 // prints therminol temperature 
 
@@ -286,7 +287,6 @@ pub fn example_heater(){
             
             let wait: bool = false;
 
-            // parallel calc probably not the cause of memory leak
             if wait {
 
                 let ten_millis = time::Duration::from_millis(10);

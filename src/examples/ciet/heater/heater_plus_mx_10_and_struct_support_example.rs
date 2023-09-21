@@ -8,6 +8,7 @@ pub fn heater_plus_mx_10_without_supports(){
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
     use crate::examples::ciet::heater::*;
+
     // construct structs
 
     let _heater_v1 = HeaterVersion1{};
@@ -40,7 +41,6 @@ pub fn heater_plus_mx_10_without_supports(){
         initial_temperature,
         ambient_air_temp);
 
-    // note: mx10 potentially has a memory leak
     let mut static_mixer_mx_10_object: StaticMixerMX10 
     = StaticMixerMX10::new_static_mixer(
         initial_temperature,
@@ -83,15 +83,14 @@ pub fn heater_plus_mx_10_without_supports(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(10.0);
-    let timestep = Time::new::<second>(0.01);
+    let max_time = Time::new::<second>(9000.0);
+    let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
     let heater_power = Power::new::<kilowatt>(8.0);
 
     let loop_time = SystemTime::now();
     // main loop
-    // note: possible memory leak
     
     let main_loop = thread::spawn( move || {
         while max_time > simulation_time {
@@ -113,7 +112,7 @@ pub fn heater_plus_mx_10_without_supports(){
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
-            let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
+            let _therminol_array_temperature: Vec<ThermodynamicTemperature> = 
             therminol_array_clone.get_temperature_vector().unwrap();
 
             let heater_surface_array_clone: SolidColumn 
@@ -135,7 +134,7 @@ pub fn heater_plus_mx_10_without_supports(){
             let static_mixer_therminol_clone: FluidArray = 
             static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
 
-            let static_mixer_exit_temperature: ThermodynamicTemperature
+            let _static_mixer_exit_temperature: ThermodynamicTemperature
             = static_mixer_therminol_clone.get_temperature_vector().unwrap()
                 .into_iter().last().unwrap();
 
@@ -153,7 +152,6 @@ pub fn heater_plus_mx_10_without_supports(){
                 heater_therminol_avg_density,
                 heater_therminol_avg_density,
             );
-            // all unused values to try and mitigate memory leaking
             {
                 // prints therminol temperature 
 
@@ -222,46 +220,8 @@ pub fn heater_plus_mx_10_without_supports(){
             ).unwrap();
 
             
-            //// and axial connections for heater top and bottom heads 
-            //// to support 
-            ////
-            //// parallelise this
-
-            //heater_bottom_head_bare.steel_shell.link_to_back(
-            //    &mut structural_support_heater_bottom_head,
-            //    support_conductance_interaction
-            //).unwrap();
-
-            //heater_top_head_bare.steel_shell.link_to_front(
-            //    &mut structural_support_heater_top_head,
-            //    support_conductance_interaction
-            //).unwrap();
-
-            //// link the top and bottom head support to the environment 
-            //// parallelise this
-            //
-            //plus potential memory leak here
-
-            //structural_support_heater_bottom_head.link_to_front(
-            //    &mut ambient_air_temp_bc,
-            //    support_conductance_interaction
-            //).unwrap();
-            //structural_support_heater_top_head.link_to_front(
-            //    &mut ambient_air_temp_bc,
-            //    support_conductance_interaction
-            //).unwrap();
-
-
-            // make other connections
-            //
-            // this is the serial version
-            //heater_v2_bare.lateral_and_miscellaneous_connections(
-            //    mass_flowrate,
-            //    heater_power
-            //);
             let wait: bool = false;
 
-            // parallel calc probably not the cause of memory leak
             if wait {
 
                 let ten_millis = time::Duration::from_millis(10);
@@ -297,6 +257,7 @@ pub fn heater_plus_mx_10_without_supports(){
 
                 if connect_struct_support {
                     // link struct supports to ambient air
+                    // axially 
                     let struct_support_top_head_join_handle = 
                     structural_support_heater_top_head.front_axial_connection_thread_spawn(
                         &mut ambient_air_temp_bc,
@@ -336,10 +297,22 @@ pub fn heater_plus_mx_10_without_supports(){
                         &mut heater_bottom_head_bare.steel_shell,
                         support_conductance_interaction
                     );
+                    //
 
                     // note, the heater top and bottom head area changed 
                     // during course of this interaction, so should be okay
 
+                    // now link it laterally to ambient 
+                    // bc later on
+                    structural_support_heater_top_head = 
+                        struct_support_top_head_join_handle.join().unwrap();
+                    structural_support_heater_bottom_head = 
+                        structural_support_heater_bottom_head_join_handle.join().unwrap();
+
+                    let struct_support_top_head_join_handle = 
+                    structural_support_heater_top_head.lateral_connection_thread_spawn();
+                    let structural_support_heater_bottom_head_join_handle = 
+                    structural_support_heater_bottom_head.lateral_connection_thread_spawn();
                     structural_support_heater_top_head = 
                         struct_support_top_head_join_handle.join().unwrap();
                     structural_support_heater_bottom_head = 
@@ -420,5 +393,6 @@ pub fn heater_plus_mx_10_without_supports(){
 
 
     //todo!("haven't coded csv writing file")
+
 
 }
