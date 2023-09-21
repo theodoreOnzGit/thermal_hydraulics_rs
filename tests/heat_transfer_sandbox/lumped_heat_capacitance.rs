@@ -369,6 +369,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 vec![],
                 volumetric_flowrate_vector:
                 vec![],
+                temperature: steel_initial_temperature,
             }
         )
     );

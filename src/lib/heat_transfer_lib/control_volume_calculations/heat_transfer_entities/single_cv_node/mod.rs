@@ -89,7 +89,13 @@ pub struct SingleCVNode {
     /// and out of the control volume 
     /// by convention, positive flowrates mean going into the 
     /// cv, negative flowrates mean flowing out of the cv 
-    pub volumetric_flowrate_vector: Vec<VolumeRate>
+    pub volumetric_flowrate_vector: Vec<VolumeRate>,
+
+    /// cv temperature 
+    /// experimental: control volume temperature  
+    /// at current timestep
+    pub temperature: ThermodynamicTemperature,
+
 }
 
 /// here, we have mostly constructors
@@ -144,6 +150,7 @@ impl SingleCVNode {
             initial_mesh_stability_lengthscale_vector,
             volumetric_flowrate_vector:
             vec![],
+            temperature: cv_temperature,
         }
 
     }
@@ -152,13 +159,15 @@ impl SingleCVNode {
     /// gets the temperature of the control volume at the 
     /// CURRENT timestep
     #[inline]
-    pub fn get_temperature(&self) -> 
+    pub fn get_temperature_from_enthalpy_and_set(&mut self) -> 
     Result<ThermodynamicTemperature, String>{
 
         let cv_temperature = try_get_temperature_from_h(
             self.material_control_volume, 
             self.current_timestep_control_volume_specific_enthalpy, 
             self.pressure_control_volume);
+
+        self.temperature = cv_temperature.clone()?;
 
         return cv_temperature;
     }
@@ -261,6 +270,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );
@@ -334,6 +344,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );
@@ -409,6 +420,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );
@@ -488,6 +500,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );
@@ -577,6 +590,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );
@@ -649,6 +663,7 @@ impl SingleCVNode {
                     conduction_stability_lengthscale_vector,
                     volumetric_flowrate_vector:
                     vec![],
+                    temperature: cv_temperature,
                 }
             )
         );

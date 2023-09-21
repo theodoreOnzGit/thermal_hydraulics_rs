@@ -45,17 +45,11 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     let single_cv_1_temperature: ThermodynamicTemperature;
     let single_cv_2_temperature: ThermodynamicTemperature;
 
-    let experimental_code = false; 
+    let experimental_code = true; 
     if experimental_code {
 
-        single_cv_1_temperature = try_get_temperature_from_h(
-            single_cv_1_material, 
-            single_cv_1_enthalpy, 
-            single_cv_1_pressure)?;
-        single_cv_2_temperature = try_get_temperature_from_h(
-            single_cv_2_material, 
-            single_cv_2_enthalpy, 
-            single_cv_2_pressure)?;
+        single_cv_1_temperature = single_cv_1.temperature;
+        single_cv_2_temperature = single_cv_2.temperature;
 
     } else {
 

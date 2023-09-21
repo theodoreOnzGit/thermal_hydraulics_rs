@@ -24,10 +24,10 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 {
 
     let temperature_1: ThermodynamicTemperature = 
-    single_cv_1.get_temperature()?;
+    single_cv_1.get_temperature_from_enthalpy_and_set()?;
 
     let temperature_2: ThermodynamicTemperature = 
-    single_cv_2.get_temperature()?;
+    single_cv_2.get_temperature_from_enthalpy_and_set()?;
 
     let pressure_1: Pressure = 
     single_cv_1.pressure_control_volume.clone();

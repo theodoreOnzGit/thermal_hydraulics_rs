@@ -19,7 +19,7 @@ impl HeatTransferEntity {
             Self::ControlVolume(cv_type) => {
                 match cv_type {
                     CVType::SingleCV(single_cv) => {
-                        single_cv.get_temperature()
+                        single_cv.get_temperature_from_enthalpy_and_set()
                     },
                     CVType::ArrayCV(cv) => {
                         Ok(cv.get_bulk_temperature().unwrap())
@@ -71,7 +71,7 @@ impl HeatTransferEntity {
                 = match cv_type{
                     CVType::SingleCV(single_cv) => {
                         // the single cv only has one temperature anyway
-                        let temperature = single_cv.get_temperature()?;
+                        let temperature = single_cv.get_temperature_from_enthalpy_and_set()?;
 
                         let mut temp_vector: Vec<ThermodynamicTemperature>
                         = vec![];

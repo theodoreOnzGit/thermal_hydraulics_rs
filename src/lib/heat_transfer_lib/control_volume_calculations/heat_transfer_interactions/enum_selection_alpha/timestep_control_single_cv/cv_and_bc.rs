@@ -27,7 +27,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
 
     let cv_material = control_vol.material_control_volume.clone();
     let cv_pressure = control_vol.pressure_control_volume.clone();
-    let cv_temperature = control_vol.get_temperature()?;
+    let cv_temperature = control_vol.get_temperature_from_enthalpy_and_set()?;
 
     
     let cv_alpha: DiffusionCoefficient = 

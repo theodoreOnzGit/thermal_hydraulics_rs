@@ -56,6 +56,10 @@ impl SingleCVNode {
         self.clear_vectors().unwrap();
         // increase timestep (last step)
 
+        // set temperatures for the cv
+
+        let _ = self.get_temperature_from_enthalpy_and_set()?;
+
         return Ok(());
     }
     /// clears all vectors for next timestep

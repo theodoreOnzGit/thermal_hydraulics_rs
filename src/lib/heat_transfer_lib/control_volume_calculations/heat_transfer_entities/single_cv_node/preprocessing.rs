@@ -106,7 +106,7 @@ impl SingleCVNode {
         // let's get the volume of this control volume 
 
         let cv_material_reference = &self.material_control_volume;
-        let cv_temperature = self.get_temperature()?;
+        let cv_temperature = self.temperature;
         let cv_pressure_reference = &self.pressure_control_volume;
 
         let cv_density: MassDensity = 
@@ -208,7 +208,7 @@ impl SingleCVNode {
 
         let cv_mass_clone = self.mass_control_volume.clone();
         let cv_material = self.material_control_volume.clone();
-        let cv_temperature = self.get_temperature()?;
+        let cv_temperature = self.temperature;
         let cv_pressure = self.pressure_control_volume.clone();
 
         let cv_heat_capacity = try_get_cp(

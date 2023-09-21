@@ -41,7 +41,7 @@ fn calculate_cv_front_bc_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
-    let control_vol_temperature = control_vol.get_temperature()?;
+    let control_vol_temperature = control_vol.get_temperature_from_enthalpy_and_set()?;
 
     let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,
@@ -128,7 +128,7 @@ fn calculate_bc_front_cv_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
-    let control_vol_temperature = control_vol.get_temperature()?;
+    let control_vol_temperature = control_vol.get_temperature_from_enthalpy_and_set()?;
 
     let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,

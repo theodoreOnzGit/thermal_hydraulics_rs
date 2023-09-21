@@ -468,8 +468,8 @@ pub fn matrix_calculation_initial_test(){
                 = DataAdvection::new_from_temperature_and_liquid_material(
                     therminol_mass_flowrate,
                     LiquidMaterial::TherminolVP1.into(),
-                    therminol_array_clone.front_single_cv.get_temperature().unwrap(),
-                    therminol_array_clone.front_single_cv.get_temperature().unwrap(),
+                    therminol_array_clone.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap(),
+                    therminol_array_clone.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap(),
                 ).into();
                 
                 therminol_entity_ptr_in_loop.deref_mut().link_to_back(
@@ -539,13 +539,13 @@ pub fn matrix_calculation_initial_test(){
             {
                 // csv data writing
 
-                let therminol_fluid_arr: FluidArray = 
+                let mut therminol_fluid_arr: FluidArray = 
                 therminol_entity_ptr_in_loop.deref_mut().clone().
                     try_into().unwrap();
 
 
                 let therminol_outlet_temp:ThermodynamicTemperature = 
-                therminol_fluid_arr.front_single_cv.get_temperature().unwrap();
+                therminol_fluid_arr.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap();
 
                 let therminol_outlet_temp_string = 
                 therminol_outlet_temp.get::<degree_celsius>().to_string();
