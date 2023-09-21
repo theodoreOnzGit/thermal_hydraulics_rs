@@ -26,4 +26,5 @@ impl SolidColumn {
         Ok(reversed_vec)
     }
 
+
 }

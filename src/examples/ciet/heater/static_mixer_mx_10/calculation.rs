@@ -1,10 +1,10 @@
 use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut, Deref}};
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use super::StaticMixerMX10;
+use super::StructuralSupport;
 
 
-impl StaticMixerMX10 {
+impl StructuralSupport {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     pub fn advance_timestep(&mut self, 

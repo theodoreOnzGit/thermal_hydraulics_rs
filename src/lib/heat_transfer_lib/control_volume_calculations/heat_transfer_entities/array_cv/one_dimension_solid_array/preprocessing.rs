@@ -204,4 +204,12 @@ impl SolidColumn {
 
     }
 
+    /// obtains length of the array
+    #[inline]
+    pub fn get_component_length(&self) -> Length {
+        self.total_length
+    }
+
+
+
 }

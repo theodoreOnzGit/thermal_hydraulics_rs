@@ -56,6 +56,8 @@ pub use heater_top_and_bottom_head_bare::*;
 pub mod static_mixer_mx_10;
 pub use static_mixer_mx_10::*;
 
+pub mod struct_supports;
+
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
 use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin, pressure::atmosphere, length::foot}, ConstZero};
 
@@ -98,13 +100,13 @@ pub fn example_heater(){
         ambient_air_temp);
 
     // note: mx10 potentially has a memory leak
-    let mut static_mixer_mx_10_object: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer(
+    let mut static_mixer_mx_10_object: StructuralSupport 
+    = StructuralSupport::new_static_mixer(
         initial_temperature,
         ambient_air_temp);
 
-    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer_pipe(
+    let mut static_mixer_mx_10_pipe: StructuralSupport 
+    = StructuralSupport::new_static_mixer_pipe(
         initial_temperature,
         ambient_air_temp);
 
