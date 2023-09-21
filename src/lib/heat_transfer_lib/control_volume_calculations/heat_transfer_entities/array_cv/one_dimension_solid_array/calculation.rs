@@ -114,7 +114,7 @@ impl SolidColumn {
         let lateral_temperature_arary_connected: bool 
         = self.lateral_adjacent_array_conductance_vector.len() > 0;
 
-        let axial_conduction_only: bool = !lateral_power_sources_connected
+        let _axial_conduction_only: bool = !lateral_power_sources_connected
         && !lateral_temperature_arary_connected;
 
         // if there is lateral conduction, then construct matrices 
@@ -445,137 +445,141 @@ impl SolidColumn {
         = average_thermal_conductivity * self.xs_area 
         / node_length;
 
-        let neglect_axial_conduction: bool = {
+        // neglecting axial conduction may be good,
+        // but checking for it is computationally expensive.
+        let neglect_axial_conduction = false;
+        
+        //let neglect_axial_conduction: bool = {
 
-            // how shall we know if the axial conduction is to be 
-            // neglected?
-
-
-            let axial_power_scale_insignificant = || -> bool {
-
-                // we can calculate a typical power scale for axial 
-                // conduction and compare it to the radial conduction
+        //    // how shall we know if the axial conduction is to be 
+        //    // neglected?
 
 
+        //    let axial_power_scale_insignificant = || -> bool {
 
-                // the max temperature gradient is the max temperature 
-                // minus the min temperature 
-
-                let temp_value_kelvin_integer_vector: Array1<u32> = 
-                self.temperature_array_current_timestep.map(
-                    |&temperature|{
-                        let temp_value_kelvin = temperature.get::<kelvin>();
-
-                        temp_value_kelvin.ceil() as u32
-                    }
-                );
-
-                let max_temp_val_kelvin: u32 = 
-                *temp_value_kelvin_integer_vector.iter().max().unwrap();
-
-                let min_temp_val_kelvin: u32 = 
-                *temp_value_kelvin_integer_vector.iter().min().unwrap();
-
-                let approx_axial_temp_diff_val_kelvin: f64 = 
-                max_temp_val_kelvin as f64 
-                - min_temp_val_kelvin as f64;
-
-                let axial_power_scale: Power = 
-                TemperatureInterval::new::<degree_celsius>(
-                    approx_axial_temp_diff_val_kelvin)
-                * average_axial_conductance;
-                
-
-                // we need to compare this against the radial temperature 
-                // differences
-                //
-                // as well as power inputs 
-                //
-                // unfortunately, the temperatures are nested in a 
-                // vector of arrays or in essence a 2D array
-
-                let mut lateral_power_sum: Power = Power::zero();
-
-                for &power in &self.q_vector {
-                    lateral_power_sum += power.abs();
-                }
-
-
-                // now an estimate for the lateral power by conduction
-                // thankfully, we already calculated this beforehand
-                
-
-                // the HT here comes from 
-                //
-                // Q = -H(T_node - T_lateral) 
-                //
-                // Q = -HT_node + HT_lateral 
-
-                let mut sum_of_conductance_times_node_temp_array:
-                Array1<Power> = Array::zeros(number_of_nodes);
-
-                for (node_idx, ht_node) in 
-                sum_of_conductance_times_node_temp_array.iter_mut().enumerate(){
-
-                        // get the node temperature and sum of conductance 
-
-                        let node_temperature: ThermodynamicTemperature = 
-                        self.temperature_array_current_timestep[node_idx];
-
-                        let node_conductance_sum: ThermalConductance = 
-                        sum_of_lateral_conductances[node_idx];
-
-                        *ht_node = node_temperature * node_conductance_sum;
-
-                    }
-
-                let lateral_ht_power_vector: Array1<Power> = 
-                sum_of_lateral_conductance_times_lateral_temperatures 
-                - sum_of_conductance_times_node_temp_array;
-
-                // add all the power changes to the lateral power 
-                // vector
-                
-                for &power in &lateral_ht_power_vector {
-                    lateral_power_sum += power.abs();
-                }
-                
-                // for lateral power flow, we have the lateral 
-                // power sum to measure the power flows 
-                // 
-
-                let axial_power_to_lateral_power_ratio: Ratio = 
-                axial_power_scale.abs()/lateral_power_sum;
-
-                // if this ratio is less than 1%, then we neglect 
-                // axial power otherwise, don't neglect
-
-                let neglect_axial_power = 
-                axial_power_to_lateral_power_ratio <= Ratio::new::<percent>(1.0);
-
-                neglect_axial_power
-            };
+        //        // we can calculate a typical power scale for axial 
+        //        // conduction and compare it to the radial conduction
 
 
 
-            // first let's deal with the case that it's axial conduction 
-            // only 
+        //        // the max temperature gradient is the max temperature 
+        //        // minus the min temperature 
 
-            if axial_conduction_only {
-                // if axial conduction only, we cannot neglect 
-                // axial conduction
-                false
-            } else if axial_power_scale_insignificant() {
-                // if axial power scales are insignificant
-                // neglect
-                // axial conduction
-                true
-            } else {
-                // the safest is to not neglect
-                false
-            }
+        //        let temp_value_kelvin_integer_vector: Array1<u32> = 
+        //        self.temperature_array_current_timestep.map(
+        //            |&temperature|{
+        //                let temp_value_kelvin = temperature.get::<kelvin>();
 
-        };
+        //                temp_value_kelvin.ceil() as u32
+        //            }
+        //        );
+
+        //        let max_temp_val_kelvin: u32 = 
+        //        *temp_value_kelvin_integer_vector.iter().max().unwrap();
+
+        //        let min_temp_val_kelvin: u32 = 
+        //        *temp_value_kelvin_integer_vector.iter().min().unwrap();
+
+        //        let approx_axial_temp_diff_val_kelvin: f64 = 
+        //        max_temp_val_kelvin as f64 
+        //        - min_temp_val_kelvin as f64;
+
+        //        let axial_power_scale: Power = 
+        //        TemperatureInterval::new::<degree_celsius>(
+        //            approx_axial_temp_diff_val_kelvin)
+        //        * average_axial_conductance;
+        //        
+
+        //        // we need to compare this against the radial temperature 
+        //        // differences
+        //        //
+        //        // as well as power inputs 
+        //        //
+        //        // unfortunately, the temperatures are nested in a 
+        //        // vector of arrays or in essence a 2D array
+
+        //        let mut lateral_power_sum: Power = Power::zero();
+
+        //        for &power in &self.q_vector {
+        //            lateral_power_sum += power.abs();
+        //        }
+
+
+        //        // now an estimate for the lateral power by conduction
+        //        // thankfully, we already calculated this beforehand
+        //        
+
+        //        // the HT here comes from 
+        //        //
+        //        // Q = -H(T_node - T_lateral) 
+        //        //
+        //        // Q = -HT_node + HT_lateral 
+
+        //        let mut sum_of_conductance_times_node_temp_array:
+        //        Array1<Power> = Array::zeros(number_of_nodes);
+
+        //        for (node_idx, ht_node) in 
+        //        sum_of_conductance_times_node_temp_array.iter_mut().enumerate(){
+
+        //                // get the node temperature and sum of conductance 
+
+        //                let node_temperature: ThermodynamicTemperature = 
+        //                self.temperature_array_current_timestep[node_idx];
+
+        //                let node_conductance_sum: ThermalConductance = 
+        //                sum_of_lateral_conductances[node_idx];
+
+        //                *ht_node = node_temperature * node_conductance_sum;
+
+        //            }
+
+        //        let lateral_ht_power_vector: Array1<Power> = 
+        //        sum_of_lateral_conductance_times_lateral_temperatures 
+        //        - sum_of_conductance_times_node_temp_array;
+
+        //        // add all the power changes to the lateral power 
+        //        // vector
+        //        
+        //        for &power in &lateral_ht_power_vector {
+        //            lateral_power_sum += power.abs();
+        //        }
+        //        
+        //        // for lateral power flow, we have the lateral 
+        //        // power sum to measure the power flows 
+        //        // 
+
+        //        let axial_power_to_lateral_power_ratio: Ratio = 
+        //        axial_power_scale.abs()/lateral_power_sum;
+
+        //        // if this ratio is less than 1%, then we neglect 
+        //        // axial power otherwise, don't neglect
+
+        //        let neglect_axial_power = 
+        //        axial_power_to_lateral_power_ratio <= Ratio::new::<percent>(1.0);
+
+        //        neglect_axial_power
+        //    };
+
+
+
+        //    // first let's deal with the case that it's axial conduction 
+        //    // only 
+
+        //    if axial_conduction_only {
+        //        // if axial conduction only, we cannot neglect 
+        //        // axial conduction
+        //        false
+        //    } else if axial_power_scale_insignificant() {
+        //        // if axial power scales are insignificant
+        //        // neglect
+        //        // axial conduction
+        //        true
+        //    } else {
+        //        // the safest is to not neglect
+        //        false
+        //    }
+
+        //};
         // end code block for checking if we can neglect axial conduction
 
         // if we dont neglect axial conduction 

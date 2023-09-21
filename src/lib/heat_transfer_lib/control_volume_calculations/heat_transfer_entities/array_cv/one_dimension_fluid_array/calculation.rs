@@ -602,12 +602,12 @@ impl FluidArray{
 
         }
 
-        // note that this works for high peclet number flows
-        // peclet number is Re * Pr
-        // if peclet number is low, then we must consider conduction 
-        //
-        // I'm also not interested in directionality,
-        // rather, the magnitude is more important
+        //// note that this works for high peclet number flows
+        //// peclet number is Re * Pr
+        //// if peclet number is low, then we must consider conduction 
+        ////
+        //// I'm also not interested in directionality,
+        //// rather, the magnitude is more important
 
         let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
 
@@ -628,8 +628,10 @@ impl FluidArray{
         // I ascertained manually setting peclet number to zero does not 
         // visibly change the results, hence, 
         // it seems okay for now
+
+        let low_peclet_number_flow = peclet_number.value < 100.0;
         
-        if peclet_number.value < 100.0 {
+        if low_peclet_number_flow {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 
             // between nodes 
