@@ -144,7 +144,7 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(9000.0);
+    let max_time = Time::new::<second>(90.0);
     // on my pc, the simulation time using 
     // cargo run --release 
     // is about 10-12 ms at most 
