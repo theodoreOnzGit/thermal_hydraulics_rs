@@ -41,13 +41,13 @@ pub fn heater_plus_mx_10_without_supports(){
         ambient_air_temp);
 
     // note: mx10 potentially has a memory leak
-    let mut static_mixer_mx_10_object: StructuralSupport 
-    = StructuralSupport::new_static_mixer(
+    let mut static_mixer_mx_10_object: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer(
         initial_temperature,
         ambient_air_temp);
 
-    let mut static_mixer_mx_10_pipe: StructuralSupport 
-    = StructuralSupport::new_static_mixer_pipe(
+    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer_pipe(
         initial_temperature,
         ambient_air_temp);
 
