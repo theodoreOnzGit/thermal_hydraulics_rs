@@ -161,6 +161,120 @@ impl StaticMixerMX10 {
         };
     }
 
+    /// constructs the static mixer pipe using the RELAP/SAM model 
+    /// as a basis 
+    ///
+    /// length = 0.149425 m 
+    /// d_h = 2.79e-2
+    /// Insulation thickness: 5.08 cm
+    /// (fiberglass)
+    /// number of nodes (including two ends): 2
+    ///
+    /// form loss: 1.8
+    ///
+    /// Nusselt Number Correlation: same as heater (assumed)
+    /// because there is quite a lot of mixing going on
+    /// within the mixer
+    ///
+    ///
+    ///
+    /// Unheated Structure Thermal Inertia: ignored
+    pub fn new_static_mixer_pipe(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature) -> Self {
+
+        let user_specified_inner_nodes: usize = 0;
+        let flow_area = Area::new::<square_meter>(6.11e-4);
+        let component_length = Length::new::<meter>(0.149425);
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+
+
+        // heater is inclined 90 degrees upwards, not that this is 
+        // particularly important for this scenario
+
+        let pipe_incline_angle = Angle::new::<uom::si::angle::degree>(90.0);
+
+        // theoretically it's 6 W/(m^2 K) but then we'll have to manually 
+        // input wall structures for additional heat loss
+        //
+        let h_to_air: HeatTransfer = 
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(6.0);
+
+        let fiberglass_thickness = Length::new::<meter>(0.0508);
+
+        let steel_id = Length::new::<meter>(0.0381);
+        let steel_od = Length::new::<meter>(0.04);
+        let fiberglass_id = steel_od;
+        let fiberglass_od = fiberglass_id + 
+        fiberglass_thickness + fiberglass_thickness;
+
+        // correlation 
+
+        let form_loss = Ratio::new::<ratio>(1.8);
+
+
+
+        // inner therminol array
+        let therminol_array: FluidArray = 
+        FluidArray::new_odd_shaped_pipe(
+            component_length,
+            flow_area,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            LiquidMaterial::TherminolVP1,
+            form_loss,
+            user_specified_inner_nodes,
+            pipe_incline_angle
+        );
+        // now the outer steel array
+        let steel_shell_array = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            steel_id,
+            steel_od,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            user_specified_inner_nodes 
+        );
+        // insulation
+        let insulation = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            fiberglass_id,
+            fiberglass_od,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::Fiberglass,
+            user_specified_inner_nodes 
+        );
+
+        // K = 1.8 in a pipe
+        let darcy_loss_correlation = 
+        DimensionlessDarcyLossCorrelations::
+            new_pipe(
+                component_length,
+                SolidMaterial::SteelSS304L.surface_roughness().unwrap(),
+                hydraulic_diameter,
+                form_loss
+            );
+
+        return Self { inner_nodes: user_specified_inner_nodes,
+            insulation_array: insulation.into(),
+            steel_shell: steel_shell_array.into(),
+            therminol_array: therminol_array.into(),
+            ambient_temperature,
+            heat_transfer_to_air: h_to_air,
+            tube_inner_diameter: steel_id,
+            tube_outer_diameter: steel_od,
+            insulation_inner_diameter: fiberglass_id,
+            insulation_outer_diameter: fiberglass_od,
+            flow_area,
+            darcy_loss_correlation,
+        };
+    }
+
 }
 
 

@@ -100,6 +100,11 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
+    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer_pipe(
+        initial_temperature,
+        ambient_air_temp);
+
     let mut inlet_bc: HeatTransferEntity = BCType::new_const_temperature( 
         inlet_temperature).into();
 
@@ -164,6 +169,13 @@ pub fn example_heater(){
             = static_mixer_therminol_clone.get_temperature_vector().unwrap()
                 .into_iter().last().unwrap();
 
+            let static_mixer_pipe_therminol_clone: FluidArray = 
+            static_mixer_mx_10_pipe.therminol_array.clone().try_into().unwrap();
+
+            let bt_12_temperature: ThermodynamicTemperature = 
+            static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 
+                .into_iter().last().unwrap();
+
             let heater_therminol_avg_density: MassDensity = 
             LiquidMaterial::TherminolVP1.density(
                 heater_fluid_bulk_temp).unwrap();
@@ -181,7 +193,7 @@ pub fn example_heater(){
                 // print outlet temperature 
                 dbg!(heater_top_head_exit_temperature
                 .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
-                dbg!(static_mixer_exit_temperature
+                dbg!(bt_12_temperature
                 .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
                 // print surface temperature 
@@ -223,6 +235,11 @@ pub fn example_heater(){
             ).unwrap();
 
             static_mixer_mx_10_object.therminol_array.link_to_front(
+                &mut static_mixer_mx_10_pipe.therminol_array,
+                generic_advection_interaction
+            ).unwrap();
+
+            static_mixer_mx_10_pipe.therminol_array.link_to_front(
                 &mut outlet_bc,
                 generic_advection_interaction
             ).unwrap();
@@ -236,7 +253,6 @@ pub fn example_heater(){
             //    mass_flowrate,
             //    heater_power
             //);
-            let parallel_calc: bool = true;
             let wait: bool = false;
 
             // parallel calc probably not the cause of memory leak
@@ -268,11 +284,16 @@ pub fn example_heater(){
                 static_mixer_mx_10_object.lateral_connection_thread_spawn(
                     mass_flowrate);
 
+                let static_mixer_pipe_join_handle = 
+                static_mixer_mx_10_pipe.lateral_connection_thread_spawn(
+                    mass_flowrate);
+
 
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
                 heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
                 static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
+                static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
                 //// calculate timestep (serial method)
                 //heater_v2_bare.advance_timestep(
                 //    timestep);
@@ -296,11 +317,15 @@ pub fn example_heater(){
                 static_mixer_mx_10_object.advance_timestep_thread_spawn(
                     timestep);
 
+                let static_mixer_pipe_join_handle = 
+                static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
+                    timestep);
+
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
                 heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
                 static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
-
+                static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
 
             } 
             simulation_time += timestep;
