@@ -51,10 +51,7 @@ impl SingleCVNode {
 
         let control_vol_material = self.material_control_volume.clone();
         let control_vol_pressure = self.pressure_control_volume.clone();
-        let cv_temperature = try_get_temperature_from_h(
-            self.material_control_volume, 
-            self.current_timestep_control_volume_specific_enthalpy, 
-            self.pressure_control_volume)?;
+        let cv_temperature = self.temperature;
 
 
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
