@@ -86,12 +86,12 @@ pub fn example_heater(){
 
 
     let mut heater_top_head_bare: HeaterTopBottomHead 
-    = HeaterTopBottomHead::new_bottom_head(
+    = HeaterTopBottomHead::new_top_head(
         initial_temperature,
         ambient_air_temp);
 
     let mut heater_bottom_head_bare: HeaterTopBottomHead 
-    = HeaterTopBottomHead::new_top_head(
+    = HeaterTopBottomHead::new_bottom_head(
         initial_temperature,
         ambient_air_temp);
 
@@ -104,7 +104,7 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(200.0);
+    let max_time = Time::new::<second>(90.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
@@ -144,9 +144,12 @@ pub fn example_heater(){
             let heater_fluid_bulk_temp: ThermodynamicTemperature = 
             therminol_array_clone.try_get_bulk_temperature().unwrap();
 
+            let heater_top_head_bare_therminol_clone: FluidArray = 
+            heater_top_head_bare.therminol_array.clone().try_into().unwrap();
 
-            let heated_section_exit_temperature: ThermodynamicTemperature = 
-            *therminol_array_temperature.iter().last().unwrap();
+            let heater_top_head_exit_temperature: ThermodynamicTemperature = 
+            heater_top_head_bare_therminol_clone.get_temperature_vector()
+                .unwrap().into_iter().last().unwrap();
 
             let heater_therminol_avg_density: MassDensity = 
             LiquidMaterial::TherminolVP1.density(
@@ -158,17 +161,17 @@ pub fn example_heater(){
                 heater_therminol_avg_density,
                 heater_therminol_avg_density,
             );
-            // drop all unused values to try and mitigate memory leaking
+            // all unused values to try and mitigate memory leaking
             {
                 // prints therminol temperature 
-                dbg!(heater_bottom_head_bare.therminol_array_temperature());
+                dbg!(heater_top_head_exit_temperature);
 
                 // print outlet temperature 
-                dbg!(heated_section_exit_temperature
+                dbg!(heater_top_head_exit_temperature
                 .into_format_args(degree_celsius,uom::fmt::DisplayStyle::Abbreviation));
 
                 // print surface temperature 
-                dbg!(heater_v2_bare.therminol_array_temperature());
+                dbg!(heater_surface_array_temp);
 
                 //// print therminol temperature 
                 //dbg!("Therminol Array Temp: ", therminol_array_temperature);
@@ -181,13 +184,6 @@ pub fn example_heater(){
                 // print loop time 
                 // dbg diagnostics probably not the cause of mem leaks
                 //println!("{:?}",time_taken_for_calculation_loop.as_micros());
-                drop(therminol_array_clone);
-                drop(therminol_array_temperature);
-                drop(heater_surface_array_clone);
-                drop(heater_surface_array_temp);
-                drop(heater_fluid_bulk_temp);
-                drop(heated_section_exit_temperature);
-                drop(heater_therminol_avg_density);
             }
 
             // make axial connections to BCs 
@@ -203,15 +199,15 @@ pub fn example_heater(){
             ).unwrap();
 
             heater_v2_bare.therminol_array.link_to_front(
+                &mut heater_top_head_bare.therminol_array,
+                generic_advection_interaction
+            ).unwrap();
+
+            heater_top_head_bare.therminol_array.link_to_front(
                 &mut outlet_bc,
                 generic_advection_interaction
             ).unwrap();
 
-            // free more memory
-            {
-                drop(heater_therminol_avg_density);
-                drop(generic_advection_interaction);
-            }
 
 
             // make other connections
@@ -245,9 +241,14 @@ pub fn example_heater(){
                     lateral_connection_thread_spawn(
                         mass_flowrate);
 
+                let heater_top_head_join_handle = 
+                heater_top_head_bare.lateral_connection_thread_spawn(
+                    mass_flowrate);
+
 
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+                heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
                 //// calculate timestep (serial method)
                 //heater_v2_bare.advance_timestep(
                 //    timestep);
@@ -263,8 +264,13 @@ pub fn example_heater(){
                     advance_timestep_thread_spawn(
                         timestep);
 
+                let heater_top_head_join_handle = 
+                heater_top_head_bare.advance_timestep_thread_spawn(
+                    timestep);
+
                 heater_v2_bare = heater_2_join_handle.join().unwrap();
                 heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+                heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
 
 
             } else if !parallel_calc {
@@ -286,14 +292,7 @@ pub fn example_heater(){
             let time_taken_for_calculation_loop = loop_time.elapsed().unwrap()
             - loop_time_start;
 
-            {
-                // free memory
-                dbg!(time_taken_for_calculation_loop);
-                drop(time_taken_for_calculation_loop);
-                drop(parallel_calc);
-                drop(loop_time_start);
-            }
-
+            dbg!(time_taken_for_calculation_loop);
 
         }
 
