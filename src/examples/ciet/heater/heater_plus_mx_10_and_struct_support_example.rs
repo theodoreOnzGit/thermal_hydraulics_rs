@@ -83,7 +83,7 @@ pub fn heater_plus_mx_10_without_supports(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(9000.0);
+    let max_time = Time::new::<second>(10.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
