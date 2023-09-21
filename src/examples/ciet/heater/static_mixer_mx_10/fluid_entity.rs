@@ -1,8 +1,8 @@
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use super::StructuralSupport;
+use super::StaticMixerMX10;
 
 
-impl FluidComponent for StructuralSupport {
+impl FluidComponent for StaticMixerMX10 {
     fn get_mass_flowrate(&mut self) -> MassRate  {
         let mut therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();

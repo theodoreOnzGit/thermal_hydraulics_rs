@@ -18,7 +18,7 @@ use uom::si::pressure::atmosphere;
 ///
 /// Note: need to check for memory leaks
 #[derive(Debug,Clone,PartialEq)]
-pub struct StructuralSupport {
+pub struct StaticMixerMX10 {
 
     inner_nodes: usize,
 
@@ -45,7 +45,7 @@ pub struct StructuralSupport {
     darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
 }
 
-impl StructuralSupport {
+impl StaticMixerMX10 {
 
 
     /// constructs the static mixer using the RELAP/SAM model 

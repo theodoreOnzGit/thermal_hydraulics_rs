@@ -59,7 +59,7 @@ pub use static_mixer_mx_10::*;
 pub mod struct_supports;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::second, power::kilowatt, heat_transfer::watt_per_square_meter_kelvin, pressure::atmosphere, length::foot}, ConstZero};
+use uom::{si::{time::second, power::kilowatt, length::foot}, ConstZero};
 
 pub mod heated_section_example;
 pub mod heater_inclusive_top_bottom_head_example;
@@ -100,27 +100,19 @@ pub fn example_heater(){
         ambient_air_temp);
 
     // note: mx10 potentially has a memory leak
-    let mut static_mixer_mx_10_object: StructuralSupport 
-    = StructuralSupport::new_static_mixer(
+    let mut static_mixer_mx_10_object: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer(
         initial_temperature,
         ambient_air_temp);
 
-    let mut static_mixer_mx_10_pipe: StructuralSupport 
-    = StructuralSupport::new_static_mixer_pipe(
+    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
+    = StaticMixerMX10::new_static_mixer_pipe(
         initial_temperature,
         ambient_air_temp);
 
-    //let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
-    //let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
+    let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
+    let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
 
-    //let mut structural_support_heater_bottom_head: HeatTransferEntity 
-    //= SingleCVNode::new_cylinder(
-    //    struc_support_equiv_length,
-    //    struct_support_equiv_diameter,
-    //    SolidMaterial::SteelSS304L.into(),
-    //    initial_temperature,
-    //    Pressure::new::<atmosphere>(1.0),
-    //).unwrap();
 
     //let mut structural_support_heater_top_head: HeatTransferEntity = 
     //structural_support_heater_bottom_head.clone();

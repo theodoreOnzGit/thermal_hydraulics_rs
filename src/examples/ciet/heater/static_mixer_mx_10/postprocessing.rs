@@ -1,8 +1,8 @@
 use uom::si::f64::*;
 
-use super::StructuralSupport;
+use super::StaticMixerMX10;
 
-impl StructuralSupport {
+impl StaticMixerMX10 {
     pub fn steel_shell_temperature(&mut self) -> Vec<ThermodynamicTemperature>{
         self.steel_shell.get_temperature_vector().unwrap()
     }
