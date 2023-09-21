@@ -14,6 +14,7 @@ impl HeaterVersion2Bare {
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
         self.steel_shell.advance_timestep_mut_self(timestep).unwrap();
         self.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
+        
     }
 
     /// advances timestep by spawning a thread 
