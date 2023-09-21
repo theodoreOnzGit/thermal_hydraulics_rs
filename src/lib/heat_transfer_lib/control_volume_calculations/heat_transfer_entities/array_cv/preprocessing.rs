@@ -144,8 +144,8 @@ impl ArrayCVType {
         array_cv_other.nested_back_cv_deref_mut().unwrap();
 
         calculate_between_two_singular_cv_nodes(
-            single_cv_node_other,
             single_cv_node_self,
+            single_cv_node_other,
             interaction)
     }
 

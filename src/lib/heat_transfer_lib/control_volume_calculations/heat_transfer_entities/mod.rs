@@ -1,4 +1,4 @@
-
+use uom::si::f64::*;
 /// Contains entities which transfer heat and interact with each 
 /// other
 ///
@@ -83,6 +83,58 @@ pub enum CVType {
     ArrayCV(ArrayCVType),
 }
 
+impl TryFrom<HeatTransferEntity> for CVType {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_from(value: HeatTransferEntity) -> Result<Self, Self::Error> {
+        match value {
+            HeatTransferEntity::ControlVolume(cv) => {
+                return Ok(cv);
+            },
+            HeatTransferEntity::BoundaryConditions(_) => {
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+            },
+        }
+    }
+}
+
+impl CVType {
+    #[inline]
+    /// gets the material 
+    pub fn get_material(&mut self) -> Result<Material,ThermalHydraulicsLibError>{
+
+
+        match self {
+            CVType::SingleCV(single_cv_node) => {
+                return Ok(single_cv_node.material_control_volume);
+            },
+            CVType::ArrayCV(array_cv) => {
+                array_cv.get_array_cv_material()
+            },
+        }
+    }
+
+    #[inline]
+    fn get_temperature_vector(&mut self) -> 
+    Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
+        match self {
+            CVType::SingleCV(single_cv) => {
+                let temperature = single_cv.get_temperature()?;
+
+                let mut temp_vec: Vec<ThermodynamicTemperature> = vec![];
+
+                temp_vec.push(temperature);
+
+                return Ok(temp_vec);
+
+            },
+            CVType::ArrayCV(array_cv) => {
+                return array_cv.get_temperature_vector();
+            },
+        }
+    }
+}
+
 
 
 /// contains codes for boundary conditions
@@ -151,6 +203,7 @@ pub use postprocessing::*;
 pub mod calculation;
 pub use calculation::*;
 
+use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 

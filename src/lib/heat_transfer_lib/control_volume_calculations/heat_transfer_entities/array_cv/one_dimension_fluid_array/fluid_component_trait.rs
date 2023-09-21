@@ -7,18 +7,9 @@ use fluid_component_trait::FluidComponent;
 use super::FluidArray;
 use uom::si::f64::*;
 
+/// need to relook at this for the time being
 impl FluidComponent for FluidArray{
     fn get_mass_flowrate(&mut self) -> MassRate  {
-
-        // utilise existing pressure loss to get mass flowrate 
-
-        let pressure_loss = self.pressure_loss;
-
-        let mass_flowrate = self.get_mass_flowrate_from_pressure_loss_immutable(
-            pressure_loss);
-
-        self.set_mass_flowrate(mass_flowrate);
-
         self.mass_flowrate
     }
 
@@ -116,7 +107,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
-        let temperature = self.get_bulk_temperature().unwrap();
+        let temperature = self.try_get_bulk_temperature().unwrap();
 
         let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
@@ -127,7 +118,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
-        let temperature = self.clone().get_bulk_temperature().unwrap();
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
 
         let viscosity = try_get_mu_viscosity(
             self.material_control_volume,
@@ -138,7 +129,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_density(&mut self) -> MassDensity {
-        let temperature = self.get_bulk_temperature().unwrap();
+        let temperature = self.try_get_bulk_temperature().unwrap();
 
         let density = try_get_rho(
             self.material_control_volume,
@@ -149,7 +140,7 @@ impl FluidComponent for FluidArray{
     }
 
     fn get_fluid_density_immutable(&self) -> MassDensity {
-        let temperature = self.clone().get_bulk_temperature().unwrap();
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
 
         let density = try_get_rho(
             self.material_control_volume,

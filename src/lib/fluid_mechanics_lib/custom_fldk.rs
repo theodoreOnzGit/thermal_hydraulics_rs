@@ -63,7 +63,7 @@ use peroxide::prelude::*;
 
 /// this first function allows for custom fldk, 
 /// ie both friction factor and form loss k are user defined
-/// https://stackoverflow.com/questions/36390665/how-do-you-pass-a-rust-function-as-a-parameter
+/// <https://stackoverflow.com/questions/36390665/how-do-you-pass-a-rust-function-as-a-parameter>
 #[allow(non_snake_case)]
 pub fn custom_fLDK(customDarcy: &dyn Fn(f64, f64) -> f64,
         ReynoldsNumber: f64,

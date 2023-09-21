@@ -305,3 +305,8 @@ pub enum HeatTransferInteractionType {
 /// HeatTransferInteractionType
 pub mod calculation_interface;
 pub use calculation_interface::*;
+
+/// contains some constructors which make initialising some of these 
+/// enums easier to build 
+pub mod constructors;
+pub use constructors::*;

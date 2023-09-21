@@ -63,6 +63,22 @@ tail -f myfile.csv
 
 This is a classic OpenFOAM tutorial method to track test data.
 
+## Patch Notes 
+
+### v 0.0.6 
+
+Added some examples within source code, meant to show how 
+to use the library to construct heat transfer components. 
+These examples were tested to be relatively memory leak free. 
+However, these are not quite optimised for best cpu power usage,
+it could use some further work. Nevertheless, it serves as a good 
+example, or tutorial on how to use the heat transfer library.
+Along with the fluid component traits.
+Copy and paste these to start your own. 
+
+Also, corrected some bugs with connecting via advection 
+HeatTransferInteractionType between array CVs.
+
 ## Licensing
 
 I developed this library as part of my PhD thesis and used

@@ -1,4 +1,8 @@
-use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, fluid_mechanics_lib::prelude::FluidComponent, heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{HeatTransferInteractionType, link_heat_transfer_entity}};
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::link_heat_transfer_entity;
+use crate::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::HeatTransferInteractionType;
+use crate::fluid_mechanics_lib::prelude::FluidComponent;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use crate::heat_transfer_lib::thermophysical_properties::Material;
 
 use super::{HeatTransferEntity, CVType};
 use uom::si::f64::*;
@@ -133,5 +137,17 @@ impl HeatTransferEntity {
             interaction).unwrap();
 
         Ok(())
+    }
+
+    /// tries to get the material of the control volume 
+    #[inline]
+    pub fn try_get_material_control_volume(&mut self) 
+        -> Result<Material, ThermalHydraulicsLibError> {
+
+
+        let mut cv: CVType = self.clone().try_into()?;
+
+        cv.get_material()
+
     }
 }

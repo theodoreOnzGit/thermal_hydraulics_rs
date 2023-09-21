@@ -9,6 +9,7 @@ use uom::si::f64::*;
 
 impl HeatTransferEntity {
 
+    #[inline]
     /// gets the temperature of the HeatTransferEntity 
     /// usually control volume at the current timestep
     pub fn temperature(entity: &mut HeatTransferEntity) -> 
@@ -43,7 +44,19 @@ impl HeatTransferEntity {
         return cv_temperature_result;
     }
 
+    /// gets bulk temperature of the heat transfer entity
+    #[inline]
+    pub fn get_bulk_temperature(&mut self) -> Result<ThermodynamicTemperature,
+    ThermalHydraulicsLibError> {
+
+        let bulk_temp: ThermodynamicTemperature = 
+        HeatTransferEntity::temperature(self)?;
+
+        Ok(bulk_temp)
+    }
+
     /// gets a vector of temperatures
+    #[inline]
     pub fn temperature_vector(entity: &mut HeatTransferEntity) ->
     Result<Vec<ThermodynamicTemperature>,String> {
 
@@ -104,8 +117,26 @@ impl HeatTransferEntity {
         cv_temperature_vector_result
     }
 
+    /// gets temperature vector of this HeatTransferEntity 
+    #[inline]
+    pub fn get_temperature_vector(&mut self) ->
+    Result<Vec<ThermodynamicTemperature>, ThermalHydraulicsLibError>{
+
+        match self {
+            HeatTransferEntity::ControlVolume(cv) => {
+                // cv should return a temperature_vec here
+                return cv.get_temperature_vector();
+            },
+            HeatTransferEntity::BoundaryConditions(bc) => {
+                return bc.get_temperature_vector();
+            },
+        }
+
+    }
+
     /// density vector 
     /// attempts to get a vector of densities
+    #[inline]
     pub fn density_vector(entity: &mut HeatTransferEntity) ->
     Result<Vec<MassDensity>,ThermalHydraulicsLibError> {
 

@@ -68,8 +68,8 @@ impl FluidArray {
         back_cv_clone.into();
 
         link_heat_transfer_entity(
-            &mut back_cv_entity,
             heat_trf_entity,
+            &mut back_cv_entity,
             heat_transfer_interaction,
         )?;
 

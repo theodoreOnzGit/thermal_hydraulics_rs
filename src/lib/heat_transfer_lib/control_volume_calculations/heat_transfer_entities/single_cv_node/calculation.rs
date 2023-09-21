@@ -1,3 +1,5 @@
+use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
+
 use super::SingleCVNode;
 use uom::si::{f64::*, power::watt};
 
@@ -51,12 +53,22 @@ impl SingleCVNode {
         // clear the enthalpy change vector and timestep vector 
         // also the mass flowrate vector
 
-        self.rate_enthalpy_change_vector.clear();
-        self.max_timestep_vector.clear();
-        self.volumetric_flowrate_vector.clear();
+        self.clear_vectors().unwrap();
         // increase timestep (last step)
 
         return Ok(());
+    }
+    /// clears all vectors for next timestep
+    /// This is important for the advance timestep method
+    pub fn clear_vectors(&mut self) 
+    -> Result<(), ThermalHydraulicsLibError>{
+
+
+        self.rate_enthalpy_change_vector.clear();
+        self.max_timestep_vector.clear();
+        self.volumetric_flowrate_vector.clear();
+
+        Ok(())
     }
 }
 

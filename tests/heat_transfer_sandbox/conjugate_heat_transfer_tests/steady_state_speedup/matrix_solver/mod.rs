@@ -265,10 +265,10 @@ pub fn matrix_calculation_initial_test(){
             steel_entity_ptr_in_loop.deref_mut().clone().try_into().unwrap();
 
             let fluid_average_temp: ThermodynamicTemperature = 
-            therminol_array_clone.get_bulk_temperature().unwrap();
+            therminol_array_clone.try_get_bulk_temperature().unwrap();
 
             let solid_average_temp: ThermodynamicTemperature = 
-            steel_array_clone.get_bulk_temperature().unwrap();
+            steel_array_clone.try_get_bulk_temperature().unwrap();
 
             // given these two, we can calculate an average conductance 
             // value across all solid-fluid boundaries. 

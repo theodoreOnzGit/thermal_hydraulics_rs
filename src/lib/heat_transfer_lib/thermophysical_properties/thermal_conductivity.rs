@@ -1,6 +1,7 @@
 use uom::si::f64::*;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAThermalConductivity;
+use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::LiquidMaterial;
@@ -58,6 +59,8 @@ pub fn try_get_kappa_thermal_conductivity(material: Material,
     return Ok(thermal_conductivity);
 }
 
+
+
 // should the material happen to be a solid, use this function
 fn solid_thermal_conductivity(material: Material,
     temperature: ThermodynamicTemperature) -> ThermalConductivity{
@@ -82,6 +85,41 @@ fn solid_thermal_conductivity(material: Material,
 
 }
 
+impl LiquidMaterial {
+    /// returns the liquid thermal conductivity in a result enum 
+    #[inline]
+    pub fn try_get_thermal_conductivity(&self,
+        fluid_temp: ThermodynamicTemperature,) 
+        -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
+
+        let thermal_conductivity: ThermalConductivity = match self {
+            DowthermA => dowtherm_a_thermal_conductivity(fluid_temp),
+            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)
+        };
+
+        Ok(thermal_conductivity)
+    }
+
+}
+
+impl SolidMaterial {
+    /// returns the liquid thermal conductivity in a result enum 
+    #[inline]
+    pub fn try_get_thermal_conductivity(&self,
+        solid_temp: ThermodynamicTemperature,) 
+        -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
+
+        let thermal_conductivity: ThermalConductivity = match self {
+        Fiberglass => fiberglass_thermal_conductivity(solid_temp) ,
+        SteelSS304L => steel_304_l_spline_thermal_conductivity(solid_temp),
+        Copper => copper_thermal_conductivity(solid_temp),
+        };
+
+        Ok(thermal_conductivity)
+    }
+
+}
+
 // should the material happen to be a liquid, use this function
 fn liquid_thermal_conductivity(material: Material, 
     fluid_temp: ThermodynamicTemperature) -> ThermalConductivity {
@@ -93,12 +131,7 @@ fn liquid_thermal_conductivity(material: Material,
         "liquid_thermal_conductivity, use LiquidMaterial enums only")
     };
 
-    let thermal_conductivity: ThermalConductivity = match liquid_material {
-        DowthermA => dowtherm_a_thermal_conductivity(fluid_temp),
-        TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)
-    };
-
-    return thermal_conductivity;
+    liquid_material.try_get_thermal_conductivity(fluid_temp).unwrap()
 }
 
 /// returns thermal conductivity of fiberglass

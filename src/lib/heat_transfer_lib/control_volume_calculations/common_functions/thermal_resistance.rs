@@ -408,7 +408,7 @@ pub fn obtain_power_through_wall_thermal_resistance(
 /// thermal resistance for cylindrical annular region 
 /// the String Error is temporary, probably need to refine in 
 /// later editions with a proper error type
-/// // https://web2.clarkson.edu/projects/subramanian/ch330/notes/Conduction%20in%20the%20Cylindrical%20Geometry.pdf
+/// // <https://web2.clarkson.edu/projects/subramanian/ch330/notes/Conduction%20in%20the%20Cylindrical%20Geometry.pdf>
 ///
 /// Thermal conductance is just inverse of thermal resistance
 /// it is 
@@ -417,7 +417,8 @@ pub fn obtain_power_through_wall_thermal_resistance(
 ///
 ///
 ///
-pub fn obtain_thermal_conductance_annular_cylinder(
+#[inline]
+pub fn try_get_thermal_conductance_annular_cylinder(
     inner_diameter: Length,
     outer_diameter: Length, 
     cylinder_length: Length,

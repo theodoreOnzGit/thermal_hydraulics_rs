@@ -1,4 +1,4 @@
-use uom::si::{f64::*, ratio::ratio};
+use uom::{si::{f64::*, ratio::ratio}, ConstZero};
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
@@ -93,6 +93,9 @@ impl NusseltPrandtlReynoldsData {
     /// * (Pr_wall/Pr_bulk)^0.11
     ///
     /// ignores the coefficients, a,b,c,d,e in the struct
+    ///
+    /// If reynolds number is negative, doesn't matter, just 
+    /// take the absolute value of reynolds number
     #[inline]
     pub fn ciet_version_2_heater_prandtl_corrected(&self) -> 
     Result<Ratio, ThermalHydraulicsLibError>{
@@ -100,7 +103,7 @@ impl NusseltPrandtlReynoldsData {
         =  {
             let ref this = self;
 
-            let reynolds = this.reynolds;
+            let reynolds = this.reynolds.abs();
             let prandtl = this.prandtl_bulk;
             let reynolds_power_0_836 = reynolds.value.powf(0.836);
             let prandtl_power_0_333 = prandtl.value.powf(0.333333333333333);
@@ -121,6 +124,21 @@ impl NusseltPrandtlReynoldsData {
 
         return Ok(nusself_uncorrected*correction_factor);
 
+    }
+}
+
+impl Default for NusseltPrandtlReynoldsData {
+    fn default() -> Self {
+        NusseltPrandtlReynoldsData{
+            reynolds: Ratio::default(),
+            prandtl_bulk: Ratio::default(),
+            prandtl_wall: Ratio::default(),
+            constant: Ratio::default(),
+            reynolds_prandtl_coefficient: Ratio::default(),
+            reynolds_power: 0.0,
+            prandtl_power: 0.0,
+            prandtl_correction_factor_power: 0.0,
+        }
     }
 }
 
@@ -179,6 +197,18 @@ pub struct GnielinskiData {
     pub darcy_friction_factor: Ratio,
     /// pipe length to diameter ratio 
     pub length_to_diameter: Ratio
+}
+
+impl Default for GnielinskiData {
+    fn default() -> Self {
+        Self {
+            reynolds: Ratio::ZERO,
+            prandtl_bulk: Ratio::ZERO,
+            prandtl_wall: Ratio::ZERO,
+            darcy_friction_factor: Ratio::ZERO,
+            length_to_diameter: Ratio::new::<ratio>(1.0),
+        }
+    }
 }
 
 impl GnielinskiData {

@@ -15,10 +15,10 @@ impl ArrayCVType {
                 cartesian_1d_cv.get_bulk_temperature()
             },
             ArrayCVType::GenericPipe(fluid_arr) => {
-                fluid_arr.get_bulk_temperature()
+                fluid_arr.try_get_bulk_temperature()
             },
             ArrayCVType::GenericColumn(solid_arr) => {
-                solid_arr.get_bulk_temperature()
+                solid_arr.try_get_bulk_temperature()
             },
 
         }
