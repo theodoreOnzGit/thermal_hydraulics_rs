@@ -139,16 +139,9 @@ impl StructuralSupport {
     h_air_to_insulation_surf: HeatTransfer) 
         -> ThermalConductance {
 
-        // first, make a clone of steel 
-
-        let mut steel_support_clone: SolidColumn = 
-        self.support_array.clone().try_into().unwrap();
-
-
-        // find parameters for fiberglass conductance
+        // find parameters for air to support surface conductance
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let component_length: Length = steel_support_clone.get_component_length();
 
         // treat this as a lumped heat capacitance model, 
         // ie no conductive resistance
@@ -214,6 +207,77 @@ impl StructuralSupport {
 
                 // carry out the connection calculations
                 component_clone.lateral_and_miscellaneous_connections();
+                
+                component_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
+
+    /// spawns a thread and moves the clone of the entire heater object 
+    /// into the thread, locking it for parallel computation
+    /// once that is done, the join handle is returned 
+    /// which when unwrapped, returns the heater object
+    ///
+    /// for the front of the array
+    pub fn front_axial_connection_thread_spawn(&self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> JoinHandle<Self>{
+
+        let mut component_clone = self.clone();
+        let mut other_hte_clone = other_hte.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+                // carry out the connection calculations
+                let mut support_array: HeatTransferEntity 
+                = component_clone.support_array.clone();
+
+                support_array.link_to_front(&mut other_hte_clone,
+                    interaction).unwrap();
+
+                component_clone.support_array = support_array;
+                
+                component_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
+    /// spawns a thread and moves the clone of the entire heater object 
+    /// into the thread, locking it for parallel computation
+    /// once that is done, the join handle is returned 
+    /// which when unwrapped, returns the heater object
+    ///
+    /// for the back of the array
+    pub fn back_axial_connection_thread_spawn(&self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> JoinHandle<Self>{
+
+        let mut component_clone = self.clone();
+        let mut other_hte_clone = other_hte.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+                // carry out the connection calculations
+                let mut support_array: HeatTransferEntity 
+                = component_clone.support_array.clone();
+
+                support_array.link_to_back(&mut other_hte_clone,
+                    interaction).unwrap();
+
+                component_clone.support_array = support_array;
                 
                 component_clone
 
