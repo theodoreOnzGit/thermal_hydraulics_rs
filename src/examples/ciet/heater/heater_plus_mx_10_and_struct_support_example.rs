@@ -9,6 +9,7 @@ pub fn heater_plus_mx_10_with_supports(){
 
     use crate::examples::ciet::heater::*;
 
+
     // construct structs
 
     let _heater_v1 = HeaterVersion1{};
@@ -20,15 +21,16 @@ pub fn heater_plus_mx_10_with_supports(){
     ThermodynamicTemperature::new::<degree_celsius>(79.12);
     let inlet_temperature = initial_temperature;
     let ambient_air_temp: ThermodynamicTemperature = 
-    ThermodynamicTemperature::new::<degree_celsius>(21.76);
+    ThermodynamicTemperature::new::<degree_celsius>(21.67);
 
-    let number_of_temperature_nodes: usize = 8;
+    let number_of_inner_temperature_nodes: usize = 6;
     
     let mut heater_v2_bare = HeaterVersion2Bare::new_dewet_model(
         initial_temperature,
         ambient_air_temp,
-        number_of_temperature_nodes
+        number_of_inner_temperature_nodes
     );
+
 
 
     let mut heater_top_head_bare: HeaterTopBottomHead 
@@ -40,6 +42,34 @@ pub fn heater_plus_mx_10_with_supports(){
     = HeaterTopBottomHead::new_bottom_head(
         initial_temperature,
         ambient_air_temp);
+
+    // calibration of heat transfer coeff
+    let calibration_mode = true; 
+
+    if calibration_mode {
+
+        let h_to_air = HeatTransfer::new::<watt_per_square_meter_kelvin>
+            (20.0);
+        heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
+            initial_temperature,
+            ambient_air_temp,
+            number_of_inner_temperature_nodes,
+            h_to_air
+        );
+
+        heater_top_head_bare = HeaterTopBottomHead:: 
+            _new_user_callibrated_top_head(
+                initial_temperature,
+                ambient_air_temp,
+                h_to_air
+            );
+        heater_bottom_head_bare = HeaterTopBottomHead:: 
+            _new_user_callibrated_bottom_head(
+                initial_temperature,
+                ambient_air_temp,
+                h_to_air
+            );
+    }
 
     let mut static_mixer_mx_10_object: StaticMixerMX10 
     = StaticMixerMX10::new_static_mixer(
@@ -65,6 +95,9 @@ pub fn heater_plus_mx_10_with_supports(){
     let mut structural_support_heater_bottom_head = 
     structural_support_heater_top_head.clone();
 
+    let mut structural_support_mx_10 = 
+    structural_support_heater_top_head.clone();
+
     let approx_support_conductance: ThermalConductance = 
     structural_support_heater_top_head.get_axial_node_to_bc_conductance();
 
@@ -83,7 +116,10 @@ pub fn heater_plus_mx_10_with_supports(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(10.0);
+    let max_time = Time::new::<minute>(0.2);
+    // on my pc, the simulation time using 
+    // cargo run --release 
+    // is less than 10ms
     let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
@@ -154,10 +190,15 @@ pub fn heater_plus_mx_10_with_supports(){
             );
             {
                 // prints therminol temperature 
-
+                let heater_surf_temp_degc: Vec<f64> = heater_surface_array_temp
+                    .iter().map(
+                        |&temperature|{
+                            temperature.get::<degree_celsius>()
+                        }
+                    ).collect();
 
                 // print surface temperature 
-                dbg!(heater_surface_array_temp);
+                dbg!(heater_surf_temp_degc);
 
                 let bt_12_temperature: ThermodynamicTemperature = 
                 static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 
@@ -258,11 +299,20 @@ pub fn heater_plus_mx_10_with_supports(){
                 if connect_struct_support {
                     // link struct supports to ambient air
                     // axially 
-                    structural_support_heater_top_head.support_array.link_to_front(
+
+                    structural_support_heater_bottom_head. 
+                        support_array.link_to_front(
                         &mut ambient_air_temp_bc,
                         support_conductance_interaction
                     ).unwrap();
-                    structural_support_heater_bottom_head.support_array.link_to_front(
+
+                    structural_support_heater_top_head. 
+                        support_array.link_to_front(
+                        &mut ambient_air_temp_bc,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    structural_support_mx_10.support_array.link_to_front(
                         &mut ambient_air_temp_bc,
                         support_conductance_interaction
                     ).unwrap();
@@ -278,26 +328,59 @@ pub fn heater_plus_mx_10_with_supports(){
                 if connect_struct_support {
 
                     // link struct supports to heater top/bottom heads
-                    structural_support_heater_top_head.support_array.link_to_back(
-                        &mut heater_top_head_bare.steel_shell,
+                    structural_support_heater_top_head.
+                        support_array.link_to_back(
+                            &mut heater_top_head_bare.steel_shell,
+                            support_conductance_interaction
+                        ).unwrap();
+                    structural_support_heater_bottom_head. 
+                        support_array.link_to_back(
+                            &mut heater_bottom_head_bare.steel_shell,
+                            support_conductance_interaction
+                        ).unwrap();
+
+                    structural_support_mx_10.support_array.link_to_back(
+                        &mut static_mixer_mx_10_pipe.steel_shell,
                         support_conductance_interaction
                     ).unwrap();
-                    structural_support_heater_bottom_head.support_array.link_to_back(
-                        &mut heater_bottom_head_bare.steel_shell,
-                        support_conductance_interaction
-                    ).unwrap();
-                    //
 
                     // note, the heater top and bottom head area changed 
                     // during course of this interaction, so should be okay
 
-                    // now link it laterally to ambient 
-                    // bc later on
 
+                    // i will also connect heater shell to the structural support 
+                    // via the head as in ciet 
+
+                    heater_v2_bare.steel_shell.link_to_back(
+                        &mut heater_bottom_head_bare.steel_shell,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    heater_v2_bare.steel_shell.link_to_front(
+                        &mut heater_top_head_bare.steel_shell,
+                        support_conductance_interaction
+                    ).unwrap();
+                    
+                    // probably edit this to include twisted tape conductance
+                    heater_v2_bare.twisted_tape_interior.link_to_back(
+                        &mut heater_bottom_head_bare.twisted_tape_interior,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    heater_v2_bare.twisted_tape_interior.link_to_front(
+                        &mut heater_top_head_bare.twisted_tape_interior,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    // now link it laterally to ambient temperatures
                     let struct_support_top_head_join_handle = 
                     structural_support_heater_top_head.lateral_connection_thread_spawn();
                     let structural_support_heater_bottom_head_join_handle = 
                     structural_support_heater_bottom_head.lateral_connection_thread_spawn();
+
+                    structural_support_mx_10.
+                        lateral_and_miscellaneous_connections();
+
                     structural_support_heater_top_head = 
                         struct_support_top_head_join_handle.join().unwrap();
                     structural_support_heater_bottom_head = 
@@ -340,10 +423,15 @@ pub fn heater_plus_mx_10_with_supports(){
                     structural_support_heater_top_head.
                         advance_timestep_thread_spawn(timestep);
 
+                    structural_support_mx_10._advance_timestep(
+                        timestep);
+
                     structural_support_heater_bottom_head 
                         =  structural_support_heater_bottom_head_join_handle.join().unwrap();
                     structural_support_heater_top_head 
                         =  structural_support_heater_top_head_join_handle.join().unwrap();
+
+
 
                 }
 
@@ -368,13 +456,12 @@ pub fn heater_plus_mx_10_with_supports(){
 
     main_loop.join().unwrap();
 
-
-
-
     // once simulation completed, write data
 
 
     //todo!("haven't coded csv writing file")
+
+
 
 
 }

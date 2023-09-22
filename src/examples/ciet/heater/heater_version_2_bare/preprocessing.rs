@@ -382,8 +382,6 @@ impl HeaterVersion2Bare {
                     node_length.into())
             );
 
-        dbg!(h_to_therminol);
-
         // now based on conductance interaction, 
         // we can obtain thermal conductance, the temperatures 
         // and pressures don't really matter
@@ -537,9 +535,9 @@ impl HeaterVersion2Bare {
         self.twisted_tape_interior.clone().try_into().unwrap();
         // next, need the nusselt number based on Wakao Correlation 
         let mass_flowrate = therminol_fluid_array_clone.get_mass_flowrate();
-        let flow_area: Area = Area::new::<square_inch>(1.63);
+        let flow_area: Area = self.get_cross_sectional_area_immutable();
         let viscosity = therminol_fluid_array_clone.get_fluid_viscosity();
-        let hydraulic_diameter = Length::new::<inch>(0.5776);
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
 
         // need to convert hydraulic diameter to an equivalent 
         // spherical diameter
