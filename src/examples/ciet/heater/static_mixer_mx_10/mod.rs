@@ -60,7 +60,7 @@ impl StaticMixerMX10 {
         let flow_area = Area::new::<square_meter>(6.11e-4);
         let component_length = Length::new::<meter>(0.33);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
-        let _hydraulic_diameter = Length::new::<meter>(2.79e-2);
+        let hydraulic_diameter = Length::new::<meter>(2.79e-2);
 
 
         // heater is inclined 90 degrees upwards, not that this is 
@@ -94,6 +94,7 @@ impl StaticMixerMX10 {
         let therminol_array: FluidArray = 
         FluidArray::new_custom_component(
             component_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,

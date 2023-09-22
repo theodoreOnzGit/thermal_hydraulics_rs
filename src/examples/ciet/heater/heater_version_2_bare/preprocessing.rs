@@ -286,7 +286,7 @@ impl HeaterVersion2Bare {
         let steel_surf_temperature: ThermodynamicTemperature 
         = steel_shell_clone.try_get_bulk_temperature().unwrap();
 
-        let hydraulic_diameter = Length::new::<meter>(0.01467);
+        let hydraulic_diameter = self.get_hydraulic_diameter();
 
         // firstly, reynolds 
 
@@ -357,7 +357,10 @@ impl HeaterVersion2Bare {
 
             dbg!(nusselt_calc);
             dbg!(nusselt_estimate);
+            dbg!(hydraulic_diameter);
+            let correct_hydraulic_diameter = Length::new::<meter>(0.01467);
 
+            dbg!(correct_hydraulic_diameter);
 
         }
 

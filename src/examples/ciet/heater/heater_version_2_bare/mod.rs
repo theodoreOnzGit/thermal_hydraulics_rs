@@ -55,6 +55,7 @@ impl HeaterVersion2Bare {
         let flow_area = Area::new::<square_meter>(0.00105);
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -85,6 +86,7 @@ impl HeaterVersion2Bare {
         let therminol_array: FluidArray = 
         FluidArray::new_custom_component(
             heated_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,

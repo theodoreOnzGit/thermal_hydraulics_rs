@@ -567,6 +567,7 @@ impl FluidArray {
     /// f_darcy = a + b Re^(c)
     pub fn new_custom_component(
         length: Length,
+        hydraulic_diameter: Length,
         cross_sectional_area: Area,
         initial_temperature: ThermodynamicTemperature,
         initial_pressure: Pressure,
@@ -604,9 +605,6 @@ impl FluidArray {
             liquid_material
         );
         
-        let hydraulic_diameter: Length 
-        = (4.0 / PI * cross_sectional_area).sqrt();
-
         let pipe_losses: DimensionlessDarcyLossCorrelations 
         = DimensionlessDarcyLossCorrelations::
             new_simple_reynolds_power_component(
@@ -664,7 +662,7 @@ impl FluidArray {
             volume_fraction_array: vol_frac_array,
             mass_flowrate: MassRate::new::<kilogram_per_second>(0.0),
             pressure_loss: Pressure::new::<atmosphere>(0.0),
-            wetted_perimeter: PI * hydraulic_diameter,
+            wetted_perimeter: 4.0 * cross_sectional_area / hydraulic_diameter,
             incline_angle: pipe_incline_angle,
             internal_pressure_source: Pressure::new::<atmosphere>(0.0),
             pipe_loss_properties: pipe_losses,
