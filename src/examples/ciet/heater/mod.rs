@@ -69,7 +69,6 @@ use uom::si::length::foot;
 use uom::si::power::kilowatt;
 use uom::si::ratio::ratio;
 use uom::si::time::second;
-use uom::si::time::minute;
 
 use self::struct_supports::StructuralSupport;
 
@@ -186,7 +185,7 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<minute>(2.0);
+    let max_time = Time::new::<second>(200.0);
     // on my pc, the simulation time using 
     // cargo run --release 
     // is less than 10ms
@@ -218,6 +217,8 @@ pub fn example_heater(){
 
     // for temperature profile
     let mut header_vec: Vec<String> = vec![];
+    header_vec.push("simulation_time_seconds".to_string());
+    header_vec.push("elapsed_time_seconds".to_string());
     for index in 0..number_of_nodes_heated_section {
 
         let half_node_length = 0.5 * node_length_heated_section;
