@@ -361,6 +361,8 @@ impl HeaterVersion2Bare {
             let correct_hydraulic_diameter = Length::new::<meter>(0.01467);
 
             dbg!(correct_hydraulic_diameter);
+            dbg!(therminol_fluid_array_clone.get_cross_sectional_area());
+            dbg!(therminol_fluid_array_clone.get_hydraulic_diameter());
 
         }
 
