@@ -289,7 +289,7 @@ impl HeaterVersion2Bare {
         let mass_flowrate: MassRate = 
         therminol_fluid_array_clone.get_mass_flowrate();
 
-        let bulk_temperature: ThermodynamicTemperature 
+        let fluid_temperature: ThermodynamicTemperature 
         = therminol_fluid_array_clone.try_get_bulk_temperature().unwrap();
 
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
@@ -305,14 +305,14 @@ impl HeaterVersion2Bare {
         let reynolds_number: Ratio = 
         HeaterVersion2Bare::heater_v2_hydraulic_diameter_reynolds(
             mass_flowrate,
-            bulk_temperature,
+            fluid_temperature,
         );
 
         // next, bulk prandtl number 
 
         let bulk_prandtl_number: Ratio 
         = LiquidMaterial::TherminolVP1.try_get_prandtl_liquid(
-            bulk_temperature,
+            fluid_temperature,
             atmospheric_pressure
         ).unwrap();
 
@@ -354,13 +354,13 @@ impl HeaterVersion2Bare {
 
         // now we can get the heat transfer coeff, 
 
-        let h: HeatTransfer;
+        let h_to_therminol: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
         LiquidMaterial::TherminolVP1.try_get_thermal_conductivity(
-            bulk_temperature).unwrap();
+            fluid_temperature).unwrap();
 
-        h = nusselt_estimate * k_fluid_average / hydraulic_diameter;
+        h_to_therminol = nusselt_estimate * k_fluid_average / hydraulic_diameter;
 
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
@@ -375,44 +375,44 @@ impl HeaterVersion2Bare {
         let node_length = heated_length / 
             number_of_temperature_nodes as f64;
 
-        let heat_transfer_area_per_node: Area 
-        = node_length * PI * hydraulic_diameter;
-
-        let therminol_to_steel_shell_average_conductance: ThermalConductance 
-        = h * heat_transfer_area_per_node;
-
-        let therminol_to_steel_shell_surface_node_resistance = 
-        1.0/therminol_to_steel_shell_average_conductance;
 
         // now I need to calculate resistance of the half length of the 
         // steel shell, which is an annular cylinder
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
-        let steel_conductivity: ThermalConductivity = 
-        SolidMaterial::SteelSS304L.try_get_thermal_conductivity(
-            steel_surf_temperature
+
+
+        let therminol_steel_conductance_interaction: HeatTransferInteractionType
+        = HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidInside(
+                (SolidMaterial::SteelSS304L.into(), 
+                    (cylinder_mid_diameter - id).into(),
+                    steel_surf_temperature,
+                    atmospheric_pressure),
+                (h_to_therminol,
+                    id.into(),
+                    node_length.into())
+            );
+
+        // now based on conductance interaction, 
+        // we can obtain thermal conductance, the temperatures 
+        // and pressures don't really matter
+        //
+        // this is because all the thermal conductance data 
+        // has already been loaded into the thermal conductance 
+        // interaction object
+
+        let therminol_steel_nodal_thermal_conductance: ThermalConductance = 
+        therminol_steel_conductance_interaction.try_get_thermal_conductance(
+            fluid_temperature,
+            steel_surf_temperature,
+            atmospheric_pressure,
+            atmospheric_pressure,
         ).unwrap();
 
-        let cylinder_node_conductance: ThermalConductance 
-        = try_get_thermal_conductance_annular_cylinder(
-            id,
-            cylinder_mid_diameter,
-            node_length,
-            steel_conductivity
-        ).unwrap();
 
-
-        let cylinder_node_resistance = 
-        1.0/cylinder_node_conductance;
-
-        let cylinder_to_therminol_resistance = 
-        cylinder_node_resistance + therminol_to_steel_shell_surface_node_resistance;
-
-        let cylinder_to_therminol_conductance: ThermalConductance 
-        = 1.0/cylinder_to_therminol_resistance;
-
-        return cylinder_to_therminol_conductance;
+        return therminol_steel_nodal_thermal_conductance;
     }
 
     #[inline]
