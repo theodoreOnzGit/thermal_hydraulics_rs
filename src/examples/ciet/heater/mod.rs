@@ -93,7 +93,7 @@ pub fn example_heater(){
     ThermodynamicTemperature::new::<degree_celsius>(21.67);
 
     let number_of_inner_temperature_nodes: usize = 6;
-    
+
     let mut heater_v2_bare = HeaterVersion2Bare::new_dewet_model(
         initial_temperature,
         ambient_air_temp,
@@ -185,14 +185,16 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(200.0);
+    let max_time = Time::new::<second>(300.0);
     // on my pc, the simulation time using 
     // cargo run --release 
     // is less than 10ms
     let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
-    let heater_power = Power::new::<kilowatt>(8.0);
+    let mut heater_power = Power::new::<kilowatt>(8.0);
+
+    let transient_start_time = Time::new::<second>(100.0);
 
     let loop_time = SystemTime::now();
 
@@ -244,7 +246,7 @@ pub fn example_heater(){
     temp_profile_wtr.write_record(&header_vec).unwrap();
 
     // main loop
-    
+
     let main_loop = thread::spawn( move || {
         let calculation_time_elapsed = SystemTime::now();
         while max_time > simulation_time {
@@ -252,6 +254,14 @@ pub fn example_heater(){
             // time start 
             let loop_time_start = loop_time.elapsed().unwrap();
 
+            // heater power changes 
+
+            if simulation_time > transient_start_time {
+
+                // step down 500 watts
+                heater_power = Power::new::<kilowatt>(7.5);
+
+            }
 
             // create interactions 
 
@@ -417,7 +427,7 @@ pub fn example_heater(){
                 //
 
                 let number_of_nodes = number_of_inner_temperature_nodes + 2;
-                
+
                 let node_length: Length = 
                 heater_v2_bare.get_component_length()
                 / number_of_nodes as f64;
@@ -464,7 +474,7 @@ pub fn example_heater(){
 
                 let shell_celsius_string = 
                 st_11_node_temp.get::<degree_celsius>().to_string();
-                
+
                 // timestep in seconds
                 //
 
