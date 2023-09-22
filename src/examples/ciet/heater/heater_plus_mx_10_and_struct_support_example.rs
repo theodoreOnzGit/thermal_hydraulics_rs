@@ -1,3 +1,4 @@
+
 #[test]
 pub fn heater_plus_mx_10_with_supports(){
 
@@ -8,6 +9,7 @@ pub fn heater_plus_mx_10_with_supports(){
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
     use crate::examples::ciet::heater::*;
+    use uom::si::time::minute;
 
 
     // construct structs
