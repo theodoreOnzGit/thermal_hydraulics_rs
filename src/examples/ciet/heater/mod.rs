@@ -59,7 +59,7 @@ pub use static_mixer_mx_10::*;
 pub mod struct_supports;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::{second, minute}, power::kilowatt, length::foot}, ConstZero};
+use uom::{si::{time::{second, minute}, power::kilowatt, length::foot, heat_transfer::watt_per_square_meter_kelvin}, ConstZero};
 
 use self::struct_supports::StructuralSupport;
 
@@ -94,10 +94,13 @@ pub fn example_heater(){
     let callibration_mode = true; 
 
     if callibration_mode {
-        heater_v2_bare = HeaterVersion2Bare::_new_six_watts_per_m2_kelvin_model(
+        let h_to_air = HeatTransfer::new::<watt_per_square_meter_kelvin>
+            (12.5);
+        heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
             initial_temperature,
             ambient_air_temp,
-            number_of_temperature_nodes
+            number_of_temperature_nodes,
+            h_to_air
         );
     }
 

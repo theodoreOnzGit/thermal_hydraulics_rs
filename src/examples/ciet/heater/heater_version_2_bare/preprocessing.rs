@@ -73,8 +73,6 @@ impl HeaterVersion2Bare {
             let mut therminol_array_clone: FluidArray = 
             self.therminol_array.clone().try_into().unwrap();
 
-            let mut twisted_tape_array_clone: SolidColumn = 
-            self.twisted_tape_interior.clone().try_into().unwrap();
 
             // note, must set mass flowrate first 
             // otherwise there is by default zero flow through 
@@ -91,8 +89,6 @@ impl HeaterVersion2Bare {
             let fluid_temp_vector: Vec<ThermodynamicTemperature> 
             = therminol_array_clone.get_temperature_vector().unwrap();
 
-            let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
-            = twisted_tape_array_clone.get_temperature_vector().unwrap();
             // second, fill them into the each array 
             
             // steel to air interaction
@@ -122,18 +118,30 @@ impl HeaterVersion2Bare {
             ).unwrap();
 
             // now therminol to twisted tape interaction
+            
+            let connect_twisted_tape = true;
 
-            therminol_array_clone.
-                lateral_link_new_temperature_vector_avg_conductance(
-                    twisted_tape_to_therminol_conductance,
-                    twisted_tape_temp_vector).unwrap();
+            if connect_twisted_tape {
+                let mut twisted_tape_array_clone: SolidColumn = 
+                self.twisted_tape_interior.clone().try_into().unwrap();
 
-            twisted_tape_array_clone. 
-                lateral_link_new_temperature_vector_avg_conductance(
-                    twisted_tape_to_therminol_conductance,
-                    fluid_temp_vector).unwrap();
+                let twisted_tape_temp_vector: Vec<ThermodynamicTemperature> 
+                = twisted_tape_array_clone.get_temperature_vector().unwrap();
+                therminol_array_clone.
+                    lateral_link_new_temperature_vector_avg_conductance(
+                        twisted_tape_to_therminol_conductance,
+                        twisted_tape_temp_vector).unwrap();
+
+                twisted_tape_array_clone. 
+                    lateral_link_new_temperature_vector_avg_conductance(
+                        twisted_tape_to_therminol_conductance,
+                        fluid_temp_vector).unwrap();
 
 
+                self.twisted_tape_interior.set(twisted_tape_array_clone.into()
+                ).unwrap();
+
+            }
 
             // now that lateral connections are done, 
             // modify the heat transfer entity 
@@ -142,8 +150,6 @@ impl HeaterVersion2Bare {
 
             self.steel_shell.set(steel_shell_clone.into()).unwrap();
 
-            self.twisted_tape_interior.set(twisted_tape_array_clone.into()
-                ).unwrap();
 
 
         }
