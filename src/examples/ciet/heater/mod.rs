@@ -81,14 +81,14 @@ pub fn example_heater(){
     ThermodynamicTemperature::new::<degree_celsius>(79.12);
     let inlet_temperature = initial_temperature;
     let ambient_air_temp: ThermodynamicTemperature = 
-    ThermodynamicTemperature::new::<degree_celsius>(21.76);
+    ThermodynamicTemperature::new::<degree_celsius>(21.67);
 
-    let number_of_temperature_nodes: usize = 8;
+    let number_of_inner_temperature_nodes: usize = 6;
     
     let mut heater_v2_bare = HeaterVersion2Bare::new_dewet_model(
         initial_temperature,
         ambient_air_temp,
-        number_of_temperature_nodes
+        number_of_inner_temperature_nodes
     );
 
 
@@ -113,7 +113,7 @@ pub fn example_heater(){
         heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
             initial_temperature,
             ambient_air_temp,
-            number_of_temperature_nodes,
+            number_of_inner_temperature_nodes,
             h_to_air
         );
 
@@ -215,7 +215,7 @@ pub fn example_heater(){
             = heater_v2_bare.steel_shell.clone().try_into().unwrap();
 
             let heater_surface_array_temp: Vec<ThermodynamicTemperature> = 
-            heater_surface_array_clone.get_temperature_vector().unwrap();
+            heater_v2_bare.steel_shell_temperature();
 
             let heater_fluid_bulk_temp: ThermodynamicTemperature = 
             therminol_array_clone.try_get_bulk_temperature().unwrap();

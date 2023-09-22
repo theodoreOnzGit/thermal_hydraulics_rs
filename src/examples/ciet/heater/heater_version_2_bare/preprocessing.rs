@@ -408,6 +408,7 @@ impl HeaterVersion2Bare {
     pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {
 
+        // flow area and hydraulic diameter are ok
         let flow_area: Area = Area::new::<square_inch>(1.63);
         let hydraulic_diameter = Length::new::<inch>(0.5776);
         let viscosity: DynamicViscosity = 
