@@ -1,6 +1,5 @@
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;
-use crate::heat_transfer_lib;
 
 
 
@@ -22,24 +21,18 @@ fn calculate_single_cv_node_constant_temperature_conductance(
     interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError> {
     // first let's get the control volume temperatures out
     
-    let cv_enthalpy = 
-    control_vol.current_timestep_control_volume_specific_enthalpy;
 
     let cv_material = control_vol.material_control_volume;
 
     let cv_pressure = control_vol.pressure_control_volume;
 
-    let cv_temperature = heat_transfer_lib::thermophysical_properties:: 
-        specific_enthalpy::try_get_temperature_from_h(
-            cv_material, 
-            cv_enthalpy, 
-            cv_pressure)?;
+    let cv_temperature = control_vol.temperature;
 
     // for now we assume the boundary condition pressure is the same 
     // as the control volume pressure, because pressure is not 
     // specified or anything
 
-    let bc_pressure = cv_pressure.clone();
+    let bc_pressure = cv_pressure;
 
 
 

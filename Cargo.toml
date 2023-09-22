@@ -1,6 +1,6 @@
 [package]
 name = "thermal_hydraulics_rs"
-version = "0.0.6"
+version = "0.0.7"
 edition = "2021"
 license = "GPL-3.0"
 description = "A Thermal Hydraulics Library with some useful traits,enums and functions for heat transfer and fluid mechanics"

@@ -128,7 +128,7 @@ pub fn heater_plus_mx_10_without_supports(){
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
-            let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
+            let _therminol_array_temperature: Vec<ThermodynamicTemperature> = 
             therminol_array_clone.get_temperature_vector().unwrap();
 
             let heater_surface_array_clone: SolidColumn 
@@ -151,7 +151,7 @@ pub fn heater_plus_mx_10_without_supports(){
                 let static_mixer_therminol_clone: FluidArray = 
                 static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
 
-                let static_mixer_exit_temperature: ThermodynamicTemperature
+                let _static_mixer_exit_temperature: ThermodynamicTemperature
                 = static_mixer_therminol_clone.get_temperature_vector().unwrap()
                     .into_iter().last().unwrap();
 
@@ -392,10 +392,6 @@ pub fn heater_plus_mx_10_without_supports(){
 
     main_loop.join().unwrap();
 
-
-    let ten_seconds = time::Duration::from_millis(10000);
-
-    thread::sleep(ten_seconds);
 
 
     // once simulation completed, write data

@@ -51,10 +51,7 @@ impl SingleCVNode {
 
         let control_vol_material = self.material_control_volume.clone();
         let control_vol_pressure = self.pressure_control_volume.clone();
-        let cv_temperature = try_get_temperature_from_h(
-            self.material_control_volume, 
-            self.current_timestep_control_volume_specific_enthalpy, 
-            self.pressure_control_volume)?;
+        let cv_temperature = self.temperature;
 
 
         let thermal_diffusivity_coeff: DiffusionCoefficient = 
@@ -106,7 +103,7 @@ impl SingleCVNode {
         // let's get the volume of this control volume 
 
         let cv_material_reference = &self.material_control_volume;
-        let cv_temperature = self.get_temperature()?;
+        let cv_temperature = self.temperature;
         let cv_pressure_reference = &self.pressure_control_volume;
 
         let cv_density: MassDensity = 
@@ -208,7 +205,7 @@ impl SingleCVNode {
 
         let cv_mass_clone = self.mass_control_volume.clone();
         let cv_material = self.material_control_volume.clone();
-        let cv_temperature = self.get_temperature()?;
+        let cv_temperature = self.temperature;
         let cv_pressure = self.pressure_control_volume.clone();
 
         let cv_heat_capacity = try_get_cp(

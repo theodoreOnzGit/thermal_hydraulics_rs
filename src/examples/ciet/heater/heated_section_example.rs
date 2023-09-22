@@ -60,10 +60,10 @@ pub fn example_heated_section_test(){
         let steel_array_clone: SolidColumn 
         = heater_v2_bare.steel_shell.clone().try_into().unwrap();
 
-        let steel_array_temperature: Vec<ThermodynamicTemperature> = 
+        let _steel_array_temperature: Vec<ThermodynamicTemperature> = 
         steel_array_clone.get_temperature_vector().unwrap();
 
-        let twisted_tape_temperature: Vec<ThermodynamicTemperature>
+        let _twisted_tape_temperature: Vec<ThermodynamicTemperature>
         = heater_v2_bare._twisted_tape_temperature();
 
         let back_cv_temperature: ThermodynamicTemperature = 

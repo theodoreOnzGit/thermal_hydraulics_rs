@@ -213,10 +213,6 @@ pub fn test_inclusive_heater_top_bottom_head(){
     main_loop.join().unwrap();
 
 
-    let ten_seconds = time::Duration::from_millis(10000);
-
-    thread::sleep(ten_seconds);
-
 
     // once simulation completed, write data
 

@@ -18,27 +18,52 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     // temperatures 
 
     let single_cv_1_enthalpy = single_cv_1.
-        current_timestep_control_volume_specific_enthalpy.clone();
+        current_timestep_control_volume_specific_enthalpy;
     let single_cv_2_enthalpy = single_cv_2.
-        current_timestep_control_volume_specific_enthalpy.clone();
+        current_timestep_control_volume_specific_enthalpy;
 
     // to get the temperatures, we'll need the material as well 
-    let single_cv_1_material = single_cv_1.material_control_volume.clone();
-    let single_cv_2_material = single_cv_2.material_control_volume.clone();
+    let single_cv_1_material = single_cv_1.material_control_volume;
+    let single_cv_2_material = single_cv_2.material_control_volume;
 
     // we'll also need to get their pressures 
-    let single_cv_1_pressure = single_cv_1.pressure_control_volume.clone();
-    let single_cv_2_pressure = single_cv_2.pressure_control_volume.clone();
+    let single_cv_1_pressure = single_cv_1.pressure_control_volume;
+    let single_cv_2_pressure = single_cv_2.pressure_control_volume;
 
     // we will now get their respective temperatures 
-    let single_cv_1_temperature = try_get_temperature_from_h(
-        single_cv_1_material, 
-        single_cv_1_enthalpy, 
-        single_cv_1_pressure)?;
-    let single_cv_2_temperature = try_get_temperature_from_h(
-        single_cv_2_material, 
-        single_cv_2_enthalpy, 
-        single_cv_2_pressure)?;
+    //
+    // (note, this is extremely computationally expensive as it 
+    // is iterative in nature)
+    //
+    // two solutions here, 
+    // one: store cv temperature in single cv, 
+    // so it can be readily accessed
+    //
+    // two: cheaper method of getting t from h.
+    
+
+    let single_cv_1_temperature: ThermodynamicTemperature;
+    let single_cv_2_temperature: ThermodynamicTemperature;
+
+    let experimental_code = true; 
+    if experimental_code {
+
+        single_cv_1_temperature = single_cv_1.temperature;
+        single_cv_2_temperature = single_cv_2.temperature;
+
+    } else {
+
+        // original code
+        single_cv_1_temperature = try_get_temperature_from_h(
+            single_cv_1_material, 
+            single_cv_1_enthalpy, 
+            single_cv_1_pressure)?;
+        single_cv_2_temperature = try_get_temperature_from_h(
+            single_cv_2_material, 
+            single_cv_2_enthalpy, 
+            single_cv_2_pressure)?;
+
+    }
 
     // now that we got their respective temperatures we can calculate 
     // the thermal conductance between them

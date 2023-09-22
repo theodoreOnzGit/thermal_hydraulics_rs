@@ -119,7 +119,7 @@ impl CVType {
     Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
         match self {
             CVType::SingleCV(single_cv) => {
-                let temperature = single_cv.get_temperature()?;
+                let temperature = single_cv.get_temperature_from_enthalpy_and_set()?;
 
                 let mut temp_vec: Vec<ThermodynamicTemperature> = vec![];
 

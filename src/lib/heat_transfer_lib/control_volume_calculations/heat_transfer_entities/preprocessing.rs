@@ -101,6 +101,7 @@ impl HeatTransferEntity {
     }
 
     /// wrapper for linking, makes it easier to link 
+    #[inline]
     pub fn link_to_front(&mut self,
     other_hte: &mut HeatTransferEntity,
     interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
@@ -114,6 +115,7 @@ impl HeatTransferEntity {
     }
 
     /// wrapper for linking, makes it easier to link 
+    #[inline]
     pub fn link_to_back(&mut self,
     other_hte: &mut HeatTransferEntity,
     interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
@@ -127,6 +129,7 @@ impl HeatTransferEntity {
     }
 
     /// wrapper for linking, makes it easier to link 
+    #[inline]
     pub fn link(entity: &mut HeatTransferEntity,
     other_hte: &mut HeatTransferEntity,
     interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{

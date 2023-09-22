@@ -24,19 +24,19 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
 {
 
     let temperature_1: ThermodynamicTemperature = 
-    single_cv_1.get_temperature()?;
+    single_cv_1.temperature;
 
     let temperature_2: ThermodynamicTemperature = 
-    single_cv_2.get_temperature()?;
+    single_cv_2.temperature;
 
     let pressure_1: Pressure = 
-    single_cv_1.pressure_control_volume.clone();
+    single_cv_1.pressure_control_volume;
 
     let pressure_2: Pressure = 
-    single_cv_2.pressure_control_volume.clone();
+    single_cv_2.pressure_control_volume;
 
-    let material_1 = single_cv_1.material_control_volume.clone();
-    let material_2 = single_cv_2.material_control_volume.clone();
+    let material_1 = single_cv_1.material_control_volume;
+    let material_2 = single_cv_2.material_control_volume;
 
     // we use this to get the diffusion coefficient for both control 
     // volumes
@@ -62,8 +62,8 @@ pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
         temperature_2,
         pressure_2)?;
 
-    let mass_1: Mass = single_cv_1.mass_control_volume.clone();
-    let mass_2: Mass = single_cv_2.mass_control_volume.clone();
+    let mass_1: Mass = single_cv_1.mass_control_volume;
+    let mass_2: Mass = single_cv_2.mass_control_volume;
 
     // we get heat capacity 
 
