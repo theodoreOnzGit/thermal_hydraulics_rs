@@ -3,7 +3,7 @@ use uom::si::f64::*;
 use super::HeaterVersion2Bare;
 
 impl HeaterVersion2Bare {
-    pub fn steel_shell_temperature(&mut self) -> Vec<ThermodynamicTemperature>{
+    pub fn _steel_shell_temperature(&mut self) -> Vec<ThermodynamicTemperature>{
         self.steel_shell.get_temperature_vector().unwrap()
     }
 

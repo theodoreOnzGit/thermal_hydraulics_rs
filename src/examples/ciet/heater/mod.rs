@@ -215,7 +215,7 @@ pub fn example_heater(){
             = heater_v2_bare.steel_shell.clone().try_into().unwrap();
 
             let heater_surface_array_temp: Vec<ThermodynamicTemperature> = 
-            heater_v2_bare.steel_shell_temperature();
+            heater_surface_array_clone.get_temperature_vector().unwrap();
 
             let heater_fluid_bulk_temp: ThermodynamicTemperature = 
             therminol_array_clone.try_get_bulk_temperature().unwrap();
