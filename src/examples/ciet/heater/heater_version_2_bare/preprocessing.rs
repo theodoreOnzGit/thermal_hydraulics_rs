@@ -28,8 +28,8 @@ impl HeaterVersion2Bare {
         // first let's get all the conductances 
         let heat_transfer_to_air = self.heat_transfer_to_air;
 
-        let steel_to_air_conductance: ThermalConductance 
-        = self.get_air_steel_shell_conductance(
+        let steel_to_air_nodal_conductance: ThermalConductance 
+        = self.get_air_steel_nodal_shell_conductance(
             heat_transfer_to_air
         );
 
@@ -68,7 +68,7 @@ impl HeaterVersion2Bare {
             // clone each array and set them later
 
             let mut steel_shell_clone: SolidColumn = 
-            self.steel_shell.clone().try_into() .unwrap();
+            self.steel_shell.clone().try_into().unwrap();
 
             let mut therminol_array_clone: FluidArray = 
             self.therminol_array.clone().try_into().unwrap();
@@ -94,7 +94,7 @@ impl HeaterVersion2Bare {
             // steel to air interaction
 
             steel_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                steel_to_air_conductance,
+                steel_to_air_nodal_conductance,
                 ambient_temperature_vector
             ).unwrap();
 
@@ -207,7 +207,7 @@ impl HeaterVersion2Bare {
 
     /// obtains air to steel shell conductance
     #[inline]
-    pub fn get_air_steel_shell_conductance(&mut self,
+    pub fn get_air_steel_nodal_shell_conductance(&mut self,
     h_air_to_steel_surf: HeatTransfer) 
         -> ThermalConductance {
         // first, let's get a clone of the steel shell surface

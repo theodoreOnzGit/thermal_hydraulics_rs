@@ -12,7 +12,7 @@ impl HeaterVersion2Bare {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     #[inline]
-    pub fn _advance_timestep(&mut self, 
+    pub fn advance_timestep(&mut self, 
     timestep: Time) {
 
         self.therminol_array.advance_timestep_mut_self(timestep).unwrap();
@@ -36,9 +36,7 @@ impl HeaterVersion2Bare {
 
 
                 // carry out the connection calculations
-                heater_clone.therminol_array.advance_timestep_mut_self(timestep).unwrap();
-                heater_clone.steel_shell.advance_timestep_mut_self(timestep).unwrap();
-                heater_clone.twisted_tape_interior.advance_timestep_mut_self(timestep).unwrap();
+                heater_clone.advance_timestep(timestep);
                 
                 heater_clone
 
