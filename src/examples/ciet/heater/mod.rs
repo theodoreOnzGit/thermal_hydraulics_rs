@@ -250,10 +250,15 @@ pub fn example_heater(){
             );
             {
                 // prints therminol temperature 
-
+                let heater_surf_temp_degc: Vec<f64> = heater_surface_array_temp
+                    .iter().map(
+                        |&temperature|{
+                            temperature.get::<degree_celsius>()
+                        }
+                    ).collect();
 
                 // print surface temperature 
-                dbg!(heater_surface_array_temp);
+                dbg!(heater_surf_temp_degc);
 
                 let bt_12_temperature: ThermodynamicTemperature = 
                 static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 

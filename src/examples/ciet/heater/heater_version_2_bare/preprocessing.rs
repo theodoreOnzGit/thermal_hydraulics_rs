@@ -365,24 +365,18 @@ impl HeaterVersion2Bare {
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
 
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        heated_length_plus_heads* id * PI;
-
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length/ heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
 
 
-        let heat_transfer_area_per_node: Area 
-        = heat_transfer_area_heated_length_only / 
-        number_of_temperature_nodes as f64;
+
 
         let node_length = heated_length / 
             number_of_temperature_nodes as f64;
+
+        let heat_transfer_area_per_node: Area 
+        = node_length * PI * hydraulic_diameter;
 
         let therminol_to_steel_shell_average_conductance: ThermalConductance 
         = h * heat_transfer_area_per_node;
