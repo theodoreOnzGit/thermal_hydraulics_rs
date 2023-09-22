@@ -214,27 +214,10 @@ impl HeaterVersion2Bare {
         let mut steel_shell_clone: SolidColumn = 
         self.steel_shell.clone().try_into().unwrap();
 
-
-
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = Length::new::<meter>(1.6383);
-        let heated_length_plus_heads = Length::new::<inch>(78.0);
         let id = Length::new::<meter>(0.0381);
         let od = Length::new::<meter>(0.04);
-
-
-        let heat_transfer_area_heated_length_plus_heads: Area = 
-        heated_length_plus_heads* od * PI;
-        let heat_transfer_area_heated_length_only: Area
-        = heated_length / heated_length_plus_heads * 
-        heat_transfer_area_heated_length_plus_heads;
-
-        let node_area: Area = heat_transfer_area_heated_length_only 
-        / number_of_temperature_nodes as f64;
-
-
-        let air_to_surface_node_conductance: ThermalConductance = 
-        h_air_to_steel_surf * node_area;
 
         // next is to have steel inner conductance
 
@@ -243,26 +226,32 @@ impl HeaterVersion2Bare {
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
-        let steel_conductivity: ThermalConductivity = 
-        SolidMaterial::SteelSS304L.try_get_thermal_conductivity(
-            steel_surf_temperature
-        ).unwrap();
 
         let node_length = heated_length / 
             number_of_temperature_nodes as f64;
 
-        let cylinder_node_conductance: ThermalConductance 
-        = try_get_thermal_conductance_annular_cylinder(
-            cylinder_mid_diameter,
-            od,
-            node_length,
-            steel_conductivity
+        let steel_air_conductance_interaction: HeatTransferInteractionType
+        = HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidOutside(
+                (steel_shell_clone.material_control_volume, 
+                    (od-cylinder_mid_diameter).into(),
+                    steel_surf_temperature,
+                    steel_shell_clone.pressure_control_volume),
+                (h_air_to_steel_surf,
+                    od.into(),
+                    node_length.into())
+            );
+
+        let steel_air_nodal_thermal_conductance: ThermalConductance = 
+        steel_air_conductance_interaction.try_get_thermal_conductance(
+            self.ambient_temperature,
+            steel_surf_temperature,
+            steel_shell_clone.pressure_control_volume,
+            steel_shell_clone.pressure_control_volume,
         ).unwrap();
 
-        let air_to_steel_resistance = 1.0/cylinder_node_conductance 
-        + 1.0/air_to_surface_node_conductance;
 
-        return 1.0/air_to_steel_resistance;
+        return steel_air_nodal_thermal_conductance;
     }
 
 
