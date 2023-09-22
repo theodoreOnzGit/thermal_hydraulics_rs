@@ -46,8 +46,11 @@ pub struct HeaterVersion2;
 
 pub mod heater_version_2_bare;
 use core::time;
-use std::{time::SystemTime, thread::{JoinHandle, self}};
+use std::thread::{self};
+use std::thread::JoinHandle;
+use std::time::SystemTime;
 
+use csv::Writer;
 pub use heater_version_2_bare::*;
 
 pub mod heater_top_and_bottom_head_bare;
@@ -59,7 +62,13 @@ pub use static_mixer_mx_10::*;
 pub mod struct_supports;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::{second, minute}, power::kilowatt, length::foot, heat_transfer::watt_per_square_meter_kelvin}, ConstZero};
+use uom::ConstZero;
+use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+use uom::si::length::centimeter;
+use uom::si::length::foot;
+use uom::si::power::kilowatt;
+use uom::si::time::second;
+use uom::si::time::minute;
 
 use self::struct_supports::StructuralSupport;
 
@@ -186,6 +195,52 @@ pub fn example_heater(){
     let heater_power = Power::new::<kilowatt>(8.0);
 
     let loop_time = SystemTime::now();
+
+
+    // csv writer
+    let mut wtr = Writer::from_path("lib_heater_example_steady_state.csv")
+        .unwrap();
+    wtr.write_record(&["time_seconds",
+        "heater_power_kilowatts",
+        "therminol_temperature_celsius",
+        "shell_temperature_celsius",
+        "timestep_seconds",])
+        .unwrap();
+
+    let mut temp_profile_wtr = Writer::from_path(
+        "lib_heater_example_temp_profile.csv")
+        .unwrap();
+
+    let number_of_nodes_heated_section = number_of_inner_temperature_nodes + 2;
+    let node_length_heated_section = heater_v2_bare.get_component_length()
+    / number_of_nodes_heated_section as f64;
+
+    // for temperature profile
+    let mut header_vec: Vec<String> = vec![];
+    for index in 0..number_of_nodes_heated_section {
+
+        let half_node_length = 0.5 * node_length_heated_section;
+        let mid_node_length: Length = 
+        index as f64 * node_length_heated_section + half_node_length;
+
+        let prefix: String = "heater_temp_celsius_at_".to_string();
+
+        let suffix: String = "_cm".to_string();
+
+        let mid_node_length_cm: f64 = 
+        mid_node_length.get::<centimeter>();
+
+        let mid_node_length_string: String = 
+        mid_node_length_cm.to_string();
+
+        let header: String = prefix + &mid_node_length_string + &suffix;
+
+        header_vec.push(header);
+
+
+    }
+    temp_profile_wtr.write_record(&header_vec).unwrap();
+
     // main loop
     
     let main_loop = thread::spawn( move || {
@@ -203,7 +258,6 @@ pub fn example_heater(){
             // average density (which doesn't change much for liquid 
             // anyway)
 
-            let connect_struct_support = true; 
 
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
@@ -320,189 +374,171 @@ pub fn example_heater(){
                 generic_advection_interaction
             ).unwrap();
 
-            
-            let wait: bool = false;
 
-            if wait {
+            // make other connections by spawning a new thread 
+            // this is the parallel version
+            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+            = heater_v2_bare.
+                lateral_connection_thread_spawn(
+                    mass_flowrate,
+                    heater_power);
 
-                let ten_millis = time::Duration::from_millis(10);
-
-                thread::sleep(ten_millis);
-
-            } else {
-                // make other connections by spawning a new thread 
-                // this is the parallel version
-                let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-                = heater_v2_bare.
-                    lateral_connection_thread_spawn(
-                        mass_flowrate,
-                        heater_power);
-
-                let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-                = heater_bottom_head_bare. 
-                    lateral_connection_thread_spawn(
-                        mass_flowrate);
-
-                let heater_top_head_join_handle = 
-                heater_top_head_bare.lateral_connection_thread_spawn(
+            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+            = heater_bottom_head_bare. 
+                lateral_connection_thread_spawn(
                     mass_flowrate);
 
-
-                let static_mixer_join_handle = 
-                static_mixer_mx_10_object.lateral_connection_thread_spawn(
-                    mass_flowrate);
-
-                let static_mixer_pipe_join_handle = 
-                static_mixer_mx_10_pipe.lateral_connection_thread_spawn(
-                    mass_flowrate);
-
-                if connect_struct_support {
-                    // link struct supports to ambient air
-                    // axially 
-
-                    structural_support_heater_bottom_head. 
-                        support_array.link_to_front(
-                        &mut ambient_air_temp_bc,
-                        support_conductance_interaction
-                    ).unwrap();
-
-                    structural_support_heater_top_head. 
-                        support_array.link_to_front(
-                        &mut ambient_air_temp_bc,
-                        support_conductance_interaction
-                    ).unwrap();
-
-                    structural_support_mx_10.support_array.link_to_front(
-                        &mut ambient_air_temp_bc,
-                        support_conductance_interaction
-                    ).unwrap();
-
-                }
-
-                static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
-                static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
-                heater_v2_bare = heater_2_join_handle.join().unwrap();
-                heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-                heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
-
-                if connect_struct_support {
-
-                    // link struct supports to heater top/bottom heads
-                    structural_support_heater_top_head.
-                        support_array.link_to_back(
-                            &mut heater_top_head_bare.steel_shell,
-                            support_conductance_interaction
-                        ).unwrap();
-                    structural_support_heater_bottom_head. 
-                        support_array.link_to_back(
-                            &mut heater_bottom_head_bare.steel_shell,
-                            support_conductance_interaction
-                        ).unwrap();
-
-                    structural_support_mx_10.support_array.link_to_back(
-                        &mut static_mixer_mx_10_pipe.steel_shell,
-                        support_conductance_interaction
-                    ).unwrap();
-
-                    // note, the heater top and bottom head area changed 
-                    // during course of this interaction, so should be okay
+            let heater_top_head_join_handle = 
+            heater_top_head_bare.lateral_connection_thread_spawn(
+                mass_flowrate);
 
 
-                    // i will also connect heater shell to the structural support 
-                    // via the head as in ciet 
+            let static_mixer_join_handle = 
+            static_mixer_mx_10_object.lateral_connection_thread_spawn(
+                mass_flowrate);
 
-                    heater_v2_bare.steel_shell.link_to_back(
-                        &mut heater_bottom_head_bare.steel_shell,
-                        support_conductance_interaction
-                    ).unwrap();
+            let static_mixer_pipe_join_handle = 
+            static_mixer_mx_10_pipe.lateral_connection_thread_spawn(
+                mass_flowrate);
 
-                    heater_v2_bare.steel_shell.link_to_front(
-                        &mut heater_top_head_bare.steel_shell,
-                        support_conductance_interaction
-                    ).unwrap();
-                    
-                    // probably edit this to include twisted tape conductance
-                    heater_v2_bare.twisted_tape_interior.link_to_back(
-                        &mut heater_bottom_head_bare.twisted_tape_interior,
-                        support_conductance_interaction
-                    ).unwrap();
+            // link struct supports to ambient air
+            // axially 
 
-                    heater_v2_bare.twisted_tape_interior.link_to_front(
-                        &mut heater_top_head_bare.twisted_tape_interior,
-                        support_conductance_interaction
-                    ).unwrap();
+            structural_support_heater_bottom_head. 
+                support_array.link_to_front(
+                    &mut ambient_air_temp_bc,
+                    support_conductance_interaction
+                ).unwrap();
 
-                    // now link it laterally to ambient temperatures
-                    let struct_support_top_head_join_handle = 
-                    structural_support_heater_top_head.lateral_connection_thread_spawn();
-                    let structural_support_heater_bottom_head_join_handle = 
-                    structural_support_heater_bottom_head.lateral_connection_thread_spawn();
+            structural_support_heater_top_head. 
+                support_array.link_to_front(
+                    &mut ambient_air_temp_bc,
+                    support_conductance_interaction
+                ).unwrap();
 
-                    structural_support_mx_10.
-                        lateral_and_miscellaneous_connections();
+            structural_support_mx_10.support_array.link_to_front(
+                &mut ambient_air_temp_bc,
+                support_conductance_interaction
+            ).unwrap();
 
-                    structural_support_heater_top_head = 
-                        struct_support_top_head_join_handle.join().unwrap();
-                    structural_support_heater_bottom_head = 
-                        structural_support_heater_bottom_head_join_handle.join().unwrap();
-                }
 
-                //// calculate timestep (serial method)
-                //heater_v2_bare.advance_timestep(
-                //    timestep);
+            static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
+            static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+            heater_v2_bare = heater_2_join_handle.join().unwrap();
+            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+            heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
 
-                // calculate timestep (thread spawn method, parallel) 
 
-                let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
-                = heater_v2_bare.advance_timestep_thread_spawn(
+            // link struct supports to heater top/bottom heads
+            structural_support_heater_top_head.
+                support_array.link_to_back(
+                    &mut heater_top_head_bare.steel_shell,
+                    support_conductance_interaction
+                ).unwrap();
+            structural_support_heater_bottom_head. 
+                support_array.link_to_back(
+                    &mut heater_bottom_head_bare.steel_shell,
+                    support_conductance_interaction
+                ).unwrap();
+
+            structural_support_mx_10.support_array.link_to_back(
+                &mut static_mixer_mx_10_pipe.steel_shell,
+                support_conductance_interaction
+            ).unwrap();
+
+            // note, the heater top and bottom head area changed 
+            // during course of this interaction, so should be okay
+
+
+            // i will also connect heater shell to the structural support 
+            // via the head as in ciet 
+
+            heater_v2_bare.steel_shell.link_to_back(
+                &mut heater_bottom_head_bare.steel_shell,
+                support_conductance_interaction
+            ).unwrap();
+
+            heater_v2_bare.steel_shell.link_to_front(
+                &mut heater_top_head_bare.steel_shell,
+                support_conductance_interaction
+            ).unwrap();
+
+            // probably edit this to include twisted tape conductance
+            heater_v2_bare.twisted_tape_interior.link_to_back(
+                &mut heater_bottom_head_bare.twisted_tape_interior,
+                support_conductance_interaction
+            ).unwrap();
+
+            heater_v2_bare.twisted_tape_interior.link_to_front(
+                &mut heater_top_head_bare.twisted_tape_interior,
+                support_conductance_interaction
+            ).unwrap();
+
+            // now link it laterally to ambient temperatures
+            let struct_support_top_head_join_handle = 
+            structural_support_heater_top_head.lateral_connection_thread_spawn();
+            let structural_support_heater_bottom_head_join_handle = 
+            structural_support_heater_bottom_head.lateral_connection_thread_spawn();
+
+            structural_support_mx_10.
+                lateral_and_miscellaneous_connections();
+
+            structural_support_heater_top_head = 
+                struct_support_top_head_join_handle.join().unwrap();
+            structural_support_heater_bottom_head = 
+                structural_support_heater_bottom_head_join_handle.join().unwrap();
+
+            //// calculate timestep (serial method)
+            //heater_v2_bare.advance_timestep(
+            //    timestep);
+
+            // calculate timestep (thread spawn method, parallel) 
+
+            let heater_2_join_handle: JoinHandle<HeaterVersion2Bare> 
+            = heater_v2_bare.advance_timestep_thread_spawn(
+                timestep);
+
+            let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
+            = heater_bottom_head_bare. 
+                advance_timestep_thread_spawn(
                     timestep);
 
-                let heater_bottom_join_handle: JoinHandle<HeaterTopBottomHead> 
-                = heater_bottom_head_bare. 
-                    advance_timestep_thread_spawn(
-                        timestep);
+            let heater_top_head_join_handle = 
+            heater_top_head_bare.advance_timestep_thread_spawn(
+                timestep);
 
-                let heater_top_head_join_handle = 
-                heater_top_head_bare.advance_timestep_thread_spawn(
-                    timestep);
+            let static_mixer_join_handle = 
+            static_mixer_mx_10_object.advance_timestep_thread_spawn(
+                timestep);
 
-                let static_mixer_join_handle = 
-                static_mixer_mx_10_object.advance_timestep_thread_spawn(
-                    timestep);
-
-                let static_mixer_pipe_join_handle = 
-                static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
-                    timestep);
+            let static_mixer_pipe_join_handle = 
+            static_mixer_mx_10_pipe.advance_timestep_thread_spawn(
+                timestep);
 
 
-                if connect_struct_support {
-                    let structural_support_heater_bottom_head_join_handle = 
-                    structural_support_heater_bottom_head.
-                        advance_timestep_thread_spawn(timestep);
-                    let structural_support_heater_top_head_join_handle = 
-                    structural_support_heater_top_head.
-                        advance_timestep_thread_spawn(timestep);
+            let structural_support_heater_bottom_head_join_handle = 
+            structural_support_heater_bottom_head.
+                advance_timestep_thread_spawn(timestep);
+            let structural_support_heater_top_head_join_handle = 
+            structural_support_heater_top_head.
+                advance_timestep_thread_spawn(timestep);
 
-                    structural_support_mx_10._advance_timestep(
-                        timestep);
+            structural_support_mx_10._advance_timestep(
+                timestep);
 
-                    structural_support_heater_bottom_head 
-                        =  structural_support_heater_bottom_head_join_handle.join().unwrap();
-                    structural_support_heater_top_head 
-                        =  structural_support_heater_top_head_join_handle.join().unwrap();
-
+            structural_support_heater_bottom_head 
+                =  structural_support_heater_bottom_head_join_handle.join().unwrap();
+            structural_support_heater_top_head 
+                =  structural_support_heater_top_head_join_handle.join().unwrap();
 
 
-                }
-
-                static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
-                static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
-                heater_v2_bare = heater_2_join_handle.join().unwrap();
-                heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
-                heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
+            static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
+            static_mixer_mx_10_pipe = static_mixer_pipe_join_handle.join().unwrap();
+            heater_v2_bare = heater_2_join_handle.join().unwrap();
+            heater_bottom_head_bare = heater_bottom_join_handle.join().unwrap();
+            heater_top_head_bare = heater_top_head_join_handle.join().unwrap();
 
 
-            } 
             simulation_time += timestep;
 
             let time_taken_for_calculation_loop = loop_time.elapsed().unwrap()
