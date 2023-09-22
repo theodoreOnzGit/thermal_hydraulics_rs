@@ -67,6 +67,7 @@ use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::length::centimeter;
 use uom::si::length::foot;
 use uom::si::power::kilowatt;
+use uom::si::ratio::ratio;
 use uom::si::time::second;
 use uom::si::time::minute;
 
@@ -244,10 +245,18 @@ pub fn example_heater(){
     // main loop
     
     let main_loop = thread::spawn( move || {
+        let calculation_time_elapsed = SystemTime::now();
         while max_time > simulation_time {
 
             // time start 
             let loop_time_start = loop_time.elapsed().unwrap();
+
+            // set heater power 
+
+            let heater_steady_state_power = Power::new::<kilowatt>(8.0);
+
+            // todo: set heater power here
+
             // create interactions 
 
 
@@ -337,6 +346,143 @@ pub fn example_heater(){
                 // print simulation time
                 // dbg diagnostics probably not the cause of mem leaks
                 dbg!(simulation_time);
+            }
+            // record current fluid temperature profile
+            {
+                let mut temp_profile_data_vec: Vec<String> = vec![];
+
+                let current_time_string = 
+                simulation_time.get::<second>().to_string();
+
+                // next simulation time string 
+                let elapsed_calc_time_seconds_string = 
+                calculation_time_elapsed.elapsed().unwrap().as_secs().to_string();
+                temp_profile_data_vec.push(current_time_string);
+                temp_profile_data_vec.push(elapsed_calc_time_seconds_string);
+
+                let steel_temperature_vec = 
+                heater_v2_bare.steel_shell_temperature();
+
+
+
+                for node_temp in steel_temperature_vec.iter() {
+
+                    let node_temp_deg_c: f64 = 
+                    node_temp.get::<degree_celsius>();
+
+                    let node_temp_c_string: String = 
+                    node_temp_deg_c.to_string();
+
+                    temp_profile_data_vec.push(node_temp_c_string);
+                }
+
+                temp_profile_wtr.write_record(&temp_profile_data_vec).unwrap();
+            }
+            // outlet temperature profile 
+            {
+                // csv data writing
+
+                let mut therminol_fluid_arr: FluidArray = 
+                therminol_array_clone;
+
+
+                let therminol_outlet_temp:ThermodynamicTemperature = 
+                therminol_fluid_arr.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap();
+
+                let therminol_outlet_temp_string = 
+                therminol_outlet_temp.get::<degree_celsius>().to_string();
+
+                let current_time_string = 
+                simulation_time.get::<second>().to_string();
+
+                // probably want to have a method to set heater power
+                let heater_power_kilowatt_string = 
+                heater_steady_state_power.get::<kilowatt>().to_string();
+
+                // for st 11 
+
+                // code block for recording inlet, shell and outlet 
+                // temperatures
+                //
+                // now for shell temperatures, we are going to assume that 
+                // ST-11 is used. 
+                //
+                // ST-11 is the thermocouple measuring surface temperature 
+                // roughly 19 inches from the bottom of the heater 
+                // The entire heated length excluding heater top and 
+                // bottom heads is about 64 inches 
+                //
+                // So 19/64 is about 0.30 of the way through
+                let st_11_length: Length = Length::new::<inch>(19_f64);
+
+
+                // now I want to find out which node it is,
+                // so i need the node length first 
+                //
+
+                let number_of_nodes = number_of_inner_temperature_nodes + 2;
+                
+                let node_length: Length = 
+                heater_v2_bare.get_component_length()
+                / number_of_nodes as f64;
+
+                // then use st_11 divide by node length 
+
+                let st_11_rough_node_number: Ratio = st_11_length / node_length;
+
+                // now, st_11 is about 19 inches, out of 64, and we have 
+                // 8 equal nodes, each node is 
+                // 12.5% of the heated length
+                //
+                // so this is about 30% of the way through
+                //
+                // so this is node three. 
+                //
+                // if we take st_11_length/node_length 
+                // we would get about 2.375 for this ratio 
+                //
+                // we need to round up to get 3 
+                // but the third node is the 2nd index in the matrix 
+                // because the index starts from zero
+                //
+                //
+                // so round it up and then minus 1 
+                // most of the time, round down is ok, but rounding up 
+                // makes more logical sense given this derivation
+
+                let st_11_node_number: usize = 
+                st_11_rough_node_number.get::<ratio>().ceil() as usize;
+
+                let st_11_index_number: usize = st_11_node_number - 1;
+
+                // now that we got the index number, we can get the 
+                // outer surface temperature 
+                let steel_shell_clone: SolidColumn = 
+                heater_v2_bare.steel_shell.clone().try_into().unwrap();
+
+                let steel_temperature_array = 
+                steel_shell_clone.get_temperature_vector().unwrap();
+
+                let st_11_node_temp: ThermodynamicTemperature = 
+                steel_temperature_array[st_11_index_number];
+
+                let shell_celsius_string = 
+                st_11_node_temp.get::<degree_celsius>().to_string();
+                
+                // timestep in seconds
+                //
+
+                let timestep_string = 
+                timestep.get::<second>().to_string();
+
+
+                wtr.write_record(&[current_time_string,
+                    heater_power_kilowatt_string,
+                    therminol_outlet_temp_string,
+                    shell_celsius_string,
+                    timestep_string])
+                    .unwrap();
+
             }
 
             // make axial connections to BCs 
