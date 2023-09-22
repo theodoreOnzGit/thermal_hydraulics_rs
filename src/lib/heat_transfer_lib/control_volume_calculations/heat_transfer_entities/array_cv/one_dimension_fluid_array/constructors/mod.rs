@@ -442,6 +442,7 @@ impl FluidArray {
     /// 
     pub fn new_odd_shaped_pipe(
         length: Length,
+        hydraulic_diameter: Length,
         cross_sectional_area: Area,
         initial_temperature: ThermodynamicTemperature,
         initial_pressure: Pressure,
@@ -478,11 +479,6 @@ impl FluidArray {
             liquid_material
         );
         
-        let hydraulic_diameter: Length 
-        = (4.0 / PI * cross_sectional_area).sqrt();
-
-
-
 
         let surface_roughness = 
         adjacent_solid_material.surface_roughness().unwrap();

@@ -64,6 +64,7 @@ impl HeaterTopBottomHead {
         let head_length = Length::new::<meter>(0.0889);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let pipe_form_loss = Ratio::new::<ratio>(3.75);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -83,6 +84,7 @@ impl HeaterTopBottomHead {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             head_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -160,6 +162,7 @@ impl HeaterTopBottomHead {
         let head_length = Length::new::<meter>(0.0889);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let pipe_form_loss = Ratio::new::<ratio>(3.75);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -177,6 +180,7 @@ impl HeaterTopBottomHead {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             head_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -250,6 +254,7 @@ impl HeaterTopBottomHead {
         let head_length = Length::new::<meter>(0.19685);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let pipe_form_loss = Ratio::new::<ratio>(3.95);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -269,6 +274,7 @@ impl HeaterTopBottomHead {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             head_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -339,6 +345,7 @@ impl HeaterTopBottomHead {
         let head_length = Length::new::<meter>(0.19685);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let pipe_form_loss = Ratio::new::<ratio>(3.95);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -356,6 +363,7 @@ impl HeaterTopBottomHead {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             head_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,

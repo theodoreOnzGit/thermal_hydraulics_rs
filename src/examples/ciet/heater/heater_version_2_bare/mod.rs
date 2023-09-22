@@ -151,6 +151,7 @@ impl HeaterVersion2Bare {
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -171,6 +172,7 @@ impl HeaterVersion2Bare {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             heated_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -237,6 +239,7 @@ impl HeaterVersion2Bare {
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -255,6 +258,7 @@ impl HeaterVersion2Bare {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             heated_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,

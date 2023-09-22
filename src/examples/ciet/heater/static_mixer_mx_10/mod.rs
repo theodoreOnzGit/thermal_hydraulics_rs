@@ -209,6 +209,7 @@ impl StaticMixerMX10 {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             component_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
