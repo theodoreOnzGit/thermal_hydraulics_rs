@@ -252,11 +252,6 @@ pub fn example_heater(){
             // time start 
             let loop_time_start = loop_time.elapsed().unwrap();
 
-            // set heater power 
-
-            let heater_steady_state_power = Power::new::<kilowatt>(8.0);
-
-            // todo: set heater power here
 
             // create interactions 
 
@@ -398,7 +393,7 @@ pub fn example_heater(){
 
                 // probably want to have a method to set heater power
                 let heater_power_kilowatt_string = 
-                heater_steady_state_power.get::<kilowatt>().to_string();
+                heater_power.get::<kilowatt>().to_string();
 
                 // for st 11 
 
@@ -709,9 +704,6 @@ pub fn example_heater(){
 
 
     // once simulation completed, write data
-
-
-    //todo!("haven't coded csv writing file")
 
 }
 
