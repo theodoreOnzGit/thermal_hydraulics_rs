@@ -258,7 +258,7 @@ pub fn thermal_conductivity_test_steel(){
     // thermal conductivity, we expect at 350K 
     // 15.58 W/(m K)
 
-    let thermal_cond_spline = steel_304_l_spline_thermal_conductivity(
+    let thermal_cond_spline = _steel_304_l_spline_thermal_conductivity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     approx::assert_relative_eq!(
@@ -287,7 +287,7 @@ pub fn thermal_conductivity_test_steel(){
     // we expect thermal thermal_conductivity to be at 23.83
 
     let thermal_cond_spline = 
-    steel_304_l_spline_thermal_conductivity(
+    _steel_304_l_spline_thermal_conductivity(
         ThermodynamicTemperature::new::<kelvin>(1000.0));
 
     approx::assert_relative_eq!(
