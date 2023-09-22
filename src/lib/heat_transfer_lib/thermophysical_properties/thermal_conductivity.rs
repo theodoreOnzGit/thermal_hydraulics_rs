@@ -76,7 +76,7 @@ fn solid_thermal_conductivity(material: Material,
 
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature) ,
-        SteelSS304L => steel_304_l_spline_thermal_conductivity(temperature),
+        SteelSS304L => _steel_ss_304_l_ornl_thermal_conductivity(temperature),
         Copper => copper_thermal_conductivity(temperature),
     };
 
@@ -111,7 +111,7 @@ impl SolidMaterial {
 
         let thermal_conductivity: ThermalConductivity = match self {
         Fiberglass => fiberglass_thermal_conductivity(solid_temp) ,
-        SteelSS304L => steel_304_l_spline_thermal_conductivity(solid_temp),
+        SteelSS304L => _steel_ss_304_l_ornl_thermal_conductivity(solid_temp),
         Copper => copper_thermal_conductivity(solid_temp),
         };
 
@@ -220,7 +220,7 @@ fn copper_thermal_conductivity(
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn steel_304_l_spline_thermal_conductivity(
+fn _steel_304_l_spline_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> ThermalConductivity {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();

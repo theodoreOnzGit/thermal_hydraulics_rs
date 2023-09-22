@@ -72,7 +72,7 @@ fn solid_specific_heat_capacity(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => steel_304_l_spline_specific_heat_capacity(temperature),
+        SteelSS304L => _steel_ss_304_l_ornl_specific_heat_capacity(temperature),
         Copper => copper_specific_heat_capacity(temperature),
     };
 
@@ -148,7 +148,11 @@ fn copper_specific_heat_capacity(
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     // here we use a cubic spline to interpolate the values
-    // it's a little calculation heavy, but don't really care now
+    // it's a little calculation heavy
+    //
+    // and actually, rebuilding the spline is quite problematic
+    // we need to build it ONCE and read from it
+    //
     let thermal_cond_temperature_values_kelvin = c!(200.0, 
         250.0, 300.0, 350.0, 
         400.0, 500.0, 1000.0);
@@ -174,7 +178,7 @@ fn copper_specific_heat_capacity(
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn steel_304_l_spline_specific_heat_capacity(
+fn _steel_304_l_spline_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
@@ -210,7 +214,7 @@ pub fn specific_heat_capacity_test_steel(){
     // cp, we expect at 350K 
     // 469.4894 J/(kg K)
 
-    let thermal_cond_spline = steel_304_l_spline_specific_heat_capacity(
+    let thermal_cond_spline = _steel_304_l_spline_specific_heat_capacity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     approx::assert_relative_eq!(
@@ -237,7 +241,7 @@ pub fn specific_heat_capacity_test_steel(){
     // we expect thermal specific_heat_capacity to be at 23.83
 
     let thermal_cond_spline = 
-    steel_304_l_spline_specific_heat_capacity(
+    _steel_304_l_spline_specific_heat_capacity(
         ThermodynamicTemperature::new::<kelvin>(1000.0));
 
     approx::assert_relative_eq!(
