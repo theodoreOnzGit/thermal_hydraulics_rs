@@ -337,34 +337,9 @@ impl HeaterVersion2Bare {
             heater_prandtl_reynolds_data
         );
 
-        let mut nusselt_estimate: Ratio = 
+        let nusselt_estimate: Ratio = 
         heater_nusselt_correlation.try_get().unwrap();
 
-        let debug = true;
-        if debug {
-            // looks like h_to_therminol is the issue
-            //
-            // it is underestimated
-            // severely underestimated in new ciet heater
-            dbg!(bulk_prandtl_number);
-            dbg!(reynolds_number);
-            let reynolds_power_0_836 = reynolds_number.value.powf(0.836);
-            let prandtl_power_0_333 = bulk_prandtl_number.value.powf(0.333333333333333);
-
-            // nusselt number checks out
-
-            let nusselt_calc =0.04179 * reynolds_power_0_836 * prandtl_power_0_333;
-
-            dbg!(nusselt_calc);
-            dbg!(nusselt_estimate);
-            dbg!(hydraulic_diameter);
-            let correct_hydraulic_diameter = Length::new::<meter>(0.01467);
-
-            dbg!(correct_hydraulic_diameter);
-            dbg!(therminol_fluid_array_clone.get_cross_sectional_area());
-            dbg!(therminol_fluid_array_clone.get_hydraulic_diameter());
-
-        }
 
 
         // now we can get the heat transfer coeff, 
@@ -377,9 +352,6 @@ impl HeaterVersion2Bare {
 
         h_to_therminol = nusselt_estimate * k_fluid_average / hydraulic_diameter;
 
-        if debug {
-            dbg!(h_to_therminol);
-        }
 
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
