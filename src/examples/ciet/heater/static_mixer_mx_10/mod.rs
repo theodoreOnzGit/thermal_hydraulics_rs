@@ -4,19 +4,7 @@ use uom::si::area::square_meter;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
-/// represents heater version 2 without insulation 
-/// This is because during 2018-ish, the heater insulation 
-/// got burnt off and a lot of frequency response tests were done 
-/// with insulation removed
-///
-/// Heater version 2 bare has no insulation
-/// but it has a twisted tape interior
-///
-///
-/// note that it only contains the heated section, not the top nor 
-/// bottom heads
-///
-/// Note: need to check for memory leaks
+/// represents mx 10 and its pipes
 #[derive(Debug,Clone,PartialEq)]
 pub struct StaticMixerMX10 {
 

@@ -59,7 +59,7 @@ pub use static_mixer_mx_10::*;
 pub mod struct_supports;
 
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
-use uom::{si::{time::second, power::kilowatt, length::foot}, ConstZero};
+use uom::{si::{time::{second, minute}, power::kilowatt, length::foot}, ConstZero};
 
 use self::struct_supports::StructuralSupport;
 
@@ -91,6 +91,16 @@ pub fn example_heater(){
         number_of_temperature_nodes
     );
 
+    let callibration_mode = true; 
+
+    if callibration_mode {
+        heater_v2_bare = HeaterVersion2Bare::_new_six_watts_per_m2_kelvin_model(
+            initial_temperature,
+            ambient_air_temp,
+            number_of_temperature_nodes
+        );
+    }
+
 
     let mut heater_top_head_bare: HeaterTopBottomHead 
     = HeaterTopBottomHead::new_top_head(
@@ -112,7 +122,7 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
-    let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
+    let struct_support_equiv_diameter: Length = Length::new::<inch>(10.0);
     let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
 
 
@@ -124,6 +134,9 @@ pub fn example_heater(){
         ambient_air_temp);
 
     let mut structural_support_heater_bottom_head = 
+    structural_support_heater_top_head.clone();
+
+    let mut structural_support_mx_10 = 
     structural_support_heater_top_head.clone();
 
     let approx_support_conductance: ThermalConductance = 
@@ -144,11 +157,9 @@ pub fn example_heater(){
 
     // time settings 
 
-    let max_time = Time::new::<second>(90.0);
+    let max_time = Time::new::<minute>(30.0);
     // on my pc, the simulation time using 
     // cargo run --release 
-    // is about 10-12 ms at most 
-    // timestep at 10ms or 15 ms was tested to be stable
     let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
@@ -333,11 +344,16 @@ pub fn example_heater(){
                         &mut ambient_air_temp_bc,
                         support_conductance_interaction
                     );
+                    structural_support_mx_10.support_array.link_to_front(
+                        &mut ambient_air_temp_bc,
+                        support_conductance_interaction
+                    ).unwrap();
 
                     structural_support_heater_top_head = 
                         struct_support_top_head_join_handle.join().unwrap();
                     structural_support_heater_bottom_head = 
                         structural_support_heater_bottom_head_join_handle.join().unwrap();
+
 
 
 
@@ -362,7 +378,11 @@ pub fn example_heater(){
                         &mut heater_bottom_head_bare.steel_shell,
                         support_conductance_interaction
                     );
-                    //
+
+                    structural_support_mx_10.support_array.link_to_back(
+                        &mut static_mixer_mx_10_pipe.steel_shell,
+                        support_conductance_interaction
+                    ).unwrap();
 
                     // note, the heater top and bottom head area changed 
                     // during course of this interaction, so should be okay
@@ -374,10 +394,38 @@ pub fn example_heater(){
                     structural_support_heater_bottom_head = 
                         structural_support_heater_bottom_head_join_handle.join().unwrap();
 
+                    // i will also connect heater shell to the structural support 
+                    // via the head as in ciet 
+
+                    heater_v2_bare.steel_shell.link_to_back(
+                        &mut heater_bottom_head_bare.steel_shell,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    heater_v2_bare.steel_shell.link_to_front(
+                        &mut heater_top_head_bare.steel_shell,
+                        support_conductance_interaction
+                    ).unwrap();
+                    
+                    // probably edit this to include twisted tape conductance
+                    heater_v2_bare.twisted_tape_interior.link_to_back(
+                        &mut heater_bottom_head_bare.twisted_tape_interior,
+                        support_conductance_interaction
+                    ).unwrap();
+
+                    heater_v2_bare.twisted_tape_interior.link_to_front(
+                        &mut heater_top_head_bare.twisted_tape_interior,
+                        support_conductance_interaction
+                    ).unwrap();
+
                     let struct_support_top_head_join_handle = 
                     structural_support_heater_top_head.lateral_connection_thread_spawn();
                     let structural_support_heater_bottom_head_join_handle = 
                     structural_support_heater_bottom_head.lateral_connection_thread_spawn();
+
+                    structural_support_mx_10.
+                        lateral_and_miscellaneous_connections();
+
                     structural_support_heater_top_head = 
                         struct_support_top_head_join_handle.join().unwrap();
                     structural_support_heater_bottom_head = 
@@ -420,10 +468,15 @@ pub fn example_heater(){
                     structural_support_heater_top_head.
                         advance_timestep_thread_spawn(timestep);
 
+                    structural_support_mx_10._advance_timestep(
+                        timestep);
+
                     structural_support_heater_bottom_head 
                         =  structural_support_heater_bottom_head_join_handle.join().unwrap();
                     structural_support_heater_top_head 
                         =  structural_support_heater_top_head_join_handle.join().unwrap();
+
+
 
                 }
 
@@ -448,10 +501,13 @@ pub fn example_heater(){
 
     main_loop.join().unwrap();
 
+    let thread_sleep = false;
 
-    let ten_seconds = time::Duration::from_millis(10000);
+    if thread_sleep {
+        let ten_seconds = time::Duration::from_millis(10000);
 
-    thread::sleep(ten_seconds);
+        thread::sleep(ten_seconds);
+    }
 
 
     // once simulation completed, write data
