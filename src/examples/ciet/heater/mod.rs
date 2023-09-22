@@ -141,7 +141,7 @@ pub fn example_heater(){
         initial_temperature,
         ambient_air_temp);
 
-    let struct_support_equiv_diameter: Length = Length::new::<inch>(10.0);
+    let struct_support_equiv_diameter: Length = Length::new::<inch>(0.5);
     let struc_support_equiv_length: Length = Length::new::<foot>(1.0);
 
 
