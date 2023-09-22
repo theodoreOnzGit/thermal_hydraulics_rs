@@ -2,7 +2,6 @@ use std::thread::JoinHandle;
 use std::thread;
 
 use super::HeaterVersion2Bare;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
 use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::input_structs::NusseltPrandtlReynoldsData;
 use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
 use thermal_hydraulics_rs::prelude::alpha_nightly::*;
