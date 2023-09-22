@@ -109,7 +109,7 @@ pub fn example_heater(){
     if calibration_mode {
 
         let h_to_air = HeatTransfer::new::<watt_per_square_meter_kelvin>
-            (12.5);
+            (20.0);
         heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
             initial_temperature,
             ambient_air_temp,

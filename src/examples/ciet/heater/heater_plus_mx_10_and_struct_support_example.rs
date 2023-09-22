@@ -258,23 +258,14 @@ pub fn heater_plus_mx_10_with_supports(){
                 if connect_struct_support {
                     // link struct supports to ambient air
                     // axially 
-                    let struct_support_top_head_join_handle = 
-                    structural_support_heater_top_head.front_axial_connection_thread_spawn(
+                    structural_support_heater_top_head.support_array.link_to_front(
                         &mut ambient_air_temp_bc,
                         support_conductance_interaction
-                    );
-                    let structural_support_heater_bottom_head_join_handle = 
-                    structural_support_heater_bottom_head.front_axial_connection_thread_spawn(
+                    ).unwrap();
+                    structural_support_heater_bottom_head.support_array.link_to_front(
                         &mut ambient_air_temp_bc,
                         support_conductance_interaction
-                    );
-
-                    structural_support_heater_top_head = 
-                        struct_support_top_head_join_handle.join().unwrap();
-                    structural_support_heater_bottom_head = 
-                        structural_support_heater_bottom_head_join_handle.join().unwrap();
-
-
+                    ).unwrap();
 
                 }
 
@@ -287,16 +278,14 @@ pub fn heater_plus_mx_10_with_supports(){
                 if connect_struct_support {
 
                     // link struct supports to heater top/bottom heads
-                    let struct_support_top_head_join_handle = 
-                    structural_support_heater_top_head.back_axial_connection_thread_spawn(
+                    structural_support_heater_top_head.support_array.link_to_back(
                         &mut heater_top_head_bare.steel_shell,
                         support_conductance_interaction
-                    );
-                    let structural_support_heater_bottom_head_join_handle = 
-                    structural_support_heater_bottom_head.back_axial_connection_thread_spawn(
+                    ).unwrap();
+                    structural_support_heater_bottom_head.support_array.link_to_back(
                         &mut heater_bottom_head_bare.steel_shell,
                         support_conductance_interaction
-                    );
+                    ).unwrap();
                     //
 
                     // note, the heater top and bottom head area changed 
@@ -304,10 +293,6 @@ pub fn heater_plus_mx_10_with_supports(){
 
                     // now link it laterally to ambient 
                     // bc later on
-                    structural_support_heater_top_head = 
-                        struct_support_top_head_join_handle.join().unwrap();
-                    structural_support_heater_bottom_head = 
-                        structural_support_heater_bottom_head_join_handle.join().unwrap();
 
                     let struct_support_top_head_join_handle = 
                     structural_support_heater_top_head.lateral_connection_thread_spawn();

@@ -299,6 +299,9 @@ pub fn matrix_calculation_initial_test(){
                 fluid_average_temp,
                 atmospheric_pressure);
 
+            // looks like h_to_therminol is the issue
+            // severely underestimated in new ciet heater
+
             let therminol_steel_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
                 CylindricalConductionConvectionLiquidInside(
