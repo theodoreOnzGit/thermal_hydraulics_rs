@@ -91,18 +91,6 @@ pub fn example_heater(){
         number_of_temperature_nodes
     );
 
-    let callibration_mode = true; 
-
-    if callibration_mode {
-        let h_to_air = HeatTransfer::new::<watt_per_square_meter_kelvin>
-            (12.5);
-        heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
-            initial_temperature,
-            ambient_air_temp,
-            number_of_temperature_nodes,
-            h_to_air
-        );
-    }
 
 
     let mut heater_top_head_bare: HeaterTopBottomHead 
@@ -114,6 +102,34 @@ pub fn example_heater(){
     = HeaterTopBottomHead::new_bottom_head(
         initial_temperature,
         ambient_air_temp);
+
+    // calibration of heat transfer coeff
+    let calibration_mode = true; 
+
+    if calibration_mode {
+
+        let h_to_air = HeatTransfer::new::<watt_per_square_meter_kelvin>
+            (12.5);
+        heater_v2_bare = HeaterVersion2Bare::_user_callibrated_htc_to_air_model(
+            initial_temperature,
+            ambient_air_temp,
+            number_of_temperature_nodes,
+            h_to_air
+        );
+
+        heater_top_head_bare = HeaterTopBottomHead:: 
+            _new_user_callibrated_top_head(
+                initial_temperature,
+                ambient_air_temp,
+                h_to_air
+            );
+        heater_bottom_head_bare = HeaterTopBottomHead:: 
+            _new_user_callibrated_bottom_head(
+                initial_temperature,
+                ambient_air_temp,
+                h_to_air
+            );
+    }
 
     let mut static_mixer_mx_10_object: StaticMixerMX10 
     = StaticMixerMX10::new_static_mixer(
