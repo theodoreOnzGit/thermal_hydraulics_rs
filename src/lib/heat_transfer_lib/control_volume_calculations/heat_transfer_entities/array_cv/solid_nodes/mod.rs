@@ -192,8 +192,6 @@ pub fn heater_v_2_0_nodalised_matrix_solver_test(){
         steel_temperature_array
     ));
 
-
-
     // clone the ptrs for the loop
     let back_cv_ptr_clone_for_loop = back_cv_ptr.clone();
     let front_cv_ptr_clone_for_loop = front_cv_ptr.clone();
