@@ -72,6 +72,29 @@ This is a classic OpenFOAM tutorial method to track test data.
 
 ## Patch Notes 
 
+### v 0.0.7
+
+Major speedup for given examples and SingleCVNode. This was profiled 
+using flamegraph (somewhat easier to read than callgrind and 
+valgrind) from the cargo repositories, licensed under MIT
+or Apache License. 
+
+SingleCVNode will 
+now have a temperature attribute where temperature can be 
+accessed many times per timestep, rather than repeatedly requiring 
+calculation from specific enthalpy many times per timestep. This 
+was severely bottlenecking down the simulation speed.
+
+Another major bottleneck was the repeated construction of cubic splines 
+when obtaining thermodynamic properties of steel whenever the 
+function is accessed, especially thermal conductivity and 
+heat capacity. After the function finishes returning the values,
+the spline object is destroyed, and needs to be recreated. This 
+was extremely computationally intensive. In general, repeated 
+accessing of thermophysical properties multiple times during the 
+timestep was bad for computation speed. It's crucial to calculate 
+once and use the same stored value for each timestep.
+
 ### v 0.0.6 
 
 Added some examples within source code, meant to show how 
