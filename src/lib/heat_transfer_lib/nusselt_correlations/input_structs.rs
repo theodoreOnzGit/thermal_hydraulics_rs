@@ -99,7 +99,7 @@ impl NusseltPrandtlReynoldsData {
     #[inline]
     pub fn ciet_version_2_heater_prandtl_corrected(&self) -> 
     Result<Ratio, ThermalHydraulicsLibError>{
-        let nusself_uncorrected 
+        let nusselt_uncorrected 
         =  {
             let ref this = self;
 
@@ -113,6 +113,7 @@ impl NusseltPrandtlReynoldsData {
 
             nusselt_uncorrected
         };
+        // nusselt number check ok
 
         let prandtl_wall = self.prandtl_wall;
         let prandtl_bulk = self.prandtl_bulk;
@@ -122,7 +123,7 @@ impl NusseltPrandtlReynoldsData {
         let correction_factor: f64 
         = prandtl_bulk_to_wall_ratio.get::<ratio>().powf(0.11);
 
-        return Ok(nusself_uncorrected*correction_factor);
+        return Ok(nusselt_uncorrected*correction_factor);
 
     }
 }

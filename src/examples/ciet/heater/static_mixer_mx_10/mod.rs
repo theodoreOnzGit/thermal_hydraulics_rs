@@ -4,19 +4,7 @@ use uom::si::area::square_meter;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
-/// represents heater version 2 without insulation 
-/// This is because during 2018-ish, the heater insulation 
-/// got burnt off and a lot of frequency response tests were done 
-/// with insulation removed
-///
-/// Heater version 2 bare has no insulation
-/// but it has a twisted tape interior
-///
-///
-/// note that it only contains the heated section, not the top nor 
-/// bottom heads
-///
-/// Note: need to check for memory leaks
+/// represents mx 10 and its pipes
 #[derive(Debug,Clone,PartialEq)]
 pub struct StaticMixerMX10 {
 
@@ -72,7 +60,7 @@ impl StaticMixerMX10 {
         let flow_area = Area::new::<square_meter>(6.11e-4);
         let component_length = Length::new::<meter>(0.33);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
-        let _hydraulic_diameter = Length::new::<meter>(2.79e-2);
+        let hydraulic_diameter = Length::new::<meter>(2.79e-2);
 
 
         // heater is inclined 90 degrees upwards, not that this is 
@@ -106,6 +94,7 @@ impl StaticMixerMX10 {
         let therminol_array: FluidArray = 
         FluidArray::new_custom_component(
             component_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -220,6 +209,7 @@ impl StaticMixerMX10 {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             component_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,

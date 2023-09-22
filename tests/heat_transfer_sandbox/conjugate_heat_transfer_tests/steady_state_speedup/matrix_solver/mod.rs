@@ -87,6 +87,7 @@ pub fn matrix_calculation_initial_test(){
     let initial_temperature = ThermodynamicTemperature::new::
         <degree_celsius>(80.0);
     let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(0.01467);
 
     let flow_area = Area::new::<square_meter>(0.00105);
     let number_of_nodes: usize = 8;
@@ -117,6 +118,7 @@ pub fn matrix_calculation_initial_test(){
     let therminol_array: HeatTransferEntity = 
     FluidArray::new_odd_shaped_pipe(
         heated_length,
+        hydraulic_diameter,
         flow_area,
         initial_temperature,
         atmospheric_pressure,
@@ -298,6 +300,9 @@ pub fn matrix_calculation_initial_test(){
                 therminol_mass_flowrate,
                 fluid_average_temp,
                 atmospheric_pressure);
+
+            // looks like h_to_therminol is the issue
+            // severely underestimated in new ciet heater
 
             let therminol_steel_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::

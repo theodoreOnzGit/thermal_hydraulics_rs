@@ -55,6 +55,7 @@ impl HeaterVersion2Bare {
         let flow_area = Area::new::<square_meter>(0.00105);
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -85,6 +86,7 @@ impl HeaterVersion2Bare {
         let therminol_array: FluidArray = 
         FluidArray::new_custom_component(
             heated_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
@@ -106,12 +108,16 @@ impl HeaterVersion2Bare {
             SolidMaterial::SteelSS304L,
             user_specified_inner_nodes 
         );
-        // now twisted_tape (TBC)
+        // now twisted_tape 
+        let twisted_tape_width: Length = Length::new::<inch>(1.0);
+        let twisted_tape_thickness = Length::new::<inch>(0.048);
+        let twisted_tape_height = heated_length;
+
         let twisted_tape = 
-        SolidColumn::new_cylindrical_shell(
-            heated_length,
-            id,
-            od,
+        SolidColumn::new_block(
+            twisted_tape_height,
+            twisted_tape_thickness,
+            twisted_tape_width,
             initial_temperature,
             atmospheric_pressure,
             SolidMaterial::SteelSS304L,
@@ -126,7 +132,7 @@ impl HeaterVersion2Bare {
             heat_transfer_to_air: h_to_air,
         };
     }
-    /// traditional callibrated heater constructor 
+    /// traditional uncallibrated heater constructor 
     /// with 6 W/(m^2 K) of heat loss  to air
     ///
     /// uses RELAP and SAM model rather than DeWet's Transform 
@@ -145,6 +151,7 @@ impl HeaterVersion2Bare {
         let heated_length = Length::new::<meter>(1.6383);
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
         let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
 
         // heater is inclined 90 degrees upwards, not that this is 
         // particularly important for this scenario
@@ -165,6 +172,93 @@ impl HeaterVersion2Bare {
         let therminol_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             heated_length,
+            hydraulic_diameter,
+            flow_area,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            LiquidMaterial::TherminolVP1,
+            dummy_pipe_form_loss,
+            user_specified_inner_nodes,
+            pipe_incline_angle
+        );
+        // now the outer steel array
+        let steel_shell_array = 
+        SolidColumn::new_cylindrical_shell(
+            heated_length,
+            id,
+            od,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            user_specified_inner_nodes 
+        );
+        // the twisted tape width is assumed to be the twisted 
+        // tape diameter in De Wet's dissertation
+        let twisted_tape_width: Length = Length::new::<inch>(1.0);
+        let twisted_tape_thickness = Length::new::<inch>(0.048);
+        let twisted_tape_height = heated_length;
+
+        let twisted_tape = 
+        SolidColumn::new_block(
+            twisted_tape_height,
+            twisted_tape_thickness,
+            twisted_tape_width,
+            initial_temperature,
+            atmospheric_pressure,
+            SolidMaterial::SteelSS304L,
+            user_specified_inner_nodes 
+        );
+
+        return Self { inner_nodes: user_specified_inner_nodes,
+            twisted_tape_interior: twisted_tape.into(),
+            steel_shell: steel_shell_array.into(),
+            therminol_array: therminol_array.into(),
+            ambient_temperature,
+            heat_transfer_to_air: h_to_air,
+        };
+    }
+
+    /// user uncallibrated heater constructor 
+    /// with 6 W/(m^2 K) of heat loss  to air
+    ///
+    /// uses RELAP and SAM model rather than DeWet's Transform 
+    /// model as reference
+    ///
+    /// 6 W/(m^2 K) is the heat transfer coefficeint assuming natural 
+    /// convection only 
+    ///
+    /// it was increased to 20 W/(m^2 K) because of the support structures 
+    /// and other such losses
+    pub fn _user_callibrated_htc_to_air_model(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature,
+        user_specified_inner_nodes: usize,
+        h_to_air: HeatTransfer) -> Self {
+
+        let flow_area = Area::new::<square_meter>(0.00105);
+        let heated_length = Length::new::<meter>(1.6383);
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+        let dummy_pipe_form_loss = Ratio::new::<ratio>(0.1);
+        let hydraulic_diameter = Length::new::<meter>(0.01467);
+
+        // heater is inclined 90 degrees upwards, not that this is 
+        // particularly important for this scenario
+
+        let pipe_incline_angle = Angle::new::<uom::si::angle::degree>(90.0);
+
+        // default is a 20 W/(m^2 K) callibrated heat transfer coeff 
+        // theoretically it's 6 W/(m^2 K) but then we'll have to manually 
+        // input wall structures for additional heat loss
+        //
+        let id = Length::new::<meter>(0.0381);
+        let od = Length::new::<meter>(0.04);
+
+
+        // inner therminol array
+        let therminol_array: FluidArray = 
+        FluidArray::new_odd_shaped_pipe(
+            heated_length,
+            hydraulic_diameter,
             flow_area,
             initial_temperature,
             atmospheric_pressure,
