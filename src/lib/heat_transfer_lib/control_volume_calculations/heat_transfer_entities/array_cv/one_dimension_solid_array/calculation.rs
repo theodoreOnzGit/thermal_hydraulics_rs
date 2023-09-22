@@ -1,5 +1,5 @@
 use super::SolidColumn;
-use uom::{si::{f64::*, thermodynamic_temperature::kelvin, temperature_interval::degree_celsius, ratio::percent}, num_traits::Zero};
+use uom::si::f64::*;
 use crate::{thermal_hydraulics_error::ThermalHydraulicsLibError, heat_transfer_lib::{thermophysical_properties::{thermal_conductivity::try_get_kappa_thermal_conductivity, specific_enthalpy::try_get_h}, control_volume_calculations::heat_transfer_entities::array_cv::calculation::solve_conductance_matrix_power_vector}};
 use ndarray_linalg::error::LinalgError;
 use ndarray::*;

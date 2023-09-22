@@ -76,7 +76,7 @@ fn solid_thermal_conductivity(material: Material,
 
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature) ,
-        SteelSS304L => _steel_ss_304_l_ornl_thermal_conductivity(temperature),
+        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(temperature),
         Copper => copper_thermal_conductivity(temperature),
     };
 
@@ -111,7 +111,7 @@ impl SolidMaterial {
 
         let thermal_conductivity: ThermalConductivity = match self {
         Fiberglass => fiberglass_thermal_conductivity(solid_temp) ,
-        SteelSS304L => _steel_ss_304_l_ornl_thermal_conductivity(solid_temp),
+        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(solid_temp),
         Copper => copper_thermal_conductivity(solid_temp),
         };
 
@@ -172,7 +172,7 @@ fn fiberglass_thermal_conductivity(
 ///
 /// It's only good for range of 300K to 700K
 #[inline]
-fn _steel_ss_304_l_ornl_thermal_conductivity(
+fn steel_ss_304_l_ornl_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> ThermalConductivity {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
@@ -270,7 +270,7 @@ pub fn thermal_conductivity_test_steel(){
     //
 
     let thermal_cond_graves_et_al_1991 = 
-    _steel_ss_304_l_ornl_thermal_conductivity(
+    steel_ss_304_l_ornl_thermal_conductivity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     // between graves and the Zou/Zweibaum version,

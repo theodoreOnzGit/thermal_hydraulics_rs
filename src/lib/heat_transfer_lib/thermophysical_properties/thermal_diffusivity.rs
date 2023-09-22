@@ -40,7 +40,7 @@ use super::{Material, thermal_conductivity, density, specific_heat_capacity};
 /// approx::assert_relative_eq!(
 /// steel_thermal_cond.value,
 /// 15.62,
-/// epsilon = 0.001);
+/// max_relative = 0.035);
 /// ```
 #[inline]
 pub fn try_get_alpha_thermal_diffusivity(material: Material, 

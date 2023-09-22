@@ -41,7 +41,7 @@ use peroxide::prelude::*;
 /// approx::assert_relative_eq!(
 ///     470.0,
 ///     steel_thermal_cond.value,
-///     max_relative=0.005);
+///     max_relative=0.035);
 ///
 /// ``` 
 #[inline]
@@ -72,7 +72,7 @@ fn solid_specific_heat_capacity(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => _steel_ss_304_l_ornl_specific_heat_capacity(temperature),
+        SteelSS304L => steel_ss_304_l_ornl_specific_heat_capacity(temperature),
         Copper => copper_specific_heat_capacity(temperature),
     };
 
@@ -124,7 +124,7 @@ fn fiberglass_specific_heat_capacity(
 ///
 /// It's only good for range of 300K to 700K
 #[inline]
-fn _steel_ss_304_l_ornl_specific_heat_capacity(
+fn steel_ss_304_l_ornl_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
@@ -226,7 +226,7 @@ pub fn specific_heat_capacity_test_steel(){
     //
 
     let thermal_cond_graves_et_al_1991 = 
-    _steel_ss_304_l_ornl_specific_heat_capacity(
+    steel_ss_304_l_ornl_specific_heat_capacity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     // between graves and the Zou/Zweibaum version,

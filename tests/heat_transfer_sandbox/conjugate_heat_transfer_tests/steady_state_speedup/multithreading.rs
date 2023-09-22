@@ -107,7 +107,7 @@ use BCType::*;
 /// 
 ///
 #[test]
-//#[ignore = "data collected, for now debug (remove later)"]
+//#[ignore = "for now debug (remove later)"]
 pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
 
 

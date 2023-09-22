@@ -393,10 +393,6 @@ pub fn heater_plus_mx_10_without_supports(){
     main_loop.join().unwrap();
 
 
-    let ten_seconds = time::Duration::from_millis(10000);
-
-    thread::sleep(ten_seconds);
-
 
     // once simulation completed, write data
 
