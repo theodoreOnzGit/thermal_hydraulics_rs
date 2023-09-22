@@ -179,6 +179,7 @@ pub fn example_heater(){
     let max_time = Time::new::<minute>(30.0);
     // on my pc, the simulation time using 
     // cargo run --release 
+    // is less than 10ms
     let timestep = Time::new::<second>(0.015);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
