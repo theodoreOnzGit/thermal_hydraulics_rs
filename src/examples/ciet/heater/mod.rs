@@ -204,7 +204,8 @@ pub fn example_heater(){
         .unwrap();
     wtr.write_record(&["time_seconds",
         "heater_power_kilowatts",
-        "therminol_temperature_celsius",
+        "heated_section_exit_temperature_celsius",
+        "bt_12_temperature_celsius",
         "shell_temperature_celsius",
         "timestep_seconds",])
         .unwrap();
@@ -299,7 +300,7 @@ pub fn example_heater(){
             let static_mixer_therminol_clone: FluidArray = 
             static_mixer_mx_10_object.therminol_array.clone().try_into().unwrap();
 
-            let _static_mixer_exit_temperature: ThermodynamicTemperature
+            let static_mixer_exit_temperature: ThermodynamicTemperature
             = static_mixer_therminol_clone.get_temperature_vector().unwrap()
                 .into_iter().last().unwrap();
 
@@ -388,15 +389,18 @@ pub fn example_heater(){
             {
                 // csv data writing
 
-                let mut therminol_fluid_arr: FluidArray = 
+                let therminol_fluid_arr: FluidArray = 
                 therminol_array_clone;
 
 
                 let therminol_outlet_temp:ThermodynamicTemperature = 
-                therminol_fluid_arr.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap();
+                therminol_fluid_arr.front_single_cv.temperature;
 
                 let therminol_outlet_temp_string = 
                 therminol_outlet_temp.get::<degree_celsius>().to_string();
+
+                let static_mixer_outlet_temp_string = 
+                static_mixer_exit_temperature.get::<degree_celsius>().to_string();
 
                 let current_time_string = 
                 simulation_time.get::<second>().to_string();
@@ -485,6 +489,7 @@ pub fn example_heater(){
                 wtr.write_record(&[current_time_string,
                     heater_power_kilowatt_string,
                     therminol_outlet_temp_string,
+                    static_mixer_outlet_temp_string,
                     shell_celsius_string,
                     timestep_string])
                     .unwrap();
