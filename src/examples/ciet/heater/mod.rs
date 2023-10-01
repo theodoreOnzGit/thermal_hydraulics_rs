@@ -260,7 +260,7 @@ pub fn example_heater(){
             if simulation_time > transient_start_time {
 
                 // step down 500 watts
-                heater_power = Power::new::<kilowatt>(7.5);
+                heater_power = Power::new::<kilowatt>(8.5);
 
             }
 
