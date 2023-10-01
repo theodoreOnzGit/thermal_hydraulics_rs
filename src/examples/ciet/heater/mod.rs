@@ -389,12 +389,11 @@ pub fn example_heater(){
             {
                 // csv data writing
 
-                let therminol_fluid_arr: FluidArray = 
+                let mut therminol_fluid_arr: FluidArray = 
                 therminol_array_clone;
 
-
                 let therminol_outlet_temp:ThermodynamicTemperature = 
-                therminol_fluid_arr.front_single_cv.temperature;
+                therminol_fluid_arr.front_single_cv.get_temperature_from_enthalpy_and_set().unwrap();
 
                 let therminol_outlet_temp_string = 
                 therminol_outlet_temp.get::<degree_celsius>().to_string();
