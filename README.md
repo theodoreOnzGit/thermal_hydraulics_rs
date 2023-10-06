@@ -35,6 +35,15 @@ is still highly unstable and subject to change.
 Please refer to crate documentation for more details,
 especially the prelude documentation for more examples
 
+# common errors
+
+For compilation, if using debian based distros with a very new CPU,
+eg. 13th generation intel CPU in 2023 OpenBLAS may not compile correctly 
+as it is not able to detect the CPU type. This 
+
+The workaround is to ensure that "intel-mkl" is used rather than 
+OpenBLAS.
+
 # tests 
 If you want to use cargo watch for testing, 
 this is because you will likely run into csv files. When Rust 
