@@ -1,5 +1,6 @@
 # thermal_hydraulics_rs
 
+
 A thermal hydraulics library primarily for the Compact 
 Integral Effects Test (CIET) and the Fluoride Salt 
 Cooled High Temperature Reactor (FHR).
@@ -10,6 +11,8 @@ in development and not fully featured yet.
 
 The crate contains many useful traits and examples of how to use 
 those traits for your own projects.
+
+## Add to Cargo
 
 An easy way to start is to use cargo to add the fluid mechanics rust
 package
@@ -35,14 +38,24 @@ is still highly unstable and subject to change.
 Please refer to crate documentation for more details,
 especially the prelude documentation for more examples
 
-# common errors
+## Prerequisites
 
-For compilation, if using debian based distros with a very new CPU,
-eg. 13th generation intel CPU in 2023 OpenBLAS may not compile correctly 
-as it is not able to detect the CPU type. This 
 
-The workaround is to ensure that "intel-mkl" is used rather than 
-OpenBLAS.
+For linux machines, you will need to install libopenblas. I'm using 
+the dev version as an example:
+
+For Linux Mint, Ubuntu, PopOS etc.:
+```bash
+sudo apt install libopenblas-dev
+```
+
+For Arch Linux based distros:
+
+```bash
+sudo pacman -S openblas
+```
+
+
 
 # tests 
 If you want to use cargo watch for testing, 
