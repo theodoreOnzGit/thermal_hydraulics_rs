@@ -1,6 +1,12 @@
 
 # Patch Notes 
 
+## v 0.0.9
+
+Found out that compiling openblas on Linux Mint was not as straightforward 
+as Arch Linux. Therefore I just opted to use the system libraries rather 
+than build this from source. 
+
 ## v 0.0.8
 
 Sorted out bug for heater example as the wrong hydraulic diameter 

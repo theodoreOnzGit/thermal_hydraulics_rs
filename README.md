@@ -49,13 +49,13 @@ For Linux Mint, Ubuntu, PopOS etc.:
 sudo apt install libopenblas-dev
 ```
 
-For Arch Linux based distros:
+For Arch Linux based distros, eg. endeavourOS and Arch Linux:
 
 ```bash
 sudo pacman -S openblas
 ```
 
-
+Tested on Arch Linux and Linux Mint distros. 
 
 # tests 
 If you want to use cargo watch for testing, 
