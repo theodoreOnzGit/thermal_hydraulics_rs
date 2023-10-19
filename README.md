@@ -1,5 +1,6 @@
 # thermal_hydraulics_rs
 
+
 A thermal hydraulics library primarily for the Compact 
 Integral Effects Test (CIET) and the Fluoride Salt 
 Cooled High Temperature Reactor (FHR).
@@ -10,6 +11,8 @@ in development and not fully featured yet.
 
 The crate contains many useful traits and examples of how to use 
 those traits for your own projects.
+
+## Add to Cargo
 
 An easy way to start is to use cargo to add the fluid mechanics rust
 package
@@ -34,6 +37,25 @@ is still highly unstable and subject to change.
 
 Please refer to crate documentation for more details,
 especially the prelude documentation for more examples
+
+## Prerequisites
+
+
+For linux machines, you will need to install libopenblas. I'm using 
+the dev version as an example:
+
+For Linux Mint, Ubuntu, PopOS etc.:
+```bash
+sudo apt install libopenblas-dev
+```
+
+For Arch Linux based distros, eg. endeavourOS and Arch Linux:
+
+```bash
+sudo pacman -S openblas
+```
+
+Tested on Arch Linux and Linux Mint distros. 
 
 # tests 
 If you want to use cargo watch for testing, 
@@ -142,7 +164,7 @@ The code is designed to throw an error in case of:
 
 ## development environment
 
-I use cargo watch:
+I use cargo watch for development:
 
 ```powershell
 cargo install cargo-watch
@@ -176,55 +198,6 @@ C:\Users\$env:UserName\AppData\Local\nvim-data\plugged\vim-lsp-settings\installe
 ```
 And i edited the curl file to include the -k option.
 
-## cargo installation
-
-I installed
-
-```powershell
-cargo add uom
-cargo add peroxide
-cargo add roots
-```
-
-1. units of measure (uom) helps to provide unit safe 
-calculations.
-2. Peroxide is a numerical methods library we need for root 
-finding
-
-if you want the latest version of uom
-
-```powershell
-cargo add --git https://github.com/iliekturtles/uom uom
-```
-
-## combining library and binary
-
-https://dev.to/yjdoc2/make-a-combined-library-and-binary-project-in-rust-d4f
-
-I followed the instructions above and changed the cargo.toml:
-
-```toml
-[[bin]]
-name = "thermal_hydraulics_rs"
-path = "src/bin.rs"
-```
-i then added a lib.rs file in the following filepath
-src/lib/lib.rs,
-and added the following to cargo.toml
-
-```toml
-[lib]
-name = "thermal_hydraulics_rs"
-path = "src/lib/lib.rs"
-```
-
-## returning functions in rust
-
-I often use root finding algorithms in rust
-or C sharp, and for that i need a one input, one output function.
-
-I found this site useful:
-https://stackoverflow.com/questions/63967743/what-is-the-correct-syntax-to-return-a-function-in-rust
 
 ## Licenses
 

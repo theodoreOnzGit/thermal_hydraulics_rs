@@ -1,6 +1,6 @@
 [package]
 name = "thermal_hydraulics_rs"
-version = "0.0.8"
+version = "0.0.9"
 edition = "2021"
 license = "GPL-3.0"
 description = "A Thermal Hydraulics Library with some useful traits,enums and functions for heat transfer and fluid mechanics"
@@ -27,7 +27,7 @@ ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
 ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
 
 [target.'cfg(unix)'.dependencies]
-ndarray-linalg = { version = "0.16.0", features = ["openblas-static"] }
+ndarray-linalg = { version = "0.16.0", features = ["openblas-system"] }
 
 # library and binary key
 [[bin]]
