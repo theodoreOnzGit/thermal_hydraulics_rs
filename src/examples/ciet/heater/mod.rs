@@ -560,22 +560,30 @@ pub fn example_heater(){
             // link struct supports to ambient air
             // axially 
 
-            structural_support_heater_bottom_head. 
-                support_array.link_to_front(
+            // this gives the user ability to switch support 
+            // structures on and off
+
+            let support_structures_enabled = false;
+            let dummy_axial_conduction_enabled = false;
+
+            if support_structures_enabled == true {
+                structural_support_heater_bottom_head. 
+                    support_array.link_to_front(
+                        &mut ambient_air_temp_bc,
+                        support_conductance_interaction
+                        ).unwrap();
+
+                structural_support_heater_top_head. 
+                    support_array.link_to_front(
+                        &mut ambient_air_temp_bc,
+                        support_conductance_interaction
+                        ).unwrap();
+
+                structural_support_mx_10.support_array.link_to_front(
                     &mut ambient_air_temp_bc,
                     support_conductance_interaction
-                ).unwrap();
-
-            structural_support_heater_top_head. 
-                support_array.link_to_front(
-                    &mut ambient_air_temp_bc,
-                    support_conductance_interaction
-                ).unwrap();
-
-            structural_support_mx_10.support_array.link_to_front(
-                &mut ambient_air_temp_bc,
-                support_conductance_interaction
-            ).unwrap();
+                    ).unwrap();
+            }
 
 
             static_mixer_mx_10_object = static_mixer_join_handle.join().unwrap();
@@ -586,21 +594,23 @@ pub fn example_heater(){
 
 
             // link struct supports to heater top/bottom heads
-            structural_support_heater_top_head.
-                support_array.link_to_back(
-                    &mut heater_top_head_bare.steel_shell,
-                    support_conductance_interaction
-                ).unwrap();
-            structural_support_heater_bottom_head. 
-                support_array.link_to_back(
-                    &mut heater_bottom_head_bare.steel_shell,
-                    support_conductance_interaction
-                ).unwrap();
+            if support_structures_enabled == true {
+                structural_support_heater_top_head.
+                    support_array.link_to_back(
+                        &mut heater_top_head_bare.steel_shell,
+                        support_conductance_interaction
+                        ).unwrap();
+                structural_support_heater_bottom_head. 
+                    support_array.link_to_back(
+                        &mut heater_bottom_head_bare.steel_shell,
+                        support_conductance_interaction
+                        ).unwrap();
 
-            structural_support_mx_10.support_array.link_to_back(
-                &mut static_mixer_mx_10_pipe.steel_shell,
-                support_conductance_interaction
-            ).unwrap();
+                structural_support_mx_10.support_array.link_to_back(
+                    &mut static_mixer_mx_10_pipe.steel_shell,
+                    support_conductance_interaction
+                    ).unwrap();
+            }
 
             // note, the heater top and bottom head area changed 
             // during course of this interaction, so should be okay
@@ -609,26 +619,28 @@ pub fn example_heater(){
             // i will also connect heater shell to the structural support 
             // via the head as in ciet 
 
-            heater_v2_bare.steel_shell.link_to_back(
-                &mut heater_bottom_head_bare.steel_shell,
-                support_conductance_interaction
-            ).unwrap();
+            if dummy_axial_conduction_enabled == true {
+                heater_v2_bare.steel_shell.link_to_back(
+                    &mut heater_bottom_head_bare.steel_shell,
+                    support_conductance_interaction
+                    ).unwrap();
 
-            heater_v2_bare.steel_shell.link_to_front(
-                &mut heater_top_head_bare.steel_shell,
-                support_conductance_interaction
-            ).unwrap();
+                heater_v2_bare.steel_shell.link_to_front(
+                    &mut heater_top_head_bare.steel_shell,
+                    support_conductance_interaction
+                    ).unwrap();
 
-            // probably edit this to include twisted tape conductance
-            heater_v2_bare.twisted_tape_interior.link_to_back(
-                &mut heater_bottom_head_bare.twisted_tape_interior,
-                support_conductance_interaction
-            ).unwrap();
+                // probably edit this to include twisted tape conductance
+                heater_v2_bare.twisted_tape_interior.link_to_back(
+                    &mut heater_bottom_head_bare.twisted_tape_interior,
+                    support_conductance_interaction
+                    ).unwrap();
 
-            heater_v2_bare.twisted_tape_interior.link_to_front(
-                &mut heater_top_head_bare.twisted_tape_interior,
-                support_conductance_interaction
-            ).unwrap();
+                heater_v2_bare.twisted_tape_interior.link_to_front(
+                    &mut heater_top_head_bare.twisted_tape_interior,
+                    support_conductance_interaction
+                    ).unwrap();
+            }
 
             // now link it laterally to ambient temperatures
             let struct_support_top_head_join_handle = 
