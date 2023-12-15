@@ -260,7 +260,7 @@ pub fn example_heater(){
             if simulation_time > transient_start_time {
 
                 // step down 500 watts
-                heater_power = Power::new::<kilowatt>(8.5);
+                heater_power = Power::new::<kilowatt>(7.5);
 
             }
 
@@ -563,7 +563,7 @@ pub fn example_heater(){
             // this gives the user ability to switch support 
             // structures on and off
 
-            let support_structures_enabled = false;
+            let support_structures_enabled = true;
             let dummy_axial_conduction_enabled = false;
 
             if support_structures_enabled == true {
