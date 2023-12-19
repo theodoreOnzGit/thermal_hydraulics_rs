@@ -278,7 +278,7 @@ pub fn example_heater(){
             let mut therminol_array_clone: FluidArray 
             = heater_v2_bare.therminol_array.clone().try_into().unwrap();
 
-            let _therminol_array_temperature: Vec<ThermodynamicTemperature> = 
+            let therminol_array_temperature: Vec<ThermodynamicTemperature> = 
             therminol_array_clone.get_temperature_vector().unwrap();
 
             let heater_surface_array_clone: SolidColumn 
@@ -319,7 +319,7 @@ pub fn example_heater(){
                 heater_therminol_avg_density,
             );
             {
-                // prints therminol temperature 
+                // prints heater surface temperature 
                 let heater_surf_temp_degc: Vec<f64> = heater_surface_array_temp
                     .iter().map(
                         |&temperature|{
@@ -329,6 +329,17 @@ pub fn example_heater(){
 
                 // print surface temperature 
                 dbg!(heater_surf_temp_degc);
+                // print therminol temperature 
+                let print_therminol_temp = false;
+                if print_therminol_temp {
+                    let therminol_temp_degc: Vec<f64> = therminol_array_temperature
+                        .iter().map(
+                            |&temperature|{
+                                temperature.get::<degree_celsius>()
+                            }
+                            ).collect();
+                    dbg!(therminol_temp_degc);
+                }
 
                 let bt_12_temperature: ThermodynamicTemperature = 
                 static_mixer_pipe_therminol_clone.get_temperature_vector().unwrap() 
