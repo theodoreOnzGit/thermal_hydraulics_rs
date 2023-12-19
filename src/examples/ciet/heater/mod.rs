@@ -329,7 +329,9 @@ pub fn example_heater(){
 
                 // print surface temperature 
                 dbg!(heater_surf_temp_degc);
-                // print therminol temperature 
+                // print therminol temperature, toggle this to true 
+                // if you want to print the temperature of the fluid 
+                // control volumes
                 let print_therminol_temp = false;
                 if print_therminol_temp {
                     let therminol_temp_degc: Vec<f64> = therminol_array_temperature
