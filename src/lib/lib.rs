@@ -69,11 +69,15 @@
 #![warn(missing_docs)]
 extern crate uom;
 
-/// Fluid Mechanics Module
+/// Fluid Mechanics Module (testing)
 pub mod fluid_mechanics_lib;
 
-/// Heat Transfer Module
+/// Heat Transfer Module (testing)
 pub mod heat_transfer_lib;
+
+/// for mostly incompressible fluids using the Boussinesq Approximation
+/// that is, density doesn't change much except for natural convection
+pub mod boussinesq_solver;
 
 /// use peroxide macros 
 #[macro_use]
