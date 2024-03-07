@@ -18,11 +18,11 @@ use peroxide::prelude::*;
 /// use uom::si::f64::*;
 /// use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 /// use uom::si::thermodynamic_temperature::kelvin;
-/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
 /// SolidMaterial::SteelSS304L;
-/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
 /// Material;
-/// use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::
+/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
 /// thermal_conductivity::try_get_kappa_thermal_conductivity;
 ///
 /// use uom::si::pressure::atmosphere;

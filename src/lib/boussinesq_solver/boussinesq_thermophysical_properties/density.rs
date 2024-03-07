@@ -20,14 +20,14 @@ use super::LiquidMaterial::*;
 /// use uom::si::f64::*;
 /// use uom::si::pressure::atmosphere;
 /// use uom::si::thermodynamic_temperature::kelvin;
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::density::try_get_rho;
+/// use thermal_hydraulics_rs::boussinesq_solver::
+/// boussinesq_thermophysical_properties::density::try_get_rho;
 ///
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::SolidMaterial::SteelSS304L;
+/// use thermal_hydraulics_rs::boussinesq_solver::
+/// boussinesq_thermophysical_properties::SolidMaterial::SteelSS304L;
 ///
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::Material;
+/// use thermal_hydraulics_rs::boussinesq_solver::
+/// boussinesq_thermophysical_properties::Material;
 ///
 /// let steel = Material::Solid(SteelSS304L);
 /// let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);

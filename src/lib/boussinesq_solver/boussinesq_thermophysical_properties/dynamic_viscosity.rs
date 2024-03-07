@@ -14,14 +14,14 @@ use super::LiquidMaterial::*;
 /// use uom::si::f64::*;
 /// use uom::si::pressure::atmosphere;
 /// use uom::si::thermodynamic_temperature::kelvin;
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
+/// use thermal_hydraulics_rs::boussinesq_solver::
+/// boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 ///
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::LiquidMaterial::DowthermA;
+/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties
+/// ::LiquidMaterial::DowthermA;
 ///
-/// use thermal_hydraulics_rs::heat_transfer_lib::
-/// thermophysical_properties::Material;
+/// use thermal_hydraulics_rs::boussinesq_solver::
+/// boussinesq_thermophysical_properties::Material;
 ///
 /// let dowtherm_a = Material::Liquid(DowthermA);
 /// let temperature = ThermodynamicTemperature::new::<kelvin>(350.0);

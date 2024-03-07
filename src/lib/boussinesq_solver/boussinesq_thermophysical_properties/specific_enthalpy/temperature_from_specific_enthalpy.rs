@@ -25,7 +25,7 @@ use roots::find_root_brent;
 // probably should have a temperature range checker in 
 // future
 //
-// pub(in crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy) 
+// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties)
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
@@ -61,7 +61,7 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 }
 
 // should the material happen to be a liquid, use this function
-// pub(in crate::heat_transfer_lib::thermophysical_properties::specific_enthalpy) 
+// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
