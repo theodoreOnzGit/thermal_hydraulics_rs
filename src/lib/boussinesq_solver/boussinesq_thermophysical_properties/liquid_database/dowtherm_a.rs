@@ -66,22 +66,25 @@ use uom::si::available_energy::joule_per_kilogram;
 extern crate peroxide;
 use peroxide::prelude::*;
 
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
 /// function to obtain dowtherm A density
 /// given a temperature
 
 pub fn get_dowtherm_a_density(
-    fluid_temp: ThermodynamicTemperature) -> MassDensity {
+    fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
     // first we check if fluid temp is between 20-180C (range of validity)
     // panic otherwise
-    range_check_dowtherm_a(fluid_temp);
+    range_check_dowtherm_a(fluid_temp)?;
 
     //then convert the fluidTemp object into a f64
     // and plug it into the correlation
     let density_value_kg_per_m3 = 1078.0 - 0.85*fluid_temp
        .get::<degree_celsius>();
 
-    return MassDensity::new::<kilogram_per_cubic_meter>(density_value_kg_per_m3);
+    return Ok(MassDensity::new::<
+              kilogram_per_cubic_meter>(density_value_kg_per_m3));
 }
 
 /// function to obtain dowtherm A viscosity
@@ -298,7 +301,8 @@ pub fn get_temperature_from_enthalpy(
 ///
 /// If it falls outside this range, it will panic
 /// or throw an error, and the program will not run
-pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) -> bool{
+pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) 
+    -> Result<bool,ThermalHydraulicsLibError>{
 
     // first i convert the fluidTemp object into a degree 
     // celsius
@@ -312,12 +316,13 @@ pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) -> bool{
         let error_msg4 = "\n the minimum is 20C";
 
 
-        panic!("{}{}{:?}{}{}",
+        println!("{}{}{:?}{}{}",
                error_msg,
                error_msg1,
                fluid_temp,
                error_msg3,
                error_msg4);
+        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
     }
 
 
@@ -327,14 +332,15 @@ pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) -> bool{
         let error_msg3 = "C \n";
         let error_msg4 = "\n the max is 180C";
 
-        panic!("{}{}{:?}{}{}",
+        println!("{}{}{:?}{}{}",
                error_msg,
                error_msg1,
                fluid_temp,
                error_msg3,
                error_msg4);
+        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
     }
 
-    return true;
+    return Ok(true);
 
 }

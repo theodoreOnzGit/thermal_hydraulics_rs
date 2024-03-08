@@ -43,7 +43,7 @@ pub fn try_get_rho(material: Material,
 
     let density: MassDensity = match material {
         Material::Solid(_) => solid_density(material, temperature),
-        Material::Liquid(_) => liquid_density(material, temperature)
+        Material::Liquid(_) => liquid_density(material, temperature)?
     };
 
     return Ok(density);
@@ -57,7 +57,7 @@ impl Material {
 
     let density: MassDensity = match self {
         Material::Solid(_) => solid_density(self.clone(), temperature),
-        Material::Liquid(_) => liquid_density(self.clone(), temperature)
+        Material::Liquid(_) => liquid_density(self.clone(), temperature)?
     };
 
     return Ok(density);
@@ -96,7 +96,7 @@ fn solid_density(material: Material,
 
 // should the material happen to be a liquid, use this function
 fn liquid_density(material: Material, 
-    fluid_temp: ThermodynamicTemperature) -> MassDensity {
+    fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
@@ -105,11 +105,11 @@ fn liquid_density(material: Material,
     };
 
     let density: MassDensity = match liquid_material {
-        DowthermA => dowtherm_a_density(fluid_temp),
-        TherminolVP1 => dowtherm_a_density(fluid_temp)
+        DowthermA => dowtherm_a_density(fluid_temp)?,
+        TherminolVP1 => dowtherm_a_density(fluid_temp)?
     };
 
-    return density;
+    return Ok(density);
 }
 
 impl LiquidMaterial {
@@ -120,8 +120,8 @@ impl LiquidMaterial {
     Result<MassDensity,ThermalHydraulicsLibError> {
 
         let density: MassDensity = match &self.clone() {
-            DowthermA => dowtherm_a_density(fluid_temp),
-            TherminolVP1 => dowtherm_a_density(fluid_temp)
+            DowthermA => dowtherm_a_density(fluid_temp)?,
+            TherminolVP1 => dowtherm_a_density(fluid_temp)?
         };
 
         Ok(density)
@@ -145,7 +145,8 @@ fn copper_density() -> MassDensity {
 }
 
 #[inline]
-fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> MassDensity{
+fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> 
+Result<MassDensity,ThermalHydraulicsLibError>{
     return get_dowtherm_a_density(fluid_temp);
 }
 
