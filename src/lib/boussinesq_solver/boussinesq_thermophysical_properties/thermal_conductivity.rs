@@ -1,6 +1,5 @@
 use uom::si::f64::*;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
-use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAThermalConductivity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
@@ -9,6 +8,7 @@ use super::Material;
 use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
+use super::liquid_database::dowtherm_a::get_dowtherm_a_thermal_conductivity;
 
 use peroxide::prelude::*;
 
@@ -247,7 +247,7 @@ fn _steel_304_l_spline_thermal_conductivity(
 #[inline]
 fn dowtherm_a_thermal_conductivity(
     fluid_temp: ThermodynamicTemperature) -> ThermalConductivity{
-    return getDowthermAThermalConductivity(fluid_temp);
+    return get_dowtherm_a_thermal_conductivity(fluid_temp);
 }
 
 #[test]

@@ -1,7 +1,5 @@
 use uom::si::f64::*;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
-use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::
-getDowthermAConstantPressureSpecificHeatCapacity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
@@ -10,6 +8,7 @@ use super::Material;
 use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
+use super::liquid_database::dowtherm_a::get_dowtherm_a_constant_pressure_specific_heat_capacity;
 
 use peroxide::prelude::*;
 
@@ -204,7 +203,7 @@ fn _steel_304_l_spline_specific_heat_capacity(
 #[inline]
 fn dowtherm_a_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> SpecificHeatCapacity{
-    return getDowthermAConstantPressureSpecificHeatCapacity(fluid_temp);
+    return get_dowtherm_a_constant_pressure_specific_heat_capacity(fluid_temp);
 }
 
 #[test]

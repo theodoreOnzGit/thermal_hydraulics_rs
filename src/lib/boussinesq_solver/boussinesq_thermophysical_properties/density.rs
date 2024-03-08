@@ -2,8 +2,6 @@ use uom::si::f64::MassDensity;
 use uom::si::f64::Pressure;
 use uom::si::f64::ThermodynamicTemperature;
 use uom::si::mass_density::kilogram_per_cubic_meter;
-use crate::fluid_mechanics_lib::therminol_component::
-dowtherm_a_properties::getDowthermADensity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::LiquidMaterial;
@@ -11,6 +9,7 @@ use super::Material;
 use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
+use super::liquid_database::dowtherm_a::get_dowtherm_a_density;
 
 /// returns a density given a material, temperature and pressure
 ///
@@ -147,7 +146,7 @@ fn copper_density() -> MassDensity {
 
 #[inline]
 fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> MassDensity{
-    return getDowthermADensity(fluid_temp);
+    return get_dowtherm_a_density(fluid_temp);
 }
 
 #[test]

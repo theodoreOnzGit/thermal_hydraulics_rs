@@ -1,10 +1,10 @@
 use uom::si::f64::*;
-use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties::getDowthermAViscosity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::LiquidMaterial;
 use super::Material;
 use super::LiquidMaterial::*;
+use super::liquid_database::dowtherm_a::get_dowtherm_a_viscosity;
 
 /// returns a dynamic_viscosity given a material, temperature and pressure
 ///
@@ -94,7 +94,7 @@ impl LiquidMaterial {
 
 #[inline]
 fn dowtherm_a_dynamic_viscosity(fluid_temp: ThermodynamicTemperature) -> DynamicViscosity{
-    return getDowthermAViscosity(fluid_temp);
+    return get_dowtherm_a_viscosity(fluid_temp);
 }
 
 #[test]
