@@ -3,5 +3,5 @@
 ///
 /// TODO: 
 /// 1) need to implement range checker for all properties
-/// 2) also, consolidate dowtherm A / Therminol VP1 properties
+/// 2) also, consolidate dowtherm A / Therminol VP1 properties (done)
 pub mod boussinesq_thermophysical_properties;

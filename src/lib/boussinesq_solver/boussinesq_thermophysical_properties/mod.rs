@@ -105,13 +105,6 @@ pub mod dynamic_viscosity;
 /// specific enthalpy calculation
 pub mod specific_enthalpy;
 
-/// (hopefully) useful information in case a function fails to behave 
-/// properly 
-///
-/// probably going to deprecate or integrate with existing 
-/// thermal_hydraulics_error
-pub mod error_types;
-
 /// thermal diffusivity 
 pub mod thermal_diffusivity;
 

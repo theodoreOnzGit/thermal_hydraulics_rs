@@ -1,7 +1,7 @@
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::{f64::*, length::{micrometer, millimeter}};
 
-use super::{SolidMaterial, Material, error_types::MaterialTypeError};
+use super::{SolidMaterial, Material};
 
 impl SolidMaterial {
 
@@ -48,7 +48,7 @@ impl Material {
                 return solid_material.surface_roughness();
             },
             Material::Liquid(_) => {
-                Err(MaterialTypeError.into())
+                Err(ThermalHydraulicsLibError::TypeConversionErrorMaterial)
             },
         }
     }
