@@ -51,7 +51,7 @@ pub fn try_get_cp(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match material {
         Material::Solid(_) => solid_specific_heat_capacity(material, temperature),
-        Material::Liquid(_) => liquid_specific_heat_capacity(material, temperature)
+        Material::Liquid(_) => liquid_specific_heat_capacity(material, temperature)?
     };
 
     return Ok(specific_heat_capacity);
@@ -83,7 +83,8 @@ fn solid_specific_heat_capacity(material: Material,
 
 // should the material happen to be a liquid, use this function
 fn liquid_specific_heat_capacity(material: Material, 
-    fluid_temp: ThermodynamicTemperature) -> SpecificHeatCapacity {
+    fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
+ThermalHydraulicsLibError>{
 
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
@@ -93,11 +94,11 @@ fn liquid_specific_heat_capacity(material: Material,
     };
 
     let specific_heat_capacity: SpecificHeatCapacity = match liquid_material {
-        DowthermA => dowtherm_a_specific_heat_capacity(fluid_temp),
-        TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)
+        DowthermA => dowtherm_a_specific_heat_capacity(fluid_temp)?,
+        TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)?
     };
 
-    return specific_heat_capacity;
+    return Ok(specific_heat_capacity);
 }
 
 /// returns thermal conductivity of fiberglass
@@ -202,8 +203,9 @@ fn _steel_304_l_spline_specific_heat_capacity(
 
 #[inline]
 fn dowtherm_a_specific_heat_capacity(
-    fluid_temp: ThermodynamicTemperature) -> SpecificHeatCapacity{
-    return get_dowtherm_a_constant_pressure_specific_heat_capacity(fluid_temp);
+    fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity
+,ThermalHydraulicsLibError>{
+    get_dowtherm_a_constant_pressure_specific_heat_capacity(fluid_temp)
 }
 
 #[test]

@@ -105,15 +105,16 @@ ThermalHydraulicsLibError>{
 /// function to obtain dowtherm A specific heat capacity
 /// given a temperature
 pub fn get_dowtherm_a_constant_pressure_specific_heat_capacity(
-    fluid_temp: ThermodynamicTemperature) -> SpecificHeatCapacity{
+    fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
+ThermalHydraulicsLibError>{
 
-    range_check_dowtherm_a(fluid_temp);
+    range_check_dowtherm_a(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
     let cp_value_joule_per_kg = 1518.0 + 2.82*fluid_temp.get::<degree_celsius>();
 
-    return SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        cp_value_joule_per_kg);
+    Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        cp_value_joule_per_kg))
 }
 
 /// function to obtain dowtherm A thermal conductivity
