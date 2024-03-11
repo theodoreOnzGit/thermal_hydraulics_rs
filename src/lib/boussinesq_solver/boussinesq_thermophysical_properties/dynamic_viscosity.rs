@@ -46,7 +46,7 @@ pub fn try_get_mu_viscosity(material: Material,
             println!("Error: Solids do not have dynamic viscosity");
             Err(ThermalHydraulicsLibError::ThermophysicalPropertyError)
         },
-        Material::Liquid(_) => Ok(liquid_dynamic_viscosity(material, temperature))
+        Material::Liquid(_) => liquid_dynamic_viscosity(material, temperature)
     }
 }
 
@@ -56,7 +56,7 @@ pub fn try_get_mu_viscosity(material: Material,
 // should the material happen to be a liquid, use this function
 #[inline]
 fn liquid_dynamic_viscosity(material: Material, 
-    fluid_temp: ThermodynamicTemperature) -> DynamicViscosity {
+    fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,ThermalHydraulicsLibError> {
 
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
@@ -65,11 +65,11 @@ fn liquid_dynamic_viscosity(material: Material,
     };
 
     let dynamic_viscosity: DynamicViscosity = match liquid_material {
-        DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp),
-        TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)
+        DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp)?,
+        TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?
     };
 
-    return dynamic_viscosity;
+    return Ok(dynamic_viscosity);
 }
 
 impl LiquidMaterial {
@@ -80,8 +80,8 @@ impl LiquidMaterial {
     Result<DynamicViscosity, ThermalHydraulicsLibError>{
 
         let dynamic_viscosity: DynamicViscosity = match self {
-            DowthermA => dowtherm_a_dynamic_viscosity(temperature),
-            TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)
+            DowthermA => dowtherm_a_dynamic_viscosity(temperature)?,
+            TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)?
         };
 
         Ok(dynamic_viscosity)
@@ -93,7 +93,8 @@ impl LiquidMaterial {
 
 
 #[inline]
-fn dowtherm_a_dynamic_viscosity(fluid_temp: ThermodynamicTemperature) -> DynamicViscosity{
+fn dowtherm_a_dynamic_viscosity(fluid_temp: ThermodynamicTemperature) -> 
+Result<DynamicViscosity, ThermalHydraulicsLibError>{
     return get_dowtherm_a_viscosity(fluid_temp);
 }
 

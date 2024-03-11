@@ -89,15 +89,16 @@ pub fn get_dowtherm_a_density(
 
 /// function to obtain dowtherm A viscosity
 /// given a temperature
-pub fn  get_dowtherm_a_viscosity(
-    fluid_temp: ThermodynamicTemperature) -> DynamicViscosity{
+pub fn get_dowtherm_a_viscosity(
+    fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
+ThermalHydraulicsLibError>{
 
-    range_check_dowtherm_a(fluid_temp);
+    range_check_dowtherm_a(fluid_temp)?;
     let temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
     let viscosity_value_pascal_second = 0.130/
         temperature_degrees_c_value.powf(1.072);
 
-    return DynamicViscosity::new::<pascal_second>(viscosity_value_pascal_second);
+    Ok(DynamicViscosity::new::<pascal_second>(viscosity_value_pascal_second))
                                 
 }
 
