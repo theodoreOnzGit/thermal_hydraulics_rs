@@ -98,3 +98,48 @@ Result<TemperatureInterval,ThermalHydraulicsLibError> {
     return Ok(numerator/denominator);
 
 }
+
+/// calculate overall heat flux power input based on lmtd
+///
+/// assuming a fixed surrounding temperature
+///
+/// calculates heat INPUT into fluid based on surrounding temperature
+/// estimated fluid inlet and fluid outlet temperature
+///
+/// Q = U * A * LMTD
+///
+/// LMTD = (delta T in - delta T out) / (ln delta T in - ln delta T out)
+///
+/// U is overall_heat_transfer_coeff
+///
+/// A is the surface_area 
+/// The surface_area you use can be the surface area of the inner 
+/// or outer region of the pipe. BUT, the overall_heat_transfer_coeff 
+/// must be adjusted accordingly
+///
+///
+pub fn calculate_lmtd_heat_flux_based_on_ambient_temp(
+    overall_heat_transfer_coeff : HeatTransfer,
+    ambient_temperature : ThermodynamicTemperature,
+    fluid_temperature_in : ThermodynamicTemperature,
+    fluid_temperature_out: ThermodynamicTemperature,
+    surface_area : Area) -> Result<Power,ThermalHydraulicsLibError> {
+
+    if fluid_temperature_in.value == fluid_temperature_out.value {
+        return Ok(overall_heat_transfer_coeff * surface_area * 
+            subtract_two_thermodynamic_temperatures(
+            ambient_temperature , fluid_temperature_in));
+    }
+    // note, i do this to calculate
+    // delta T = ambient_temperature - fluid_temperature
+    let log_mean_temp_diff = 
+        log_mean_temperature_difference(
+            ambient_temperature,
+            ambient_temperature, 
+            fluid_temperature_in,
+            fluid_temperature_out)?;
+
+    return Ok(
+        overall_heat_transfer_coeff * (log_mean_temp_diff) * surface_area); 
+
+}
