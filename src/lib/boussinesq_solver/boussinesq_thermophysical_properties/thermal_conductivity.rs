@@ -93,8 +93,8 @@ impl LiquidMaterial {
         -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
 
         let thermal_conductivity: ThermalConductivity = match self {
-            DowthermA => dowtherm_a_thermal_conductivity(fluid_temp),
-            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)
+            DowthermA => dowtherm_a_thermal_conductivity(fluid_temp)?,
+            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)?
         };
 
         Ok(thermal_conductivity)
@@ -246,7 +246,7 @@ fn _steel_304_l_spline_thermal_conductivity(
 
 #[inline]
 fn dowtherm_a_thermal_conductivity(
-    fluid_temp: ThermodynamicTemperature) -> ThermalConductivity{
+    fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError>{
     return get_dowtherm_a_thermal_conductivity(fluid_temp);
 }
 

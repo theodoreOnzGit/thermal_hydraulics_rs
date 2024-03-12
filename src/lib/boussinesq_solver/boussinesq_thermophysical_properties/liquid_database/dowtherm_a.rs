@@ -120,15 +120,15 @@ ThermalHydraulicsLibError>{
 /// function to obtain dowtherm A thermal conductivity
 /// given a temperature
 pub fn get_dowtherm_a_thermal_conductivity(
-    fluid_temp: ThermodynamicTemperature) -> ThermalConductivity {
+    fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
 
-    range_check_dowtherm_a(fluid_temp);
+    range_check_dowtherm_a(fluid_temp)?;
     let thermal_conductivity_value = 0.142 - 0.00016* fluid_temp
         .get::<degree_celsius>();
 
-    return ThermalConductivity::new::<watt_per_meter_kelvin>(
-        thermal_conductivity_value);
+    return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
+        thermal_conductivity_value));
 }
 
 /// function to obtain dowtherm A enthalpy
