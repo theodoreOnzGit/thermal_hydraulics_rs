@@ -98,14 +98,14 @@ use uom::si::f64::*;
 /// However, Re = 0 will not work!
 /// ```rust
 /// let darcy_friction_factor = 
-///     thermal_hydraulics_rs::fluid_mechanics_lib::darcy(1800.0,0.0015);
+///     thermal_hydraulics_rs::boussinesq_solver::
+///     fluid_mechanics_correlations::darcy(1800.0,0.0015);
 ///
 /// println!("{}", darcy_friction_factor);
 /// ```
-#[allow(non_snake_case)]
-pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
+pub fn darcy(reynolds_number: f64, roughness_ratio: f64) -> f64 {
     return churchill_friction_factor:: 
-        darcy(ReynoldsNumber, roughnessRatio);
+        darcy(reynolds_number, roughness_ratio);
 }
 
 /// This function calculates moody friction factor
@@ -119,14 +119,14 @@ pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
 /// However, Re = 0 will not work!
 /// ```rust
 /// let moody_friction_factor = 
-///     thermal_hydraulics_rs::fluid_mechanics_lib::moody(1800.0,0.0015);
+///     thermal_hydraulics_rs::boussinesq_solver::
+///     fluid_mechanics_correlations::moody(1800.0,0.0015);
 ///
 /// println!("{}", moody_friction_factor);
 /// ```
-#[allow(non_snake_case)]
-pub fn moody(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
+pub fn moody(reynolds_number: f64, roughness_ratio: f64) -> f64 {
     return churchill_friction_factor:: 
-        moody(ReynoldsNumber, roughnessRatio);
+        moody(reynolds_number, roughness_ratio);
 }
 
 /// This function calculates the fldk
