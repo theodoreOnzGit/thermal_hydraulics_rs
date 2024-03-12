@@ -63,7 +63,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
 
-
+/// calculates reynolds number given a fluid average velocity
 pub fn calc_reynolds_from_velocity(fluid_density: MassDensity,
     velocity: Velocity, 
     hydraulic_diameter: Length,

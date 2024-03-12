@@ -8,3 +8,8 @@ pub mod boussinesq_thermophysical_properties;
 /// except for buoyancy)
 pub mod fluid_mechanics_correlations;
 
+
+/// Module for heat transfer correlations 
+/// suitable for boussinesq_solver (single phase, negligble density changes
+/// except for buoyancy)
+pub mod heat_transfer_correlations;

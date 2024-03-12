@@ -61,8 +61,6 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 // here are the functions used for components with 
 // custom friction factor and K, rather messy but
-
-
 /// this first function allows for custom fldk, 
 /// ie both friction factor and form loss k are user defined
 /// <https://stackoverflow.com/questions/36390665/how-do-you-pass-a-rust-function-as-a-parameter>
