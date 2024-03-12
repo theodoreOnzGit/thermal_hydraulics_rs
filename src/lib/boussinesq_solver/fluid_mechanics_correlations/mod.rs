@@ -101,7 +101,7 @@ use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
 /// ```rust
 /// let darcy_friction_factor = 
 ///     thermal_hydraulics_rs::boussinesq_solver::
-///     fluid_mechanics_correlations::darcy(1800.0,0.0015);
+///     fluid_mechanics_correlations::darcy(1800.0,0.0015).unwrap();
 ///
 /// println!("{}", darcy_friction_factor);
 /// ```
@@ -123,7 +123,7 @@ ThermalHydraulicsLibError>{
 /// ```rust
 /// let moody_friction_factor = 
 ///     thermal_hydraulics_rs::boussinesq_solver::
-///     fluid_mechanics_correlations::moody(1800.0,0.0015);
+///     fluid_mechanics_correlations::moody(1800.0,0.0015).unwrap();
 ///
 /// println!("{}", moody_friction_factor);
 /// ```
@@ -151,7 +151,7 @@ ThermalHydraulicsLibError>{
 ///    let fldk = 
 ///        thermal_hydraulics_rs::boussinesq_solver:: 
 ///        fluid_mechanics_correlations::fldk(
-///            15000.0,0.00014,10.0,5.0);
+///            15000.0,0.00014,10.0,5.0).unwrap();
 ///
 ///    println!("{}", fldk);
 /// ```
@@ -202,21 +202,21 @@ pub fn fldk(reynolds_number: f64,
 /// let bejan_d = 
 ///     thermal_hydraulics_rs::boussinesq_solver::
 ///     fluid_mechanics_correlations::get_bejan_d(
-///         0.00000000000001,0.00014,10.0,5.0);
+///         0.00000000000001,0.00014,10.0,5.0).unwrap();
 ///
 /// println!("{}", bejan_d);
 ///
 /// let bejan_d = 
 ///     thermal_hydraulics_rs::boussinesq_solver::
 ///     fluid_mechanics_correlations::get_bejan_d(
-///         -5000.0,0.00014,10.0,5.0);
+///         -5000.0,0.00014,10.0,5.0).unwrap();
 ///
 /// println!("{}", bejan_d);
 ///
 /// let bejan_d = 
 ///     thermal_hydraulics_rs::boussinesq_solver::
 ///     fluid_mechanics_correlations::get_bejan_d(
-///         0.0,0.00014,10.0,5.0);
+///         0.0,0.00014,10.0,5.0).unwrap();
 ///
 /// println!("{}", bejan_d);
 /// ```
@@ -273,14 +273,14 @@ pub fn get_bejan_d(reynolds_number: f64,
 /// let bejan_d = 
 /// thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::
 ///     get_bejan_d(
-///         5000.0,0.00014,10.0,5.0);
+///         5000.0,0.00014,10.0,5.0).unwrap();
 ///
 /// println!("{}", bejan_d);
 ///
 /// let reynolds_number = 
 /// thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::
 ///     get_reynolds_number(
-///         bejan_d,0.00014,10.0,5.0);
+///         bejan_d,0.00014,10.0,5.0).unwrap();
 ///
 /// approx::assert_relative_eq!(reynolds_number, 5000.0,
 /// max_relative = 0.001);
