@@ -90,7 +90,7 @@ pub mod dimensionalisation;
 
 use uom::si::f64::*;
 
-use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// This function calculates darcy friction factor
 /// It takes in a Reynold's number and roughness ratio
 ///

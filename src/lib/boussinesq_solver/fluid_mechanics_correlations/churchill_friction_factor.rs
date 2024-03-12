@@ -2,7 +2,7 @@
 extern crate peroxide;
 use peroxide::prelude::*;
 
-use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
+use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 // This library was developed for use in my PhD thesis under supervision 
 // of Professor Per F. Peterson. It is part of a thermal hydraulics
