@@ -8,7 +8,8 @@
 /// for Re >= 2000.0
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 /// 
 ///
 /// // for Re < 2000, return 8
@@ -89,7 +90,8 @@ pub fn nusselt_ciet_heater_v1_0(Re: f64)-> f64 {
 ///
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// // here we have an example for heating
 /// // Re = 10000, Pr = 17
@@ -198,7 +200,8 @@ pub fn dittus_boelter_correlation(reynolds_number: f64, prandtl_number: f64,
 /// ```rust
 ///
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let Re = 8000_f64;
 /// let Pr = 17_f64;
@@ -269,7 +272,8 @@ pub fn sieder_tate_correlation(reynolds_number: f64, prandtl_number: f64,
 /// ```rust
 ///
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let Re = 8000_f64;
 /// let Pr_fluid = 17_f64;
@@ -362,7 +366,8 @@ pub fn gnielinski_correlation_liquids_fully_developed(reynolds_number: f64,
 ///
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let nu_reference = 4.36_f64;
 /// let Re = 1800_f64;
@@ -395,7 +400,8 @@ pub fn laminar_nusselt_uniform_heat_flux_fully_developed(
 ///
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let nu_reference = 3.66_f64;
 /// let Re = 1800_f64;
@@ -444,7 +450,8 @@ pub fn laminar_nusselt_uniform_wall_temperature_fully_developed(
 /// ```rust
 ///
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let mut nu_reference = 3.66_f64;
 /// let mut Re = 1000_f64;
@@ -601,7 +608,8 @@ pub fn laminar_nusselt_uniform_wall_temperature_developing(
 /// ```rust
 ///
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let mut nu_reference = 4.36_f64;
 ///
@@ -757,7 +765,8 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 ///
 /// extern crate approx;
 /// use thermal_hydraulics_rs::fluid_mechanics_lib;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// let mut nu_reference = 16_f64;
 ///
@@ -868,8 +877,10 @@ pub fn gnielinski_correlation_liquids_developing(
 ///
 /// extern crate approx;
 /// extern crate thermal_hydraulics_rs;
-/// use thermal_hydraulics_rs::fluid_mechanics_lib;
-/// use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::pipe_correlations;
+/// use thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::
+/// darcy;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// nusselt_number_correlations::pipe_correlations;
 ///
 /// // test 1 (transition region)
 ///
@@ -880,7 +891,7 @@ pub fn gnielinski_correlation_liquids_developing(
 /// let mut lengthToDiameterRatio = 10000_f64;
 ///
 /// let mut darcy_friction_factor :f64 = 
-/// fluid_mechanics_lib::darcy(Re, 0.0);
+/// darcy(Re, 0.0).unwrap();
 ///
 /// let mut nu_test =
 /// pipe_correlations::
@@ -906,7 +917,7 @@ pub fn gnielinski_correlation_liquids_developing(
 /// let mut lengthToDiameterRatio = 10000_f64;
 ///
 /// let mut darcy_friction_factor :f64 = 
-/// fluid_mechanics_lib::darcy(Re, 0.0);
+/// darcy(Re, 0.0).unwrap();
 ///
 /// let mut nu_test =
 /// pipe_correlations::
@@ -931,7 +942,7 @@ pub fn gnielinski_correlation_liquids_developing(
 /// let mut lengthToDiameterRatio = 10000_f64;
 ///
 /// let mut darcy_friction_factor :f64 = 
-/// fluid_mechanics_lib::darcy(Re, 0.0);
+/// darcy(Re, 0.0).unwrap();
 ///
 /// let mut nu_test =
 /// pipe_correlations::
