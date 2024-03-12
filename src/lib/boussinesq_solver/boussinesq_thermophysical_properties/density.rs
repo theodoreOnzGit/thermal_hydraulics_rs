@@ -134,16 +134,31 @@ impl LiquidMaterial {
 
 #[inline]
 fn fiberglass_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    // density ranges not quite given in original text 
+    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
+    // using the compact integral effects test (CIET) experimental data. 
+    // No. ANL/NSE-19/11. 
+    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
     return Ok(MassDensity::new::<kilogram_per_cubic_meter>(20.0));
 }
 
 #[inline]
 fn steel_ss_304_l_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    // density ranges not quite given in original text 
+    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
+    // using the compact integral effects test (CIET) experimental data. 
+    // No. ANL/NSE-19/11. 
+    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
     return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8030.0));
 }
 
 #[inline]
 fn copper_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    // density ranges not quite given in original text 
+    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
+    // using the compact integral effects test (CIET) experimental data. 
+    // No. ANL/NSE-19/11. 
+    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
     return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8940.0));
 }
 
