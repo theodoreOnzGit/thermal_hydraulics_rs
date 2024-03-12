@@ -47,10 +47,10 @@
 /// and that this is test bay data...
 /// When heater was installed in CIET, there were different results
 ///
-pub fn nusselt_ciet_heater_v1_0(Re: f64)-> f64 {
+pub fn nusselt_ciet_heater_v1_0(reynolds_number: f64)-> f64 {
 
-    if Re >= 2000_f64 {
-        return 5.44 + 0.034*Re.powf(0.82);
+    if reynolds_number >= 2000_f64 {
+        return 5.44 + 0.034*reynolds_number.powf(0.82);
     }
 
     return 8.0;
@@ -764,7 +764,8 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// ```rust
 ///
 /// extern crate approx;
-/// use thermal_hydraulics_rs::fluid_mechanics_lib;
+/// use thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::
+/// darcy;
 /// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
 /// nusselt_number_correlations::pipe_correlations;
 ///
@@ -779,7 +780,7 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// let mut lengthToDiameterRatio = 10000_f64;
 ///
 /// let mut darcy_friction_factor :f64 = 
-/// fluid_mechanics_lib::darcy(Re, 0.0);
+/// darcy(Re, 0.0).unwrap();
 ///
 /// let mut nu_test = pipe_correlations::gnielinski_correlation_liquids_developing(
 /// Re,
