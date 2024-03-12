@@ -234,7 +234,7 @@ pub fn specific_heat_capacity_test_steel(){
 
     approx::assert_relative_eq!(
         469.4894,
-        thermal_cond_spline.value,
+        thermal_cond_spline.unwrap().value,
         max_relative=0.001);
 
     // now for the Graves et al. 1991 version, from ORNL
@@ -249,7 +249,7 @@ pub fn specific_heat_capacity_test_steel(){
     //
     approx::assert_relative_eq!(
         469.4894,
-        thermal_cond_graves_et_al_1991.value,
+        thermal_cond_graves_et_al_1991.unwrap().value,
         max_relative=0.035);
 
     // let's try now at 1000K 
@@ -261,7 +261,7 @@ pub fn specific_heat_capacity_test_steel(){
 
     approx::assert_relative_eq!(
         551.6812,
-        thermal_cond_spline.value,
+        thermal_cond_spline.unwrap().value,
         max_relative=0.0001);
 
 
