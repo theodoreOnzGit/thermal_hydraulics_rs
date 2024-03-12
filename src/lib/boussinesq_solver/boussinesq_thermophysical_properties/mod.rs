@@ -98,6 +98,7 @@ impl Into<Material> for LiquidMaterial {
 
 /// If it falls outside this range, return an error
 /// or throw an error, and the program will not run
+#[inline]
 pub fn range_check(material_temperature: ThermodynamicTemperature,
     upper_temperature_limit: ThermodynamicTemperature,
     lower_temperature_limit: ThermodynamicTemperature) 

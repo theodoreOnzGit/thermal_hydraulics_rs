@@ -3,6 +3,7 @@ use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
+use super::range_check;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -50,7 +51,7 @@ pub fn try_get_cp(material: Material,
     _pressure: Pressure) -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError> {
 
     let specific_heat_capacity: SpecificHeatCapacity = match material {
-        Material::Solid(_) => solid_specific_heat_capacity(material, temperature),
+        Material::Solid(_) => solid_specific_heat_capacity(material, temperature)?,
         Material::Liquid(_) => liquid_specific_heat_capacity(material, temperature)?
     };
 
@@ -59,7 +60,7 @@ pub fn try_get_cp(material: Material,
 
 // should the material happen to be a solid, use this function
 fn solid_specific_heat_capacity(material: Material,
-    temperature: ThermodynamicTemperature) -> SpecificHeatCapacity{
+    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError>{
     
     // first match the enum
 
@@ -72,11 +73,11 @@ fn solid_specific_heat_capacity(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => steel_ss_304_l_ornl_specific_heat_capacity(temperature),
+        SteelSS304L => steel_ss_304_l_ornl_specific_heat_capacity(temperature)?,
         Copper => copper_specific_heat_capacity(temperature),
     };
 
-    return specific_heat_capacity;
+    return Ok(specific_heat_capacity);
 
 
 }
@@ -126,15 +127,19 @@ fn fiberglass_specific_heat_capacity(
 /// It's only good for range of 300K to 700K
 #[inline]
 fn steel_ss_304_l_ornl_specific_heat_capacity(
-    temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
+    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
+
+    range_check(temperature, 
+        ThermodynamicTemperature::new::<kelvin>(700.0), 
+        ThermodynamicTemperature::new::<kelvin>(300.0))?;
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     let specific_heat_capacity_val = 1000.0 * (0.4267
     + 1.700 * f64::powf(10.0,-4.0) * temperature_value_kelvin
     - 5.200 * f64::powf(10.0, -8.0));
 
-    SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        specific_heat_capacity_val)
+    Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        specific_heat_capacity_val))
 }
 
 /// returns thermal conductivity of copper
