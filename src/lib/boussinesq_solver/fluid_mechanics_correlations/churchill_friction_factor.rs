@@ -2,6 +2,8 @@
 extern crate peroxide;
 use peroxide::prelude::*;
 
+use crate::prelude::alpha_nightly::ThermalHydraulicsLibError;
+
 // This library was developed for use in my PhD thesis under supervision 
 // of Professor Per F. Peterson. It is part of a thermal hydraulics
 // library in Rust that is released under the GNU General Public License
@@ -61,82 +63,79 @@ use peroxide::prelude::*;
 // for fast prototyping and sandboxing don't really care too much
 //
 
-// first, to allow non snake case names..
-#[allow(non_snake_case)]
-fn B(Re: f64) -> f64 {
+fn churchill_friction_captial_b(reynolds_number: f64) -> f64 {
     let numerator = 37530.0_f64.powf(16.0);
-    let denominator = Re.powf(16.0);
+    let denominator = reynolds_number.powf(16.0);
     return numerator/denominator;
 }
 
-#[allow(non_snake_case)]
-fn A(Re: f64, roughnessRatio: f64) -> f64 {
-    let seven_over_Re = 7.0/Re;
-    let reynolds_term = seven_over_Re.powf(0.9);
+fn churchill_friction_captial_a(reynolds_number: f64, roughness_ratio: f64) -> f64 {
+    let seven_over_reynolds_number = 7.0/reynolds_number;
+    let reynolds_term = seven_over_reynolds_number.powf(0.9);
 
-    let roughness_term = 0.27 * roughnessRatio;
+    let roughness_term = 0.27 * roughness_ratio;
 
     let log_fraction = 1.0/(reynolds_term + roughness_term);
     // we will need natural logarithms:
     let inner_bracket_term = 2.457*log_fraction.ln();
 
-    let A = inner_bracket_term.powf(16.0);
+    let capital_a = inner_bracket_term.powf(16.0);
 
-    return A;
+    return capital_a;
 
 
 }
 
-#[allow(non_snake_case)]
-fn churchillInnerTerm(Re: f64, roughnessRatio: f64) -> f64 {
+fn churchill_inner_term(reynolds: f64, roughness_ratio: f64) -> f64 {
 
-    let eight_over_Re = 8.0/Re;
-    let laminarTerm = eight_over_Re.powf(12.0);
+    let eight_over_reynolds_number = 8.0/reynolds;
+    let laminar_term = eight_over_reynolds_number.powf(12.0);
 
-    let Aterm = A(Re,roughnessRatio);
-    let Bterm = B(Re);
+    let captial_a_term = churchill_friction_captial_a(reynolds,roughness_ratio);
+    let captial_b_term = churchill_friction_captial_b(reynolds);
 
-    let APlusBInverse = 1.0/(Aterm+Bterm);
-    let turbulentTerm = APlusBInverse.powf(3.0/2.0);
+    let captial_a_plus_captial_b_all_inverse = 1.0/(captial_a_term+captial_b_term);
+    let turbulent_term = captial_a_plus_captial_b_all_inverse.powf(3.0/2.0);
 
-    return laminarTerm + turbulentTerm;
+    return laminar_term + turbulent_term;
 }
 
 // this particular implementation uses the churchill correlation
-#[allow(non_snake_case)]
 #[inline]
-fn fanning(ReynoldsNumber: f64, roughnessRatio: f64) -> f64{
+fn fanning(reynolds_number: f64, roughness_ratio: f64) -> Result<f64,ThermalHydraulicsLibError>{
 
-    if ReynoldsNumber == 0.0 {
+    if reynolds_number == 0.0 {
         panic!("Re = 0.0");
     }
 
-    if ReynoldsNumber < 0.0 {
+    if reynolds_number < 0.0 {
         panic!("Re<0.0");
     }
 
-    if roughnessRatio < 0.0 {
+    if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
     }
 
-    let innerTerm = churchillInnerTerm(ReynoldsNumber, roughnessRatio);
-    let powerTerm = innerTerm.powf(1.0/12.0);
-    let fanningFrictionFactor = 2.0 * powerTerm;
-    return fanningFrictionFactor;
+    let inner_term = churchill_inner_term(reynolds_number, roughness_ratio);
+    let power_term = inner_term.powf(1.0/12.0);
+    let fanning_friction_factor = 2.0 * power_term;
+    return Ok(fanning_friction_factor);
 }
 
 #[allow(non_snake_case)]
 #[inline]
 /// calculates darcy friction factor using churchill correlation
-pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
-    return 4.0*fanning(ReynoldsNumber, roughnessRatio);
+pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> 
+Result<f64,ThermalHydraulicsLibError> {
+    return Ok(4.0*fanning(ReynoldsNumber, roughnessRatio)?);
 }
 
 #[allow(non_snake_case)]
 /// calculates moody friction factor using churchill correlation
 /// basically same as darcy
-pub fn moody(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
-    return 4.0*fanning(ReynoldsNumber, roughnessRatio);
+pub fn moody(ReynoldsNumber: f64, roughnessRatio: f64) -> 
+Result<f64,ThermalHydraulicsLibError> {
+    return Ok(4.0*fanning(ReynoldsNumber, roughnessRatio)?);
 }
 
 
@@ -147,7 +146,7 @@ pub fn moody(ReynoldsNumber: f64, roughnessRatio: f64) -> f64 {
 pub fn fLDK(ReynoldsNumber: f64,
                    roughnessRatio: f64,
                    lengthToDiameterRatio: f64,
-                   K: f64) -> f64{
+                   K: f64) -> Result<f64,ThermalHydraulicsLibError>{
     if ReynoldsNumber == 0.0 {
         panic!("Re = 0");
     }
@@ -168,10 +167,10 @@ pub fn fLDK(ReynoldsNumber: f64,
         panic!("For m loss coefficient K < 0.0");
     }
 
-    let f = darcy(ReynoldsNumber, roughnessRatio);
+    let f = darcy(ReynoldsNumber, roughnessRatio)?;
     let fLDK = f*lengthToDiameterRatio + K;
 
-    return fLDK;
+    return Ok(fLDK);
 }
 
 
@@ -181,10 +180,10 @@ pub fn fLDK(ReynoldsNumber: f64,
 pub fn getBe(mut ReynoldsNumber: f64,
              roughnessRatio: f64,
              lengthToDiameterRatio: f64,
-             K: f64) -> f64{
+             K: f64) -> Result<f64,ThermalHydraulicsLibError>{
 
     if ReynoldsNumber == 0.0 {
-        return 0.0;
+        return Ok(0.0);
     }
 
     let mut isNegative = false;
@@ -206,7 +205,7 @@ pub fn getBe(mut ReynoldsNumber: f64,
         panic!("Form loss coefficient K < 0.0");
     }
 
-    let f = darcy(ReynoldsNumber, roughnessRatio);
+    let f = darcy(ReynoldsNumber, roughnessRatio)?;
 
     let fLDK = f*lengthToDiameterRatio + K;
 
@@ -214,10 +213,10 @@ pub fn getBe(mut ReynoldsNumber: f64,
 
     if isNegative {
         Be = Be * -1.0;
-        return Be;
+        return Ok(Be);
     }
 
-    return Be;
+    return Ok(Be);
 }
 
 #[allow(non_snake_case)]
@@ -228,7 +227,7 @@ pub fn getBe(mut ReynoldsNumber: f64,
 pub fn getRe(mut Be_D: f64,
              roughnessRatio: f64,
              lengthToDiameter: f64,
-             formLossK: f64) -> f64 {
+             formLossK: f64) -> Result<f64,ThermalHydraulicsLibError> {
 
     if lengthToDiameter <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
@@ -255,7 +254,7 @@ pub fn getRe(mut Be_D: f64,
     // i calculate the Be_D corresponding to 
     // Re = 1e12
     let maxBe_D = getBe(maxRe,roughnessRatio, 
-                        lengthToDiameter,formLossK);
+                        lengthToDiameter,formLossK)?;
 
     if Be_D >= maxBe_D {
         panic!("Be too large");
@@ -289,7 +288,7 @@ pub fn getRe(mut Be_D: f64,
         let reynoldsDouble = Re.x();
         let fLDKterm = getBe(reynoldsDouble, roughnessRatio,
                              lengthToDiameter,
-                             formLossK);
+                             formLossK).unwrap();
 
         return AD0(Be_D - fLDKterm);
 
@@ -309,8 +308,8 @@ pub fn getRe(mut Be_D: f64,
     if isNegative
     {
         ReynoldsNumber = ReynoldsNumber * -1.0;
-        return ReynoldsNumber;
+        return Ok(ReynoldsNumber);
     }
 
-    return ReynoldsNumber;
+    return Ok(ReynoldsNumber);
 }
