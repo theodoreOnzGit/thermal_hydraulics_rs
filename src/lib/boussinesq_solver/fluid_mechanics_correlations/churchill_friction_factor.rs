@@ -113,7 +113,7 @@ fn fanning(reynolds_number: f64, roughness_ratio: f64) -> Result<f64,ThermalHydr
     }
 
     if roughness_ratio < 0.0 {
-        panic!("roughnessRatio<0.0");
+        panic!("roughness_ratio<0.0");
     }
 
     let inner_term = churchill_inner_term(reynolds_number, roughness_ratio);
@@ -122,141 +122,138 @@ fn fanning(reynolds_number: f64, roughness_ratio: f64) -> Result<f64,ThermalHydr
     return Ok(fanning_friction_factor);
 }
 
-#[allow(non_snake_case)]
 #[inline]
 /// calculates darcy friction factor using churchill correlation
-pub fn darcy(ReynoldsNumber: f64, roughnessRatio: f64) -> 
+pub fn darcy(reynolds_number: f64, roughness_ratio: f64) -> 
 Result<f64,ThermalHydraulicsLibError> {
-    return Ok(4.0*fanning(ReynoldsNumber, roughnessRatio)?);
+    return Ok(4.0*fanning(reynolds_number, roughness_ratio)?);
 }
 
-#[allow(non_snake_case)]
 /// calculates moody friction factor using churchill correlation
 /// basically same as darcy
-pub fn moody(ReynoldsNumber: f64, roughnessRatio: f64) -> 
+pub fn moody(reynolds_number: f64, roughness_ratio: f64) -> 
 Result<f64,ThermalHydraulicsLibError> {
-    return Ok(4.0*fanning(ReynoldsNumber, roughnessRatio)?);
+    return Ok(4.0*fanning(reynolds_number, roughness_ratio)?);
 }
 
 
-#[allow(non_snake_case)]
 
 /// calculates fLDK using churchill correlation
 /// and a user defined form loss K value
-pub fn fLDK(ReynoldsNumber: f64,
-                   roughnessRatio: f64,
-                   lengthToDiameterRatio: f64,
-                   K: f64) -> Result<f64,ThermalHydraulicsLibError>{
-    if ReynoldsNumber == 0.0 {
+pub fn f_ldk(reynolds_number: f64,
+    roughness_ratio: f64,
+    length_to_diameter_ratio: f64,
+    k: f64) -> Result<f64,ThermalHydraulicsLibError>{
+    if reynolds_number == 0.0 {
         panic!("Re = 0");
     }
 
-    if ReynoldsNumber < 0.0 {
+    if reynolds_number < 0.0 {
         panic!("Re < 0");
     }
 
-    if roughnessRatio < 0.0 {
+    if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
     }
 
-    if lengthToDiameterRatio <= 0.0 {
+    if length_to_diameter_ratio <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
     }
 
-    if K < 0.0 {
+    if k < 0.0 {
         panic!("For m loss coefficient K < 0.0");
     }
 
-    let f = darcy(ReynoldsNumber, roughnessRatio)?;
-    let fLDK = f*lengthToDiameterRatio + K;
+    let f = darcy(reynolds_number, roughness_ratio)?;
+    let f_ldk = f*length_to_diameter_ratio + k;
 
-    return Ok(fLDK);
+    return Ok(f_ldk);
 }
 
 
-#[allow(non_snake_case)]
 /// calculates a nondimensional pressure loss (Be_D)
 /// from the nondimensionalised flowrate (Re_D)
-pub fn getBe(mut ReynoldsNumber: f64,
-             roughnessRatio: f64,
-             lengthToDiameterRatio: f64,
-             K: f64) -> Result<f64,ThermalHydraulicsLibError>{
+pub fn get_bejan_number_d(
+    mut reynolds_number: f64,
+    roughness_ratio: f64,
+    length_to_diameter_ratio: f64,
+    form_loss_k: f64) -> Result<f64,ThermalHydraulicsLibError>{
 
-    if ReynoldsNumber == 0.0 {
+    if reynolds_number == 0.0 {
         return Ok(0.0);
     }
 
-    let mut isNegative = false;
+    let mut is_negative = false;
 
-    if ReynoldsNumber < 0.0 {
-        isNegative = true;
-        ReynoldsNumber = ReynoldsNumber * -1.0;
+    if reynolds_number < 0.0 {
+        is_negative = true;
+        reynolds_number = reynolds_number * -1.0;
     }
 
-    if roughnessRatio < 0.0 {
+    if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
     }
 
-    if lengthToDiameterRatio <= 0.0 {
+    if length_to_diameter_ratio <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
     }
 
-    if K < 0.0 {
+    if form_loss_k < 0.0 {
         panic!("Form loss coefficient K < 0.0");
     }
 
-    let f = darcy(ReynoldsNumber, roughnessRatio)?;
+    let f = darcy(reynolds_number, roughness_ratio)?;
 
-    let fLDK = f*lengthToDiameterRatio + K;
+    let f_ldk = f*length_to_diameter_ratio + form_loss_k;
 
-    let mut Be = 0.5*fLDK*ReynoldsNumber.powf(2.0);
+    let mut bejan_number = 0.5*f_ldk*reynolds_number.powf(2.0);
 
-    if isNegative {
-        Be = Be * -1.0;
-        return Ok(Be);
+    if is_negative {
+        bejan_number = bejan_number * -1.0;
+        return Ok(bejan_number);
     }
 
-    return Ok(Be);
+    return Ok(bejan_number);
 }
 
-#[allow(non_snake_case)]
 /// calculates Re given a Be_D 
 ///
 /// it is basically calculating nondimensionalised
 /// flowrate from nondimensionalised pressure loss
-pub fn getRe(mut Be_D: f64,
-             roughnessRatio: f64,
-             lengthToDiameter: f64,
-             formLossK: f64) -> Result<f64,ThermalHydraulicsLibError> {
+pub fn get_reynolds_from_bejan(
+    mut bejan_number_d: f64,
+    roughness_ratio: f64,
+    length_to_diameter: f64,
+    form_loss_k: f64) -> Result<f64,ThermalHydraulicsLibError> {
 
-    if lengthToDiameter <= 0.0 {
+    if length_to_diameter <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
     }
 
-    if roughnessRatio < 0.0 {
+    if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
     }
 
-    if formLossK < 0.0 {
+    if form_loss_k < 0.0 {
         panic!("formLossK<0.0");
     }
 
     // this part deals with negative Be_L values
     // invalid Be_L values
-    let mut isNegative = false;
-    if Be_D < 0.0 {
-        Be_D = Be_D * -1.0;
-        isNegative = true;
+    let mut is_negative = false;
+    if bejan_number_d < 0.0 {
+        bejan_number_d = bejan_number_d * -1.0;
+        is_negative = true;
     }
 
-    let maxRe = 1.0e12;
+    let max_reynolds = 1.0e12;
 
     // i calculate the Be_D corresponding to 
     // Re = 1e12
-    let maxBe_D = getBe(maxRe,roughnessRatio, 
-                        lengthToDiameter,formLossK)?;
+    let max_bejan_d = get_bejan_number_d(max_reynolds,roughness_ratio, 
+                        length_to_diameter,form_loss_k)?;
 
-    if Be_D >= maxBe_D {
+    if bejan_number_d >= max_bejan_d {
         panic!("Be too large");
     }
     // the above checks for all the relevant exceptions
@@ -268,7 +265,7 @@ pub fn getRe(mut Be_D: f64,
     // Be = 0.5*fLDK*Re^2
 
 
-    let pressureDropRoot = |Re: AD| -> AD {
+    let pressure_drop_root = |reynolds: AD| -> AD {
         // i'm solving for
         // Be - 0.5*fLDK*Re^2 = 0 
         // the fLDK term can be calculated using
@@ -285,31 +282,31 @@ pub fn getRe(mut Be_D: f64,
         // differentiation
         // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
 
-        let reynoldsDouble = Re.x();
-        let fLDKterm = getBe(reynoldsDouble, roughnessRatio,
-                             lengthToDiameter,
-                             formLossK).unwrap();
+        let reynolds_double = reynolds.x();
+        let f_ldk_term = get_bejan_number_d(reynolds_double, roughness_ratio,
+                             length_to_diameter,
+                             form_loss_k).unwrap();
 
-        return AD0(Be_D - fLDKterm);
+        return AD0(bejan_number_d - f_ldk_term);
 
     };
 
-    let ReynoldsNumberResult = bisection(pressureDropRoot,
-                                         (0.0,maxRe),
+    let reynolds_number_result = bisection(pressure_drop_root,
+                                         (0.0,max_reynolds),
                                          100,
                                          1e-8);
 
 
 
     // the unwrap turns the result into f64
-    let mut ReynoldsNumber = ReynoldsNumberResult.unwrap();
+    let mut reynolds_number = reynolds_number_result.unwrap();
 
 
-    if isNegative
+    if is_negative
     {
-        ReynoldsNumber = ReynoldsNumber * -1.0;
-        return Ok(ReynoldsNumber);
+        reynolds_number = reynolds_number * -1.0;
+        return Ok(reynolds_number);
     }
 
-    return Ok(ReynoldsNumber);
+    return Ok(reynolds_number);
 }

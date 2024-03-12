@@ -160,7 +160,7 @@ pub fn fldk(reynolds_number: f64,
                    length_to_diameter_ratio: f64,
                    k: f64) -> Result<f64, ThermalHydraulicsLibError>{
     return churchill_friction_factor::
-        fLDK(reynolds_number,
+        f_ldk(reynolds_number,
              roughness_ratio,
              length_to_diameter_ratio,
              k);
@@ -225,7 +225,7 @@ pub fn get_bejan_d(reynolds_number: f64,
                    length_to_diameter_ratio: f64,
                    k: f64) -> Result<f64, ThermalHydraulicsLibError> {
     return churchill_friction_factor::
-        getBe(reynolds_number, roughness_ratio,
+        get_bejan_number_d(reynolds_number, roughness_ratio,
               length_to_diameter_ratio, k);
 }
 
@@ -312,7 +312,7 @@ pub fn get_reynolds_number(bejan_d: f64,
              length_to_diameter: f64,
              form_loss_k: f64) -> Result<f64,ThermalHydraulicsLibError> {
     return churchill_friction_factor::
-        getRe(bejan_d, roughness_ratio,
+        get_reynolds_from_bejan(bejan_d, roughness_ratio,
               length_to_diameter, form_loss_k);
 
 }
