@@ -74,7 +74,7 @@ fn solid_specific_heat_capacity(material: Material,
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
         SteelSS304L => steel_ss_304_l_ornl_specific_heat_capacity(temperature)?,
-        Copper => copper_specific_heat_capacity(temperature),
+        Copper => copper_specific_heat_capacity(temperature)?,
     };
 
     return Ok(specific_heat_capacity);
@@ -150,7 +150,11 @@ fn steel_ss_304_l_ornl_specific_heat_capacity(
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
 fn copper_specific_heat_capacity(
-    temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
+    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
+
+    range_check(temperature, 
+        ThermodynamicTemperature::new::<kelvin>(1000.0), 
+        ThermodynamicTemperature::new::<kelvin>(200.0))?;
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     // here we use a cubic spline to interpolate the values
@@ -172,8 +176,8 @@ fn copper_specific_heat_capacity(
     let copper_specific_heat_capacity_value = s.
         eval(temperature_value_kelvin);
 
-    SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        copper_specific_heat_capacity_value)
+    Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        copper_specific_heat_capacity_value))
 
 }
 
@@ -185,7 +189,11 @@ fn copper_specific_heat_capacity(
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
 fn _steel_304_l_spline_specific_heat_capacity(
-    temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
+    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
+
+    range_check(temperature, 
+        ThermodynamicTemperature::new::<kelvin>(1000.0), 
+        ThermodynamicTemperature::new::<kelvin>(250.0))?;
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
     // here we use a cubic spline to interpolate the values
@@ -202,8 +210,8 @@ fn _steel_304_l_spline_specific_heat_capacity(
     let steel_specific_heat_capacity_value = s.eval(
         temperature_value_kelvin);
 
-    return SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        steel_specific_heat_capacity_value);
+    return Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        steel_specific_heat_capacity_value));
 }
 
 #[inline]
