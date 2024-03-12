@@ -146,7 +146,6 @@ pub fn obtain_power_two_convection_two_conduction_thermal_resistance(
         + thermal_resistance_3
         + thermal_resistance_4;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -205,7 +204,6 @@ pub fn obtain_power_one_convection_one_conduction_thermal_resistance(
         thermal_resistance_1 
         + thermal_resistance_2;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -267,7 +265,6 @@ pub fn obtain_power_two_convection_one_conduction_thermal_resistance(
         + thermal_resistance_2
         + thermal_resistance_3;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -318,7 +315,6 @@ pub fn obtain_power_through_double_convection_thermal_resistance(
         thermal_resistance_1 
         + thermal_resistance_2;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -355,7 +351,6 @@ pub fn obtain_power_through_single_convection_thermal_resistance(
         /average_surface_area
         /heat_transfer_coefficient;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -400,7 +395,6 @@ pub fn obtain_power_through_two_layer_wall_thermal_resistance(
         thermal_resistance_1 
         + thermal_resistance_2;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
@@ -432,7 +426,6 @@ pub fn obtain_power_through_wall_thermal_resistance(
         /average_thermal_conductivity
         /average_surface_area;
 
-    use super::*;
     // -Delta T
     let temperature_interval = 
         -subtract_two_thermodynamic_temperatures(
