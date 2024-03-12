@@ -2,6 +2,8 @@
 //! thermophysical properties
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use uom::si::f64::*;
+use uom::si::thermodynamic_temperature::degree_celsius;
 
 /// basically,
 /// insert this enum into a thermophysical property function 
@@ -90,6 +92,62 @@ impl Into<Material> for LiquidMaterial {
     }
 }
 
+/// range check:
+/// generic checker for whether a temperature value falls within 
+/// the specified temperature range 
+
+/// If it falls outside this range, return an error
+/// or throw an error, and the program will not run
+pub fn range_check(material_temperature: ThermodynamicTemperature,
+    upper_temperature_limit: ThermodynamicTemperature,
+    lower_temperature_limit: ThermodynamicTemperature) 
+    -> Result<bool,ThermalHydraulicsLibError>{
+
+    // first i convert the fluidTemp object into a degree 
+    // celsius
+    let temp_value_celsius = 
+        material_temperature.get::<degree_celsius>();
+    let low_temp_value_celsius = 
+        lower_temperature_limit.get::<degree_celsius>();
+    let high_temp_value_celsius = 
+        upper_temperature_limit.get::<degree_celsius>();
+
+    if temp_value_celsius < low_temp_value_celsius {
+        let error_msg = "Your fluid temperature \n";
+        let error_msg1 = "is too low :";
+        let error_msg3 = "C \n";
+        let error_msg4 = "\n the minimum is ".to_owned() + &low_temp_value_celsius.to_string() + "C";
+
+
+        println!("{}{}{:?}{}{}",
+               error_msg,
+               error_msg1,
+               material_temperature,
+               error_msg3,
+               error_msg4);
+        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
+    }
+
+
+    if temp_value_celsius > high_temp_value_celsius {
+        let error_msg = "Your fluid temperature \n";
+        let error_msg1 = "is too high :";
+        let error_msg3 = "C \n";
+        let error_msg4 = "\n the max is".to_owned()+ &high_temp_value_celsius.to_string()+"C";
+
+        println!("{}{}{:?}{}{}",
+               error_msg,
+               error_msg1,
+               material_temperature,
+               error_msg3,
+               error_msg4);
+        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
+    }
+
+    return Ok(true);
+
+}
+
 /// Density calculation
 pub mod density;
 
@@ -119,3 +177,5 @@ pub mod solid_material_surface_roughness;
 
 /// database for liquids 
 pub mod liquid_database;
+
+

@@ -99,7 +99,7 @@ Result<DynamicViscosity, ThermalHydraulicsLibError>{
 }
 
 #[test]
-pub fn dynamic_viscosity_test_steel(){
+pub fn dynamic_viscosity_test_dowtherm_a(){
 
     use uom::si::pressure::atmosphere;
     use uom::si::thermodynamic_temperature::kelvin;
