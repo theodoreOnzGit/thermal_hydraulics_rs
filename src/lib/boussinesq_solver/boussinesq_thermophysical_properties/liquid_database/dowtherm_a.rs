@@ -174,13 +174,14 @@ pub fn get_dowtherm_a_thermal_conductivity(
 /// // the expected value is about 15885 J/kg
 ///
 /// extern crate approx;
-/// approx::assert_relative_eq!(expected_enthalpy, specific_enthalpy_1.value, 
+/// approx::assert_relative_eq!(expected_enthalpy, specific_enthalpy_1.unwrap().value, 
 /// max_relative=0.02);
 /// ```
 pub fn get_dowtherm_a_enthalpy(
-    fluid_temp: ThermodynamicTemperature) -> AvailableEnergy{
+    fluid_temp: ThermodynamicTemperature) -> 
+Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
-    range_check_dowtherm_a(fluid_temp);
+    range_check_dowtherm_a(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
     // H = 1518*T + 2.82/2.0*T^2 - 30924
@@ -193,8 +194,8 @@ pub fn get_dowtherm_a_enthalpy(
     // the closest unit available is AvailableEnergy which is
     // joule per kg 
 
-    return AvailableEnergy::new::<joule_per_kilogram>(
-        enthalpy_value_joule_per_kg);
+    return Ok(AvailableEnergy::new::<joule_per_kilogram>(
+        enthalpy_value_joule_per_kg));
 }
 
 /// function to obtain dowtherm A temperature 
@@ -241,7 +242,7 @@ pub fn get_dowtherm_a_enthalpy(
 /// <kelvin>(303_f64);
 /// 
 /// let temp_acutal = get_temperature_from_enthalpy(
-/// specific_enthalpy_1);
+/// specific_enthalpy_1).unwrap();
 ///
 ///
 /// extern crate approx;
@@ -252,7 +253,7 @@ pub fn get_dowtherm_a_enthalpy(
 ///
 /// ```
 pub fn get_temperature_from_enthalpy(
-    fluid_enthalpy: AvailableEnergy) -> ThermodynamicTemperature {
+    fluid_enthalpy: AvailableEnergy) -> Result<ThermodynamicTemperature,ThermalHydraulicsLibError> {
 
     if fluid_enthalpy.value < 0_f64 {
         panic!("dowtherm A : get_temperature_from_enthalpy \n
@@ -277,7 +278,7 @@ pub fn get_temperature_from_enthalpy(
         let fluid_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(
                 temp_degrees_c_value_double);
-        let rhs = get_dowtherm_a_enthalpy(fluid_temperature);
+        let rhs = get_dowtherm_a_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
         return AD0(lhs_value-rhs_value);
@@ -293,8 +294,8 @@ pub fn get_temperature_from_enthalpy(
 
     let fluid_temperature_degrees_c = fluid_temperature_degrees_cresult.unwrap();
 
-    return ThermodynamicTemperature::
-        new::<degree_celsius>(fluid_temperature_degrees_c);
+    return Ok(ThermodynamicTemperature::
+        new::<degree_celsius>(fluid_temperature_degrees_c));
 
 }
 
