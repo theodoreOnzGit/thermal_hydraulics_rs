@@ -168,7 +168,7 @@ impl SingleCVNode {
     ///
     /// only changes mass for liquids, not solids
     #[inline]
-    pub (in crate::boussinesq_solver::single_control_vol)
+    pub (crate)
     fn set_liquid_cv_mass_from_temperature(&mut self) 
     -> Result<(), ThermalHydraulicsLibError>{
 
