@@ -42,7 +42,7 @@ pub fn try_get_rho(material: Material,
     _pressure: Pressure) -> Result<MassDensity, ThermalHydraulicsLibError> {
 
     let density: MassDensity = match material {
-        Material::Solid(_) => solid_density(material, temperature),
+        Material::Solid(_) => solid_density(material, temperature)?,
         Material::Liquid(_) => liquid_density(material, temperature)?
     };
 
@@ -56,7 +56,7 @@ impl Material {
         _pressure: Pressure) -> Result<MassDensity, ThermalHydraulicsLibError>{
 
     let density: MassDensity = match self {
-        Material::Solid(_) => solid_density(self.clone(), temperature),
+        Material::Solid(_) => solid_density(self.clone(), temperature)?,
         Material::Liquid(_) => liquid_density(self.clone(), temperature)?
     };
 
@@ -69,7 +69,7 @@ impl Material {
 
 // should the material happen to be a solid, use this function
 fn solid_density(material: Material,
-    _temperature: ThermodynamicTemperature) -> MassDensity{
+    _temperature: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError>{
 
     // first match the enum
 
@@ -77,16 +77,19 @@ fn solid_density(material: Material,
         Material::Solid(SteelSS304L) => SteelSS304L,
         Material::Solid(Fiberglass) => Fiberglass,
         Material::Solid(Copper) => Copper,
-        Material::Liquid(_) => panic!("solid_density, use SolidMaterial enums only")
+        Material::Liquid(_) => {
+            println!("solid_density, use SolidMaterial enums only");
+            return Err(ThermalHydraulicsLibError::TypeConversionErrorMaterial);
+        }
     };
 
     let density: MassDensity = match solid_material {
-        Fiberglass => fiberglass_density() ,
-        SteelSS304L => steel_ss_304_l_density(),
-        Copper => copper_density(),
+        Fiberglass => fiberglass_density()?,
+        SteelSS304L => steel_ss_304_l_density()?,
+        Copper => copper_density()?,
     };
 
-    return density;
+    return Ok(density);
 
 
 }
@@ -130,18 +133,18 @@ impl LiquidMaterial {
 }
 
 #[inline]
-fn fiberglass_density() -> MassDensity {
-    return MassDensity::new::<kilogram_per_cubic_meter>(20.0);
+fn fiberglass_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(20.0));
 }
 
 #[inline]
-fn steel_ss_304_l_density() -> MassDensity {
-    return MassDensity::new::<kilogram_per_cubic_meter>(8030.0);
+fn steel_ss_304_l_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8030.0));
 }
 
 #[inline]
-fn copper_density() -> MassDensity {
-    return MassDensity::new::<kilogram_per_cubic_meter>(8940.0);
+fn copper_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8940.0));
 }
 
 #[inline]
