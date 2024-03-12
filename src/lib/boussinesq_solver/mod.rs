@@ -15,15 +15,15 @@ pub mod fluid_mechanics_correlations;
 /// except for buoyancy)
 pub mod heat_transfer_correlations;
 
-/// Module for solid control volumes (both singular control volumes 
-/// and arrays of control volumes)
-pub mod solid_control_vol;
+/// Module for single control volumes (mainly for fluid control volumes,
+/// but solid control volumes are set by setting flowrate to zero)
+pub mod single_control_vol;
 
-/// Module for fluid control volumes (both singular control volumes 
-/// and arrays of control volumes)
+/// Module for array control volumes (mainly for fluid control volumes,
+/// but solid control volumes are set by setting flowrate to zero)
 /// suitable for boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
-pub mod fluid_control_vol;
+pub mod array_control_vol;
 
 /// Module for pre-built-components 
 /// suitable for boussinesq_solver (single phase, negligble density changes
