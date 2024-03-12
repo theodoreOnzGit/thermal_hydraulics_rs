@@ -92,7 +92,7 @@ pub fn custom_f_ldk(custom_darcy: &dyn Fn(f64, f64) -> f64,
 /// this is a special case of the fLDK component,
 /// where we just specify a custom K but friction factor is based
 /// on darcy friction factor
-pub fn custom_Kpipe(reynolds_number: f64,
+pub fn custom_kpipe(reynolds_number: f64,
     roughness_ratio: f64,
     length_to_diameter_ratio: f64,
     custom_k: &dyn Fn(f64) -> f64) -> 
@@ -117,50 +117,48 @@ Result<f64, ThermalHydraulicsLibError>{
 /// it assumes that the form losses, K for the pipe 
 /// take some functional form rather than staying constant
 ///
-#[allow(non_snake_case)]
-pub fn custom_Kpipe_Be_D(ReynoldsNumber: f64,
-                    roughnessRatio: f64,
-                    lengthToDiameterRatio: f64,
-                    customK: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
+pub fn custom_kpipe_be_d(reynolds_number: f64,
+                    roughness_ratio: f64,
+                    length_to_diameter_ratio: f64,
+                    custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
 
-    if ReynoldsNumber == 0.0 {
+    if reynolds_number == 0.0 {
         return Ok(0.0);
     }
 
-    let fLDK = custom_Kpipe(ReynoldsNumber,
-                           roughnessRatio,
-                           lengthToDiameterRatio,
-                           customK)?;
+    let f_ldk = custom_kpipe(reynolds_number,
+                           roughness_ratio,
+                           length_to_diameter_ratio,
+                           custom_k)?;
 
-    let Be_D = 0.5*fLDK*ReynoldsNumber.powf(2.0);
+    let bejan_d = 0.5*f_ldk*reynolds_number.powf(2.0);
 
-    return Ok(Be_D);
+    return Ok(bejan_d);
 
 }
 
 
-#[allow(non_snake_case)]
 /// this functions calculates the bejan number using the
 /// custom fLDK formula
-pub fn custom_fLDK_Be_D(customDarcy: &dyn Fn(f64, f64) -> f64, 
-                        ReynoldsNumber: f64,
-                        roughnessRatio: f64,
-                        lengthToDiameterRatio: f64,
-                        customK: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
+pub fn custom_f_ldk_be_d(custom_darcy: &dyn Fn(f64, f64) -> f64, 
+                        reynolds_number: f64,
+                        roughness_ratio: f64,
+                        length_to_diameter_ratio: f64,
+                        custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
 
-    if ReynoldsNumber == 0.0 {
+    if reynolds_number == 0.0 {
         return Ok(0.0);
     }
 
-    let fLDK = custom_f_ldk(customDarcy,
-                           ReynoldsNumber,
-                           roughnessRatio,
-                           lengthToDiameterRatio,
-                           customK)?;
+    let f_ldk = custom_f_ldk(custom_darcy,
+                           reynolds_number,
+                           roughness_ratio,
+                           length_to_diameter_ratio,
+                           custom_k)?;
 
-    let Be_D = 0.5*fLDK*ReynoldsNumber.powf(2.0);
+    let bejan_d = 0.5*f_ldk*reynolds_number.powf(2.0);
 
-    return Ok(Be_D);
+    return Ok(bejan_d);
 
 }
 
@@ -172,18 +170,18 @@ pub fn custom_fLDK_Be_D(customDarcy: &dyn Fn(f64, f64) -> f64,
 /// in forwards and backwards flow,
 /// that is up to the user to decide when 
 /// customDarcy and customK is put in
-#[allow(non_snake_case)]
-pub fn getRe(customDarcy: &dyn Fn(f64, f64) -> f64, 
-             Be_D: f64,
-             roughnessRatio: f64,
-             lengthToDiameter: f64,
-             customK: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError> {
+pub fn get_reynolds(
+    custom_darcy: &dyn Fn(f64, f64) -> f64, 
+    bejan_d: f64,
+    roughness_ratio: f64,
+    length_to_diameter: f64,
+    custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError> {
 
-    if lengthToDiameter <= 0.0 {
+    if length_to_diameter <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
     }
 
-    if roughnessRatio < 0.0 {
+    if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
     }
 
@@ -191,18 +189,18 @@ pub fn getRe(customDarcy: &dyn Fn(f64, f64) -> f64,
     // this part deals with negative Be_L values
     // invalid Be_L values
 
-    let maxRe = 1.0e12;
+    let max_reynolds = 1.0e12;
 
     // i calculate the Be_D corresponding to 
     // Re = 1e12
-    let maxBe_D = custom_fLDK_Be_D(
-        customDarcy,
-        maxRe,
-        roughnessRatio, 
-        lengthToDiameter,
-        customK)?;
+    let max_bejan_d = custom_f_ldk_be_d(
+        custom_darcy,
+        max_reynolds,
+        roughness_ratio, 
+        length_to_diameter,
+        custom_k)?;
 
-    if Be_D >= maxBe_D {
+    if bejan_d >= max_bejan_d {
         panic!("Be too large");
     }
     // the above checks for all the relevant exceptions
@@ -214,7 +212,7 @@ pub fn getRe(customDarcy: &dyn Fn(f64, f64) -> f64,
     // Be = 0.5*fLDK*Re^2
 
 
-    let pressureDropRoot = |Re: AD| -> AD {
+    let pressure_drop_root = |reynolds: AD| -> AD {
         // i'm solving for
         // Be - 0.5*fLDK*Re^2 = 0 
         // the fLDK term can be calculated using
@@ -231,29 +229,29 @@ pub fn getRe(customDarcy: &dyn Fn(f64, f64) -> f64,
         // differentiation
         // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
 
-        let reynoldsDouble = Re.x();
-        let fLDKterm = custom_fLDK_Be_D(
-            customDarcy,
-            reynoldsDouble, 
-            roughnessRatio,
-            lengthToDiameter,
-            customK).unwrap();
+        let reynolds_double = reynolds.x();
+        let f_ldk_term = custom_f_ldk_be_d(
+            custom_darcy,
+            reynolds_double, 
+            roughness_ratio,
+            length_to_diameter,
+            custom_k).unwrap();
 
-        return AD0(Be_D - fLDKterm);
+        return AD0(bejan_d - f_ldk_term);
 
     };
 
-    let ReynoldsNumberResult = bisection(pressureDropRoot,
-                                         (-maxRe,maxRe),
-                                         100,
-                                         1e-8);
+    let reynolds_number_result = bisection(pressure_drop_root,
+        (-max_reynolds,max_reynolds),
+        100,
+        1e-8);
 
 
 
     // the unwrap turns the result into f64
-    let ReynoldsNumber = ReynoldsNumberResult.unwrap();
+    let reynolds_number = reynolds_number_result.unwrap();
 
-    return Ok(ReynoldsNumber);
+    return Ok(reynolds_number);
 }
 
 
