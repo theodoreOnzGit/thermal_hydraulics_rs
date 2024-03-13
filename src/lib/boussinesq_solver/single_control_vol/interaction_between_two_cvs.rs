@@ -282,25 +282,25 @@ impl SingleCVNode {
 
     /// calculates a suitable timescale when two single cv nodes interact
     pub fn calculate_mesh_stability_timestep_for_two_single_cv_nodes(
-        single_cv_1: &mut SingleCVNode,
+        &mut self,
         single_cv_2: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) 
         -> Result<Time, ThermalHydraulicsLibError> 
     {
 
         let temperature_1: ThermodynamicTemperature = 
-            single_cv_1.temperature;
+            self.temperature;
 
         let temperature_2: ThermodynamicTemperature = 
             single_cv_2.temperature;
 
         let pressure_1: Pressure = 
-            single_cv_1.pressure_control_volume;
+            self.pressure_control_volume;
 
         let pressure_2: Pressure = 
             single_cv_2.pressure_control_volume;
 
-        let material_1 = single_cv_1.material_control_volume;
+        let material_1 = self.material_control_volume;
         let material_2 = single_cv_2.material_control_volume;
 
         // we use this to get the diffusion coefficient for both control 
@@ -327,7 +327,7 @@ impl SingleCVNode {
             temperature_2,
             pressure_2)?;
 
-        let mass_1: Mass = single_cv_1.mass_control_volume;
+        let mass_1: Mass = self.mass_control_volume;
         let mass_2: Mass = single_cv_2.mass_control_volume;
 
         // we get heat capacity 
@@ -354,7 +354,7 @@ impl SingleCVNode {
 
         // we'll calculate two baseline time scales
         let mut cv_1_timestep:Time = 
-            single_cv_1.calculate_conduction_timestep()?;
+            self.calculate_conduction_timestep()?;
 
         let mut cv_2_timestep:Time = 
             single_cv_2.calculate_conduction_timestep()?;
@@ -367,7 +367,7 @@ impl SingleCVNode {
             HeatTransferInteractionType::UserSpecifiedThermalConductance(user_specified_conductance) => {
 
                 let lengthscale_stability_vec_1 = 
-                    single_cv_1.mesh_stability_lengthscale_vector.clone();
+                    self.mesh_stability_lengthscale_vector.clone();
                 let lengthscale_stability_vec_2 = 
                     single_cv_2.mesh_stability_lengthscale_vector.clone();
 
@@ -1101,7 +1101,7 @@ impl SingleCVNode {
                         heat_transfer_coeff * surf_area;
 
                     let lengthscale_stability_vec_1 = 
-                        single_cv_1.mesh_stability_lengthscale_vector.clone();
+                        self.mesh_stability_lengthscale_vector.clone();
                     let lengthscale_stability_vec_2 = 
                         single_cv_2.mesh_stability_lengthscale_vector.clone();
 
@@ -1239,7 +1239,7 @@ impl SingleCVNode {
         };
 
         // push the corrected minimum timesteps to cv 1 and cv 2
-        single_cv_1.max_timestep_vector.push(cv_1_timestep);
+        self.max_timestep_vector.push(cv_1_timestep);
         single_cv_2.max_timestep_vector.push(cv_2_timestep);
 
         // load the minimum timestep and return
