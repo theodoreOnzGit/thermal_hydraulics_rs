@@ -15,7 +15,6 @@ specific_enthalpy::try_get_temperature_from_h;
 use super::SingleCVNode;
 use uom::si::f64::*;
 use uom::si::length::meter;
-use uom::si::power::watt;
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::num_traits::Zero;
 
@@ -849,8 +848,8 @@ impl SingleCVNode {
                 (outer_material,outer_shell_thickness),
                 (inner_diameter,
                  outer_diameter,
-                 _cylinder_length)
-            ) => {
+                 _cylinder_length)) => 
+            {
                 // first, want to check if inner_diameter + 
                 // shell thicknesses is outer diameter 
 
@@ -941,301 +940,302 @@ impl SingleCVNode {
 
 
             },
-                HeatTransferInteractionType::UserSpecifiedHeatAddition => 
-                {
-                    // user specified heat addition does not make sense 
-                    // for cv to cv interaction
-                    println!("interaction type needs to be thermal conductance");
-                    return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
-                },
 
-                HeatTransferInteractionType:: UserSpecifiedHeatFluxCustomArea(_) => 
-                {
+            HeatTransferInteractionType::UserSpecifiedHeatAddition => 
+            {
+                // user specified heat addition does not make sense 
+                // for cv to cv interaction
+                println!("interaction type needs to be thermal conductance");
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+            },
 
-                    // user specified heat flux does not make sense 
-                    // for cv to cv interaction
-                    println!("interaction type needs to be thermal conductance");
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCustomArea(_) => 
+            {
 
-                    return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
+                println!("interaction type needs to be thermal conductance");
 
-                },
-                HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => 
-                {
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
 
-                    // user specified heat flux does not make sense 
-                    // for cv to cv interaction
-                    println!("interaction type needs to be thermal conductance");
+            },
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => 
+            {
 
-                    return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
-                },
-                HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => 
-                {
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
+                println!("interaction type needs to be thermal conductance");
 
-                    // user specified heat flux does not make sense 
-                    // for cv to cv interaction
-                    println!("interaction type needs to be thermal conductance");
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+            },
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => 
+            {
 
-                    return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
-                },
-                HeatTransferInteractionType:: DualCartesianThermalConductance(
-                    (_material_1, thickness_1),
-                    (_material_2,thickness_2)
-                ) => { 
+                // user specified heat flux does not make sense 
+                // for cv to cv interaction
+                println!("interaction type needs to be thermal conductance");
 
-                    let thickness_1_length: Length = thickness_1.into();
-                    let thickness_2_length: Length = thickness_2.into();
+                return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+            },
+            HeatTransferInteractionType:: DualCartesianThermalConductance(
+                (_material_1, thickness_1),
+                (_material_2,thickness_2)
+            ) => { 
+
+                let thickness_1_length: Length = thickness_1.into();
+                let thickness_2_length: Length = thickness_2.into();
 
 
-                    // now, we are not quite sure which material 
-                    // corresponds to which control volume,
-                    // though of course, we know both are solids 
-                    // 
-                    // and that 
-                    // Delta t = Fo * Delta x * Delta x  / alpha 
-                    //
-                    // so to get the minimum delta t, we take the 
-                    // shorter of the two lengths, and the larger of 
-                    // the two alphas 
-                    //
+                // now, we are not quite sure which material 
+                // corresponds to which control volume,
+                // though of course, we know both are solids 
+                // 
+                // and that 
+                // Delta t = Fo * Delta x * Delta x  / alpha 
+                //
+                // so to get the minimum delta t, we take the 
+                // shorter of the two lengths, and the larger of 
+                // the two alphas 
+                //
 
-                    let mut larger_alpha: DiffusionCoefficient = 
-                        alpha_1;
+                let mut larger_alpha: DiffusionCoefficient = 
+                    alpha_1;
 
-                    if alpha_1 < alpha_2 {
-                        larger_alpha = alpha_2;
+                if alpha_1 < alpha_2 {
+                    larger_alpha = alpha_2;
+                }
+
+
+                let mut smaller_lengthscale: Length = thickness_1.into();
+
+                if thickness_2_length < thickness_1_length {
+                    smaller_lengthscale = thickness_2_length;
+                }
+
+                let interaction_minimum_timescale: Time 
+                    = max_mesh_fourier_number * 
+                    smaller_lengthscale *
+                    smaller_lengthscale / 
+                    larger_alpha;
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+            },
+            HeatTransferInteractionType::DualCartesianThermalConductanceThreeDimension(
+                data_dual_cartesian_conduction
+            ) => {
+
+
+                let thickness_1 = 
+                    data_dual_cartesian_conduction .thickness_1;
+
+                let thickness_2 = 
+                    data_dual_cartesian_conduction .thickness_2;
+
+
+                let thickness_1_length: Length = thickness_1.into();
+                let thickness_2_length: Length = thickness_2.into();
+
+
+                // now, we are not quite sure which material 
+                // corresponds to which control volume,
+                // though of course, we know both are solids 
+                // 
+                // and that 
+                // Delta t = Fo * Delta x * Delta x  / alpha 
+                //
+                // so to get the minimum delta t, we take the 
+                // shorter of the two lengths, and the larger of 
+                // the two alphas 
+                //
+
+                let mut larger_alpha: DiffusionCoefficient = 
+                    alpha_1;
+
+                if alpha_1 < alpha_2 {
+                    larger_alpha = alpha_2;
+                }
+
+
+                let mut smaller_lengthscale: Length = thickness_1.into();
+
+                if thickness_2_length < thickness_1_length {
+                    smaller_lengthscale = thickness_2_length;
+                }
+
+                let interaction_minimum_timescale: Time 
+                    = max_mesh_fourier_number * 
+                    smaller_lengthscale *
+                    smaller_lengthscale / 
+                    larger_alpha;
+
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+            },
+
+            HeatTransferInteractionType:: UserSpecifiedConvectionResistance(
+                data_convection_resistance
+            ) => {
+
+                // repeat analysis as per user specified thermal 
+                // conductance
+
+                let heat_transfer_coeff: HeatTransfer = 
+                    data_convection_resistance.heat_transfer_coeff;
+                let surf_area: Area = 
+                    data_convection_resistance.surf_area.into();
+
+                let user_specified_conductance: ThermalConductance = 
+                    heat_transfer_coeff * surf_area;
+
+                let lengthscale_stability_vec_1 = 
+                    self.mesh_stability_lengthscale_vector.clone();
+                let lengthscale_stability_vec_2 = 
+                    single_cv_2.mesh_stability_lengthscale_vector.clone();
+
+                let mut min_lengthscale = Length::new::<meter>(0.0);
+
+                for length in lengthscale_stability_vec_1.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
                     }
+                }
 
-
-                    let mut smaller_lengthscale: Length = thickness_1.into();
-
-                    if thickness_2_length < thickness_1_length {
-                        smaller_lengthscale = thickness_2_length;
+                for length in lengthscale_stability_vec_2.iter() {
+                    if *length > min_lengthscale {
+                        min_lengthscale = *length;
                     }
+                }
 
-                    let interaction_minimum_timescale: Time 
-                        = max_mesh_fourier_number * 
-                        smaller_lengthscale *
-                        smaller_lengthscale / 
-                        larger_alpha;
+                // now that we've gotten both length scales and gotten 
+                // the shortest one, we'll need to obtain a timescale 
+                // from the conductance 
+                //
+                // Delta t = Fo * rho * cp * Delta x * resistance
+                //
+                // we'll convert conductance into total resistance first 
+                // 
 
-                    if cv_1_timestep > interaction_minimum_timescale {
-                        cv_1_timestep = interaction_minimum_timescale;
-                    }
+                let total_resistance = 1.0/user_specified_conductance;
 
-                    if cv_2_timestep > interaction_minimum_timescale {
-                        cv_2_timestep = interaction_minimum_timescale;
-                    }
+                // then we'll approximate the thermal resistance of 
+                // cv 1 using the ratio of heat capacities 
+                //
+                // This is approximation, not exact, I'll deal with 
+                // the approximation as I need to later.
 
-                },
-                HeatTransferInteractionType::DualCartesianThermalConductanceThreeDimension(
-                    data_dual_cartesian_conduction
-                ) => {
+                let approx_thermal_resistance_1= total_resistance *
+                    heat_capacity_ratio_cv_1;
 
+                let approx_thermal_cond_1: ThermalConductance = 
+                    1.0/approx_thermal_resistance_1;
 
-                    let thickness_1 = 
-                        data_dual_cartesian_conduction .thickness_1;
+                // do note that thermal conductance is in watts per kelvin 
+                // not watts per m2/K
+                // area is factored in
+                //
+                // qA = H (T_1 - T_2)
+                //
+                // if i want HbyA or HbyV, then divide by the control volume
+                //
+                // H = kA/L for thermal conductivity case
+                //  
+                // bummer, no surface area!
+                // I suppose I'll just use the minimum length scales 
+                // then for conservative-ness
 
-                    let thickness_2 = 
-                        data_dual_cartesian_conduction .thickness_2;
-
-
-                    let thickness_1_length: Length = thickness_1.into();
-                    let thickness_2_length: Length = thickness_2.into();
-
-
-                    // now, we are not quite sure which material 
-                    // corresponds to which control volume,
-                    // though of course, we know both are solids 
-                    // 
-                    // and that 
-                    // Delta t = Fo * Delta x * Delta x  / alpha 
-                    //
-                    // so to get the minimum delta t, we take the 
-                    // shorter of the two lengths, and the larger of 
-                    // the two alphas 
-                    //
-
-                    let mut larger_alpha: DiffusionCoefficient = 
-                        alpha_1;
-
-                    if alpha_1 < alpha_2 {
-                        larger_alpha = alpha_2;
-                    }
-
-
-                    let mut smaller_lengthscale: Length = thickness_1.into();
-
-                    if thickness_2_length < thickness_1_length {
-                        smaller_lengthscale = thickness_2_length;
-                    }
-
-                    let interaction_minimum_timescale: Time 
-                        = max_mesh_fourier_number * 
-                        smaller_lengthscale *
-                        smaller_lengthscale / 
-                        larger_alpha;
-
-                    if cv_1_timestep > interaction_minimum_timescale {
-                        cv_1_timestep = interaction_minimum_timescale;
-                    }
-
-                    if cv_2_timestep > interaction_minimum_timescale {
-                        cv_2_timestep = interaction_minimum_timescale;
-                    }
-
-                },
-
-                HeatTransferInteractionType:: UserSpecifiedConvectionResistance(
-                    data_convection_resistance
-                ) => {
-
-                    // repeat analysis as per user specified thermal 
-                    // conductance
-
-                    let heat_transfer_coeff: HeatTransfer = 
-                        data_convection_resistance.heat_transfer_coeff;
-                    let surf_area: Area = 
-                        data_convection_resistance.surf_area.into();
-
-                    let user_specified_conductance: ThermalConductance = 
-                        heat_transfer_coeff * surf_area;
-
-                    let lengthscale_stability_vec_1 = 
-                        self.mesh_stability_lengthscale_vector.clone();
-                    let lengthscale_stability_vec_2 = 
-                        single_cv_2.mesh_stability_lengthscale_vector.clone();
-
-                    let mut min_lengthscale = Length::new::<meter>(0.0);
-
-                    for length in lengthscale_stability_vec_1.iter() {
-                        if *length > min_lengthscale {
-                            min_lengthscale = *length;
-                        }
-                    }
-
-                    for length in lengthscale_stability_vec_2.iter() {
-                        if *length > min_lengthscale {
-                            min_lengthscale = *length;
-                        }
-                    }
-
-                    // now that we've gotten both length scales and gotten 
-                    // the shortest one, we'll need to obtain a timescale 
-                    // from the conductance 
-                    //
-                    // Delta t = Fo * rho * cp * Delta x * resistance
-                    //
-                    // we'll convert conductance into total resistance first 
-                    // 
-
-                    let total_resistance = 1.0/user_specified_conductance;
-
-                    // then we'll approximate the thermal resistance of 
-                    // cv 1 using the ratio of heat capacities 
-                    //
-                    // This is approximation, not exact, I'll deal with 
-                    // the approximation as I need to later.
-
-                    let approx_thermal_resistance_1= total_resistance *
-                        heat_capacity_ratio_cv_1;
-
-                    let approx_thermal_cond_1: ThermalConductance = 
-                        1.0/approx_thermal_resistance_1;
-
-                    // do note that thermal conductance is in watts per kelvin 
-                    // not watts per m2/K
-                    // area is factored in
-                    //
-                    // qA = H (T_1 - T_2)
-                    //
-                    // if i want HbyA or HbyV, then divide by the control volume
-                    //
-                    // H = kA/L for thermal conductivity case
-                    //  
-                    // bummer, no surface area!
-                    // I suppose I'll just use the minimum length scales 
-                    // then for conservative-ness
-
-                    let approx_thermal_conductivity_1: ThermalConductivity = 
-                        approx_thermal_cond_1 / min_lengthscale;
+                let approx_thermal_conductivity_1: ThermalConductivity = 
+                    approx_thermal_cond_1 / min_lengthscale;
 
 
 
-                    let approx_thermal_resistance_2 = total_resistance *
-                        heat_capacity_ratio_cv_2;
+                let approx_thermal_resistance_2 = total_resistance *
+                    heat_capacity_ratio_cv_2;
 
-                    let approx_thermal_cond_2: ThermalConductance = 
-                        1.0/approx_thermal_resistance_2;
+                let approx_thermal_cond_2: ThermalConductance = 
+                    1.0/approx_thermal_resistance_2;
 
-                    let approx_thermal_conductivity_2: ThermalConductivity = 
-                        approx_thermal_cond_2 / min_lengthscale;
+                let approx_thermal_conductivity_2: ThermalConductivity = 
+                    approx_thermal_cond_2 / min_lengthscale;
 
-                    // let's get timescale 1 and 2 estimate 
+                // let's get timescale 1 and 2 estimate 
 
-                    let density_1: MassDensity 
-                        = try_get_rho(material_1, temperature_1, pressure_1)?;
+                let density_1: MassDensity 
+                    = try_get_rho(material_1, temperature_1, pressure_1)?;
 
-                    let density_2: MassDensity 
-                        = try_get_rho(material_2, temperature_2, pressure_2)?;
+                let density_2: MassDensity 
+                    = try_get_rho(material_2, temperature_2, pressure_2)?;
 
-                    let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
-                    let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
+                let rho_cp_1: VolumetricHeatCapacity = density_1 * cp_1;
+                let rho_cp_2: VolumetricHeatCapacity = density_2 * cp_2;
 
-                    let approx_alpha_1: DiffusionCoefficient = 
-                        approx_thermal_conductivity_1/rho_cp_1;
+                let approx_alpha_1: DiffusionCoefficient = 
+                    approx_thermal_conductivity_1/rho_cp_1;
 
-                    let approx_alpha_2: DiffusionCoefficient = 
-                        approx_thermal_conductivity_2/rho_cp_2;
-
-
-                    // Fo  = alpha * Delta t / Delta x / Delta x 
-                    //
-                    // Delta t = Fo * Delta x * Delta x / alpha 
-                    //
-
-                    let timescale_1: Time = max_mesh_fourier_number 
-                        * min_lengthscale 
-                        * min_lengthscale 
-                        / approx_alpha_1;
-
-                    let timescale_2: Time = max_mesh_fourier_number 
-                        * min_lengthscale 
-                        * min_lengthscale 
-                        / approx_alpha_2;
-
-                    let interaction_minimum_timescale: Time; 
-
-                    if timescale_1 > timescale_2 {
-                        interaction_minimum_timescale = timescale_2;
-                    } else {
-                        interaction_minimum_timescale = timescale_1;
-                    }
+                let approx_alpha_2: DiffusionCoefficient = 
+                    approx_thermal_conductivity_2/rho_cp_2;
 
 
-                    // take minimum of the timescales and assign it to 
-                    // the cv 1 or cv 2 timescales
-                    //
+                // Fo  = alpha * Delta t / Delta x / Delta x 
+                //
+                // Delta t = Fo * Delta x * Delta x / alpha 
+                //
 
-                    if cv_1_timestep > interaction_minimum_timescale {
-                        cv_1_timestep = interaction_minimum_timescale;
-                    }
+                let timescale_1: Time = max_mesh_fourier_number 
+                    * min_lengthscale 
+                    * min_lengthscale 
+                    / approx_alpha_1;
 
-                    if cv_2_timestep > interaction_minimum_timescale {
-                        cv_2_timestep = interaction_minimum_timescale;
-                    }
+                let timescale_2: Time = max_mesh_fourier_number 
+                    * min_lengthscale 
+                    * min_lengthscale 
+                    / approx_alpha_2;
+
+                let interaction_minimum_timescale: Time; 
+
+                if timescale_1 > timescale_2 {
+                    interaction_minimum_timescale = timescale_2;
+                } else {
+                    interaction_minimum_timescale = timescale_1;
+                }
 
 
-                },
-                HeatTransferInteractionType::Advection(_) => 
-                {
-                    // advection has nothing to do with mesh stability timestep 
-                    // do nothing
-                    //
-                    // it can only be calculated after the total mass flowrates 
-                    // in and out of the control volumes are calculated
+                // take minimum of the timescales and assign it to 
+                // the cv 1 or cv 2 timescales
+                //
 
-                    ()
-                },
+                if cv_1_timestep > interaction_minimum_timescale {
+                    cv_1_timestep = interaction_minimum_timescale;
+                }
+
+                if cv_2_timestep > interaction_minimum_timescale {
+                    cv_2_timestep = interaction_minimum_timescale;
+                }
+
+
+            },
+            HeatTransferInteractionType::Advection(_) => 
+            {
+                // advection has nothing to do with mesh stability timestep 
+                // do nothing
+                //
+                // it can only be calculated after the total mass flowrates 
+                // in and out of the control volumes are calculated
+
+                ()
+            },
         };
 
         // push the corrected minimum timesteps to cv 1 and cv 2
