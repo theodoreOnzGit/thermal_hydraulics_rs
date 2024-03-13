@@ -251,7 +251,7 @@ pub mod calculation;
 pub mod lateral_connection;
 
 
-/// contains code to connect control volumes axially 
+/// contains code to connect heat transfer entities axially
 pub mod axial_connection;
 
 
