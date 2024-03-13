@@ -337,259 +337,263 @@ impl Into<HeatTransferInteractionType> for DataAdvection {
 
 impl HeatTransferInteractionType {
 
-pub fn get_thermal_conductance_based_on_interaction(
-    &self,
-    temperature_1: ThermodynamicTemperature,
-    temperature_2: ThermodynamicTemperature,
-    pressure_1: Pressure,
-    pressure_2: Pressure) 
--> Result<ThermalConductance, ThermalHydraulicsLibError> 
-{
-    let interaction = *self;
+    /// based on the heat transfer interaction type,
+    /// we can calculate a thermal conductance given certain parameters
+    /// 
+    /// this function abstracts the details away for you
+    pub fn get_thermal_conductance_based_on_interaction(
+        &self,
+        temperature_1: ThermodynamicTemperature,
+        temperature_2: ThermodynamicTemperature,
+        pressure_1: Pressure,
+        pressure_2: Pressure) 
+        -> Result<ThermalConductance, ThermalHydraulicsLibError> 
+    {
+        let interaction = *self;
 
-    let conductance: ThermalConductance = match 
-        interaction {
-            HeatTransferInteractionType::UserSpecifiedThermalConductance(
-                user_specified_conductance) => user_specified_conductance,
-            HeatTransferInteractionType
-                ::SingleCartesianThermalConductanceOneDimension(
-                material,thickness) => get_conductance_single_cartesian_one_dimension(
-                    material,
-                    temperature_1, 
-                    temperature_2, 
-                    pressure_1, 
-                    pressure_2, 
-                    thickness)?,
-            HeatTransferInteractionType::
-                CylindricalConductionConvectionLiquidInside(
-                (solid_material, shell_thickness,
-                solid_temperature, solid_pressure), 
-                (h, inner_diameter, cylinder_length)) => {
+        let conductance: ThermalConductance = match 
+            interaction {
+                HeatTransferInteractionType::UserSpecifiedThermalConductance(
+                    user_specified_conductance) => user_specified_conductance,
+                    HeatTransferInteractionType
+                        ::SingleCartesianThermalConductanceOneDimension(
+                            material,thickness) => get_conductance_single_cartesian_one_dimension(
+                            material,
+                            temperature_1, 
+                            temperature_2, 
+                            pressure_1, 
+                            pressure_2, 
+                            thickness)?,
+                            HeatTransferInteractionType::
+                                CylindricalConductionConvectionLiquidInside(
+                                    (solid_material, shell_thickness,
+                                     solid_temperature, solid_pressure), 
+                                    (h, inner_diameter, cylinder_length)) => {
 
-                    let id: Length = inner_diameter.clone().into();
-                    let thicnkess: Length = shell_thickness.clone().into();
+                                    let id: Length = inner_diameter.clone().into();
+                                    let thicnkess: Length = shell_thickness.clone().into();
 
-                    let od: Length = id+thicnkess;
+                                    let od: Length = id+thicnkess;
 
-                    let outer_diameter: OuterDiameterThermalConduction = 
-                    OuterDiameterThermalConduction::from(od);
+                                    let outer_diameter: OuterDiameterThermalConduction = 
+                                        OuterDiameterThermalConduction::from(od);
 
-                    // after all the typing conversion, we can 
-                    // get our conductance
-                    get_conductance_single_cylindrical_radial_solid_liquid(
-                        solid_material,
-                        solid_temperature,
-                        solid_pressure,
-                        h,
-                        inner_diameter,
-                        outer_diameter,
-                        cylinder_length,
-                        CylindricalAndSphericalSolidFluidArrangement::
-                        FluidOnInnerSurfaceOfSolidShell ,
-                    )?
-                },
+                                    // after all the typing conversion, we can 
+                                    // get our conductance
+                                    get_conductance_single_cylindrical_radial_solid_liquid(
+                                        solid_material,
+                                        solid_temperature,
+                                        solid_pressure,
+                                        h,
+                                        inner_diameter,
+                                        outer_diameter,
+                                        cylinder_length,
+                                        CylindricalAndSphericalSolidFluidArrangement::
+                                        FluidOnInnerSurfaceOfSolidShell ,
+                                    )?
+                                },
 
-            HeatTransferInteractionType::
-                CylindricalConductionConvectionLiquidOutside(
-                (solid_material, shell_thickness,
-                solid_temperature, solid_pressure), 
-                (h, outer_diameter, cylinder_length)) => {
+                                HeatTransferInteractionType::
+                                    CylindricalConductionConvectionLiquidOutside(
+                                        (solid_material, shell_thickness,
+                                         solid_temperature, solid_pressure), 
+                                        (h, outer_diameter, cylinder_length)) => {
 
-                    let od: Length = outer_diameter.clone().into();
-                    let thicnkess: Length = shell_thickness.clone().into();
+                                        let od: Length = outer_diameter.clone().into();
+                                        let thicnkess: Length = shell_thickness.clone().into();
 
-                    let id: Length = od - thicnkess;
+                                        let id: Length = od - thicnkess;
 
-                    let inner_diameter: InnerDiameterThermalConduction = 
-                    InnerDiameterThermalConduction::from(id);
+                                        let inner_diameter: InnerDiameterThermalConduction = 
+                                            InnerDiameterThermalConduction::from(id);
 
-                    // after all the typing conversion, we can 
-                    // get our conductance
-                    get_conductance_single_cylindrical_radial_solid_liquid(
-                        solid_material,
-                        solid_temperature,
-                        solid_pressure,
-                        h,
-                        inner_diameter,
-                        outer_diameter,
-                        cylinder_length,
-                        CylindricalAndSphericalSolidFluidArrangement::
-                        FluidOnInnerSurfaceOfSolidShell ,
-                    )?
-                },
-            // note: actually function signatures are a little more 
-            // friendly to use than packing enums with lots of stuff 
-            // so may change stuffing enums with tuples to stuffing 
-            // enums with a single struct
-            HeatTransferInteractionType
-                ::DualCylindricalThermalConductance(
-                (inner_material,inner_shell_thickness),
-                (outer_material,outer_shell_thickness),
-                (inner_diameter,
-                outer_diameter,
-                cylinder_length)
-            ) => {
-                    // first, want to check if inner_diameter + 
-                    // shell thicknesses is outer diameter 
+                                        // after all the typing conversion, we can 
+                                        // get our conductance
+                                        get_conductance_single_cylindrical_radial_solid_liquid(
+                                            solid_material,
+                                            solid_temperature,
+                                            solid_pressure,
+                                            h,
+                                            inner_diameter,
+                                            outer_diameter,
+                                            cylinder_length,
+                                            CylindricalAndSphericalSolidFluidArrangement::
+                                            FluidOnInnerSurfaceOfSolidShell ,
+                                        )?
+                                    },
+                                    // note: actually function signatures are a little more 
+                                    // friendly to use than packing enums with lots of stuff 
+                                    // so may change stuffing enums with tuples to stuffing 
+                                    // enums with a single struct
+                                    HeatTransferInteractionType
+                                        ::DualCylindricalThermalConductance(
+                                            (inner_material,inner_shell_thickness),
+                                            (outer_material,outer_shell_thickness),
+                                            (inner_diameter,
+                                             outer_diameter,
+                                             cylinder_length)
+                                        ) => {
+                                            // first, want to check if inner_diameter + 
+                                            // shell thicknesses is outer diameter 
 
-                    let expected_outer_diameter: Length;
-                    let id: Length = inner_diameter.into();
-                    let inner_thickness: Length =  inner_shell_thickness.into();
-                    let outer_thickness: Length =  outer_shell_thickness.into();
+                                            let expected_outer_diameter: Length;
+                                            let id: Length = inner_diameter.into();
+                                            let inner_thickness: Length =  inner_shell_thickness.into();
+                                            let outer_thickness: Length =  outer_shell_thickness.into();
 
-                    expected_outer_diameter = 
-                        id + inner_thickness + outer_thickness;
+                                            expected_outer_diameter = 
+                                                id + inner_thickness + outer_thickness;
 
-                    let od: Length = outer_diameter.into();
+                                            let od: Length = outer_diameter.into();
 
-                    // inner diameter and outer diameter values must be 
-                    // equal to within 1 nanometer 1e-9 m
-                    if (od.value - expected_outer_diameter.value).abs() > 1e-9
-                    {
+                                            // inner diameter and outer diameter values must be 
+                                            // equal to within 1 nanometer 1e-9 m
+                                            if (od.value - expected_outer_diameter.value).abs() > 1e-9
+                                            {
 
-                        let mut error_str: String = "the inner diameter 
+                                                let mut error_str: String = "the inner diameter 
                             plus shell thicknesses do not equate 
                             to outer diameter".to_string();
 
-                        error_str += "supplied outer diameter (m):";
-                        error_str += &od.value.to_string();
-                        error_str += "expected outer diameter (m):";
-                        error_str += &expected_outer_diameter.value.to_string();
+                                                error_str += "supplied outer diameter (m):";
+                                                error_str += &od.value.to_string();
+                                                error_str += "expected outer diameter (m):";
+                                                error_str += &expected_outer_diameter.value.to_string();
 
 
-                        return Err(ThermalHydraulicsLibError::
-                            GenericStringError(error_str));
-                    }
+                                                return Err(ThermalHydraulicsLibError::
+                                                    GenericStringError(error_str));
+                                            }
 
-                    get_conductance_cylindrical_radial_two_materials(
-                        inner_material,
-                        outer_material,
-                        temperature_1, //convention, 1 is inner shell
-                        temperature_2, // convention 2, is outer shell
-                        pressure_1,
-                        pressure_2,
-                        inner_diameter,
-                        inner_shell_thickness,
-                        outer_shell_thickness,
-                        cylinder_length,
-                    )?
-                },
-            HeatTransferInteractionType::UserSpecifiedHeatAddition  
-                => {
-                    return Err(ThermalHydraulicsLibError::
-                    GenericStringError("interaction type needs to be \n 
+                                            get_conductance_cylindrical_radial_two_materials(
+                                                inner_material,
+                                                outer_material,
+                                                temperature_1, //convention, 1 is inner shell
+                                                temperature_2, // convention 2, is outer shell
+                                                pressure_1,
+                                                pressure_2,
+                                                inner_diameter,
+                                                inner_shell_thickness,
+                                                outer_shell_thickness,
+                                                cylinder_length,
+                                            )?
+                                        },
+                                        HeatTransferInteractionType::UserSpecifiedHeatAddition  
+                                            => {
+                                                return Err(ThermalHydraulicsLibError::
+                                                    GenericStringError("interaction type needs to be \n 
                         thermal conductance".to_string()));
-                },
+                                            },
 
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCustomArea(_) => {
+                                            HeatTransferInteractionType::
+                                                UserSpecifiedHeatFluxCustomArea(_) => {
 
-                    return Err(ThermalHydraulicsLibError::
-                    GenericStringError("interaction type needs to be \n 
-                        thermal conductance".to_string()));
-
-                },
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
-
-                    return Err(ThermalHydraulicsLibError::
-                    GenericStringError("interaction type needs to be \n 
+                                                    return Err(ThermalHydraulicsLibError::
+                                                        GenericStringError("interaction type needs to be \n 
                         thermal conductance".to_string()));
 
-                },
-            HeatTransferInteractionType::
-                UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
+                                                },
+                                                HeatTransferInteractionType::
+                                                    UserSpecifiedHeatFluxCylindricalOuterArea(_,_) => {
 
-                    return Err(ThermalHydraulicsLibError::
-                    GenericStringError("interaction type needs to be \n 
+                                                        return Err(ThermalHydraulicsLibError::
+                                                            GenericStringError("interaction type needs to be \n 
                         thermal conductance".to_string()));
 
-                },
-            HeatTransferInteractionType::
-                DualCartesianThermalConductance(
-                (material_1, thickness_1),
-                (material_2,thickness_2)) => { 
-                    
-                    let conductnace_layer_1: ThermalConductance 
-                    = get_conductance_single_cartesian_one_dimension(
-                        material_1,
-                        temperature_1, 
-                        temperature_1, 
-                        pressure_1, 
-                        pressure_1, 
-                        thickness_1)?;
+                                                    },
+                                                    HeatTransferInteractionType::
+                                                        UserSpecifiedHeatFluxCylindricalInnerArea(_,_) => {
 
-                    let conductnace_layer_2: ThermalConductance 
-                    = get_conductance_single_cartesian_one_dimension(
-                        material_2,
-                        temperature_2, 
-                        temperature_2, 
-                        pressure_2, 
-                        pressure_2, 
-                        thickness_2)?;
+                                                            return Err(ThermalHydraulicsLibError::
+                                                                GenericStringError("interaction type needs to be \n 
+                        thermal conductance".to_string()));
 
-                    let overall_resistance = 
-                    1.0/conductnace_layer_2 
-                    + 1.0/conductnace_layer_1;
+                                                        },
+                                                        HeatTransferInteractionType::
+                                                            DualCartesianThermalConductance(
+                                                                (material_1, thickness_1),
+                                                                (material_2,thickness_2)) => { 
 
-                    // return the conductance or resistnace inverse
+                                                                let conductnace_layer_1: ThermalConductance 
+                                                                    = get_conductance_single_cartesian_one_dimension(
+                                                                        material_1,
+                                                                        temperature_1, 
+                                                                        temperature_1, 
+                                                                        pressure_1, 
+                                                                        pressure_1, 
+                                                                        thickness_1)?;
 
-                    1.0/overall_resistance
-            },
-            HeatTransferInteractionType::
-                DualCartesianThermalConductanceThreeDimension(
-                data_dual_cartesian_conduction) 
-                => {
+                                                                let conductnace_layer_2: ThermalConductance 
+                                                                    = get_conductance_single_cartesian_one_dimension(
+                                                                        material_2,
+                                                                        temperature_2, 
+                                                                        temperature_2, 
+                                                                        pressure_2, 
+                                                                        pressure_2, 
+                                                                        thickness_2)?;
 
-                    let material_1 = 
-                    data_dual_cartesian_conduction .material_1;
+                                                                let overall_resistance = 
+                                                                    1.0/conductnace_layer_2 
+                                                                    + 1.0/conductnace_layer_1;
 
-                    let material_2 = 
-                    data_dual_cartesian_conduction .material_2;
+                                                                // return the conductance or resistnace inverse
 
-                    let thickness_1 = 
-                    data_dual_cartesian_conduction .thickness_1;
+                                                                1.0/overall_resistance
+                                                            },
+                                                            HeatTransferInteractionType::
+                                                                DualCartesianThermalConductanceThreeDimension(
+                                                                    data_dual_cartesian_conduction) 
+                                                                => {
 
-                    let thickness_2 = 
-                    data_dual_cartesian_conduction .thickness_2;
+                                                                    let material_1 = 
+                                                                        data_dual_cartesian_conduction .material_1;
 
-                    let xs_area = 
-                    data_dual_cartesian_conduction .xs_area;
+                                                                    let material_2 = 
+                                                                        data_dual_cartesian_conduction .material_2;
 
-                    get_conductance_dual_cartesian_three_dimensions(
-                        material_1, 
-                        material_2, 
-                        temperature_1, 
-                        temperature_2, 
-                        pressure_1, 
-                        pressure_2, 
-                        xs_area, 
-                        thickness_1,
-                        thickness_2)?
-                },
+                                                                    let thickness_1 = 
+                                                                        data_dual_cartesian_conduction .thickness_1;
 
-            HeatTransferInteractionType::
-                UserSpecifiedConvectionResistance(
-                data_convection_resistance) 
-                => {
+                                                                    let thickness_2 = 
+                                                                        data_dual_cartesian_conduction .thickness_2;
 
-                    let heat_transfer_coeff: HeatTransfer = 
-                    data_convection_resistance.heat_transfer_coeff;
-                    let surf_area: Area = 
-                    data_convection_resistance.surf_area.into();
+                                                                    let xs_area = 
+                                                                        data_dual_cartesian_conduction .xs_area;
 
-                    heat_transfer_coeff * surf_area
-                },
+                                                                    get_conductance_dual_cartesian_three_dimensions(
+                                                                        material_1, 
+                                                                        material_2, 
+                                                                        temperature_1, 
+                                                                        temperature_2, 
+                                                                        pressure_1, 
+                                                                        pressure_2, 
+                                                                        xs_area, 
+                                                                        thickness_1,
+                                                                        thickness_2)?
+                                                                },
 
-            HeatTransferInteractionType::Advection(_) => {
-                return Err(ThermalHydraulicsLibError::GenericStringError(
-                "advection interaction types \n 
+                                                                HeatTransferInteractionType::
+                                                                    UserSpecifiedConvectionResistance(
+                                                                        data_convection_resistance) 
+                                                                    => {
+
+                                                                        let heat_transfer_coeff: HeatTransfer = 
+                                                                            data_convection_resistance.heat_transfer_coeff;
+                                                                        let surf_area: Area = 
+                                                                            data_convection_resistance.surf_area.into();
+
+                                                                        heat_transfer_coeff * surf_area
+                                                                    },
+
+                                                                HeatTransferInteractionType::Advection(_) => {
+                                                                    return Err(ThermalHydraulicsLibError::GenericStringError(
+                                                                            "advection interaction types \n 
                 do not correspond to conductance".to_string()));
-            },
+                                                                },
 
-        };
+            };
 
-    return Ok(conductance);
-}
+        return Ok(conductance);
+    }
 }
 
