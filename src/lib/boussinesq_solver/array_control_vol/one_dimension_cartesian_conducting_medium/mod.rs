@@ -1,6 +1,7 @@
 use approx::assert_relative_eq;
 use ndarray::*;
 use uom::si::f64::*;
+use uom::si::thermodynamic_temperature::kelvin;
 
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
@@ -224,5 +225,68 @@ impl CartesianConduction1DArray {
         return Ok(volume_fraction_array);
     }
 
+    /// gets bulk temperature of the array cv based on volume fraction 
+    /// now, for solid and liquid, that would be sort of 
+    /// a good approximation since the boussinesq approximation
+    /// may work well for liquids
+    ///
+    #[inline]
+    pub fn get_bulk_temperature(&mut self) -> 
+    Result<ThermodynamicTemperature,ThermalHydraulicsLibError>{
+
+        // for now, doing it quick and dirty, i'm going to obtain a volume 
+        // averaged temperature 
+
+        let volume_fraction_array_reference = 
+        &self.volume_fraction_array;
+        let temperature_array_reference = 
+        &self.temperature_array_current_timestep;
+
+        let mut vol_averaged_temperature_array_values: Array1<f64> 
+        = Array::default(temperature_array_reference.len());
+
+        for (idx, temperature_reference) in 
+            temperature_array_reference.iter().enumerate() {
+                //get the vol fraction 
+
+                let vol_fraction: f64 = 
+                volume_fraction_array_reference[idx];
+
+                let vol_avg_temperature_component: f64
+                = vol_fraction * (temperature_reference.get::<kelvin>());
+
+                vol_averaged_temperature_array_values[idx] = 
+                    vol_avg_temperature_component;
+
+            }
+
+        // sum it all up (these are float values) 
+
+        let vol_averaged_temperature_kelvin: f64 
+        = vol_averaged_temperature_array_values.sum();
+
+        return Ok(ThermodynamicTemperature::new
+            ::<kelvin>(vol_averaged_temperature_kelvin));
+
+
+    }
 
 }
+
+
+/// Functions or methods to retrieve temperature and other such 
+/// data from the array_cv
+pub mod postprocessing;
+pub use postprocessing::*;
+
+/// Functions or methods to get timestep and other such quantiies 
+/// for calculations 
+///
+/// helps to set up quantities used in calculation step
+pub mod preprocessing;
+pub use preprocessing::*; 
+
+/// Contains functions which advance the timestep
+/// it's the bulk of calculation
+pub mod calculation;
+pub use calculation::*;
