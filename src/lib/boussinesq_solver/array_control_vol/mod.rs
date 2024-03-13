@@ -5,7 +5,7 @@
 /// These are standalone, and not abstracted under an arrayCV
 /// struct, they only use SingleCVNode structs and representative 
 /// arrays to represent an array of control volumes
-pub mod fluid_nodes;
+pub mod standalone_fluid_nodes;
 
 /// contains matrix calculations specific to solid nodes 
 /// these are meant to represent the "shell" of the pipe 
@@ -14,4 +14,4 @@ pub mod fluid_nodes;
 /// These are standalone, and not abstracted under an arrayCV
 /// struct, they only use SingleCVNode structs and representative 
 /// arrays to represent an array of control volumes
-pub mod solid_nodes;
+pub mod standalone_solid_nodes;

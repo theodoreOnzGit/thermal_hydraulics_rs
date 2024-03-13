@@ -8,7 +8,7 @@ use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_ent
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
-use crate::boussinesq_solver::array_control_vol::fluid_nodes::solve_conductance_matrix_power_vector;
+use crate::boussinesq_solver::array_control_vol::standalone_fluid_nodes::solve_conductance_matrix_power_vector;
 
 
 /// for most pipe flows, we can consider radial conduction without
@@ -241,7 +241,7 @@ fn fluid_solid_node_calculation_initial_test(){
     use crate::boussinesq_solver::control_volume_dimensions::*;
     use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
         heat_transfer_interaction_enums::*;
-    use crate::boussinesq_solver::array_control_vol::fluid_nodes::
+    use crate::boussinesq_solver::array_control_vol::standalone_fluid_nodes::
         core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number;
 
     // okay, let's make two control volumes 
