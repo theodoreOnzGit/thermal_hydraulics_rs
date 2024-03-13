@@ -99,7 +99,8 @@ impl Into<Material> for LiquidMaterial {
 /// If it falls outside this range, return an error
 /// or throw an error, and the program will not run
 #[inline]
-pub fn range_check(material_temperature: ThermodynamicTemperature,
+pub fn range_check(material: &Material,
+    material_temperature: ThermodynamicTemperature,
     upper_temperature_limit: ThermodynamicTemperature,
     lower_temperature_limit: ThermodynamicTemperature) 
     -> Result<bool,ThermalHydraulicsLibError>{
@@ -114,7 +115,7 @@ pub fn range_check(material_temperature: ThermodynamicTemperature,
         upper_temperature_limit.get::<degree_celsius>();
 
     if temp_value_celsius < low_temp_value_celsius {
-        let error_msg = "Your fluid temperature \n";
+        let error_msg = "Your material temperature \n";
         let error_msg1 = "is too low :";
         let error_msg3 = "C \n";
         let error_msg4 = "\n the minimum is ".to_owned() + &low_temp_value_celsius.to_string() + "C";
@@ -126,6 +127,7 @@ pub fn range_check(material_temperature: ThermodynamicTemperature,
                material_temperature,
                error_msg3,
                error_msg4);
+        dbg!(&material);
         return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
     }
 
@@ -142,6 +144,7 @@ pub fn range_check(material_temperature: ThermodynamicTemperature,
                material_temperature,
                error_msg3,
                error_msg4);
+        dbg!(&material);
         return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
     }
 

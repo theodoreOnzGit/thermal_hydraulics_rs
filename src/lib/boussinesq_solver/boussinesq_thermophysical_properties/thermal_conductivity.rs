@@ -77,7 +77,25 @@ fn solid_thermal_conductivity(material: Material,
 
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature)?,
-        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(temperature)?,
+        SteelSS304L => {
+            // for 300K to 700K, use ornl
+            // if out of range, use the slow method (spline)
+            let conductivity_result = steel_ss_304_l_ornl_thermal_conductivity(temperature);
+
+            match conductivity_result {
+                Ok(conductivity) => {
+                    return Ok(conductivity);
+                },
+                Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError) => {
+                    return steel_304_l_spline_thermal_conductivity(temperature);
+                },
+                Err(_) => {
+                    todo!()
+                }
+            }
+
+
+        },
         Copper => copper_thermal_conductivity(temperature)?,
     };
 
@@ -145,7 +163,9 @@ fn liquid_thermal_conductivity(material: Material,
 fn fiberglass_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::Fiberglass),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(600.0), 
         ThermodynamicTemperature::new::<kelvin>(250.0))?;
 
@@ -180,7 +200,9 @@ fn fiberglass_thermal_conductivity(
 fn steel_ss_304_l_ornl_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::SteelSS304L),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(700.0), 
         ThermodynamicTemperature::new::<kelvin>(300.0))?;
 
@@ -203,7 +225,9 @@ fn steel_ss_304_l_ornl_thermal_conductivity(
 fn copper_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::Copper),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(1000.0), 
         ThermodynamicTemperature::new::<kelvin>(250.0))?;
 
@@ -233,10 +257,12 @@ fn copper_thermal_conductivity(
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn _steel_304_l_spline_thermal_conductivity(
+fn steel_304_l_spline_thermal_conductivity(
     temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::SteelSS304L),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(1000.0), 
         ThermodynamicTemperature::new::<kelvin>(250.0))?;
 
@@ -275,7 +301,7 @@ pub fn thermal_conductivity_test_steel(){
     // thermal conductivity, we expect at 350K 
     // 15.58 W/(m K)
 
-    let thermal_cond_spline = _steel_304_l_spline_thermal_conductivity(
+    let thermal_cond_spline = steel_304_l_spline_thermal_conductivity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     approx::assert_relative_eq!(
@@ -304,7 +330,7 @@ pub fn thermal_conductivity_test_steel(){
     // we expect thermal thermal_conductivity to be at 23.83
 
     let thermal_cond_spline = 
-    _steel_304_l_spline_thermal_conductivity(
+    steel_304_l_spline_thermal_conductivity(
         ThermodynamicTemperature::new::<kelvin>(1000.0));
 
     approx::assert_relative_eq!(

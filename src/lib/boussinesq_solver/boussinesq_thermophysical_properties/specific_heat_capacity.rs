@@ -129,7 +129,9 @@ fn fiberglass_specific_heat_capacity(
 fn steel_ss_304_l_ornl_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::SteelSS304L),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(700.0), 
         ThermodynamicTemperature::new::<kelvin>(300.0))?;
 
@@ -152,7 +154,9 @@ fn steel_ss_304_l_ornl_specific_heat_capacity(
 fn copper_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::Copper),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(1000.0), 
         ThermodynamicTemperature::new::<kelvin>(200.0))?;
 
@@ -191,7 +195,9 @@ fn copper_specific_heat_capacity(
 fn _steel_304_l_spline_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
 
-    range_check(temperature, 
+    range_check(
+        &Material::Solid(SolidMaterial::SteelSS304L),
+        temperature, 
         ThermodynamicTemperature::new::<kelvin>(1000.0), 
         ThermodynamicTemperature::new::<kelvin>(250.0))?;
 

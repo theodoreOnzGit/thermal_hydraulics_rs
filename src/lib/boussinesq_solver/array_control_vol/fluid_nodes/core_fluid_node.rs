@@ -419,6 +419,8 @@ pub fn fluid_node_calculation_initial_test(){
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
     use crate::boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
     use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
+    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
+        heat_transfer_interaction_enums::*;
 
 
     // okay, let's make two control volumes 
@@ -726,17 +728,17 @@ pub fn fluid_node_calculation_initial_test(){
             HeatTransfer::new::<watt_per_square_meter_kelvin>(35.0);
 
 
-            //let conductance_interaction: HeatTransferInteractionType
-            //= HeatTransferInteractionType::
-            //    CylindricalConductionConvectionLiquidInside(
-            //        (steel, 
-            //        radial_thickness_thermal_conduction,
-            //        steel_avg_temp,
-            //        atmospheric_pressure),
-            //        (h_to_therminol_dummy,
-            //        inner_diameter_thermal_conduction,
-            //        node_length.clone().into())
-            //);
+            let conductance_interaction: HeatTransferInteractionType
+            = HeatTransferInteractionType::
+                CylindricalConductionConvectionLiquidInside(
+                    (steel, 
+                    radial_thickness_thermal_conduction,
+                    steel_avg_temp,
+                    atmospheric_pressure),
+                    (h_to_therminol_dummy,
+                    inner_diameter_thermal_conduction,
+                    node_length.clone().into())
+            );
 
             // now based on conductance interaction, 
             // we can obtain thermal conductance, the temperatures 
@@ -746,17 +748,16 @@ pub fn fluid_node_calculation_initial_test(){
             // has already been loaded into the thermal conductance 
             // interaction object
 
-            //let nodal_thermal_conductance: ThermalConductance = 
-            //get_thermal_conductance_based_on_interaction(
-            //    fluid_avg_temp,
-            //    steel_avg_temp,
-            //    atmospheric_pressure,
-            //    atmospheric_pressure,
-            //    conductance_interaction,
-            //).unwrap();
-            //
-            let nodal_thermal_conductance = ThermalConductance::new::<
-                uom::si::thermal_conductance::watt_per_kelvin>(20.0);
+            let nodal_thermal_conductance: ThermalConductance = 
+            conductance_interaction.get_thermal_conductance_based_on_interaction(
+                fluid_avg_temp,
+                steel_avg_temp,
+                atmospheric_pressure,
+                atmospheric_pressure,
+            ).unwrap();
+            
+            //let nodal_thermal_conductance = ThermalConductance::new::<
+            //    uom::si::thermal_conductance::watt_per_kelvin>(20.0);
 
             // now, create conductance vector 
 
