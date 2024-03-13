@@ -31,4 +31,4 @@ pub mod one_dimension_cartesian_conducting_medium;
 /// this is relevant for one dimension cartesian (x,y,z) coordinates
 /// except that you can couple these arrays laterally to form a 2D or 
 /// 3D lattice
-pub mod one_dimension_solid_array_with_lateral_coupling;
+pub mod one_d_solid_array_with_lateral_coupling;

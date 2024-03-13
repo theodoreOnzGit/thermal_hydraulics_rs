@@ -251,7 +251,8 @@ pub mod calculation;
 pub mod lateral_connection;
 
 
-/// contains code to connect heat transfer entities axially
+/// contains code to connect to other array cvs, other boundary conditions 
+/// or other single cvs
 pub mod axial_connection;
 
 

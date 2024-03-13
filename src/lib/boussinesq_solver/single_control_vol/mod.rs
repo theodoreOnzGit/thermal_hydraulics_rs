@@ -655,3 +655,10 @@ pub mod preprocessing;
 /// contains functions to help calculate heat transfer between control 
 /// volume and a boundary condition
 pub mod boundary_condition_interactions;
+
+/// heat transfer interaction wrappers
+///
+/// these functions help to abstract away some complexities 
+/// such as that of calculating 
+/// between conductance and advection interactions 
+pub mod wrappers_for_heat_transfer_interaction;
