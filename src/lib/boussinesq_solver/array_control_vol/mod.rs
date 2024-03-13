@@ -16,5 +16,10 @@ pub mod standalone_fluid_nodes;
 /// arrays to represent an array of control volumes
 pub mod standalone_solid_nodes;
 
+/// 
+pub mod conductance_array_functions;
 
+/// contains a full struct which abstracts away calculation details 
+///
+/// this is relevant for one dimension cartesian (x,y,z) coordinates
 pub mod one_dimension_cartesian_conducting_medium;
