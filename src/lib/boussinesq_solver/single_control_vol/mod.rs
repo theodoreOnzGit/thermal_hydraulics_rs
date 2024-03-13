@@ -637,9 +637,13 @@ impl SingleCVNode {
 
 /// calculation contains the advance timestep associated function 
 ///
-/// also allows for calculating heat transfer values between two 
-/// single control volume objects
 pub mod calculation;
+
+/// this module 
+/// allows for calculating heat transfer values between two 
+/// single control volume objects
+/// as well as the suitable timesteps which accompany these calculations 
+pub mod interaction_between_two_cvs;
 
 
 
