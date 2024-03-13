@@ -12,8 +12,7 @@ use ndarray::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
 #[inline]
-pub (crate)
-fn solve_conductance_matrix_power_vector(
+pub (crate) fn solve_conductance_matrix_power_vector(
     thermal_conductance_matrix: Array2<ThermalConductance>,
     power_vector: Array1<Power>)
 -> Result<Array1<ThermodynamicTemperature>, error::LinalgError>{
