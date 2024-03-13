@@ -15,3 +15,6 @@ pub mod standalone_fluid_nodes;
 /// struct, they only use SingleCVNode structs and representative 
 /// arrays to represent an array of control volumes
 pub mod standalone_solid_nodes;
+
+
+pub mod one_dimension_cartesian_conducting_medium;
