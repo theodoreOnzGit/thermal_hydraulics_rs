@@ -10,7 +10,7 @@ pub use conductance::*;
 /// heat from one control volume to another, we call this advection 
 /// functions to calculate advection and placed in this module
 pub mod advection;
-
+pub use advection::*;
 
 /// for heat transfer interactions between two control volumes,
 /// there will be a certain geometry, this is usually a cylinder,
