@@ -21,6 +21,9 @@ pub mod control_volume_dimensions;
 /// but solid control volumes are set by setting flowrate to zero)
 pub mod single_control_vol;
 
+/// Module for boundary conditions 
+pub mod boundary_conditions;
+
 /// Module for array control volumes (mainly for fluid control volumes,
 /// but solid control volumes are set by setting flowrate to zero)
 /// suitable for boussinesq_solver (single phase, negligble density changes
