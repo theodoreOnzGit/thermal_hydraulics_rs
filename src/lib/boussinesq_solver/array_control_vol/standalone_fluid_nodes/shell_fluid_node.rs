@@ -1,5 +1,5 @@
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
+use ndarray_linalg::error::LinalgError;
 use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
