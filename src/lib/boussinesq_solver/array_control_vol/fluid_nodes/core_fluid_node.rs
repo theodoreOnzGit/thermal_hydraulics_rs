@@ -34,8 +34,9 @@ use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 /// You can also add heat volumetrically to the fluid as if it were 
 /// generating heat, but you can also set it to zero
 ///
-///
-pub fn _advance_timestep_fluid_node_array_pipe_high_peclet_number(
+/// This function is standalone, and is not really used inside the 
+/// array control volumes, but you are free to use it
+pub fn advance_timestep_fluid_node_array_pipe_high_peclet_number(
     back_single_cv: &mut SingleCVNode,
     front_single_cv: &mut SingleCVNode,
     number_of_nodes: usize,
@@ -854,7 +855,7 @@ pub fn fluid_node_calculation_initial_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let _new_temperature_vec = 
-            _advance_timestep_fluid_node_array_pipe_high_peclet_number(
+            advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
@@ -1360,7 +1361,7 @@ fn fluid_node_backflow_calculation_initial_test(){
             let timestep_advance_start = 
             SystemTime::now();
             let _new_temperature_vec = 
-            _advance_timestep_fluid_node_array_pipe_high_peclet_number(
+            advance_timestep_fluid_node_array_pipe_high_peclet_number(
                 back_cv_ptr_in_loop.deref_mut(),
                 front_cv_ptr_in_loop.deref_mut(),
                 number_of_nodes,
