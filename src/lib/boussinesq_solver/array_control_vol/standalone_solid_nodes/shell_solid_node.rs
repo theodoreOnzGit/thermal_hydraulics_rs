@@ -1,13 +1,13 @@
 use ndarray::*;
-use ndarray_linalg::{*, error::LinalgError};
-use uom::num_traits::Zero;
-use uom::si::f64::*;
-use uom::si::power::watt;
+use ndarray_linalg::error::LinalgError;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use uom::si::f64::*;
+
+
+
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+
 use crate::boussinesq_solver::array_control_vol::standalone_fluid_nodes::solve_conductance_matrix_power_vector;
 
 
@@ -234,6 +234,7 @@ fn fluid_solid_node_calculation_initial_test(){
     use uom::si::power::kilowatt;
     use uom::si::power::watt;
 
+    use crate::boussinesq_solver::single_control_vol::SingleCVNode;
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
@@ -244,6 +245,7 @@ fn fluid_solid_node_calculation_initial_test(){
     use crate::boussinesq_solver::array_control_vol::standalone_fluid_nodes::
         core_fluid_node::advance_timestep_fluid_node_array_pipe_high_peclet_number;
 
+    use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
     // okay, let's make two control volumes 
     // one cylinder and then the other a shell
     //

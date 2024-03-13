@@ -71,12 +71,12 @@ pub mod calculation;
 ///
 /// linking of control volumes
 pub mod preprocessing;
-pub use preprocessing::*;
+
 
 /// contains functions or methods to get temperature 
 /// and other things 
 pub mod postprocessing;
-pub use postprocessing::*;
+
 
 
 

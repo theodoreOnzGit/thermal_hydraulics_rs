@@ -175,33 +175,20 @@ pub use single_cv_node::*;
 /// contains functions and methods for array control volumes 
 pub mod array_cv;
 pub use array_cv::*;
-/// the array control volume (cv) module is basically to speed up creation 
-/// process of control volumes which require somewhat of a one dimensional 
-/// mesh or series of one dimensional meshes 
-///
-/// of course, you could link up several single_cv_node objects and 
-/// use that as the array control volume. However, the creation process is 
-/// quite tedious. The only advantage perhaps is flexibility and 
-/// customisability 
-///
-/// Some of the code here will be a direct translation of GeN-Foam 
-/// code licensed under GPL 3.0 into rs
-///
-/// Hence, this entire library is licensed under GPL 3.0
-pub use array_cv::*;
+
 
 /// preprocessing contains auto timestepping and other functions
 pub mod preprocessing;
-pub use preprocessing::*;
+
 
 /// postprocessing contains functions to obtain temperature profiles 
 /// of the HeatTransferEntity
 pub mod postprocessing;
-pub use postprocessing::*;
+
 
 /// calculation modules contain methods to advance timestep 
 pub mod calculation;
-pub use calculation::*;
+
 
 use crate::heat_transfer_lib::thermophysical_properties::Material;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;

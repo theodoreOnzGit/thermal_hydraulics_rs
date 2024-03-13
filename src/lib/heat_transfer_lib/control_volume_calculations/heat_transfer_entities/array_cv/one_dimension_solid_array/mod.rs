@@ -233,39 +233,39 @@ impl SolidColumn {
 /// Functions or methods to retrieve temperature and other such 
 /// data from the array_cv
 pub mod postprocessing;
-pub use postprocessing::*;
+
 
 /// Functions or methods to get timestep and other such quantiies 
 /// for calculations 
 ///
 /// helps to set up quantities used in calculation step
 pub mod preprocessing;
-pub use preprocessing::*; 
+ 
 
 /// Contains functions which advance the timestep
 /// it's the bulk of calculation
 pub mod calculation;
-pub use calculation::*;
+
 
 /// contains code to connect control volumes laterally,
 /// in a cylindrical situation, it means radially 
 pub mod lateral_connection;
-pub use lateral_connection::*;
+
 
 /// contains code to connect control volumes axially 
 pub mod axial_connection;
-pub use axial_connection::*;
+
 
 
 /// defaults 
 pub mod default;
-pub use default::*;
+
 
 /// constructors  
 pub mod constructors;
-pub use constructors::*;
+
 
 /// conversions 
 pub mod type_conversion;
-pub use type_conversion::*;
+
 

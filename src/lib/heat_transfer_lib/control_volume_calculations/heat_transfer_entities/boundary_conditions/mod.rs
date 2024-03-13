@@ -64,4 +64,4 @@ impl BCType {
 
 /// converts BC types into heat transfer entities and back
 pub mod type_conversion;
-pub use type_conversion::*;
+

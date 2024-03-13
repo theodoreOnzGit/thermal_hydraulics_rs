@@ -4,7 +4,7 @@ extern crate uom;
 
 use uom::si::f64::*;
 use uom::typenum::P2;
-use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
 
 // This library was developed for use in my PhD thesis under supervision 
 // of Professor Per F. Peterson. It is part of a thermal hydraulics

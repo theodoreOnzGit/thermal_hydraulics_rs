@@ -90,7 +90,7 @@ pub mod dimensionalisation;
 pub mod courant_number;
 
 
-use uom::si::f64::*;
+
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// This function calculates darcy friction factor

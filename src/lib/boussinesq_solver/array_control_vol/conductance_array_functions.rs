@@ -1,5 +1,5 @@
 use ndarray::*;
-use ndarray_linalg::*;
+
 use uom::si::f64::*;
 use uom::si::power::watt;
 use uom::si::thermal_conductance::watt_per_kelvin;

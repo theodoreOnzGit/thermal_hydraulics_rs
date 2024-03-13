@@ -78,13 +78,13 @@ pub use fluid_component_trait::*;
 /// primitive tests and examples to use the FluidComponent 
 /// Traits
 pub mod tests_and_examples_simple;
-pub use tests_and_examples_simple::*;
+
 
 
 /// tests to show use of the traits in concurrency situations
 /// with thread spawn and everything...
 pub mod tests_and_examples_concurrency_multithreading;
-pub use tests_and_examples_concurrency_multithreading::*;
+
 
 
 /// contains correlations for dimensionless losses 

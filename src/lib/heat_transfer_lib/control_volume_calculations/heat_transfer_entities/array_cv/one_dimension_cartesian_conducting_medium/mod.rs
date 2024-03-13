@@ -176,16 +176,16 @@ impl CartesianConduction1DArray {
 /// Functions or methods to retrieve temperature and other such 
 /// data from the array_cv
 pub mod postprocessing;
-pub use postprocessing::*;
+
 
 /// Functions or methods to get timestep and other such quantiies 
 /// for calculations 
 ///
 /// helps to set up quantities used in calculation step
 pub mod preprocessing;
-pub use preprocessing::*; 
+ 
 
 /// Contains functions which advance the timestep
 /// it's the bulk of calculation
 pub mod calculation;
-pub use calculation::*;
+
