@@ -264,7 +264,7 @@ impl SingleCVNode {
     ///
     /// 
     #[inline]
-    pub fn calculate_advection_interaction_to_other_singular_cv_node_in_front(
+    pub fn calculate_advection_interaction_to_front_singular_cv_node(
         &mut self,
         single_cv_2: &mut SingleCVNode,
         advection_data: DataAdvection)-> Result<(), ThermalHydraulicsLibError>{

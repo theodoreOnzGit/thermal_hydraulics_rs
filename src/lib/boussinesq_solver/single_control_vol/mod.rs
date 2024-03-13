@@ -637,6 +637,8 @@ impl SingleCVNode {
 
 /// calculation contains the advance timestep associated function 
 ///
+/// also allows for calculating heat transfer values between two 
+/// single control volume objects
 pub mod calculation;
 
 
@@ -645,6 +647,7 @@ pub mod calculation;
 pub mod preprocessing;
 
 
-/// contains type conversion from heat transfer entites
-pub mod type_conversion;
 
+/// contains functions to help calculate heat transfer between control 
+/// volume and a boundary condition
+pub mod boundary_condition_interactions;
