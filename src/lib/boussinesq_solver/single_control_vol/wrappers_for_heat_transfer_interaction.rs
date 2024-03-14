@@ -339,4 +339,63 @@ impl SingleCVNode {
         Ok(())
     }
 
+    #[inline]
+    pub fn calculate_single_cv_node_front_constant_temperature_back(
+        boundary_condition_temperature: ThermodynamicTemperature,
+        control_vol: &mut SingleCVNode,
+        interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError> {
+        // this code is pretty crappy but I'll match advection first
+
+        match interaction {
+            HeatTransferInteractionType::Advection(
+                advection_dataset) => {
+
+                // I'm mapping my own error to string, so off
+                control_vol.calculate_cv_front_bc_back_advection_set_temperature(
+                    boundary_condition_temperature,
+                    advection_dataset)?;
+                return Ok(());
+            },
+            _ => (),
+        }
+
+        // if anything else, use conductance
+
+        control_vol.calculate_single_cv_node_constant_temperature_conductance(
+            boundary_condition_temperature,
+            interaction)?;
+
+        return Ok(());
+    }
+
+    /// for connecting a bc to cv where 
+    ///
+    /// (cv) ---------- (constant temperature bc)
+    #[inline]
+    pub fn calculate_constant_temperature_front_single_cv_back(
+        control_vol: &mut SingleCVNode,
+        boundary_condition_temperature: ThermodynamicTemperature,
+        interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError> {
+
+        match interaction {
+            HeatTransferInteractionType::Advection(
+                advection_dataset) => {
+
+                // I'm mapping my own error to string, so off
+                control_vol.calculate_bc_front_cv_back_advection_set_temperature(
+                    boundary_condition_temperature,
+                    advection_dataset)?;
+                return Ok(());
+            },
+            _ => (),
+        }
+        // if anything else, use conductance
+
+        control_vol.calculate_single_cv_node_constant_temperature_conductance(
+            boundary_condition_temperature,
+            interaction)?;
+        return Ok(());
+    }
+
+
 }
