@@ -28,4 +28,28 @@ impl SolidColumn {
             single_cv_node_other,
             interaction)
     }
+
+    /// attaches an array control volume to the back of this 
+    /// array control volume 
+    /// (back --- cv_other --- front) ---- (back --- cv_self --- front)
+    ///
+    /// in this case, it is a solid column
+    pub fn link_solid_column_to_the_back_of_this_solid_column(
+        &mut self,
+        solid_column_other: &mut SolidColumn,
+        interaction: HeatTransferInteractionType,) -> Result<(), ThermalHydraulicsLibError>{
+
+        // basically we need to get the back of the self cv, 
+        let single_cv_node_self: &mut SingleCVNode = 
+        &mut self.back_single_cv;
+
+        // and the back of the other cv
+        let single_cv_node_other: &mut SingleCVNode = 
+        &mut solid_column_other.front_single_cv;
+
+        SingleCVNode::calculate_between_two_singular_cv_nodes(
+            single_cv_node_other,
+            single_cv_node_self,
+            interaction)
+    }
 }
