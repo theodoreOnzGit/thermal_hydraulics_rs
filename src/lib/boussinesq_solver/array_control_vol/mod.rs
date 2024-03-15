@@ -32,3 +32,10 @@ pub mod one_dimension_cartesian_conducting_medium;
 /// except that you can couple these arrays laterally to form a 2D or 
 /// 3D lattice
 pub mod one_d_solid_array_with_lateral_coupling;
+
+/// contains a full struct which abstracts away calculation details 
+///
+/// this is relevant for one dimension cartesian (x,y,z) coordinates
+/// except that you can couple these arrays laterally to form a 2D or 
+/// 3D lattice
+pub mod one_d_fluid_array_with_lateral_coupling;
