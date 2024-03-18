@@ -8,7 +8,7 @@ pub fn heater_plus_mx_10_with_supports(){
     use thermal_hydraulics_rs::prelude::alpha_nightly::*;
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
-    use crate::examples::ciet::heater::*;
+    use crate::examples::ciet::heater_old::*;
     use uom::si::time::minute;
 
 

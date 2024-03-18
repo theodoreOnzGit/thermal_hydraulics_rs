@@ -90,7 +90,7 @@ fn main() {
 
     // heater example 
 
-    use examples::ciet::heater::example_heater;
+    use examples::ciet::heater_old::example_heater;
     example_heater();
 }
 

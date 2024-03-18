@@ -1,6 +1,9 @@
+pub mod examples;
 fn main() {
 
     // heater example 
 
-    println!("hello world")
+    println!("heater example");
+
+
 }

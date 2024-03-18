@@ -7,7 +7,7 @@ pub fn heater_plus_mx_10_without_supports(){
     use thermal_hydraulics_rs::prelude::alpha_nightly::*;
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
-    use crate::examples::ciet::heater::*;
+    use crate::examples::ciet::heater_old::*;
     // construct structs
 
     let _heater_v1 = HeaterVersion1{};
