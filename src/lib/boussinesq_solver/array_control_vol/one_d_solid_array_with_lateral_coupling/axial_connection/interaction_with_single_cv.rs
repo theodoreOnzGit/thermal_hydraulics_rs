@@ -28,6 +28,12 @@ impl SolidColumn {
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
 
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 
@@ -63,6 +69,12 @@ impl SolidColumn {
     pub fn link_single_cv_to_higher_side(&mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
@@ -84,6 +96,12 @@ impl SolidColumn {
         &mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,ThermalHydraulicsLibError> {
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
@@ -105,6 +123,12 @@ impl SolidColumn {
         &mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,ThermalHydraulicsLibError> {
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 
