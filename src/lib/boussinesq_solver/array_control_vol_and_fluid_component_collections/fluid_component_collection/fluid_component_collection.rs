@@ -48,6 +48,8 @@
 use uom::si::f64::{Pressure, MassRate};
 use uom::si::mass_rate::kilogram_per_second;
 
+use super::collection_series_and_parallel_functions::FluidComponentCollectionSeriesAssociatedFunctions;
+use super::collection_series_and_parallel_functions::FluidComponentCollectionParallelAssociatedFunctions;
 use super::fluid_component::FluidComponent;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
@@ -156,6 +158,61 @@ impl FluidComponentCollection{
 
     }
 
+
+}
+
+impl FluidComponentCollectionMethods for FluidComponentCollection {
+    fn get_pressure_change(
+        &self, 
+        fluid_mass_flowrate: MassRate) -> Pressure {
+        
+        let orientation = &self.orientation;
+
+        match orientation {
+            FluidComponentCollectionOreintation::Parallel => {
+                let fluid_component_vector = &self.components;
+                <Self as FluidComponentCollectionParallelAssociatedFunctions>::
+                    calculate_pressure_change_from_mass_flowrate(
+                        fluid_mass_flowrate, fluid_component_vector)
+            },
+            FluidComponentCollectionOreintation::Series => {
+                let fluid_component_vector = &self.components;
+                <Self as FluidComponentCollectionSeriesAssociatedFunctions>::
+                    calculate_pressure_change_from_mass_flowrate(
+                        fluid_mass_flowrate, fluid_component_vector)
+            },
+        }
+
+
+    }
+
+    fn get_mass_flowrate_from_pressure_change(
+        &self,
+        pressure_change: Pressure) -> MassRate {
+        let orientation = &self.orientation;
+
+        match orientation {
+            FluidComponentCollectionOreintation::Parallel => {
+                let fluid_component_vector = &self.components;
+                <Self as FluidComponentCollectionParallelAssociatedFunctions>::
+                    calculate_mass_flowrate_from_pressure_change(
+                        pressure_change, fluid_component_vector)
+            },
+            FluidComponentCollectionOreintation::Series => {
+                let fluid_component_vector = &self.components;
+                <Self as FluidComponentCollectionSeriesAssociatedFunctions>::
+                    calculate_mass_flowrate_from_pressure_change(
+                        pressure_change, fluid_component_vector)
+            },
+        }
+    }
+}
+
+impl FluidComponentCollectionSeriesAssociatedFunctions for FluidComponentCollection {
+
+}
+
+impl FluidComponentCollectionParallelAssociatedFunctions for FluidComponentCollection {
 
 }
 
