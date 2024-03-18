@@ -28,7 +28,7 @@ pub mod boundary_conditions;
 /// single control volumes as well as between single control volumes and 
 /// different boundary conditions
 ///
-/// This is, it will abstract away some functionality of the following 
+/// This will abstract away some functionality of the following 
 /// modules, and is therefore dependent on these modules:
 ///
 /// 1. boussinesq_thermophysical_properties
@@ -46,7 +46,23 @@ pub mod single_control_vol;
 /// but solid control volumes are set by setting flowrate to zero)
 /// suitable for boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
-pub mod array_control_vol;
+///
+/// also contains code to help calculate pressure drop and mass flow rate 
+/// amongst multiple fluid components (eg. pipes) which are usually 
+/// represented by array control volumes
+/// This will abstract away some functionality of the following 
+/// modules, and is therefore dependent on these modules:
+///
+/// 1. boussinesq_thermophysical_properties
+/// 2. fluid_mechanics_correlations
+/// 3. heat_transfer_correlations
+/// 4. control_volume_dimensions
+/// 5. boundary_conditions
+/// 6. single_control_vol
+///
+/// By itself, it will NOT contain functions on how to interact with array 
+/// control volumes. This is to prevent overbloated hard to read code
+pub mod array_control_vol_and_fluid_component_collections;
 
 /// Module for pre-built-components 
 /// suitable for boussinesq_solver (single phase, negligble density changes

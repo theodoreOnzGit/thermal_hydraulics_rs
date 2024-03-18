@@ -69,6 +69,9 @@
 
 /// FluidComponents are pipes and fittings you can connect in parallel
 /// such that you can calculate mass flowrate and pressure drop from them
+///
+/// These are usually array control volumes, but could be other components 
+/// as well
 pub mod fluid_component;
 
 
@@ -77,5 +80,26 @@ pub mod fluid_component;
 /// This is because mass flowrate and pressure drop also need to be 
 /// calculated from collections of fluid components
 pub mod fluid_component_traits;
+
+/// contains functions which calculate mass flowrate and pressure drop 
+/// for components connected in series or parallel 
+pub mod collection_series_and_parallel_functions;
+
+/// fluid component collections 
+/// these are vectors of fluid components 
+pub mod fluid_component_collection;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

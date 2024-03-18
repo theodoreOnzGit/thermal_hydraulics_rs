@@ -1,11 +1,11 @@
-use crate::boussinesq_solver::array_control_vol::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-
 use uom::si::f64::*;
 
-impl FluidArray {
+// todo: need to make an error if advection is given
+impl SolidColumn {
 
     /// attaches a single cv to the front,entrance,
     /// lower or inner side of the 
@@ -28,6 +28,12 @@ impl FluidArray {
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
 
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 
@@ -63,6 +69,12 @@ impl FluidArray {
     pub fn link_single_cv_to_higher_side(&mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
@@ -77,7 +89,6 @@ impl FluidArray {
             single_cv_node_self,
             interaction)
     }
-
     /// calculates timestep for a single cv attached to the front of the 
     /// array cv
     /// (back --- cv_self --- front) ---- (single cv)
@@ -85,6 +96,12 @@ impl FluidArray {
         &mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,ThermalHydraulicsLibError> {
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
@@ -106,6 +123,12 @@ impl FluidArray {
         &mut self,
         single_cv_node_other: &mut SingleCVNode,
         interaction: HeatTransferInteractionType) -> Result<Time,ThermalHydraulicsLibError> {
+        // check if interaction is advection
+        
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 

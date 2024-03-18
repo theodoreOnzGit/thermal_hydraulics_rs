@@ -1,41 +1,70 @@
-use crate::boussinesq_solver::array_control_vol::standalone_fluid_nodes::solve_conductance_matrix_power_vector;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
-
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
-
-
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
-use uom::si::f64::*;
 use ndarray::*;
+use ndarray_linalg::error::LinalgError;
+use uom::num_traits::Zero;
+use uom::si::f64::*;
 use uom::si::power::watt;
 
-
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::standalone_fluid_nodes::solve_conductance_matrix_power_vector;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::prandtl::try_get_prandtl;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use ndarray_linalg::error::LinalgError;
 
-use super::SolidColumn;
-/// This deals with the calculations of the solid column array
+use super::FluidArray;
+
+/// This deals with the calculations of the fluid array 
 /// at the end of the connection phase, one can then use 
 /// the advance_timestep method to calculate the new 
 /// temperature array
-impl SolidColumn {
+impl FluidArray{
 
-    /// advances timestep for the solid array column
-    /// given a fixed timestep
+    /// advance_timestep in the array, using the mass flowrate set 
+    /// within the fluid array
     pub fn advance_timestep(&mut self,
         timestep: Time,) 
         -> Result<(), ThermalHydraulicsLibError>{
 
-        // there must always be at least 2 nodes
+
+        self.advance_timestep_with_mass_flowrate(
+            timestep,
+            self.mass_flowrate)
+    }
+    
+    /// advances timestep for the fluid array 
+    /// given a fixed timestep
+    #[inline]
+    pub fn advance_timestep_with_mass_flowrate(&mut self,
+        timestep: Time,
+        mass_flowrate: MassRate) 
+        -> Result<(), ThermalHydraulicsLibError>{
+        // here's the function I copied from initially and modified
+        //advance_timestep_fluid_node_array_pipe_high_peclet_number(
+        //    back_cv_ptr_in_loop.deref_mut(),
+        //    front_cv_ptr_in_loop.deref_mut(),
+        //    number_of_nodes,
+        //    timestep,
+        //    total_volume,
+        //    heater_steady_state_power,
+        //    steel_temp_at_present_timestep_ptr_in_loop.deref_mut(),
+        //    &mut conductance_vector,
+        //    fluid_temp_vec_ptr_in_loop.deref_mut(),
+        //    therminol_mass_flowrate,
+        //    fluid_vol_fraction_ptr_in_loop.deref_mut(),
+        //    &mut fluid_rho_cp_array,
+        //    q_fraction_ptr_in_loop.deref_mut(),
+        //)?;
+
+        // there will always be at least 2 nodes
 
         let number_of_nodes = self.len();
-
         if number_of_nodes <= 1 {
             return Err(LinalgError::Shape(
                 ShapeError::from_kind(
                     ErrorKind::OutOfBounds
                 )).into());
         }
+
         // First things first, we need to set up 
         // how the CV interacts with the internal array
         // here is heat added to CV
@@ -68,16 +97,13 @@ impl SolidColumn {
                 total_enthalpy_rate_change_front_node += *enthalpy_chg_rate;
             }
 
-
         // this front and back nodes will be an extra term added to the 
         // heat source vector S
-        //
-        // The old solid temperature will need to be used to calculate 
-        // new specific enthalpy for the system
         //
         // We need a blank temperature array to start the iteration 
         // process, so we just copy the old temperature array over 
         // as the initial guess (i think?)
+        //
 
         let new_temperature_array: Array1<ThermodynamicTemperature>;
         // now let's start calculation 
@@ -87,6 +113,10 @@ impl SolidColumn {
 
         let mut power_source_vector: 
         Array1<Power> = Array::zeros(number_of_nodes);
+
+        // ascertain if we have forward flow 
+
+        let forward_flow: bool = mass_flowrate.ge(&MassRate::zero());
 
         // obtain some important parameters for calculation
         let material = self.material_control_volume;
@@ -112,32 +142,36 @@ impl SolidColumn {
                 try_get_rho_cp(material, temperature, pressure).unwrap()
             }
         ).collect();
+        // energy balance is: 
+        // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
+        // + m_flow h_fluid(adjacent T) + q
+        // of all these terms, only the m cp dT/dt term and HT 
+        // 
+        // We separate this out to get:
+        //
+        // m cp T / dt + \sum HT = 
+        //
+        // \sum HT_lateral - m_flow h_fluid(T_old) 
+        // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
+        // + q
+        //
+        // so we will need to determine sum H and sum HT_lateral
+        // as sum H is the relevant coefficient in the coefficient_matrix
 
-
-        // need to determine the sort of connections 
-        // we assume axial conduction always occurs unless it can be 
-        // neglected
-        let lateral_power_sources_connected: bool 
-        = self.q_vector.len() > 0; 
-        let lateral_temperature_arary_connected: bool 
-        = self.lateral_adjacent_array_conductance_vector.len() > 0;
-
-        let _axial_conduction_only: bool = !lateral_power_sources_connected
-        && !lateral_temperature_arary_connected;
-
-        // if there is lateral conduction, then construct matrices 
-        // which take that into account 
         let mut sum_of_lateral_conductances: Array1<ThermalConductance>
         = Array1::zeros(number_of_nodes);
 
         let mut sum_of_lateral_conductance_times_lateral_temperatures:
         Array1<Power> = Array1::zeros(number_of_nodes);
+
         // conductances will need to be summed over each node 
         //
         // i will also need to make sure that there are actually 
         // lateral connections to this array in the first place 
         // though!
 
+        let lateral_temperature_arary_connected: bool 
+        = self.lateral_adjacent_array_conductance_vector.len() > 0;
 
         if lateral_temperature_arary_connected {
 
@@ -164,6 +198,7 @@ impl SolidColumn {
                     sum_of_lateral_conductances += conductance_array;
                 }
             // end sum of conductances for loop
+            
             
             // we also need the HT sum for the lateral temperatures 
             // this is power due to heat transfer (other than advection)
@@ -207,10 +242,9 @@ impl SolidColumn {
                     for (node_idx, power) in power_arr.iter_mut().enumerate() {
 
                         *power = conductance_arr[node_idx] * temperature_arr[node_idx];
+
                     }
 
-                    // once the power array is built, I can add it to 
-                    // the htsum array
 
                     sum_of_lateral_conductance_times_lateral_temperatures 
                     += &power_arr;
@@ -219,8 +253,14 @@ impl SolidColumn {
 
 
         }
-
         // we need to do the same for the q and q fractions
+        //once the power array is built, I can add it to 
+        // the htsum array
+
+
+        let lateral_power_sources_connected: bool 
+        = self.q_vector.len() > 0; 
+
         let mut sum_of_lateral_power_sources: Array1<Power>
         = Array::zeros(number_of_nodes);
 
@@ -318,11 +358,6 @@ impl SolidColumn {
                 }
 
         }
-        // end if for lateral_power_sources_connected
-
-
-        // now that we've gotten all the important properties, we can 
-        // start matrix construction
 
 
         // back node calculation (first node)
@@ -330,13 +365,16 @@ impl SolidColumn {
 
             // for the first node, also called the back node
             // energy balance is: 
-            // m c_p dT/dt = -\sum H (T - T_lateral) + q
+            // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
+            // + m_flow h_fluid(adjacent T) + q
             // of all these terms, only the m cp dT/dt term and HT 
             // 
             // We separate this out to get:
             //
             // m cp T / dt + \sum HT = 
-            // \sum HT_lateral + m cp / dt (Told)
+            //
+            // \sum HT_lateral - m_flow h_fluid(T_old) 
+            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
             // + q
             //
             // so we will need to determine sum H and sum HT_lateral
@@ -352,24 +390,79 @@ impl SolidColumn {
                 * total_volume / dt + sum_of_lateral_conductances[0];
 
 
+            // the first part of the source term deals with 
+            // the flow direction independent terms
+
+            let h_fluid_last_timestep: AvailableEnergy = 
+            self.back_single_cv.current_timestep_control_volume_specific_enthalpy;
+
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
+            
+            // we need to consider heat source from lateral conductances 
+            // for that, we need to find the temperature at each node 
+            // and multiply that by the conductance 
+
+
+
 
             power_source_vector[0] = 
-                sum_of_lateral_conductance_times_lateral_temperatures[0] 
+                sum_of_lateral_conductance_times_lateral_temperatures[0]
+                - mass_flowrate * h_fluid_last_timestep 
                 + self.temperature_array_current_timestep[0] * total_volume * 
                 volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
+            // the next part deals with the inflow
+            // m_flow h_fluid(adjacent T_old)
+            //
+            // now if the advection interaction is done correctly, 
+            //
+            // (advection) ----- (back cv) --------> fwd
+            //
+            // then in a frontal flow condition, the enthalpy flows in 
+            // would already have been accounted for
+            //
+            // but in the case of backflow, then fluid from the node
+            // in front will flow into this fluid node 
+            // that is node 1 
+
+            // so if mass flowrate is <= 0 , then we will calculate 
+            // backflow conditions
+
+            if !forward_flow {
+                // first, get enthalpy of the node in front 
+
+                let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
+                try_get_h(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[1],
+                    self.back_single_cv.pressure_control_volume).unwrap();
+
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
+                //
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
+                //
+
+                power_source_vector[0] += 
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_front;
+
+                // additionally, in backflow situations, the mass 
+                // flow out of this cv is already accounted for 
+                // so don't double count 
+
+                power_source_vector[0] += 
+                mass_flowrate * h_fluid_last_timestep;
+            }
 
 
         }
-        // end back node calculation code block
 
-        
         // bulk node calculations 
-        // only takes into account lateral conductances
         if number_of_nodes > 2 {
             // loop over all nodes from 1 to n-2 (n-1 is not included)
             for i in 1..number_of_nodes-1 {
@@ -384,24 +477,61 @@ impl SolidColumn {
                 // temperature, 
                 // assume back cv and front cv material are the same
 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                try_get_h(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[i],
+                    self.back_single_cv.pressure_control_volume).unwrap();
+
                 // basically, all the power terms remain 
-                power_source_vector[i] = sum_of_lateral_conductance_times_lateral_temperatures[i] 
+                power_source_vector[i] = 
+                    sum_of_lateral_conductance_times_lateral_temperatures[i]
+                    - mass_flowrate.abs() * h_fluid_last_timestep 
                     + self.temperature_array_current_timestep[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + sum_of_lateral_power_sources[i];
 
+                // account for enthalpy inflow
+
+                if forward_flow {
+
+                    // enthalpy must be based on the the cv at i-1
+
+                    let h_fluid_adjacent_node: AvailableEnergy = 
+                    try_get_h(
+                        self.back_single_cv.material_control_volume,
+                        self.temperature_array_current_timestep[i-1],
+                        self.back_single_cv.pressure_control_volume).unwrap();
+
+
+                    power_source_vector[i] += 
+                    h_fluid_adjacent_node * mass_flowrate.abs();
+
+                } else {
+
+                    // enthalpy must be based on cv at i+1
+                    let h_fluid_adjacent_node: AvailableEnergy = 
+                    try_get_h(
+                        self.back_single_cv.material_control_volume,
+                        self.temperature_array_current_timestep[i+1],
+                        self.back_single_cv.pressure_control_volume).unwrap();
+
+
+                    power_source_vector[i] += 
+                    h_fluid_adjacent_node * mass_flowrate.abs();
+
+                }
 
             }
-            // end for loop for bulk nodes
         }
-        // end bulk node calculation block
 
         // front node (last node) calculation 
         {
             // we still follow the same guideline
             // m cp T / dt + HT = 
             //
-            // HT_solid + m cp / dt (Told)
+            // HT_solid - m_flow h_fluid(T_old) 
+            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
             // + q
             let i = number_of_nodes-1;
 
@@ -420,188 +550,118 @@ impl SolidColumn {
             //
             // so i shouldn't double count
 
-            power_source_vector[i] = sum_of_lateral_conductance_times_lateral_temperatures[i] 
+            power_source_vector[i] = 
+                sum_of_lateral_conductance_times_lateral_temperatures[i]
                 + self.temperature_array_current_timestep[i] * total_volume * 
                 volume_fraction_array[i] * rho_cp[i] / dt 
                 + sum_of_lateral_power_sources[i] 
                 + total_enthalpy_rate_change_front_node ;
 
+            // now advection causing heat transfer between the frontal 
+            // node and some other single cv has already been accounted 
+            // for in total_enthalpy_rate_change_front_node 
+            // If flow is forward facing though, then enthalpy will 
+            // be coming in from the i-1 th node
+
+            if forward_flow {
+                // first, get enthalpy of the adjacent node to the 
+                // back
+
+                let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
+                try_get_h(
+                    self.back_single_cv.material_control_volume,
+                    self.temperature_array_current_timestep[i-1],
+                    self.back_single_cv.pressure_control_volume).unwrap();
+
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
+                //
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
+                //
+
+                power_source_vector[i] += 
+                mass_flowrate.abs() * enthalpy_of_adjacent_node_to_the_rear;
+
+
+            } else {
+                // if there's backflow, 
+                // the front cv (last node) will receive enthalpy from 
+                // outside based on the enthalpy rate change vector in the 
+                // front node, 
+                // however it must also lose enthalpy, this is no 
+                // longer accounted for in the 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                self.front_single_cv.current_timestep_control_volume_specific_enthalpy;
+
+                power_source_vector[i] -= 
+                mass_flowrate.abs() * h_fluid_last_timestep;
+            }
+
+
 
         }
 
-        // the above takes care of lateral conduction and thermal 
-        // inertia, if there was no need to worry about axial conduction 
-        // then we can just follow through
-        //
-        // We can neglect axial conduction only if the lateral 
-        // conduction is much greater than axial conduction 
+        //// note that this works for high peclet number flows
+        //// peclet number is Re * Pr
+        //// if peclet number is low, then we must consider conduction 
+        ////
+        //// I'm also not interested in directionality,
+        //// rather, the magnitude is more important
 
-        // an important parameter for all these calculations 
-        // is the average axial thermal 
-        // conductance
-        // first calculate axial conduction thermal 
-        // resistance
+        let reynolds: Ratio = self.get_reynolds(self.mass_flowrate)?.abs();
 
-        let average_thermal_conductivity = 
-        try_get_kappa_thermal_conductivity(
+        let prandtl_number: Ratio = try_get_prandtl(
             material,
             bulk_temperature,
-            pressure,
+            pressure
         )?;
 
-        let average_axial_conductance: ThermalConductance 
-        = average_thermal_conductivity * self.xs_area 
-        / node_length;
+        let peclet_number = reynolds * prandtl_number;
+        let average_axial_conductance: ThermalConductance;
 
-        // neglecting axial conduction may be good,
-        // but checking for it is computationally expensive.
-        let neglect_axial_conduction = false;
+        // note: this part is quite buggy as in the peclet number correction 
+        // bit
+        //
+        // let peclet_number = Ratio::zero();
+        //
+        // I ascertained manually setting peclet number to zero does not 
+        // visibly change the results, hence, 
+        // it seems okay for now
+
+        let low_peclet_number_flow = peclet_number.value < 100.0;
         
-        //let neglect_axial_conduction: bool = {
+        if low_peclet_number_flow {
+            // for low peclet number flows, consider conduction
+            // which means we need to get axial conductance 
+            // between nodes 
 
-        //    // how shall we know if the axial conduction is to be 
-        //    // neglected?
+            let average_fluid_conductivity = try_get_kappa_thermal_conductivity(
+                material,
+                bulk_temperature,
+                pressure
+            )?;
 
+            // note that conductance axially is done only ONCE 
+            // per timestep to expedite the speed of calculation
 
-        //    let axial_power_scale_insignificant = || -> bool {
+            average_axial_conductance = 
+                average_fluid_conductivity * 
+                self.xs_area / node_length;
 
-        //        // we can calculate a typical power scale for axial 
-        //        // conduction and compare it to the radial conduction
-
-
-
-        //        // the max temperature gradient is the max temperature 
-        //        // minus the min temperature 
-
-        //        let temp_value_kelvin_integer_vector: Array1<u32> = 
-        //        self.temperature_array_current_timestep.map(
-        //            |&temperature|{
-        //                let temp_value_kelvin = temperature.get::<kelvin>();
-
-        //                temp_value_kelvin.ceil() as u32
-        //            }
-        //        );
-
-        //        let max_temp_val_kelvin: u32 = 
-        //        *temp_value_kelvin_integer_vector.iter().max().unwrap();
-
-        //        let min_temp_val_kelvin: u32 = 
-        //        *temp_value_kelvin_integer_vector.iter().min().unwrap();
-
-        //        let approx_axial_temp_diff_val_kelvin: f64 = 
-        //        max_temp_val_kelvin as f64 
-        //        - min_temp_val_kelvin as f64;
-
-        //        let axial_power_scale: Power = 
-        //        TemperatureInterval::new::<degree_celsius>(
-        //            approx_axial_temp_diff_val_kelvin)
-        //        * average_axial_conductance;
-        //        
-
-        //        // we need to compare this against the radial temperature 
-        //        // differences
-        //        //
-        //        // as well as power inputs 
-        //        //
-        //        // unfortunately, the temperatures are nested in a 
-        //        // vector of arrays or in essence a 2D array
-
-        //        let mut lateral_power_sum: Power = Power::zero();
-
-        //        for &power in &self.q_vector {
-        //            lateral_power_sum += power.abs();
-        //        }
-
-
-        //        // now an estimate for the lateral power by conduction
-        //        // thankfully, we already calculated this beforehand
-        //        
-
-        //        // the HT here comes from 
-        //        //
-        //        // Q = -H(T_node - T_lateral) 
-        //        //
-        //        // Q = -HT_node + HT_lateral 
-
-        //        let mut sum_of_conductance_times_node_temp_array:
-        //        Array1<Power> = Array::zeros(number_of_nodes);
-
-        //        for (node_idx, ht_node) in 
-        //        sum_of_conductance_times_node_temp_array.iter_mut().enumerate(){
-
-        //                // get the node temperature and sum of conductance 
-
-        //                let node_temperature: ThermodynamicTemperature = 
-        //                self.temperature_array_current_timestep[node_idx];
-
-        //                let node_conductance_sum: ThermalConductance = 
-        //                sum_of_lateral_conductances[node_idx];
-
-        //                *ht_node = node_temperature * node_conductance_sum;
-
-        //            }
-
-        //        let lateral_ht_power_vector: Array1<Power> = 
-        //        sum_of_lateral_conductance_times_lateral_temperatures 
-        //        - sum_of_conductance_times_node_temp_array;
-
-        //        // add all the power changes to the lateral power 
-        //        // vector
-        //        
-        //        for &power in &lateral_ht_power_vector {
-        //            lateral_power_sum += power.abs();
-        //        }
-        //        
-        //        // for lateral power flow, we have the lateral 
-        //        // power sum to measure the power flows 
-        //        // 
-
-        //        let axial_power_to_lateral_power_ratio: Ratio = 
-        //        axial_power_scale.abs()/lateral_power_sum;
-
-        //        // if this ratio is less than 1%, then we neglect 
-        //        // axial power otherwise, don't neglect
-
-        //        let neglect_axial_power = 
-        //        axial_power_to_lateral_power_ratio <= Ratio::new::<percent>(1.0);
-
-        //        neglect_axial_power
-        //    };
-
-
-
-        //    // first let's deal with the case that it's axial conduction 
-        //    // only 
-
-        //    if axial_conduction_only {
-        //        // if axial conduction only, we cannot neglect 
-        //        // axial conduction
-        //        false
-        //    } else if axial_power_scale_insignificant() {
-        //        // if axial power scales are insignificant
-        //        // neglect
-        //        // axial conduction
-        //        true
-        //    } else {
-        //        // the safest is to not neglect
-        //        false
-        //    }
-
-        //};
-        // end code block for checking if we can neglect axial conduction
-
-        // if we dont neglect axial conduction 
-
-        if !neglect_axial_conduction {
-
-            // construct matrices for axial conduction
             for node_idx in 0..number_of_nodes {
                 // check if first or last node 
                 let first_node: bool = node_idx == 0;
                 let last_node: bool = node_idx == number_of_nodes - 1;
-                // bulk node means 
+                // bulk node means it's not the first node and not the 
+                // last node, not OR, 
+                // otherwise every node is a bulk node
+                //
+                // debug note: major bug was solved here 
+                // with boolean operators, i used an OR operator 
+                // rather than the AND operator
                 let bulk_node: bool = !first_node  && !last_node;
-
                 // bulk nodes
                 if bulk_node {
 
@@ -650,6 +710,7 @@ impl SolidColumn {
                     -= average_axial_conductance;
 
                 }
+
                 // first node 
                 if first_node {
 
@@ -678,18 +739,18 @@ impl SolidColumn {
                     coefficient_matrix[[node_idx, node_idx-1]] 
                     -= average_axial_conductance;
                 }
+
+
                 // done modification for axial conduction
             }
-
             // done for loop
-
         }
-        // done axial conduction code and ready to solve matrix
+        // done peclet number check
 
+        
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;
-
         // update the single cvs at the front and back with new enthalpies 
 
         // Todo: probably need to synchronise error types in future
@@ -717,12 +778,14 @@ impl SolidColumn {
         // set liquid cv mass 
         // probably also need to update error types in future
         self.back_single_cv.set_liquid_cv_mass_from_temperature()?;
+
         self.front_single_cv.set_liquid_cv_mass_from_temperature()?;
         self.clear_vectors()?;
 
         // all done
         Ok(())
     }
+
     /// clears all vectors for next timestep
     /// This is important for the advance timestep method
     pub fn clear_vectors(&mut self) 
@@ -735,7 +798,6 @@ impl SolidColumn {
         self.q_fraction_vector.clear();
 
         self.back_single_cv.clear_vectors()?;
-
         self.front_single_cv.clear_vectors()?;
 
         Ok(())
