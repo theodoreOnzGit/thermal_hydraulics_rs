@@ -160,6 +160,10 @@ impl SolidColumn {
         heat_rate: Power,
         interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError> {
 
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
         //
@@ -184,6 +188,10 @@ impl SolidColumn {
         &mut self,
         heat_rate: Power,
         interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError> {
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 
@@ -206,6 +214,10 @@ impl SolidColumn {
         &mut self,
         bc_temperature: ThermodynamicTemperature,
         interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError> {
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
         // we need to obtain the single cv from the array cv first 
         // and this will be the front cv or outer cv 
         //
@@ -228,6 +240,10 @@ impl SolidColumn {
         &mut self,
         bc_temperature: ThermodynamicTemperature,
         interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError> {
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
 
         // we need to obtain the single cv from the array cv first 
         // and this will be the back cv or inner cv 

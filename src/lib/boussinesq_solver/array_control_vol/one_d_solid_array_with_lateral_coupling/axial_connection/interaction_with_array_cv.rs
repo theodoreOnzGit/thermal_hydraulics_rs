@@ -15,6 +15,10 @@ impl SolidColumn {
         solid_column_other: &mut SolidColumn,
         interaction: HeatTransferInteractionType,) -> Result<(), ThermalHydraulicsLibError>{
 
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
         // basically we need to get the front of the self cv, 
         let single_cv_node_self: &mut SingleCVNode = 
         &mut self.front_single_cv;
@@ -39,6 +43,10 @@ impl SolidColumn {
         solid_column_other: &mut SolidColumn,
         interaction: HeatTransferInteractionType,) -> Result<(), ThermalHydraulicsLibError>{
 
+        if let HeatTransferInteractionType::Advection(_) = interaction {
+            println!("You cannot have advection interactions for Solid Columns");
+            return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+        }
         // basically we need to get the back of the self cv, 
         let single_cv_node_self: &mut SingleCVNode = 
         &mut self.back_single_cv;
