@@ -1,4 +1,6 @@
 
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
 use roots::*;
@@ -6,6 +8,8 @@ use uom::typenum::P2;
 use uom::num_traits::Zero;
 use uom::si::ratio::ratio;
 use uom::si::f64::*;
+
+use super::FluidArray;
 
 /// contains form loss or minor loss correlations for use 
 ///
@@ -28,6 +32,8 @@ pub enum DimensionlessDarcyLossCorrelations {
     /// Ergun, S., & Orning, A. A. (1949). Fluid flow through 
     /// randomly packed columns and fluidized beds. Industrial 
     /// & Engineering Chemistry, 41(6), 1179-1184.
+    ///
+    /// not done yet
     Ergun
 }
 
@@ -299,3 +305,221 @@ impl DimensionlessDarcyLossCorrelations {
 
 
 }
+
+impl FluidArray {
+
+    /// gets mass flowrate for the fluid arary
+    pub fn get_mass_flowrate(&mut self) -> MassRate  {
+        self.mass_flowrate
+    }
+
+    /// sets the mass flowrate for the fluid array
+    pub fn set_mass_flowrate(&mut self, mass_flowrate: MassRate) {
+        self.mass_flowrate = mass_flowrate
+    }
+
+    /// gets the mass flowrate for the fluid array
+    /// using an immutable borrow
+    #[inline]
+    pub fn get_mass_flowrate_from_pressure_loss_immutable(
+        &self, pressure_loss: Pressure) -> MassRate {
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+        let fluid_viscosity = self.get_fluid_viscosity_immutable();
+        let fluid_density = self.get_fluid_density_immutable();
+        let xs_area = self.xs_area;
+
+        let reynolds_number: Ratio = self.pipe_loss_properties. 
+            get_reynolds_from_pressure_loss(
+                pressure_loss,
+                hydraulic_diameter,
+                fluid_density,
+                fluid_viscosity
+            ).unwrap();
+
+        // convert Re to mass flowrate 
+
+        let mass_flowrate: MassRate = xs_area * fluid_viscosity * 
+        reynolds_number / hydraulic_diameter;
+
+        return mass_flowrate;
+    }
+
+    /// gets the pressure loss for the fluid array
+    /// using a mutable borrow
+    pub fn get_pressure_loss(&mut self) -> Pressure {
+
+        // utilise existing mass flowrate to get the pressure loss 
+
+        let mass_flowrate = self.mass_flowrate;
+
+        let pressure_loss = self.get_pressure_loss_immutable(mass_flowrate);
+        self.set_pressure_loss(pressure_loss);
+        self.pressure_loss
+    }
+
+    /// sets the pressure loss for the fluid array
+    /// using a mutable borrow
+    pub fn set_pressure_loss(&mut self, pressure_loss: Pressure) {
+        self.pressure_loss = pressure_loss
+    }
+
+    /// to get mass flowrate from pressure loss, we need to 
+    /// obtain a Reynold's number from the mass flowrate 
+    ///
+    /// and then surface roughness if any
+    /// using an immutable borrow
+    pub fn get_pressure_loss_immutable(
+        &self, mass_flowrate: MassRate) -> Pressure {
+
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+        let fluid_viscosity = self.get_fluid_viscosity_immutable();
+        let fluid_density = self.get_fluid_density_immutable();
+
+        let reynolds_number: Ratio = mass_flowrate 
+        / self.get_cross_sectional_area_immutable()
+        * hydraulic_diameter
+        / fluid_viscosity;
+
+        // next, we should get the type of pressure loss, 
+        // this should be dependency injected at 
+        // object construction time
+
+        let pressure_loss = self.pipe_loss_properties.
+            get_pressure_loss_from_reynolds(
+                reynolds_number,
+                hydraulic_diameter,
+                fluid_density,
+                fluid_viscosity
+            ).unwrap();
+
+        // return pressure loss
+        pressure_loss
+    }
+
+    /// gets cross sectional area using a mutable borrow
+    pub fn get_cross_sectional_area(&mut self) -> Area {
+        self.xs_area
+    }
+
+    /// gets cross sectional area using an immutable borrow
+    pub fn get_cross_sectional_area_immutable(&self) -> Area {
+        self.xs_area
+    }
+
+    /// gets hydraulic diameter using a mutable borrow
+    pub fn get_hydraulic_diameter(&mut self) -> Length {
+        // d_h = 4A/P 
+
+        4.0 * self.xs_area / self.wetted_perimeter
+    }
+
+    /// gets hydraulic diameter using an immutable borrow
+    pub fn get_hydraulic_diameter_immutable(&self) -> Length {
+        4.0 * self.xs_area / self.wetted_perimeter
+    }
+
+    /// gets fluid viscosity with a mutable borrow
+    /// given the current average bulk temperature of fluid array
+    pub fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
+        let temperature = self.try_get_bulk_temperature().unwrap();
+
+        let viscosity = try_get_mu_viscosity(
+            self.material_control_volume,
+            temperature,
+            self.pressure_control_volume).unwrap();
+
+        return viscosity;
+    }
+
+    /// gets fluid viscosity with a immutable borrow
+    /// given the current average bulk temperature of fluid array
+    pub fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
+
+        let viscosity = try_get_mu_viscosity(
+            self.material_control_volume,
+            temperature,
+            self.pressure_control_volume).unwrap();
+
+        return viscosity;
+    }
+
+    /// gets fluid fluid density with a mutable borrow
+    /// given the current average bulk temperature of fluid array
+    pub fn get_fluid_density(&mut self) -> MassDensity {
+        let temperature = self.try_get_bulk_temperature().unwrap();
+
+        let density = try_get_rho(
+            self.material_control_volume,
+            temperature,
+            self.pressure_control_volume).unwrap();
+
+        return density;
+    }
+
+    /// gets fluid fluid density with a mutable borrow
+    /// given the current average bulk temperature of fluid array
+    /// uses an immutable borrow
+    pub fn get_fluid_density_immutable(&self) -> MassDensity {
+        let temperature = self.clone().try_get_bulk_temperature().unwrap();
+
+        let density = try_get_rho(
+            self.material_control_volume,
+            temperature,
+            self.pressure_control_volume).unwrap();
+
+        return density;
+    }
+
+    /// gets fluid array length
+    pub fn get_component_length(&mut self) -> Length {
+        self.total_length
+    }
+
+    /// gets fluid array length
+    /// uses an immutable borrow
+    pub fn get_component_length_immutable(&self) -> Length {
+        self.total_length
+    }
+
+    /// gets incline angle (the angle at which it is inclined to 
+    /// the horizontal surface,
+    /// used for calcualting hydrostatic pressure
+    pub fn get_incline_angle(&mut self) -> Angle {
+        self.incline_angle
+    }
+
+    /// gets incline angle (the angle at which it is inclined to 
+    /// the horizontal surface,
+    /// used for calcualting hydrostatic pressure
+    /// uses an immutable borrow
+    pub fn get_incline_angle_immutable(&self) -> Angle {
+        self.incline_angle
+    }
+
+    /// gets the internal pressure source
+    /// this is meant to simulate if the fluid array happens to have 
+    /// a simulated pump or pressure source 
+    pub fn get_internal_pressure_source(&mut self) -> Pressure {
+        self.internal_pressure_source
+    }
+
+    /// gets the internal pressure source
+    /// this is meant to simulate if the fluid array happens to have 
+    /// a simulated pump or pressure source 
+    /// uses an immutable borrow
+    pub fn get_internal_pressure_source_immutable(&self) -> Pressure {
+        self.internal_pressure_source
+    }
+
+    /// sets the internal pressure source
+    /// this is meant to simulate if the fluid array happens to have 
+    /// a simulated pump or pressure source 
+    pub fn set_internal_pressure_source(
+        &mut self,
+        internal_pressure: Pressure) {
+        self.internal_pressure_source = internal_pressure;
+    }
+}
+
+
