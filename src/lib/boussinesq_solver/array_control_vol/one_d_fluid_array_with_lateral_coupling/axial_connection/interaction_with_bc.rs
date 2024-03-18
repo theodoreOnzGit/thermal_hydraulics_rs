@@ -1,15 +1,17 @@
-use std::f64::consts::PI;
-
-use uom::si::f64::*;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use crate::boussinesq_solver::array_control_vol::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::boussinesq_solver::array_control_vol::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::single_control_vol::boundary_condition_interactions::constant_heat_addition_to_bcs::calculate_single_cv_front_constant_heat_addition_back;
 use crate::boussinesq_solver::single_control_vol::boundary_condition_interactions::constant_heat_addition_to_bcs::calculate_constant_heat_addition_front_single_cv_back;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-impl SolidColumn {
+use std::f64::consts::PI;
+
+use uom::si::f64::*;
+
+
+impl FluidArray {
 
     /// attaches an constant heat flux BC to the front of this 
     /// array control volume 
@@ -242,6 +244,7 @@ impl SolidColumn {
             interaction
         )
     }
+
 
 
 }
