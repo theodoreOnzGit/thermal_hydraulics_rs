@@ -89,6 +89,12 @@ pub mod collection_series_and_parallel_functions;
 /// these are vectors of fluid components 
 pub mod fluid_component_collection;
 
+/// fluid component super collections
+/// these are vectors of fluid component collections 
+/// usually used for calculating multiple branches in parallel 
+pub mod fluid_component_super_collection;
+
+
 
 
 

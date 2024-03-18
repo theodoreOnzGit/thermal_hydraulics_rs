@@ -63,6 +63,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// Update
 /// Delete
 ///
+#[derive(Debug,Clone,PartialEq)]
 pub struct FluidComponentCollection {
     components: Vec<FluidComponent>,
     orientation: FluidComponentCollectionOreintation
@@ -70,6 +71,7 @@ pub struct FluidComponentCollection {
 
 /// tells you whether the components in FluidComponentCollection
 /// or FluidComponentSuperCollection are connected in series or parallel
+#[derive(Debug,Clone,PartialEq)]
 pub enum FluidComponentCollectionOreintation {
     /// fluid components are connected in series
     Parallel,
