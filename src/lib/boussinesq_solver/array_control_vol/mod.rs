@@ -39,3 +39,8 @@ pub mod one_d_solid_array_with_lateral_coupling;
 /// except that you can couple these arrays laterally to form a 2D or 
 /// 3D lattice
 pub mod one_d_fluid_array_with_lateral_coupling;
+
+
+/// contains code for calculating pressure drop and mass flowrates over 
+/// pipes in series or parallel
+pub mod fluid_component_collection;
