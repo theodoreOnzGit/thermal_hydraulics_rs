@@ -76,13 +76,13 @@ impl FluidComponentSuperCollection {
     /// even a single fluid component can behave like a fluid component
     /// collection of 1 item if it fulfils this trait
     ///
-    fn get_immutable_vector(&self) 
+    pub fn get_immutable_vector(&self) 
         -> Vec<FluidComponentCollection>{
             self.fluid_component_super_vector.clone()
     }
 
     /// sets the fluid component collection vector to a specific value
-    fn set_vector(
+    pub fn set_vector(
         &mut self,
         fluid_component_super_vector: 
         Vec<FluidComponentCollection>){
@@ -92,7 +92,7 @@ impl FluidComponentSuperCollection {
 
     /// adds a fluid component collection to the super collection
 
-    fn add_collection_to_vector(
+    pub fn add_collection_to_vector(
         &mut self,
         fluid_component_super_vector: Vec<FluidComponentCollection>,
         fluid_component_vector: FluidComponentCollection){
@@ -111,7 +111,7 @@ impl FluidComponentSuperCollection {
 
     /// removes a fluid component collection by index from the super collection
 
-    fn remove_collection_by_index(&mut self,
+    pub fn remove_collection_by_index(&mut self,
               fluid_component_super_vector: 
               Vec<FluidComponentCollection>,
               component_index: usize){
@@ -135,7 +135,7 @@ impl FluidComponentSuperCollection {
     /// returns read only a pointer of the fluid component collection
     /// given an index
 
-    fn get_collection_by_index(
+    pub fn get_collection_by_index(
         &mut self,
         component_index: usize) -> FluidComponentCollection{
 
@@ -157,7 +157,7 @@ impl FluidComponentSuperCollection {
     /// updates the fluid component collection at the specified
     /// index with a fluid component collection supplied by the user
 
-    fn update_collection_by_index(
+    pub fn update_collection_by_index(
         &mut self,
         component_index: usize,
         fluid_component_super_vector: Vec<FluidComponentCollection>,

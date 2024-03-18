@@ -34,6 +34,10 @@ ndarray-linalg = { version = "0.16.0", features = ["openblas-system"] }
 name = "tests"
 path = "src/main.rs"
 
+[[bin]]
+name = "ciet_heater_example"
+path = "src/ciet_heater_only.rs"
+
 [lib]
 name = "thermal_hydraulics_rs"
 path = "src/lib/lib.rs"
