@@ -1,6 +1,7 @@
 
 use uom::si::f64::*;
 use uom::si::acceleration::meter_per_second_squared;
+use uom::si::mass_rate::kilogram_per_second;
 /// This is a generic fluid component trait,
 /// which specifies that fluid components in general
 /// should have the following properties accessed
@@ -266,5 +267,83 @@ pub trait FluidComponentTrait {
     fn set_internal_pressure_source(
         &mut self,
         internal_pressure: Pressure);
+
+}
+
+/// contains methods to get pressure loss 
+/// and pressure change and mass flowrate based on 
+/// current state of the fluid component collection
+pub trait FluidComponentCollectionMethods{
+
+    /// calculates pressure loss when given a mass flowrate
+    fn get_pressure_loss(
+        &self, 
+        fluid_mass_flowrate: MassRate) -> Pressure {
+
+        // for pressure losses, we compare the pressure change at
+        // zero mass flowrate to pressure change at the desired
+        // mass flowrate
+        // noting that 
+        //
+        // pressure_change = - pressure_loss + hydrostatic pressure +
+        // internal pressure
+
+
+        let zero_mass_flow = MassRate::new::<kilogram_per_second>(0.0);
+
+        let reference_pressure_change = 
+            self.get_pressure_change(zero_mass_flow);
+
+        let current_pressure_change = 
+            self.get_pressure_change(fluid_mass_flowrate);
+
+        let pressure_change_due_to_losses = 
+            current_pressure_change - reference_pressure_change;
+
+        let pressure_loss = -pressure_change_due_to_losses;
+
+        return pressure_loss;
+
+    }
+
+    /// calculates pressure change when given a mass flowrate
+    fn get_pressure_change(
+        &self, 
+        fluid_mass_flowrate: MassRate) -> Pressure;
+
+    /// calculates mass flowrate from pressure change
+
+    fn get_mass_flowrate_from_pressure_change(
+        &self,
+        pressure_change: Pressure) -> MassRate;
+
+    /// calculates mass flowrate from pressure loss
+    
+    fn get_mass_flowrate_from_pressure_loss(
+        &self,
+        pressure_loss: Pressure) -> MassRate {
+
+        // for this, the default implementation is
+        // to obtain pressure change
+        //
+        // pressure_change = -pressure_loss +
+        // hydrostatic pressure
+        // + internal pressure
+        //
+        // to get the latter two terms, i can obtain
+        // pressure change when mass flowrate is zero
+        let zero_mass_flow = MassRate::new::<kilogram_per_second>(0.0);
+
+        let reference_pressure_change = 
+            self.get_pressure_change(zero_mass_flow);
+
+        let pressure_change = 
+            -pressure_loss + reference_pressure_change;
+
+        // now let's calculate the mass flowrate
+
+        return self.get_mass_flowrate_from_pressure_change(pressure_change);
+    }
+
 
 }

@@ -1,7 +1,7 @@
 use crate::boussinesq_solver::array_control_vol::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use uom::si::f64::*;
 
-use super::fluid_component_trait::{self, FluidComponentTrait};
+use super::fluid_component_traits::FluidComponentTrait;
 
 
 /// FluidComponents are pipes and fittings you can connect in parallel

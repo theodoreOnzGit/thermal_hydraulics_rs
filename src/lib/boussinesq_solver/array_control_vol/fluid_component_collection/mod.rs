@@ -45,21 +45,13 @@
 ///
 /// Main author of the code: Theodore Kay Chen Ong, supervised by
 /// Professor Per F. Peterson
-use uom::num_traits::ToPrimitive;
-use uom::si::f64::{Pressure, MassRate};
-use uom::si::mass_rate::kilogram_per_second;
-use uom::si::pressure::pascal;
 
 
 // the peroxide crate for root finders
 
 // another crate for root finders, in fact this package specialises in root
 // finding
-extern crate roots;
-use roots::find_root_brent;
-use roots::SimpleConvergency;
 
-use super::one_d_fluid_array_with_lateral_coupling::FluidArray;
 
 // contains associated functions which take a fluid component
 // vector and calculate mass flowrates and pressure changes
@@ -84,6 +76,6 @@ pub mod fluid_component;
 /// collections of fluid components
 /// This is because mass flowrate and pressure drop also need to be 
 /// calculated from collections of fluid components
-pub mod fluid_component_trait;
+pub mod fluid_component_traits;
 
 
