@@ -1,4 +1,5 @@
-use uom::{si::f64::*, num_traits::Zero};
+use uom::si::f64::*;
+use uom::num_traits::Zero;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
