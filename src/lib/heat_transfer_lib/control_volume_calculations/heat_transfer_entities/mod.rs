@@ -29,6 +29,7 @@ impl HeatTransferEntity {
 /// This type would tell the solver that this control volume is 
 /// in the front
 /// 
+/// marked for deprecation due to lack of use
 #[derive(Debug,Clone,PartialEq)]
 pub struct FrontHeatTransferEntity {
     entity: HeatTransferEntity,
@@ -53,6 +54,7 @@ impl Into<HeatTransferEntity> for FrontHeatTransferEntity {
 /// This type would tell the solver that this control volume is 
 /// in the back
 /// 
+/// marked for deprecation due to lack of use
 #[derive(Debug,Clone,PartialEq)]
 pub struct BackHeatTransferEntity {
     entity: HeatTransferEntity,

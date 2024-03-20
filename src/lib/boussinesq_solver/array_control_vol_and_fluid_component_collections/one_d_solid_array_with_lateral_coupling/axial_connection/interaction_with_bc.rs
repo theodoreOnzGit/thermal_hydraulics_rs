@@ -13,8 +13,8 @@ impl SolidColumn {
 
     /// attaches an constant heat flux BC to the front of this 
     /// array control volume 
-    /// (constant heat flux) ---- (back --- cv_self --- front)
-    pub fn link_heat_flux_bc_to_back_of_this_cv(
+    /// (back --- cv_self --- front) ----- - (constant heat flux)
+    pub fn link_heat_flux_bc_to_front_of_this_cv(
         &mut self,
         heat_flux_into_control_vol: HeatFluxDensity,
         interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError>{
@@ -24,66 +24,58 @@ impl SolidColumn {
         let heat_transfer_area: Area = match interaction{
             HeatTransferInteractionType::UserSpecifiedThermalConductance(_) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::SingleCartesianThermalConductanceOneDimension(_, _) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::DualCartesianThermalConductance(_, _) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::DualCylindricalThermalConductance(_, _, _) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::CylindricalConductionConvectionLiquidOutside(_, _) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside(_, _) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::UserSpecifiedHeatAddition => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
 
             HeatTransferInteractionType::DualCartesianThermalConductanceThreeDimension(_) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
             // these interaction types are acceptable
             HeatTransferInteractionType:: UserSpecifiedHeatFluxCustomArea(area) => area,
@@ -109,17 +101,146 @@ impl SolidColumn {
 
             HeatTransferInteractionType:: UserSpecifiedConvectionResistance(_) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
             HeatTransferInteractionType:: Advection(_) => 
             {
-                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
-                        "please specify interaction type as \n 
-                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
-                ));
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+        };
+
+        // once area is calculated, we can calculate heat flowrate into 
+        // cv
+        let heat_flowrate_into_control_vol: Power = 
+        heat_flux_into_control_vol * heat_transfer_area;
+
+        // then push the power to the front control volume, 
+
+        // then push the power to the front control volume, 
+        // then just do conduction timescales 
+        // There's no advection in this case so no need to worry 
+
+        let back_cv_ref = &mut self.front_single_cv;
+
+        // push the power power to the back cv 
+
+        back_cv_ref.rate_enthalpy_change_vector.push( 
+            heat_flowrate_into_control_vol);
+        // calculate conduction timescales
+        back_cv_ref.calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
+            interaction)?;
+
+        // I don't calculate solid-liquid timescales here, 
+        // kind of redundant 
+        // I could implement it in future though
+        // todo: nusselt number adjusted timescales for heatflux 
+
+        return Ok(());
+    }
+
+    /// attaches an constant heat flux BC to the back of this 
+    /// array control volume 
+    /// (constant heat flux) ---- (back --- cv_self --- front)
+    pub fn link_heat_flux_bc_to_back_of_this_cv(
+        &mut self,
+        heat_flux_into_control_vol: HeatFluxDensity,
+        interaction: HeatTransferInteractionType) -> Result<(),ThermalHydraulicsLibError>{
+
+        // first, obtain a heat transfer area from the constant heat flux 
+        // BC
+        let heat_transfer_area: Area = match interaction{
+            HeatTransferInteractionType::UserSpecifiedThermalConductance(_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::SingleCartesianThermalConductanceOneDimension(_, _) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::DualCartesianThermalConductance(_, _) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::DualCylindricalThermalConductance(_, _, _) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::CylindricalConductionConvectionLiquidOutside(_, _) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::CylindricalConductionConvectionLiquidInside(_, _) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::UserSpecifiedHeatAddition => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+
+            HeatTransferInteractionType::DualCartesianThermalConductanceThreeDimension(_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+            // these interaction types are acceptable
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCustomArea(area) => area,
+
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalOuterArea(
+                cylinder_length, od) => {
+                let od: Length = od.into();
+                let cylinder_length: Length  = cylinder_length.into();
+
+                let area = PI * od * cylinder_length;
+                area
+            },
+
+            HeatTransferInteractionType:: UserSpecifiedHeatFluxCylindricalInnerArea(
+                cylinder_length, id) => {
+                let id: Length = id.into();
+                let cylinder_length: Length  = cylinder_length.into();
+
+                let area = PI * id * cylinder_length;
+                area
+
+            },
+
+            HeatTransferInteractionType:: UserSpecifiedConvectionResistance(_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+            HeatTransferInteractionType:: Advection(_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
         };
 

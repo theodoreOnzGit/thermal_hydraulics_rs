@@ -33,3 +33,13 @@ pub mod cv_types;
 /// to abstract away the complications of connecting different types 
 /// of boundary conditions
 pub mod bc_types;
+
+/// preprocessing 
+///
+/// this module contains abstraction pertaining 
+/// to how to set up a heat transfer problem 
+///
+/// This means setting up the timestep, mass flowrates and how 
+/// heat transfer entities are linked to each other via heat 
+/// transfer interactions
+pub mod preprocessing;
