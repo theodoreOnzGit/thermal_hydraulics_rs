@@ -24,13 +24,13 @@ impl HeatTransferEntity {
 
         match entity {
             Self::ControlVolume(CVType::SingleCV(single_cv)) => {
-                single_cv.advance_timestep(timestep)
+                single_cv.advance_timestep(timestep)?
             },
             Self::ControlVolume(CVType::FluidArrayCV(fluid_array_cv)) => {
-                fluid_array_cv.advance_timestep(timestep)
+                fluid_array_cv.advance_timestep(timestep)?
             },
             Self::ControlVolume(CVType::SolidArrayCV(solid_array_cv)) => {
-                solid_array_cv.advance_timestep(timestep)
+                solid_array_cv.advance_timestep(timestep)?
             },
             Self::BoundaryConditions(_) => return Ok(()),
         };
@@ -56,13 +56,13 @@ impl HeatTransferEntity {
 
         match self {
             Self::ControlVolume(CVType::SingleCV(single_cv)) => {
-                single_cv.advance_timestep(timestep)
+                single_cv.advance_timestep(timestep)?
             },
             Self::ControlVolume(CVType::FluidArrayCV(fluid_array_cv)) => {
-                fluid_array_cv.advance_timestep(timestep)
+                fluid_array_cv.advance_timestep(timestep)?
             },
             Self::ControlVolume(CVType::SolidArrayCV(solid_array_cv)) => {
-                solid_array_cv.advance_timestep(timestep)
+                solid_array_cv.advance_timestep(timestep)?
             },
             Self::BoundaryConditions(_) => return Ok(()),
         };
