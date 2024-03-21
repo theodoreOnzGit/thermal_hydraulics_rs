@@ -47,3 +47,6 @@ pub mod preprocessing;
 /// postprocessing contains functions to obtain temperature profiles 
 /// of the HeatTransferEntity
 pub mod  postprocessing;
+
+/// calculation modules deal mainly with advancing timestep
+pub mod calculation;
