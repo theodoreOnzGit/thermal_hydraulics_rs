@@ -43,3 +43,7 @@ pub mod bc_types;
 /// heat transfer entities are linked to each other via heat 
 /// transfer interactions
 pub mod preprocessing;
+
+/// postprocessing contains functions to obtain temperature profiles 
+/// of the HeatTransferEntity
+pub mod  postprocessing;
