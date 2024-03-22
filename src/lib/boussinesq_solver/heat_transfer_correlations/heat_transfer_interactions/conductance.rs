@@ -30,7 +30,7 @@ use super::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
 /// area so that it is consistent. Will need to be a 1D control 
 /// volume of sorts
 ///
-pub (crate) 
+pub  
 fn get_conductance_single_cartesian_one_dimension(
     material: Material,
     material_temperature_1: ThermodynamicTemperature,
@@ -94,8 +94,7 @@ Result<ThermalConductance,ThermalHydraulicsLibError>
 /// 
 ///
 ///
-pub (crate) 
-fn get_conductance_dual_cartesian_three_dimensions(
+pub fn get_conductance_dual_cartesian_three_dimensions(
     material_1: Material,
     material_2: Material,
     material_temperature_1: ThermodynamicTemperature,
@@ -192,8 +191,7 @@ ThermalConductance,ThermalHydraulicsLibError>
 /// the inner radius and which one is at the outer radius
 /// 
 ///
-pub (crate) 
-fn get_conductance_cylindrical_radial_two_materials(
+pub fn get_conductance_cylindrical_radial_two_materials(
     material_inner_shell: Material,
     material_outer_shell: Material,
     material_temperature_inner_shell: ThermodynamicTemperature,
@@ -313,8 +311,7 @@ fn get_conductance_cylindrical_radial_two_materials(
 /// CylindricalAndSphericalSolidFluidArrangement
 ///
 ///
-pub(in crate)
-fn get_conductance_single_cylindrical_radial_solid_liquid(
+pub fn get_conductance_single_cylindrical_radial_solid_liquid(
     solid: Material,
     solid_temperature: ThermodynamicTemperature,
     solid_pressure: Pressure,
