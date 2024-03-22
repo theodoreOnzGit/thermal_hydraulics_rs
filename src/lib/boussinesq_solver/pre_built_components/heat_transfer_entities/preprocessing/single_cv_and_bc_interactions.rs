@@ -1,6 +1,5 @@
 use std::f64::consts::PI;
 
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::bc_types::BCType;
 use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 
 use super::heat_transfer_interaction_enums::HeatTransferInteractionType;

@@ -2,12 +2,7 @@
 use std::f64::consts::PI;
 
 use uom::si::f64::*;
-use uom::si::thermodynamic_temperature::kelvin;
-
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use crate::boussinesq_solver::boundary_conditions::BCType;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
 use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
 use crate::boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
@@ -16,9 +11,7 @@ use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interact
 use crate::boussinesq_solver::single_control_vol::boundary_condition_interactions::constant_heat_addition_to_bcs::calculate_single_cv_front_constant_heat_addition_back;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
-
-use uom::num_traits::Zero;
+use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
 
 use self::single_cv_and_bc_interactions::calculate_bc_front_cv_back_advection;
 use self::single_cv_and_bc_interactions::calculate_constant_heat_addition_front_single_cv_back;
@@ -27,7 +20,6 @@ use self::single_cv_and_bc_interactions::calculate_single_cv_front_heat_flux_bac
 use self::single_cv_and_bc_interactions::calculate_single_cv_node_front_constant_temperature_back;
 use self::single_cv_single_cv_interactions::calculate_between_two_singular_cv_nodes;
 
-use super::bc_types::BCType;
 use super::cv_types::CVType;
 use super::HeatTransferEntity;
 ///// contains scripts to select enums 
@@ -45,6 +37,46 @@ use super::HeatTransferEntity;
 ////mod enum_selection_parallel_alpha;
 ////use enum_selection_parallel_alpha::*;
 
+impl HeatTransferEntity {
+
+
+    /// wrapper for linking, makes it easier to link 
+    #[inline]
+    pub fn link_to_front(&mut self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            self,
+            other_hte,
+            interaction)
+    }
+
+    /// wrapper for linking, makes it easier to link 
+    #[inline]
+    pub fn link_to_back(&mut self,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            other_hte,
+            self,
+            interaction)
+    }
+
+    /// wrapper for linking, makes it easier to link 
+    #[inline]
+    pub fn link(entity: &mut HeatTransferEntity,
+    other_hte: &mut HeatTransferEntity,
+    interaction: HeatTransferInteractionType) -> Result<(), ThermalHydraulicsLibError>{
+
+        link_heat_transfer_entity(
+            entity,
+            other_hte,
+            interaction)
+
+    }
+}
 
 /// For this part, we determine how heat_transfer_entities interact 
 /// with each other by using a function 
@@ -518,7 +550,7 @@ pub (crate) fn calculate_timestep_control_volume_back_to_boundary_condition_seri
 /// TODO: probably want to test this function out
 /// 
 pub (in crate) 
-fn get_thermal_conductance_based_on_interaction(
+fn try_get_thermal_conductance_based_on_interaction(
     temperature_1: ThermodynamicTemperature,
     temperature_2: ThermodynamicTemperature,
     pressure_1: Pressure,

@@ -20,7 +20,7 @@ use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interact
 
 use uom::num_traits::Zero;
 
-use super::get_thermal_conductance_based_on_interaction;
+use super::try_get_thermal_conductance_based_on_interaction;
 use super::HeatTransferEntity;
 /// which calls other functions depending on whether the 
 /// heat transfer interaction is conductance based on advection based
@@ -284,7 +284,7 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     // q = - Htc (T_2 - T_1)
 
     // 
-    let thermal_conductance = get_thermal_conductance_based_on_interaction(
+    let thermal_conductance = try_get_thermal_conductance_based_on_interaction(
         single_cv_1_temperature, 
         single_cv_2_temperature,
         single_cv_1_pressure, 

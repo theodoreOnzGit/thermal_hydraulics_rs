@@ -13,6 +13,7 @@ use uom::si::f64::*;
 ///
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
+#[derive(Clone,Debug)]
 pub struct NonInsulatedPipe {
 
     inner_nodes: usize,
@@ -36,6 +37,12 @@ pub struct NonInsulatedPipe {
 
     /// pipe heat transfer coefficient to ambient
     pub heat_transfer_to_ambient: HeatTransfer,
+
+    /// pipe  outer diameter 
+    pub od: Length,
+
+    /// pipe inner diameter 
+    pub id: Length,
 
 }
 
@@ -113,6 +120,13 @@ impl NonInsulatedPipe {
             pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,
+            od,
+            id,
         };
     }
 }
+
+pub mod preprocessing;
+
+// implementations for the FluidComponent trait
+pub mod fluid_component;

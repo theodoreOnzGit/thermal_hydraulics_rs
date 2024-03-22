@@ -1,6 +1,6 @@
 use self::cv_types::CVType;
-use self::bc_types::BCType;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+use crate::boussinesq_solver::boundary_conditions::BCType;
 /// Contains entities which transfer heat and interact with each 
 /// other
 ///
@@ -28,11 +28,6 @@ impl HeatTransferEntity {
 /// to abstract away the complications of connecting different types 
 /// of control volumes. 
 pub mod cv_types;
-
-/// all the types of boundary conditions are represented in an enum 
-/// to abstract away the complications of connecting different types 
-/// of boundary conditions
-pub mod bc_types;
 
 /// preprocessing 
 ///

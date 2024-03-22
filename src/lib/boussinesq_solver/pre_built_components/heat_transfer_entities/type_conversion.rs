@@ -1,6 +1,8 @@
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::boussinesq_solver::boundary_conditions::BCType;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use super::bc_types::BCType;
 use super::cv_types::CVType;
 use super::HeatTransferEntity;
 
@@ -48,5 +50,49 @@ impl TryFrom<HeatTransferEntity> for CVType {
                 return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
             },
         }
+    }
+}
+
+impl Into<HeatTransferEntity> for FluidArray{
+    fn into(self) -> HeatTransferEntity {
+        HeatTransferEntity::ControlVolume(CVType::FluidArrayCV(self))
+    }
+}
+
+impl TryInto<FluidArray> for HeatTransferEntity {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_into(self) -> Result<FluidArray, Self::Error> {
+        if let HeatTransferEntity::ControlVolume(
+            CVType::FluidArrayCV(fluid_array)) = self {
+
+            Ok(fluid_array)
+
+        } else {
+            return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+        }
+
+    }
+}
+
+impl Into<HeatTransferEntity> for SolidColumn{
+    fn into(self) -> HeatTransferEntity {
+        HeatTransferEntity::ControlVolume(CVType::SolidArrayCV(self))
+    }
+}
+
+impl TryInto<SolidColumn> for HeatTransferEntity {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_into(self) -> Result<SolidColumn, Self::Error> {
+        if let HeatTransferEntity::ControlVolume(
+            CVType::SolidArrayCV(solid_array)) = self {
+
+            Ok(solid_array)
+
+        } else {
+            return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+        }
+
     }
 }
