@@ -49,6 +49,47 @@ impl From<SolidColumn> for CVType {
     }
 }
 
+
+impl TryFrom<CVType> for SingleCVNode {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_from(value: CVType) -> Result<Self, Self::Error> {
+        if let CVType::SingleCV(single_cv) = value {
+            return Ok(single_cv);
+        }
+
+        // todo, update error
+        return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+    }
+}
+
+impl TryFrom<CVType> for FluidArray {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_from(value: CVType) -> Result<Self, Self::Error> {
+        if let CVType::FluidArrayCV(fluid_array) = value {
+            return Ok(fluid_array);
+        }
+
+        // todo, update error
+        return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+    }
+}
+
+
+impl TryFrom<CVType> for SolidColumn {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_from(value: CVType) -> Result<Self, Self::Error> {
+        if let CVType::SolidArrayCV(solid_column) = value {
+            return Ok(solid_column);
+        }
+
+        // todo, update error
+        return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+    }
+}
+
 impl CVType {
     #[inline]
     /// gets the material 
