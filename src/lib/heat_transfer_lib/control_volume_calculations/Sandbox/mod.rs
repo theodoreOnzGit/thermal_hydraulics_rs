@@ -1,5 +1,6 @@
 #[warn(missing_docs)]
 
+// marked for deprecation, no longer used
 #[cfg(test)]
 mod sandbox_therminol_dowtherm_pipes {
     /// from this sandbox, i am experimenting with 

@@ -1,3 +1,4 @@
+// marked for deprecation, no longer used
 #![warn(missing_docs)]
 extern crate uom;
 use uom::si::available_energy::joule_per_kilogram;

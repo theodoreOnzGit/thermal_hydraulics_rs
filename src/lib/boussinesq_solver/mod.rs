@@ -67,4 +67,8 @@ pub mod array_control_vol_and_fluid_component_collections;
 /// Module for pre-built-components 
 /// suitable for boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
+///
+/// It's dependent on all the other modules within the boussinesq_solver
+///
+/// You don't want to write everything from scratch right? 
 pub mod pre_built_components;

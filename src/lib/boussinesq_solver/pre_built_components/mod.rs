@@ -11,3 +11,8 @@
 /// each other by a user specified heat transfer interaction
 /// 
 pub mod heat_transfer_entities;
+
+/// for fluid flow through pipes, these pipes will be represented by 
+/// control volumes laterally coupled to one another. They come in 
+/// insulated and non insulated forms
+pub mod pipes;
