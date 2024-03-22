@@ -50,3 +50,7 @@ pub mod  postprocessing;
 
 /// calculation modules deal mainly with advancing timestep
 pub mod calculation;
+
+/// type conversion 
+/// converts underlying nested enums into HeatTransferEntity objects
+pub mod type_conversion;

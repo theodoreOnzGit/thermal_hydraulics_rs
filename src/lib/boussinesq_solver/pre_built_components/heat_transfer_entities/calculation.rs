@@ -1,7 +1,9 @@
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use super::{cv_types::CVType, HeatTransferEntity};
-use std::thread::{self, JoinHandle};
+use super::HeatTransferEntity;
+use super::cv_types::CVType;
+use std::thread::JoinHandle;
+use std::thread;
 
 use uom::si::f64::*;
 
