@@ -139,7 +139,7 @@ impl NonInsulatedPipe {
         }
         // axial connections 
 
-        self.zero_power_bc_connection();
+        self.zero_power_bc_connection()?;
 
         Ok(())
 
@@ -389,6 +389,7 @@ impl NonInsulatedPipe {
         return Ok(therminol_steel_nodal_thermal_conductance);
     }
 
+    /// TBD
     #[inline]
     pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {
@@ -614,7 +615,7 @@ impl NonInsulatedPipe {
                 heater_clone.
                     lateral_and_miscellaneous_connections(
                         mass_flowrate,
-                        heater_steady_state_power);
+                        heater_steady_state_power).unwrap();
                 
                 heater_clone
 
