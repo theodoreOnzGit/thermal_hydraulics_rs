@@ -13,7 +13,7 @@ use uom::si::f64::*;
 ///
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
-#[derive(Clone,Debug)]
+#[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedPipe {
 
     inner_nodes: usize,
