@@ -272,22 +272,32 @@ impl NonInsulatedPipe {
         = pipe_shell_clone.try_get_bulk_temperature()?;
 
         let hydraulic_diameter = self.get_hydraulic_diameter();
+        let flow_area: Area = self.get_cross_sectional_area_immutable();
 
         // firstly, reynolds 
 
-        let reynolds_number: Ratio = 
-        self.get_reynolds_based_on_hydraulic_diameter_and_flow_area(
-            mass_flowrate,
-            fluid_temperature,
-        )?;
 
-        // next, bulk prandtl number 
+        // flow area and hydraulic diameter are ok
+
         let mut fluid_array_clone: FluidArray = 
             self.pipe_fluid_array.clone().try_into()?;
 
-
         let fluid_material: LiquidMaterial
             = fluid_array_clone.material_control_volume.try_into()?;
+
+        let viscosity: DynamicViscosity = 
+            fluid_material.try_get_dynamic_viscosity(fluid_temperature)?;
+
+        // need to convert hydraulic diameter to an equivalent 
+        // spherical diameter
+        //
+        // but for now, I'm going to use Re and Nu using hydraulic diameter 
+        // and live with it for the time being
+        //
+        let reynolds_number: Ratio = 
+            mass_flowrate/flow_area*hydraulic_diameter / viscosity;
+
+        // next, bulk prandtl number 
 
         let bulk_prandtl_number: Ratio 
         = fluid_material.try_get_prandtl_liquid(
@@ -420,9 +430,15 @@ impl NonInsulatedPipe {
         // flow area and hydraulic diameter are ok
         let flow_area: Area = self.get_cross_sectional_area_immutable();
         let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+
+        let fluid_array_clone: FluidArray = 
+            self.pipe_fluid_array.clone().try_into()?;
+
+        let fluid_material: LiquidMaterial
+            = fluid_array_clone.material_control_volume.try_into()?;
+
         let viscosity: DynamicViscosity = 
-        LiquidMaterial::TherminolVP1.try_get_dynamic_viscosity(
-            temperature)?;
+            fluid_material.try_get_dynamic_viscosity(temperature)?;
 
         // need to convert hydraulic diameter to an equivalent 
         // spherical diameter
