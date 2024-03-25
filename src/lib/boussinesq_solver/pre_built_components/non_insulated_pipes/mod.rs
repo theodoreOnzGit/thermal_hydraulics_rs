@@ -72,7 +72,7 @@ impl NonInsulatedPipe {
     ///
     /// this is because there are two nodes at the periphery of the pipe 
     /// and there
-    pub fn new_pipe(initial_temperature: ThermodynamicTemperature,
+    pub fn new_bare_pipe(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,
         solid_pressure: Pressure,

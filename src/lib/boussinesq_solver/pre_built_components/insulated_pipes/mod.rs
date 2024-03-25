@@ -19,12 +19,12 @@ pub struct InsulatedPipe {
 
     inner_nodes: usize,
 
-    /// this HeatTransferEntity represents the pipe shell which is 
-    /// exposed to an ambient constant temperature boundary condition
-    /// This is because constant heat flux BCs are not common for pipes
-    ///
+    /// this HeatTransferEntity represents the pipe shell 
     /// only one radial layer of control volumes is used to simulate 
     /// the pipe shell
+    ///
+    /// it is thermally coupled to insulation and to the fluid 
+    /// in the pipe_fluid_array
     pub pipe_shell: HeatTransferEntity,
 
 
@@ -32,6 +32,16 @@ pub struct InsulatedPipe {
     /// which is coupled to the pipe shell via a Nusselt Number based
     /// thermal resistance (usually Gnielinski correlation)
     pub pipe_fluid_array: HeatTransferEntity,
+
+    /// this HeatTransferEntity represents the pipe insulation
+    ///
+    /// which is 
+    /// exposed to an ambient constant temperature boundary condition
+    /// This is because constant heat flux BCs are not common for pipes
+    /// except for fully/ideally insulated pipes
+    ///
+    /// this is coupled to the pipe_shell
+    pub insulation: HeatTransferEntity,
 
     /// pipe ambient temperature
     pub ambient_temperature: ThermodynamicTemperature,
@@ -87,7 +97,7 @@ impl InsulatedPipe {
     ///
     /// this is because there are two nodes at the periphery of the pipe 
     /// and there
-    pub fn new_pipe(initial_temperature: ThermodynamicTemperature,
+    pub fn new_insulated_pipe(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,
         solid_pressure: Pressure,
@@ -120,7 +130,7 @@ impl InsulatedPipe {
             incline_angle
         );
 
-        // now the outer steel array
+        // now the outer pipe array
         let pipe_shell = 
         SolidColumn::new_cylindrical_shell(
             pipe_length,
@@ -132,7 +142,22 @@ impl InsulatedPipe {
             user_specified_inner_nodes 
         );
 
-        // fluid pipe
+        let insulation_id = shell_od;
+        let insulation_od = insulation_id + insulation_thickness;
+
+        // insulation
+        let insulation = 
+        SolidColumn::new_cylindrical_shell(
+            pipe_length,
+            insulation_id,
+            insulation_od,
+            initial_temperature,
+            solid_pressure,
+            SolidMaterial::Fiberglass,
+            user_specified_inner_nodes 
+        );
+
+        // fluid pipe loss correlation
         //
 
 
@@ -150,6 +175,7 @@ impl InsulatedPipe {
             insulation_id: shell_od+insulation_thickness,
             flow_area,
             darcy_loss_correlation: pipe_loss_correlation,
+            insulation: CVType::SolidArrayCV(insulation).into(),
         };
     }
 }
