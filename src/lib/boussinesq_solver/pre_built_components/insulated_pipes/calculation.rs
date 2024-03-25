@@ -14,6 +14,7 @@ impl InsulatedPipe {
 
         self.pipe_fluid_array.advance_timestep_mut_self(timestep)?;
         self.pipe_shell.advance_timestep_mut_self(timestep)?;
+        self.insulation.advance_timestep_mut_self(timestep)?;
         Ok(())
         
     }

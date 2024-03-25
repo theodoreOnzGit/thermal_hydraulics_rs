@@ -17,4 +17,10 @@ impl InsulatedPipe {
         self.pipe_fluid_array.get_temperature_vector()
     }
 
+    /// insulation temperature array 
+    pub fn insulation_array_temperature(&mut self) ->
+        Result<Vec<ThermodynamicTemperature>,ThermalHydraulicsLibError>{
+        self.insulation.get_temperature_vector()
+    }
+
 }
