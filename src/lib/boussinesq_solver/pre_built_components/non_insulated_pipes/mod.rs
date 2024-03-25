@@ -72,6 +72,9 @@ impl NonInsulatedPipe {
     ///
     /// this is because there are two nodes at the periphery of the pipe 
     /// and there
+    ///
+    /// at each timestep, you are allowed to set a heater power, where 
+    /// heat is dumped into the heated tube surrounding the pipe
     pub fn new_bare_pipe(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,

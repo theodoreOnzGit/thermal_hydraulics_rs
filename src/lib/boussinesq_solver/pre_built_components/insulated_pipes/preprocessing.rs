@@ -29,10 +29,15 @@ impl InsulatedPipe {
     /// heavier in resource usage,
     ///
     /// unoptimised in this regard
+    /// at each timestep, you are allowed to set a heater power, where 
+    /// heat is dumped into the heated tube surrounding the pipe
+    /// you set it using the heater power input here.
+    ///
+    /// otherwise you set it to zero for an unpowered pipe
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate,
-        heater_steady_state_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
 
 
         // first let's get all the conductances 
@@ -162,7 +167,7 @@ impl InsulatedPipe {
             // scaffold for heated pipes
 
             pipe_shell_clone.lateral_link_new_power_vector(
-                heater_steady_state_power,
+                heater_power,
                 q_frac_arr
             )?;
 
