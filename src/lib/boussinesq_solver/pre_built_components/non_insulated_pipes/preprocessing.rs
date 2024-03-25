@@ -77,7 +77,7 @@ impl NonInsulatedPipe {
             self.pipe_shell.clone().try_into()?;
 
             let mut fluid_array_clone: FluidArray = 
-            self.pipe_shell.clone().try_into()?;
+            self.pipe_fluid_array.clone().try_into()?;
 
 
             // note, must set mass flowrate first 

@@ -1,7 +1,8 @@
 use std::{f64::consts::PI, thread::JoinHandle};
 use std::thread;
 
-use uom::{si::{length::meter, pressure::atmosphere}, ConstZero};
+use uom::ConstZero;
+use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
 use ndarray::*;
 use super::InsulatedPipe;
@@ -35,22 +36,35 @@ impl InsulatedPipe {
 
 
         // first let's get all the conductances 
-        let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
+        
+        // |                        |               |               |
+        // |                        |               |               |
+        // |------ fluid -----------|----shell------|----insulation-| ambient
+        // |                        |               |               |
+        // |                        |               |               |
+        //
+        // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
+        let heat_transfer_to_ambient: HeatTransfer = self.heat_transfer_to_ambient;
 
         let pipe_shell_to_air_nodal_conductance: ThermalConductance 
         = self.get_ambient_surroundings_to_insulation_thermal_conductance(
             heat_transfer_to_ambient
         )?;
 
-
+        // 2. we'll need the fluid to shell midpoint thermal conductance
 
         self.set_mass_flowrate(mass_flowrate);
 
         let pipe_shell_surf_to_fluid_array_conductance: ThermalConductance 
-        = self.get_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction()?;
+        = self.get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction()?;
 
+        // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
 
-        // other stuff 
+        let pipe_shell_to_insulation_array_conductance: ThermalConductance 
+            = self.get_pipe_shell_to_insulation_conductance()?;
+
+        // next, we need to consider discretisation, ie how much 
+        // power fraction
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let q_fraction_per_node: f64 = 1.0/ number_of_temperature_nodes as f64;
         let mut q_frac_arr: Array1<f64> = Array::default(number_of_temperature_nodes);
@@ -58,7 +72,7 @@ impl InsulatedPipe {
 
         // then get the ambient temperature 
 
-        let ambient_air_temp = self.ambient_temperature;
+        let ambient_temp = self.ambient_temperature;
 
         // lateral connections 
         {
@@ -71,7 +85,7 @@ impl InsulatedPipe {
                 }
                 ).collect();
 
-            ambient_temperature_vector.fill(ambient_air_temp);
+            ambient_temperature_vector.fill(ambient_temp);
 
 
             // clone each array and set them later
@@ -80,7 +94,8 @@ impl InsulatedPipe {
             self.pipe_shell.clone().try_into()?;
 
             let mut fluid_array_clone: FluidArray = 
-            self.pipe_shell.clone().try_into()?;
+            self.pipe_fluid_array.clone().try_into()?;
+
 
 
             // note, must set mass flowrate first 
@@ -253,7 +268,7 @@ impl InsulatedPipe {
 
     /// obtains fluid_array to pipe_shell shell conductance
     #[inline]
-    pub fn get_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction(&mut self) 
+    pub fn get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction(&mut self) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
 
         // the thermal conductance here should be based on the 
@@ -628,6 +643,93 @@ impl InsulatedPipe {
         return Ok(cylinder_to_fluid_conductance);
     }
 
+    /// obtains pipe shell to insulation conductance
+    #[inline]
+    pub fn get_pipe_shell_to_insulation_conductance(
+    &self) -> Result<ThermalConductance,ThermalHydraulicsLibError> {
+
+        // first, make a clone of pipe shell and insulation
+
+        let mut insulation_array_clone: SolidColumn = 
+        self.insulation.clone().try_into()?;
+
+        let mut pipe_shell_clone: SolidColumn = 
+        self.pipe_shell.clone().try_into()?;
+
+
+        // find the length of the array and node length
+
+        let array_length =  self.get_component_length_immutable();
+
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+
+        let node_length = array_length / 
+        number_of_temperature_nodes as f64;
+
+        // then we need to find the surface area of each node 
+        // for steel to insulation_material, it will be 
+        // the steel outer diameter or insulation inner_diameter
+        
+        let pipe_shell_mid_section_diameter = 0.5 * (self.tube_od 
+        + self.tube_id);
+
+        let insulation_material_mid_section_diameter = 0.5 * (self.insulation_id
+        + self.insulation_od);
+
+        let tube_od = self.tube_od;
+
+        // next, thermal conductivities of both solid_pipe_material and insulation_material 
+
+        let solid_pipe_material_shell_temperature = pipe_shell_clone.try_get_bulk_temperature() 
+            ?;
+
+        let solid_pipe_material: SolidMaterial = pipe_shell_clone.material_control_volume
+            .try_into()?;
+
+        let solid_pipe_material_conductivity: ThermalConductivity 
+        = solid_pipe_material.try_get_thermal_conductivity(
+            solid_pipe_material_shell_temperature
+        )?;
+
+        let insulation_material_shell_temperature = insulation_array_clone.try_get_bulk_temperature() 
+            ?;
+
+        let insulation_material: SolidMaterial = insulation_array_clone.material_control_volume
+            .try_into()?;
+
+        let insulation_material_conductivity: ThermalConductivity 
+        = insulation_material.try_get_thermal_conductivity(
+            insulation_material_shell_temperature
+        )?;
+
+        // we should be able to get the conductance now
+
+        let insulation_material_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            tube_od,
+            insulation_material_mid_section_diameter,
+            node_length,
+            insulation_material_conductivity
+        )?;
+        
+        let solid_pipe_material_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            pipe_shell_mid_section_diameter,
+            tube_od,
+            node_length,
+            solid_pipe_material_conductivity
+        )?;
+
+        // now that we have the conductances, we get the resistances 
+
+        let insulation_material_resistance = 1.0/insulation_material_layer_conductance;
+        let solid_pipe_material_resistance = 1.0/solid_pipe_material_layer_conductance;
+
+        let total_resistance = insulation_material_resistance + solid_pipe_material_resistance;
+
+
+        return Ok(1.0/total_resistance);
+    }
 
     /// spawns a thread and moves the clone of the entire heater object into the 
     /// thread, "locking" it for parallel computation
