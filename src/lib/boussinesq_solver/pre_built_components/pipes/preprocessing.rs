@@ -277,7 +277,7 @@ impl NonInsulatedPipe {
         // firstly, reynolds 
 
         let reynolds_number: Ratio = 
-        Self::heater_v2_hydraulic_diameter_reynolds(
+        self.get_reynolds_based_on_hydraulic_diameter_and_flow_area(
             mass_flowrate,
             fluid_temperature,
         );
@@ -391,12 +391,14 @@ impl NonInsulatedPipe {
 
     /// TBD
     #[inline]
-    pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
+    pub fn get_reynolds_based_on_hydraulic_diameter_and_flow_area(
+        &self,
+        mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {
 
         // flow area and hydraulic diameter are ok
-        let flow_area: Area = Area::new::<square_inch>(1.63);
-        let hydraulic_diameter = Length::new::<inch>(0.5776);
+        let flow_area: Area = self.get_cross_sectional_area_immutable();
+        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
         let viscosity: DynamicViscosity = 
         LiquidMaterial::TherminolVP1.try_get_dynamic_viscosity(
             temperature).unwrap();
