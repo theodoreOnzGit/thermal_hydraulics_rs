@@ -93,10 +93,10 @@ pub struct FluidArray {
     internal_pressure_source: Pressure,
 
     /// pipe loss properties 
-    pipe_loss_properties: DimensionlessDarcyLossCorrelations,
+    pub pipe_loss_properties: DimensionlessDarcyLossCorrelations,
 
     /// nusselt correlation 
-    nusselt_correlation: NusseltCorrelation,
+    pub nusselt_correlation: NusseltCorrelation,
 
     /// now fluid arrays can be connected to solid arrays 
     /// or other fluid arrays adjacent to it radially

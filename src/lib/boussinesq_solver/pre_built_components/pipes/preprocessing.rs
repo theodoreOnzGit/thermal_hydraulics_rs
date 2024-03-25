@@ -1,12 +1,11 @@
 use std::thread::JoinHandle;
 use std::thread;
 
-use uom::{si::{area::square_inch, length::{inch, meter}, pressure::atmosphere}, ConstZero};
+use uom::{si::{length::meter, pressure::atmosphere}, ConstZero};
 use uom::si::f64::*;
 use ndarray::*;
 use super::NonInsulatedPipe;
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction;
-use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::{enums::NusseltCorrelation, input_structs::NusseltPrandtlReynoldsData};
+use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boundary_conditions::BCType;
@@ -45,7 +44,7 @@ impl NonInsulatedPipe {
         self.set_mass_flowrate(mass_flowrate);
 
         let steel_surf_to_therminol_conductance: ThermalConductance 
-        = self.get_fluid_array_node_pipe_shell_conductance()?;
+        = self.get_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction()?;
 
 
         // other stuff 
@@ -194,7 +193,7 @@ impl NonInsulatedPipe {
     /// obtains air to steel shell conductance
     #[inline]
     pub fn get_air_shell_nodal_shell_conductance(&mut self,
-    h_air_to_steel_surf: HeatTransfer) 
+    h_air_to_pipe_surf: HeatTransfer) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
         // first, let's get a clone of the steel shell surface
         let mut pipe_shell_clone: SolidColumn = 
@@ -223,7 +222,7 @@ impl NonInsulatedPipe {
                     (od-cylinder_mid_diameter).into(),
                     pipe_surf_temperature,
                     pipe_shell_clone.pressure_control_volume),
-                (h_air_to_steel_surf,
+                (h_air_to_pipe_surf,
                     od.into(),
                     node_length.into())
             );
@@ -243,7 +242,7 @@ impl NonInsulatedPipe {
 
     /// obtains therminol to steel shell conductance
     #[inline]
-    pub fn get_fluid_array_node_pipe_shell_conductance(&mut self) 
+    pub fn get_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction(&mut self) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
 
         // the thermal conductance here should be based on the 
@@ -280,15 +279,22 @@ impl NonInsulatedPipe {
         self.get_reynolds_based_on_hydraulic_diameter_and_flow_area(
             mass_flowrate,
             fluid_temperature,
-        );
+        )?;
 
         // next, bulk prandtl number 
+        let mut fluid_array_clone: FluidArray = 
+            self.pipe_fluid_array.clone().try_into()?;
+
+
+        let fluid_material: LiquidMaterial
+            = fluid_array_clone.material_control_volume.try_into()?;
 
         let bulk_prandtl_number: Ratio 
-        = LiquidMaterial::TherminolVP1.try_get_prandtl_liquid(
+        = fluid_material.try_get_prandtl_liquid(
             fluid_temperature,
             atmospheric_pressure
         )?;
+
 
         //// surface prandtl number
         ////
@@ -311,20 +317,34 @@ impl NonInsulatedPipe {
         // constants are ignored, so we use the default method
         // and manually adjust the reynolds and prandtl numbers
 
-        let mut heater_prandtl_reynolds_data: NusseltPrandtlReynoldsData 
-        = NusseltPrandtlReynoldsData::default();
+        let mut pipe_prandtl_reynolds_data: GnielinskiData 
+        = GnielinskiData::default();
 
-        heater_prandtl_reynolds_data.reynolds = reynolds_number;
-        heater_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        heater_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
+        // no wall correction given for this case yet
+        pipe_prandtl_reynolds_data.reynolds = reynolds_number;
+        pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
+        pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_data.length_to_diameter = 
+            self.get_component_length_immutable()/
+            self.get_hydraulic_diameter_immutable();
 
-        let heater_nusselt_correlation: NusseltCorrelation 
-        =  NusseltCorrelation::CIETHeaterVersion2(
-            heater_prandtl_reynolds_data
-        );
+        // need to set darcy friction factor!
+        // first let's get the fluid array out 
+
+
+        let pipe_correlation = fluid_array_clone.pipe_loss_properties;
+
+        // For this, the friction factor is the sum of pipe friction 
+        // factor and form losses 
+        // that's the convention
+        let darcy_friction_factor: Ratio = pipe_correlation.darcy_friction_factor_fldk(
+            reynolds_number)?;
+
+        pipe_prandtl_reynolds_data.darcy_friction_factor = 
+            darcy_friction_factor;
 
         let nusselt_estimate: Ratio = 
-        heater_nusselt_correlation.try_get().unwrap();
+        pipe_prandtl_reynolds_data.get_nusselt_for_developing_flow()?;
 
 
 
@@ -333,8 +353,8 @@ impl NonInsulatedPipe {
         let h_to_therminol: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
-        LiquidMaterial::TherminolVP1.try_get_thermal_conductivity(
-            fluid_temperature).unwrap();
+        fluid_material.try_get_thermal_conductivity(
+            fluid_temperature)?;
 
         h_to_therminol = nusselt_estimate * k_fluid_average / hydraulic_diameter;
 
@@ -342,8 +362,8 @@ impl NonInsulatedPipe {
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = fluid_array_clone.get_component_length();
-        let id = Length::new::<meter>(0.0381);
-        let od = Length::new::<meter>(0.04);
+        let id = self.id;
+        let od = self.od;
 
 
         let node_length = heated_length / 
@@ -389,19 +409,20 @@ impl NonInsulatedPipe {
         return Ok(therminol_steel_nodal_thermal_conductance);
     }
 
-    /// TBD
+    /// gets the reynolds number based on mass flworate and 
+    /// temperature
     #[inline]
     pub fn get_reynolds_based_on_hydraulic_diameter_and_flow_area(
         &self,
         mass_flowrate: MassRate,
-        temperature: ThermodynamicTemperature) -> Ratio {
+        temperature: ThermodynamicTemperature) -> Result<Ratio,ThermalHydraulicsLibError> {
 
         // flow area and hydraulic diameter are ok
         let flow_area: Area = self.get_cross_sectional_area_immutable();
         let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
         let viscosity: DynamicViscosity = 
         LiquidMaterial::TherminolVP1.try_get_dynamic_viscosity(
-            temperature).unwrap();
+            temperature)?;
 
         // need to convert hydraulic diameter to an equivalent 
         // spherical diameter
@@ -412,7 +433,7 @@ impl NonInsulatedPipe {
         let reynolds: Ratio = 
         mass_flowrate/flow_area*hydraulic_diameter / viscosity;
 
-        reynolds
+        Ok(reynolds)
 
     }
 
