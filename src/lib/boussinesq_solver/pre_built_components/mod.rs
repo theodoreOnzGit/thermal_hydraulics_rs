@@ -23,3 +23,6 @@ pub mod non_insulated_pipes;
 /// be represented by control volumes laterally coupled to one 
 /// another. 
 pub mod insulated_pipes;
+
+/// represents one dimensional solid structure
+pub mod one_d_solid_structure;
