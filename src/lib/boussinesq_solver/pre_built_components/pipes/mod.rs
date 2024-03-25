@@ -137,3 +137,7 @@ pub mod fluid_component;
 
 /// stuff for calculation is done here, ie, advancing timestep
 pub mod calculation;
+
+/// postprocessing stuff, ie, get the temperature vectors 
+/// of both arrays of control volumes 
+pub mod postprocessing;
