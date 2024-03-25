@@ -46,7 +46,7 @@ impl InsulatedPipe {
         // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
         let heat_transfer_to_ambient: HeatTransfer = self.heat_transfer_to_ambient;
 
-        let pipe_shell_to_air_nodal_conductance: ThermalConductance 
+        let insulation_to_air_nodal_conductance: ThermalConductance 
         = self.get_ambient_surroundings_to_insulation_thermal_conductance(
             heat_transfer_to_ambient
         )?;
@@ -55,7 +55,7 @@ impl InsulatedPipe {
 
         self.set_mass_flowrate(mass_flowrate);
 
-        let pipe_shell_surf_to_fluid_array_conductance: ThermalConductance 
+        let pipe_shell_node_to_fluid_array_conductance: ThermalConductance 
         = self.get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction()?;
 
         // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
@@ -91,10 +91,13 @@ impl InsulatedPipe {
             // clone each array and set them later
 
             let mut pipe_shell_clone: SolidColumn = 
-            self.pipe_shell.clone().try_into()?;
+                self.pipe_shell.clone().try_into()?;
 
             let mut fluid_array_clone: FluidArray = 
-            self.pipe_fluid_array.clone().try_into()?;
+                self.pipe_fluid_array.clone().try_into()?;
+
+            let mut insulation_array_clone: SolidColumn = 
+                self.insulation.clone().try_into()?;
 
 
 
@@ -113,36 +116,51 @@ impl InsulatedPipe {
             let fluid_temp_vector: Vec<ThermodynamicTemperature> 
             = fluid_array_clone.get_temperature_vector()?;
 
+            let insulation_temp_vector: Vec<ThermodynamicTemperature> 
+            = insulation_array_clone.get_temperature_vector()?;
+
             // second, fill them into the each array 
             
-            // pipe_shell to air interaction
+            // insulation to air interaction
+
+            insulation_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                insulation_to_air_nodal_conductance,
+                ambient_temperature_vector
+            )?;
+
+            // insulation to shell interaction 
 
             pipe_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_to_air_nodal_conductance,
-                ambient_temperature_vector
+                pipe_shell_to_insulation_array_conductance,
+                insulation_temp_vector.clone()
+            )?;
+
+            insulation_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                pipe_shell_to_insulation_array_conductance,
+                pipe_temp_vector.clone()
             )?;
 
             // pipe_shell shell to fluid_array interaction
 
             pipe_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_surf_to_fluid_array_conductance,
+                pipe_shell_node_to_fluid_array_conductance,
                 fluid_temp_vector.clone()
             )?;
 
             fluid_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_surf_to_fluid_array_conductance,
+                pipe_shell_node_to_fluid_array_conductance,
                 pipe_temp_vector
             )?;
 
             // we also want to add a heat source to pipe_shell shell
+            // this is zero by default, but I'm leaving it here as a 
+            // scaffold for heated pipes
 
             pipe_shell_clone.lateral_link_new_power_vector(
                 heater_steady_state_power,
                 q_frac_arr
             )?;
 
-            // now fluid_array to twisted tape interaction
-            
 
             // now that lateral connections are done, 
             // modify the heat transfer entity 
@@ -151,10 +169,13 @@ impl InsulatedPipe {
 
             self.pipe_shell.set(pipe_shell_clone.into())?;
 
+            self.insulation.set(insulation_array_clone.into())?;
+
 
 
         }
-        // axial connections 
+        // axial connections (insulation by default)
+        // you can of course add new ones
 
         self.zero_power_bc_connection()?;
 
