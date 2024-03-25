@@ -1,13 +1,12 @@
-use super::InsulatedPipe;
+use super::SolidStructure;
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use std::thread::JoinHandle;
 use std::thread;
 
-impl InsulatedPipe {
+impl SolidStructure {
 
     /// advances timestep for each HeatTransferEntity within the 
-    /// NonInsulatedPipe
     #[inline]
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {

@@ -15,7 +15,7 @@ use uom::si::f64::*;
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
 #[derive(Clone,Debug,PartialEq)]
-pub struct InsulatedPipe {
+pub struct SolidStructure {
 
     inner_nodes: usize,
 
@@ -69,7 +69,7 @@ pub struct InsulatedPipe {
 
 }
 
-impl InsulatedPipe {
+impl SolidStructure {
 
     /// constructs a new insulated pipe
     ///
@@ -117,7 +117,7 @@ impl InsulatedPipe {
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
         user_specified_inner_nodes: usize,
-        surface_roughness: Length) -> InsulatedPipe {
+        surface_roughness: Length) -> SolidStructure {
 
         // inner fluid_array
         let fluid_array: FluidArray = 
