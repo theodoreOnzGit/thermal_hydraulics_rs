@@ -99,6 +99,8 @@ impl InsulatedPipe {
     /// and there
     /// at each timestep, you are allowed to set a heater power, where 
     /// heat is dumped into the heated tube surrounding the pipe
+    ///
+    /// so the pipe shell becomes the heating element so to speak
     pub fn new_insulated_pipe(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,
