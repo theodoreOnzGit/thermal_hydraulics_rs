@@ -1,3 +1,4 @@
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -38,17 +39,29 @@ pub struct InsulatedPipe {
     /// pipe heat transfer coefficient to ambient
     pub heat_transfer_to_ambient: HeatTransfer,
 
-    /// pipe  outer diameter 
-    pub od: Length,
+    /// pipe outer diameter (tube)
+    pub tube_od: Length,
 
-    /// pipe inner diameter 
-    pub id: Length,
+    /// pipe inner diameter (tube)
+    pub tube_id: Length,
+
+    /// pipe outer diameter (insulation)
+    insulation_od: Length,
+
+    /// pipe inner diameter (insulation)
+    insulation_id: Length,
+
+    /// flow area
+    flow_area: Area,
+
+    /// loss correlations
+    darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
 
 }
 
 impl InsulatedPipe {
 
-    /// constructs a new pipe
+    /// constructs a new insulated pipe
     ///
     /// you need to supply the initial temperature, ambient temperature
     /// as well as all the pipe parameters 
@@ -60,13 +73,15 @@ impl InsulatedPipe {
     /// 3. incline angle
     /// 4. any form losses beyond the Gnielinski correlation
     /// 5. inner diameter (id)
-    /// 6. outer diameter (od)
+    /// 6. shell outer diameter (od) assumed to be same as insulation id
     /// 7. pipe shell material 
     /// 8. pipe fluid 
     /// 9. fluid pressure (if in doubt, 1 atmosphere will do)
     /// 10. solid pressure (if in doubt, 1 atmosphere will do)
     /// 11. heat transfer coeffficient to ambient
     /// 12. how many inner axial nodes for both solid and fluid arrays
+    /// 13. insulation thickness 
+    /// 14. darcy loss correlation
     ///
     /// The number of total axial nodes is the number of inner nodes plus 2
     ///
@@ -79,14 +94,16 @@ impl InsulatedPipe {
         flow_area: Area,
         incline_angle: Angle,
         form_loss: Ratio,
-        id: Length,
-        od: Length,
+        shell_id: Length,
+        shell_od: Length,
+        insulation_thickness: Length,
         pipe_length: Length,
         hydraulic_diameter: Length,
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize) -> InsulatedPipe {
+        user_specified_inner_nodes: usize,
+        surface_roughness: Length) -> InsulatedPipe {
 
         // inner fluid_array
         let fluid_array: FluidArray = 
@@ -107,21 +124,32 @@ impl InsulatedPipe {
         let pipe_shell = 
         SolidColumn::new_cylindrical_shell(
             pipe_length,
-            id,
-            od,
+            shell_id,
+            shell_od,
             initial_temperature,
             solid_pressure,
             pipe_shell_material,
             user_specified_inner_nodes 
         );
 
+        // fluid pipe
+        //
+
+
+        let pipe_loss_correlation = DimensionlessDarcyLossCorrelations::
+            new_pipe(pipe_length, surface_roughness, hydraulic_diameter, form_loss);
+
         return Self { inner_nodes: user_specified_inner_nodes,
             pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),
             pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,
-            od,
-            id,
+            tube_od: shell_od,
+            tube_id: shell_id,
+            insulation_od: shell_od,
+            insulation_id: shell_od+insulation_thickness,
+            flow_area,
+            darcy_loss_correlation: pipe_loss_correlation,
         };
     }
 }

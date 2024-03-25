@@ -201,8 +201,8 @@ impl InsulatedPipe {
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = self.get_component_length();
-        let id = self.id;
-        let od = self.od;
+        let id = self.tube_id;
+        let od = self.tube_od;
 
         // next is to have steel inner conductance
 
@@ -372,8 +372,8 @@ impl InsulatedPipe {
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = fluid_array_clone.get_component_length();
-        let id = self.id;
-        let od = self.od;
+        let id = self.tube_id;
+        let od = self.tube_od;
 
 
         let node_length = heated_length / 
