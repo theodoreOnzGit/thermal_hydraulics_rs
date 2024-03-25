@@ -1,10 +1,10 @@
-use super::NonInsulatedPipe;
+use super::InsulatedPipe;
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use std::thread::JoinHandle;
 use std::thread;
 
-impl NonInsulatedPipe {
+impl InsulatedPipe {
 
     /// advances timestep for each HeatTransferEntity within the 
     /// NonInsulatedPipe

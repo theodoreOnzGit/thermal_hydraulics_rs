@@ -7,14 +7,14 @@ use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;
 
-/// The simplest component is a non insulated pipe
+/// The simplest component is an insulated pipe
 ///
 /// This is a simple pipe with a set hydraulic diameter and length
 ///
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
 #[derive(Clone,Debug,PartialEq)]
-pub struct NonInsulatedPipe {
+pub struct InsulatedPipe {
 
     inner_nodes: usize,
 
@@ -46,7 +46,7 @@ pub struct NonInsulatedPipe {
 
 }
 
-impl NonInsulatedPipe {
+impl InsulatedPipe {
 
     /// constructs a new pipe
     ///
@@ -86,7 +86,7 @@ impl NonInsulatedPipe {
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize) -> NonInsulatedPipe {
+        user_specified_inner_nodes: usize) -> InsulatedPipe {
 
         // inner fluid_array
         let fluid_array: FluidArray = 
