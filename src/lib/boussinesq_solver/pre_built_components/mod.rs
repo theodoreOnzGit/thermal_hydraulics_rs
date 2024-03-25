@@ -14,5 +14,12 @@ pub mod heat_transfer_entities;
 
 /// for fluid flow through non insulated pipes, these pipes will 
 /// be represented by control volumes laterally coupled to one 
-/// another. They come in insulated and non insulated forms
+/// another. 
 pub mod non_insulated_pipes;
+
+
+/// for fluid flow through insulated pipes with one layer 
+/// of insulation, these pipes will 
+/// be represented by control volumes laterally coupled to one 
+/// another. 
+pub mod insulated_pipes;
