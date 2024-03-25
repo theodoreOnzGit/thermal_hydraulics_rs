@@ -77,6 +77,8 @@ impl InsulatedPipe {
         // lateral connections 
         {
             // first i will need to create temperature vectors 
+            // for ambient temperature. This is for use in calculating 
+            // heat loss from insulation to ambient air
 
             let mut ambient_temperature_vector: Vec<ThermodynamicTemperature> 
             = Array1::default(number_of_temperature_nodes)
@@ -88,7 +90,10 @@ impl InsulatedPipe {
             ambient_temperature_vector.fill(ambient_temp);
 
 
-            // clone each array and set them later
+            // for this process, I will make a clone of 
+            // each HeatTransferEntity, modify the clone, then 
+            // replace the HeatTransferEntity within the pipe using 
+            // these changed entities
 
             let mut pipe_shell_clone: SolidColumn = 
                 self.pipe_shell.clone().try_into()?;
