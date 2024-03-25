@@ -34,7 +34,7 @@ pub trait FluidComponentTrait {
 
 
         let pressure_loss = -pressure_change +
-            self.get_hydrostatic_pressure_change_immutable()+
+            self.get_hydrostatic_pressure_change_immutable_at_ref_temperature()+
             self.get_internal_pressure_source_immutable();
 
 
@@ -115,7 +115,7 @@ pub trait FluidComponentTrait {
 
 
         let hydrostatic_pressure_increase = 
-            self.get_hydrostatic_pressure_change();
+            self.get_hydrostatic_pressure_change_at_ref_temperature();
 
         // third component is pressure source
 
@@ -144,7 +144,7 @@ pub trait FluidComponentTrait {
         // this is the second component: hydrostatic pressure
 
         let hydrostatic_pressure_increase = 
-            self.get_hydrostatic_pressure_change_immutable();
+            self.get_hydrostatic_pressure_change_immutable_at_ref_temperature();
 
         // third component is pressure source
 
@@ -164,7 +164,7 @@ pub trait FluidComponentTrait {
         //
 
         let hydrostatic_pressure_increase = 
-            self.get_hydrostatic_pressure_change();
+            self.get_hydrostatic_pressure_change_at_ref_temperature();
 
         // third component is pressure source
         // for any internal pressure source or external, eg pumps
@@ -200,7 +200,7 @@ pub trait FluidComponentTrait {
     /// inlet and outlet
     /// and incline angle is the angle that straight line makes
     /// with the horizontal plane
-    fn get_hydrostatic_pressure_change(
+    fn get_hydrostatic_pressure_change_at_ref_temperature(
         &mut self) -> Pressure {
 
         let component_length =
@@ -235,7 +235,7 @@ pub trait FluidComponentTrait {
     /// inlet and outlet
     /// and incline angle is the angle that straight line makes
     /// with the horizontal plane
-    fn get_hydrostatic_pressure_change_immutable(
+    fn get_hydrostatic_pressure_change_immutable_at_ref_temperature(
         &self) -> Pressure {
 
         let component_length =
