@@ -8,7 +8,7 @@ impl SolidStructure {
     /// gets the temperature of the pipe shell array
     pub fn pipe_shell_temperature(&mut self) -> 
         Result<Vec<ThermodynamicTemperature>, ThermalHydraulicsLibError>{
-        self.pipe_shell.get_temperature_vector()
+        self.solid_array.get_temperature_vector()
     }
 
     /// gets the temperature of the pipe fluid array

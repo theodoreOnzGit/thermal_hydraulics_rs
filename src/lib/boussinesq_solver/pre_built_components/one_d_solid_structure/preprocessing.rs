@@ -35,38 +35,18 @@ impl SolidStructure {
     ///
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
-    pub fn lateral_and_miscellaneous_connections(&mut self,
-        mass_flowrate: MassRate,
-        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+    pub fn lateral_and_miscellaneous_connections(&mut self
+        ) -> Result<(), ThermalHydraulicsLibError>{
 
-
-        // first let's get all the conductances 
-        
-        // |                        |               |               |
-        // |                        |               |               |
-        // |------ fluid -----------|----shell------|----insulation-| ambient
-        // |                        |               |               |
-        // |                        |               |               |
         //
         // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
         let heat_transfer_to_ambient: HeatTransfer = self.heat_transfer_to_ambient;
 
-        let insulation_to_air_nodal_conductance: ThermalConductance 
+        let solid_array_to_air_nodal_conductance: ThermalConductance 
         = self.get_ambient_surroundings_to_insulation_thermal_conductance(
             heat_transfer_to_ambient
         )?;
 
-        // 2. we'll need the fluid to shell midpoint thermal conductance
-
-        self.set_mass_flowrate(mass_flowrate);
-
-        let pipe_shell_node_to_fluid_array_conductance: ThermalConductance 
-        = self.get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction()?;
-
-        // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
-
-        let pipe_shell_to_insulation_array_conductance: ThermalConductance 
-            = self.get_pipe_shell_to_insulation_conductance()?;
 
         // next, we need to consider discretisation, ie how much 
         // power fraction
@@ -100,88 +80,20 @@ impl SolidStructure {
             // replace the HeatTransferEntity within the pipe using 
             // these changed entities
 
-            let mut pipe_shell_clone: SolidColumn = 
-                self.pipe_shell.clone().try_into()?;
-
-            let mut fluid_array_clone: FluidArray = 
-                self.pipe_fluid_array.clone().try_into()?;
-
-            let mut insulation_array_clone: SolidColumn = 
-                self.insulation.clone().try_into()?;
-
-
-
-            // note, must set mass flowrate first 
-            // otherwise there is by default zero flow through 
-            // the array
-
-            fluid_array_clone.set_mass_flowrate(
-                mass_flowrate);
-
-            // temperature vectors
-
-            let pipe_temp_vector: Vec<ThermodynamicTemperature> 
-            = pipe_shell_clone.get_temperature_vector()?;
-
-            let fluid_temp_vector: Vec<ThermodynamicTemperature> 
-            = fluid_array_clone.get_temperature_vector()?;
-
-            let insulation_temp_vector: Vec<ThermodynamicTemperature> 
-            = insulation_array_clone.get_temperature_vector()?;
+            let mut solid_array_clone: SolidColumn = 
+                self.solid_array.clone().try_into()?;
 
             // second, fill them into the each array 
             
             // insulation to air interaction
 
-            insulation_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                insulation_to_air_nodal_conductance,
+            solid_array_clone.lateral_link_new_temperature_vector_avg_conductance(
+                solid_array_to_air_nodal_conductance,
                 ambient_temperature_vector
             )?;
 
-            // insulation to shell interaction 
 
-            pipe_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_to_insulation_array_conductance,
-                insulation_temp_vector.clone()
-            )?;
-
-            insulation_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_to_insulation_array_conductance,
-                pipe_temp_vector.clone()
-            )?;
-
-            // pipe_shell shell to fluid_array interaction
-
-            pipe_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_node_to_fluid_array_conductance,
-                fluid_temp_vector.clone()
-            )?;
-
-            fluid_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_node_to_fluid_array_conductance,
-                pipe_temp_vector
-            )?;
-
-            // we also want to add a heat source to pipe_shell shell
-            // this is zero by default, but I'm leaving it here as a 
-            // scaffold for heated pipes
-
-            pipe_shell_clone.lateral_link_new_power_vector(
-                heater_power,
-                q_frac_arr
-            )?;
-
-
-            // now that lateral connections are done, 
-            // modify the heat transfer entity 
-
-            self.pipe_fluid_array.set(fluid_array_clone.into())?;
-
-            self.pipe_shell.set(pipe_shell_clone.into())?;
-
-            self.insulation.set(insulation_array_clone.into())?;
-
-
+            self.solid_array.set(solid_array_clone.into())?;
 
         }
         // axial connections (insulation by default)
@@ -227,10 +139,10 @@ impl SolidStructure {
         self.pipe_fluid_array.link_to_back(&mut zero_power_bc,
             interaction)?;
 
-        self.pipe_shell.link_to_front(&mut zero_power_bc,
+        self.solid_array.link_to_front(&mut zero_power_bc,
             interaction)?;
 
-        self.pipe_shell.link_to_back(&mut zero_power_bc,
+        self.solid_array.link_to_back(&mut zero_power_bc,
             interaction)?;
 
         self.insulation.link_to_front(&mut zero_power_bc,
@@ -311,7 +223,7 @@ impl SolidStructure {
         self.pipe_fluid_array.clone().try_into()?;
 
         let mut pipe_shell_clone: SolidColumn = 
-        self.pipe_shell.clone().try_into()?;
+        self.solid_array.clone().try_into()?;
 
         // also need to get basic tmeperatures and mass flowrates 
         // only do this once because some of these methods involve 
@@ -527,7 +439,7 @@ impl SolidStructure {
         self.pipe_fluid_array.clone().try_into()?;
 
         let mut pipe_shell_clone: SolidColumn = 
-        self.pipe_shell.clone().try_into().unwrap();
+        self.solid_array.clone().try_into().unwrap();
 
         // also need to get basic temperatures and mass flowrates 
         // only do this once because some of these methods involve 
@@ -685,7 +597,7 @@ impl SolidStructure {
         self.insulation.clone().try_into()?;
 
         let mut pipe_shell_clone: SolidColumn = 
-        self.pipe_shell.clone().try_into()?;
+        self.solid_array.clone().try_into()?;
 
 
         // find the length of the array and node length
@@ -767,9 +679,7 @@ impl SolidStructure {
     ///
     /// once that is done, the join handle is returned 
     /// which when unwrapped, returns the heater object
-    pub fn lateral_connection_thread_spawn(&self,
-    mass_flowrate: MassRate,
-    heater_steady_state_power: Power) -> JoinHandle<Self>{
+    pub fn lateral_connection_thread_spawn(&self) -> JoinHandle<Self>{
 
         let mut heater_clone = self.clone();
 
@@ -780,9 +690,7 @@ impl SolidStructure {
 
                 // carry out the connection calculations
                 heater_clone.
-                    lateral_and_miscellaneous_connections(
-                        mass_flowrate,
-                        heater_steady_state_power).unwrap();
+                    lateral_and_miscellaneous_connections().unwrap();
                 
                 heater_clone
 

@@ -25,7 +25,7 @@ pub struct SolidStructure {
     ///
     /// it is thermally coupled to insulation and to the fluid 
     /// in the pipe_fluid_array
-    pub pipe_shell: HeatTransferEntity,
+    pub solid_array: HeatTransferEntity,
 
 
     /// this HeatTransferEntity represents the pipe fluid
@@ -169,7 +169,7 @@ impl SolidStructure {
             new_pipe(pipe_length, surface_roughness, hydraulic_diameter, form_loss);
 
         return Self { inner_nodes: user_specified_inner_nodes,
-            pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),
+            solid_array: CVType::SolidArrayCV(pipe_shell).into(),
             pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,

@@ -11,8 +11,7 @@ impl SolidStructure {
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {
 
-        self.pipe_fluid_array.advance_timestep_mut_self(timestep)?;
-        self.pipe_shell.advance_timestep_mut_self(timestep)?;
+        self.solid_array.advance_timestep_mut_self(timestep)?;
         Ok(())
         
     }
