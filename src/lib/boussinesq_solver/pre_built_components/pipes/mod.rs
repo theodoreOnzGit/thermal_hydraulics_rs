@@ -126,7 +126,14 @@ impl NonInsulatedPipe {
     }
 }
 
+
+/// stuff such as conductances are calculated here
 pub mod preprocessing;
 
-// implementations for the FluidComponent trait
+/// implementations for the FluidComponent trait
+/// are done here
 pub mod fluid_component;
+
+
+/// stuff for calculation is done here, ie, advancing timestep
+pub mod calculation;

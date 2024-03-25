@@ -91,6 +91,8 @@ impl FluidComponentTrait for NonInsulatedPipe {
     fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
+        // the pipe fluid array gets the bulk average temperature automatically
+        // and then computes an averaged viscosity
 
         pipe_fluid_array.get_fluid_viscosity_immutable()
     }
@@ -98,6 +100,8 @@ impl FluidComponentTrait for NonInsulatedPipe {
     fn get_fluid_viscosity_immutable_at_ref_temperature(&self) -> DynamicViscosity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
+        // the pipe fluid array gets the bulk average temperature automatically
+        // and then computes an averaged viscosity
 
         pipe_fluid_array.get_fluid_viscosity_immutable()
     }
@@ -105,6 +109,8 @@ impl FluidComponentTrait for NonInsulatedPipe {
     fn get_fluid_density_at_ref_temperature(&mut self) -> MassDensity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
+        // the pipe fluid array gets the bulk average temperature automatically
+        // and then computes an averaged density
 
         pipe_fluid_array.get_fluid_density_immutable()
     }
@@ -112,6 +118,8 @@ impl FluidComponentTrait for NonInsulatedPipe {
     fn get_fluid_density_immutable_at_ref_temperature(&self) -> MassDensity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
+        // the pipe fluid array gets the bulk average temperature automatically
+        // and then computes an averaged density
 
         pipe_fluid_array.get_fluid_density_immutable()
     }
