@@ -78,17 +78,20 @@ pub trait FluidComponentTrait {
     /// gets hydraulic diamter with immutable instance of self
     fn get_hydraulic_diameter_immutable(&self) -> Length;
 
-    /// gets fluid viscosity
-    fn get_fluid_viscosity(&mut self) -> DynamicViscosity;
+    /// gets fluid viscosity at some user set reference temperature
+    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity;
 
     /// gets fluid viscosity with an immutable instance of self
-    fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity;
+    ///at some user set reference temperature
+    fn get_fluid_viscosity_immutable_at_ref_temperature(&self) -> DynamicViscosity;
 
     /// gets fluid density
-    fn get_fluid_density(&mut self) -> MassDensity;
+    ///at some user set reference temperature
+    fn get_fluid_density_at_ref_temperature(&mut self) -> MassDensity;
 
     /// gets fluid density with an immutable instance of self
-    fn get_fluid_density_immutable(&self) -> MassDensity;
+    ///at some user set reference temperature
+    fn get_fluid_density_immutable_at_ref_temperature(&self) -> MassDensity;
 
     /// gets the component length
     fn get_component_length(&mut self) -> Length;
@@ -207,7 +210,7 @@ pub trait FluidComponentTrait {
             self.get_incline_angle();
 
         let fluid_density = 
-            self.get_fluid_density();
+            self.get_fluid_density_at_ref_temperature();
 
         let g: Acceleration = 
             Acceleration::new::<meter_per_second_squared>(-9.81);
@@ -242,7 +245,7 @@ pub trait FluidComponentTrait {
             self.get_incline_angle_immutable();
 
         let fluid_density = 
-            self.get_fluid_density_immutable();
+            self.get_fluid_density_immutable_at_ref_temperature();
 
 
         let g: Acceleration = 

@@ -88,28 +88,28 @@ impl FluidComponentTrait for NonInsulatedPipe {
         pipe_fluid_array.get_hydraulic_diameter_immutable()
     }
 
-    fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
+    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
         pipe_fluid_array.get_fluid_viscosity_immutable()
     }
 
-    fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
+    fn get_fluid_viscosity_immutable_at_ref_temperature(&self) -> DynamicViscosity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
         pipe_fluid_array.get_fluid_viscosity_immutable()
     }
 
-    fn get_fluid_density(&mut self) -> MassDensity {
+    fn get_fluid_density_at_ref_temperature(&mut self) -> MassDensity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
         pipe_fluid_array.get_fluid_density_immutable()
     }
 
-    fn get_fluid_density_immutable(&self) -> MassDensity {
+    fn get_fluid_density_immutable_at_ref_temperature(&self) -> MassDensity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 

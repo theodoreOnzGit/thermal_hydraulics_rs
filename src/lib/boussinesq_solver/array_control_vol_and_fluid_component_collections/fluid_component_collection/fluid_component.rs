@@ -95,7 +95,7 @@ impl FluidComponentTrait for FluidComponent {
         }
     }
 
-    fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
+    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity {
         match self {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_fluid_viscosity()
@@ -103,7 +103,7 @@ impl FluidComponentTrait for FluidComponent {
         }
     }
 
-    fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
+    fn get_fluid_viscosity_immutable_at_ref_temperature(&self) -> DynamicViscosity {
         match self {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_fluid_viscosity_immutable()
@@ -111,7 +111,7 @@ impl FluidComponentTrait for FluidComponent {
         }
     }
 
-    fn get_fluid_density(&mut self) -> MassDensity {
+    fn get_fluid_density_at_ref_temperature(&mut self) -> MassDensity {
         match self {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_fluid_density()
@@ -119,7 +119,7 @@ impl FluidComponentTrait for FluidComponent {
         }
     }
 
-    fn get_fluid_density_immutable(&self) -> MassDensity {
+    fn get_fluid_density_immutable_at_ref_temperature(&self) -> MassDensity {
         match self {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_fluid_density_immutable()
