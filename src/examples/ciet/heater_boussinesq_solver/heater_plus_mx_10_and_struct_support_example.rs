@@ -1,21 +1,23 @@
 
+
 #[test]
 pub fn heater_plus_mx_10_with_supports(){
 
     use core::time;
     use std::{time::SystemTime, thread::{JoinHandle, self}};
 
-    use thermal_hydraulics_rs::prelude::alpha_nightly::*;
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
-    use crate::examples::ciet::heater_old::*;
+    use uom::si::f64::*;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use thermal_hydraulics_rs::prelude::beta_testing::*;
     use uom::si::time::minute;
 
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::length::foot;
+    use uom::si::length::inch;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 
-    // construct structs
-
-    let _heater_v1 = HeaterVersion1{};
-    let _heater_v2 = HeaterVersion2{};
 
 
     // bare heater plus heads exaample

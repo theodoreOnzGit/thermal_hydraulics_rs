@@ -4,14 +4,13 @@ pub fn test_inclusive_heater_top_bottom_head(){
     use core::time;
     use std::{time::SystemTime, thread::{JoinHandle, self}};
 
-    use thermal_hydraulics_rs::prelude::alpha_nightly::*;
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
-    use crate::examples::ciet::heater_old::*;
-    // construct structs
+    use uom::si::f64::*;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use thermal_hydraulics_rs::prelude::beta_testing::*;
 
-    let _heater_v1 = HeaterVersion1{};
-    let _heater_v2 = HeaterVersion2{};
+    use uom::si::mass_rate::kilogram_per_second;
 
 
     // bare heater plus heads exaample

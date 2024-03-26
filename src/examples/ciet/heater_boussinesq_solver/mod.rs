@@ -67,10 +67,10 @@ use uom::si::power::kilowatt;
 use uom::si::ratio::ratio;
 use uom::si::time::second;
 
-//pub mod heated_section_example;
-//pub mod heater_inclusive_top_bottom_head_example;
-//pub mod heater_plus_mx_10_without_supports;
-//pub mod heater_plus_mx_10_and_struct_support_example;
+pub mod heated_section_example;
+pub mod heater_inclusive_top_bottom_head_example;
+pub mod heater_plus_mx_10_without_supports;
+pub mod heater_plus_mx_10_and_struct_support_example;
 
 pub fn example_heater(){
 

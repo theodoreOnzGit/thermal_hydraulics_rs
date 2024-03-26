@@ -1,17 +1,16 @@
+
 #[test]
 pub fn heater_plus_mx_10_without_supports(){
+    use uom::si::f64::*;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use thermal_hydraulics_rs::prelude::beta_testing::*;
 
     use core::time;
     use std::{time::SystemTime, thread::{JoinHandle, self}};
-
-    use thermal_hydraulics_rs::prelude::alpha_nightly::*;
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
-
-    use crate::examples::ciet::heater_old::*;
+    use uom::si::mass_rate::kilogram_per_second;
     // construct structs
 
-    let _heater_v1 = HeaterVersion1{};
-    let _heater_v2 = HeaterVersion2{};
 
 
     // bare heater plus heads exaample

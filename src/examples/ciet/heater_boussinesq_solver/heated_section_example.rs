@@ -1,10 +1,15 @@
 
 #[test]
 pub fn example_heated_section_test(){
-    use std::{time::SystemTime, thread::JoinHandle};
-    use super::heater_version_2_bare::*;
-    use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+    use std::{time::SystemTime, thread::{JoinHandle, self}};
+
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
+
+    use uom::si::f64::*;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use thermal_hydraulics_rs::prelude::beta_testing::*;
+
+    use uom::si::mass_rate::kilogram_per_second;
 
     // bare heater example
     let initial_temperature: ThermodynamicTemperature = 
