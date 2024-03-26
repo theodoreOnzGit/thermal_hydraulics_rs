@@ -95,7 +95,7 @@ impl FluidComponentTrait for FluidComponent {
         }
     }
 
-    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity {
+    fn get_fluid_viscosity_at_ref_temperature(&mut self) -> DynamicViscosity {
         match self {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_fluid_viscosity()

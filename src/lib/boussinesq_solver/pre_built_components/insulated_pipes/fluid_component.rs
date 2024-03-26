@@ -88,7 +88,7 @@ impl FluidComponentTrait for InsulatedPipe {
         pipe_fluid_array.get_hydraulic_diameter_immutable()
     }
 
-    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity {
+    fn get_fluid_viscosity_at_ref_temperature(&mut self) -> DynamicViscosity {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
         // the pipe fluid array gets the bulk average temperature automatically

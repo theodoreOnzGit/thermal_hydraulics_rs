@@ -79,7 +79,7 @@ pub trait FluidComponentTrait {
     fn get_hydraulic_diameter_immutable(&self) -> Length;
 
     /// gets fluid viscosity at some user set reference temperature
-    fn get_fluid_viscosity_at_ref_temeprature(&mut self) -> DynamicViscosity;
+    fn get_fluid_viscosity_at_ref_temperature(&mut self) -> DynamicViscosity;
 
     /// gets fluid viscosity with an immutable instance of self
     ///at some user set reference temperature
