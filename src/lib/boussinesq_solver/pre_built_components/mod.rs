@@ -27,10 +27,10 @@ pub mod insulated_pipes;
 /// represents one dimensional solid structure
 pub mod one_d_solid_structure;
 
-/// represents the old heater version 2 based on 
+/// represents the old CIET heater version 2 based on 
 /// https://escholarship.org/uc/item/0362h3zf
 ///
 /// Ong, T. K. C. (2024). Digital Twins as 
 /// Testbeds for Iterative Simulated Neutronics Feedback 
 /// Controller Development (Doctoral dissertation, UC Berkeley).
-pub mod heater_version_2_bare;
+pub mod ciet_heater_version_2_bare;
