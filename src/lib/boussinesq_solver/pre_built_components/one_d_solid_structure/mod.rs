@@ -1,5 +1,4 @@
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
@@ -27,22 +26,6 @@ pub struct SolidStructure {
     /// in the pipe_fluid_array
     pub solid_array: HeatTransferEntity,
 
-
-    /// this HeatTransferEntity represents the pipe fluid
-    /// which is coupled to the pipe shell via a Nusselt Number based
-    /// thermal resistance (usually Gnielinski correlation)
-    pub pipe_fluid_array: HeatTransferEntity,
-
-    /// this HeatTransferEntity represents the pipe insulation
-    ///
-    /// which is 
-    /// exposed to an ambient constant temperature boundary condition
-    /// This is because constant heat flux BCs are not common for pipes
-    /// except for fully/ideally insulated pipes
-    ///
-    /// this is coupled to the pipe_shell
-    pub insulation: HeatTransferEntity,
-
     /// pipe ambient temperature
     pub ambient_temperature: ThermodynamicTemperature,
 
@@ -55,17 +38,14 @@ pub struct SolidStructure {
     /// pipe inner diameter (tube)
     pub tube_id: Length,
 
+    /// length 
+    pub strucutre_length: Length,
+
     /// pipe outer diameter (insulation)
     insulation_od: Length,
 
     /// pipe inner diameter (insulation)
     insulation_id: Length,
-
-    /// flow area
-    flow_area: Area,
-
-    /// loss correlations
-    darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
 
 }
 
@@ -101,43 +81,21 @@ impl SolidStructure {
     /// heat is dumped into the heated tube surrounding the pipe
     ///
     /// so the pipe shell becomes the heating element so to speak
-    pub fn new_insulated_pipe(initial_temperature: ThermodynamicTemperature,
+    pub fn new_hollow_cylinder(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
-        fluid_pressure: Pressure,
         solid_pressure: Pressure,
-        flow_area: Area,
-        incline_angle: Angle,
-        form_loss: Ratio,
         shell_id: Length,
         shell_od: Length,
         insulation_thickness: Length,
-        pipe_length: Length,
-        hydraulic_diameter: Length,
+        cylinder_length: Length,
         pipe_shell_material: SolidMaterial,
-        pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize,
-        surface_roughness: Length) -> SolidStructure {
-
-        // inner fluid_array
-        let fluid_array: FluidArray = 
-        FluidArray::new_odd_shaped_pipe(
-            pipe_length,
-            hydraulic_diameter,
-            flow_area,
-            initial_temperature,
-            fluid_pressure,
-            pipe_shell_material,
-            pipe_fluid,
-            form_loss,
-            user_specified_inner_nodes,
-            incline_angle
-        );
+        user_specified_inner_nodes: usize,) -> SolidStructure {
 
         // now the outer pipe array
         let pipe_shell = 
         SolidColumn::new_cylindrical_shell(
-            pipe_length,
+            cylinder_length,
             shell_id,
             shell_od,
             initial_temperature,
@@ -149,37 +107,16 @@ impl SolidStructure {
         let insulation_id = shell_od;
         let insulation_od = insulation_id + insulation_thickness;
 
-        // insulation
-        let insulation = 
-        SolidColumn::new_cylindrical_shell(
-            pipe_length,
-            insulation_id,
-            insulation_od,
-            initial_temperature,
-            solid_pressure,
-            SolidMaterial::Fiberglass,
-            user_specified_inner_nodes 
-        );
-
-        // fluid pipe loss correlation
-        //
-
-
-        let pipe_loss_correlation = DimensionlessDarcyLossCorrelations::
-            new_pipe(pipe_length, surface_roughness, hydraulic_diameter, form_loss);
 
         return Self { inner_nodes: user_specified_inner_nodes,
             solid_array: CVType::SolidArrayCV(pipe_shell).into(),
-            pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,
             tube_od: shell_od,
             tube_id: shell_id,
             insulation_od: shell_od,
-            insulation_id: shell_od+insulation_thickness,
-            flow_area,
-            darcy_loss_correlation: pipe_loss_correlation,
-            insulation: CVType::SolidArrayCV(insulation).into(),
+            insulation_id: insulation_od,
+            strucutre_length: cylinder_length,
         };
     }
 }
@@ -188,9 +125,6 @@ impl SolidStructure {
 /// stuff such as conductances are calculated here
 pub mod preprocessing;
 
-/// implementations for the FluidComponent trait
-/// are done here
-pub mod fluid_component;
 
 
 /// stuff for calculation is done here, ie, advancing timestep

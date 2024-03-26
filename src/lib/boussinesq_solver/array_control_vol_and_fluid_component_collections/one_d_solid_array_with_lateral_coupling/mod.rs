@@ -56,7 +56,7 @@ pub struct SolidColumn {
 
 
     // total length for the array
-    total_length: Length,
+    pub total_length: Length,
 
     // cross sectional area for the 1D array, assumed to be uniform 
     xs_area: Area,
