@@ -88,10 +88,6 @@ fn main() {
     test_therminol_fldk_custom_component();
     factory_test();
 
-    // heater example 
-
-    use examples::ciet::heater_old::example_heater;
-    example_heater();
 }
 
 
