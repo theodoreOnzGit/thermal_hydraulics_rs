@@ -27,12 +27,6 @@ pub struct SolidStructure {
     /// pipe ambient temperature
     pub ambient_temperature: ThermodynamicTemperature,
 
-    /// pipe outer diameter (tube)
-    pub tube_od: Length,
-
-    /// pipe inner diameter (tube)
-    pub tube_id: Length,
-
     /// length 
     pub strucutre_length: Length,
 
@@ -70,8 +64,6 @@ impl SolidStructure {
         return Self { inner_nodes: user_specified_inner_nodes,
             solid_array: CVType::SolidArrayCV(pipe_shell).into(),
             ambient_temperature,
-            tube_od: shell_od,
-            tube_id: shell_id,
             strucutre_length: cylinder_length,
             cross_sectional_area,
         };

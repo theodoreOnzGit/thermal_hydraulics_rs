@@ -30,22 +30,11 @@ impl SolidStructure {
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
-        heat_transfer_to_ambient: HeatTransfer
+        solid_array_to_air_nodal_conductance: ThermalConductance
         ) -> Result<(), ThermalHydraulicsLibError>{
 
         //
-        // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
-
-        let solid_array_to_air_nodal_conductance: ThermalConductance 
-        = self.get_ambient_surroundings_to_hollow_cylinder_thermal_conductance(
-            heat_transfer_to_ambient,
-            self.tube_id,
-            self.tube_od
-        )?;
-
-
-
-        // next, we need to consider discretisation, ie how much 
+        // 1. we need to consider discretisation, ie how much 
         // power fraction
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let q_fraction_per_node: f64 = 1.0/ number_of_temperature_nodes as f64;
@@ -206,7 +195,7 @@ impl SolidStructure {
     /// once that is done, the join handle is returned 
     /// which when unwrapped, returns the heater object
     pub fn lateral_connection_thread_spawn(&self,
-        heat_transfer_to_ambient: HeatTransfer) -> JoinHandle<Self>{
+        thermal_conductance_to_ambient: ThermalConductance) -> JoinHandle<Self>{
 
         let mut heater_clone = self.clone();
 
@@ -217,7 +206,7 @@ impl SolidStructure {
 
                 // carry out the connection calculations
                 heater_clone.
-                    lateral_and_miscellaneous_connections(heat_transfer_to_ambient).unwrap();
+                    lateral_and_miscellaneous_connections(thermal_conductance_to_ambient).unwrap();
                 
                 heater_clone
 
