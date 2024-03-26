@@ -1,11 +1,8 @@
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-use uom::si::f64::*;
-
-use super::HeaterVersion2Bare;
+use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use super::HeaterTopBottomHead;
 
 
-impl FluidComponentTrait for HeaterVersion2Bare {
+impl FluidComponent for HeaterTopBottomHead {
     fn get_mass_flowrate(&mut self) -> MassRate  {
         let mut therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
@@ -88,28 +85,28 @@ impl FluidComponentTrait for HeaterVersion2Bare {
         therminol_array.get_hydraulic_diameter_immutable()
     }
 
-    fn get_fluid_viscosity_at_ref_temperature(&mut self) -> DynamicViscosity {
+    fn get_fluid_viscosity(&mut self) -> DynamicViscosity {
         let therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
 
         therminol_array.get_fluid_viscosity_immutable()
     }
 
-    fn get_fluid_viscosity_immutable_at_ref_temperature(&self) -> DynamicViscosity {
+    fn get_fluid_viscosity_immutable(&self) -> DynamicViscosity {
         let therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
 
         therminol_array.get_fluid_viscosity_immutable()
     }
 
-    fn get_fluid_density_at_ref_temperature(&mut self) -> MassDensity {
+    fn get_fluid_density(&mut self) -> MassDensity {
         let therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
 
         therminol_array.get_fluid_density_immutable()
-       
     }
-    fn get_fluid_density_immutable_at_ref_temperature(&self) -> MassDensity {
+
+    fn get_fluid_density_immutable(&self) -> MassDensity {
         let therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();
 
