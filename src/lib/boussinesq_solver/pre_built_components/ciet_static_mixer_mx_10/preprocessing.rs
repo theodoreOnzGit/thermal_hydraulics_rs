@@ -425,6 +425,10 @@ impl StaticMixerMX10 {
         return cylinder_to_therminol_conductance;
     }
 
+    /// gets reynolds number based on MX-10 hydraulic diameter 
+    /// and cross sectional flow area
+    ///
+    /// the user must supply mass flowrate and temperature
     #[inline]
     pub fn mx10_hydraulic_diameter_reynolds(&mut self, 
         mass_flowrate: MassRate,

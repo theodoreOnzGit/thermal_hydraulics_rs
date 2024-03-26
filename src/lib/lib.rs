@@ -88,3 +88,8 @@ pub mod thermal_hydraulics_error;
 
 /// prelude, for easy importing 
 pub mod prelude;
+
+// to do:
+// 1. transfer heat transfer sandbox to use boussinesq solver 
+// 2. test the infinite medium test case using the pre built components
+// 3. build and validate natural circulation loop
