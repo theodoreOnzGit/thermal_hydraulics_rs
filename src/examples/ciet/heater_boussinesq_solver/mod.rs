@@ -34,17 +34,10 @@
 //!
 //! 
 //!
-/// represents heater version 1, 
 ///
-/// it allows fluid to flow through it in an annular tube
-pub struct HeaterVersion1;
-
-/// represents heater version 2, 
 ///
 /// it has twisted tape
-pub struct HeaterVersion2;
 
-pub mod heater_version_2_bare;
 use core::time;
 use std::thread::{self};
 use std::thread::JoinHandle;
