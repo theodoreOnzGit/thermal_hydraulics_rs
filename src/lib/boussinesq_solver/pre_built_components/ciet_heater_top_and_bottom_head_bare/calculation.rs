@@ -1,6 +1,10 @@
-use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}, ops::{DerefMut}};
+use std::ops::DerefMut;
+use std::thread::JoinHandle;
+use std::thread;
+use std::sync::Arc;
+use std::sync::Mutex;
 
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::si::f64::*;
 use super::HeaterTopBottomHead;
 
 
