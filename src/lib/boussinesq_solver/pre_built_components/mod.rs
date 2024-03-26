@@ -50,3 +50,12 @@ pub mod ciet_struct_supports;
 /// Testbeds for Iterative Simulated Neutronics Feedback 
 /// Controller Development (Doctoral dissertation, UC Berkeley).
 pub mod ciet_heater_top_and_bottom_head_bare;
+
+
+/// represents the CIET static mixer 10 codes based on
+/// https://escholarship.org/uc/item/0362h3zf
+///
+/// Ong, T. K. C. (2024). Digital Twins as 
+/// Testbeds for Iterative Simulated Neutronics Feedback 
+/// Controller Development (Doctoral dissertation, UC Berkeley).
+pub mod ciet_static_mixer_mx_10;

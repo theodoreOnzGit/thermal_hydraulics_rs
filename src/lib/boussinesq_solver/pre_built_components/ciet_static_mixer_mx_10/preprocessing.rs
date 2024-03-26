@@ -1,13 +1,24 @@
+use std::f64::consts::PI;
 use std::thread::{self, JoinHandle};
 
 use super::StaticMixerMX10;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::common_functions::try_get_thermal_conductance_annular_cylinder;
-use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::input_structs::GnielinskiData;
-use thermal_hydraulics_rs::heat_transfer_lib::nusselt_correlations::enums::NusseltCorrelation;
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::si::length::meter;
 use uom::ConstZero;
 use uom::si::pressure::atmosphere;
 use ndarray::*;
+
+use uom::si::f64::*;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData;
+use crate::boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
+use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::boussinesq_solver::boundary_conditions::BCType;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 
 impl StaticMixerMX10 {
 

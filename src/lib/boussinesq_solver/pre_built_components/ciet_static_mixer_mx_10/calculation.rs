@@ -4,7 +4,7 @@ use std::thread::{self};
 use std::thread::JoinHandle;
 use std::ops::DerefMut;
 
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use uom::si::f64::*;
 use super::StaticMixerMX10;
 
 
