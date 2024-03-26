@@ -29,8 +29,9 @@ impl SolidStructure {
     ///
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
-    pub fn lateral_and_miscellaneous_connections(&mut self,
-        solid_array_to_air_nodal_conductance: ThermalConductance
+    pub fn link_ambient_temperature_boundary_condition_laterally(&mut self,
+        solid_array_to_ambient_nodal_conductance: ThermalConductance,
+        ambient_temp: ThermodynamicTemperature,
         ) -> Result<(), ThermalHydraulicsLibError>{
 
         //
@@ -42,8 +43,6 @@ impl SolidStructure {
         q_frac_arr.fill(q_fraction_per_node);
 
         // then get the ambient temperature 
-
-        let ambient_temp = self.ambient_temperature;
 
         // lateral connections 
         {
@@ -74,7 +73,7 @@ impl SolidStructure {
             // insulation to air interaction
 
             solid_array_clone.lateral_link_new_temperature_vector_avg_conductance(
-                solid_array_to_air_nodal_conductance,
+                solid_array_to_ambient_nodal_conductance,
                 ambient_temperature_vector
             )?;
 
@@ -140,7 +139,8 @@ impl SolidStructure {
     pub fn get_ambient_surroundings_to_hollow_cylinder_thermal_conductance(&mut self,
     h_air_to_pipe_surf: HeatTransfer,
     cylinder_id: Length,
-    cylinder_od: Length,) 
+    cylinder_od: Length,
+    ambient_temp: ThermodynamicTemperature) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
         // first, let's get a clone of the pipe_shell shell surface
         let mut structure_clone: SolidColumn = 
@@ -173,7 +173,7 @@ impl SolidStructure {
             );
 
         let pipe_air_nodal_thermal_conductance: ThermalConductance = try_get_thermal_conductance_based_on_interaction(
-            self.ambient_temperature,
+            ambient_temp,
             insulation_shell_temperature,
             structure_clone.pressure_control_volume,
             structure_clone.pressure_control_volume,
@@ -195,7 +195,8 @@ impl SolidStructure {
     /// once that is done, the join handle is returned 
     /// which when unwrapped, returns the heater object
     pub fn lateral_connection_thread_spawn(&self,
-        thermal_conductance_to_ambient: ThermalConductance) -> JoinHandle<Self>{
+        thermal_conductance_to_ambient: ThermalConductance,
+        ambient_temp: ThermodynamicTemperature) -> JoinHandle<Self>{
 
         let mut heater_clone = self.clone();
 
@@ -206,7 +207,9 @@ impl SolidStructure {
 
                 // carry out the connection calculations
                 heater_clone.
-                    lateral_and_miscellaneous_connections(thermal_conductance_to_ambient).unwrap();
+                    link_ambient_temperature_boundary_condition_laterally(
+                        thermal_conductance_to_ambient,
+                        ambient_temp).unwrap();
                 
                 heater_clone
 

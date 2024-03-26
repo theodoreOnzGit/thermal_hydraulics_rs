@@ -24,9 +24,6 @@ pub struct SolidStructure {
     /// in the pipe_fluid_array
     pub solid_array: HeatTransferEntity,
 
-    /// pipe ambient temperature
-    pub ambient_temperature: ThermodynamicTemperature,
-
     /// length 
     pub strucutre_length: Length,
 
@@ -63,7 +60,6 @@ impl SolidStructure {
 
         return Self { inner_nodes: user_specified_inner_nodes,
             solid_array: CVType::SolidArrayCV(pipe_shell).into(),
-            ambient_temperature,
             strucutre_length: cylinder_length,
             cross_sectional_area,
         };
