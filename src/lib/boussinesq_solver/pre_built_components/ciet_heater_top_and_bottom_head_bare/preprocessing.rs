@@ -405,6 +405,10 @@ impl HeaterTopBottomHead {
         return cylinder_to_therminol_conductance;
     }
 
+    /// gets reynolds number based on top and bottom head 
+    /// hydraulic diameter and cross sectional flow area
+    ///
+    /// the user must supply mass flowrate and temperature
     #[inline]
     pub fn heater_v2_hydraulic_diameter_reynolds(&self,
         mass_flowrate: MassRate,

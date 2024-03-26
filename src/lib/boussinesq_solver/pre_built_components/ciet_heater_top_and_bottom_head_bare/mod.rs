@@ -28,14 +28,23 @@ pub struct HeaterTopBottomHead {
 
     inner_nodes: usize,
 
+    /// heat transfer entity representing control volumes 
+    /// for the twisted tape in the heater top and bottom heads
     pub twisted_tape_interior: HeatTransferEntity,
 
+    /// heat transfer entity representing control volumes 
+    /// for the steel piping in the heater top and bottom heads
     pub steel_shell: HeatTransferEntity,
 
+    /// heat transfer entity representing control volumes 
+    /// for the therminol fluid in the heater top and bottom heads
     pub therminol_array: HeatTransferEntity,
 
+    /// ambient temperature of air used to calculate heat loss
     pub ambient_temperature: ThermodynamicTemperature,
 
+    /// heat transfer coefficient used to calculate heat loss 
+    /// to air
     pub heat_transfer_to_air: HeatTransfer,
 
 
@@ -420,15 +429,21 @@ impl HeaterTopBottomHead {
 
 
 
+/// contains method implementations for obtaining conductances 
+/// between the different arrays, and also laterally coupling 
+/// the arrays to one another using a radial thermal resistance
 pub mod preprocessing;
-pub use preprocessing::*;
 
+/// contains method implementations for FluidComponentTrait
+/// This means all the stuff about getting mass flowrate from pressure 
+/// and vice versa
 pub mod fluid_entity;
-pub use fluid_entity::*;
 
 
+/// contains methods to help advance timesteps (ie update the 
+/// state of the control volumes after each timestep)
 pub mod calculation;
-pub use calculation::*;
 
+/// for postprocessing, one can obtain temperature profiles 
+/// of the component using the postprocessing modules
 pub mod postprocessing;
-pub use postprocessing::*;
