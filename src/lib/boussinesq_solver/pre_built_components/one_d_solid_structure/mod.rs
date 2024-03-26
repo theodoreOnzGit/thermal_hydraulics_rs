@@ -1,7 +1,5 @@
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 
 use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;
@@ -29,9 +27,6 @@ pub struct SolidStructure {
     /// pipe ambient temperature
     pub ambient_temperature: ThermodynamicTemperature,
 
-    /// pipe heat transfer coefficient to ambient
-    pub heat_transfer_to_ambient: HeatTransfer,
-
     /// pipe outer diameter (tube)
     pub tube_od: Length,
 
@@ -41,55 +36,22 @@ pub struct SolidStructure {
     /// length 
     pub strucutre_length: Length,
 
-    /// pipe outer diameter (insulation)
-    insulation_od: Length,
-
-    /// pipe inner diameter (insulation)
-    insulation_id: Length,
+    /// cross section area 
+    pub cross_sectional_area: Area,
 
 }
 
 impl SolidStructure {
 
-    /// constructs a new insulated pipe
-    ///
-    /// you need to supply the initial temperature, ambient temperature
-    /// as well as all the pipe parameters 
-    ///
-    /// such as:
-    ///
-    /// 1. flow area 
-    /// 2. hydraulic diameter 
-    /// 3. incline angle
-    /// 4. any form losses beyond the Gnielinski correlation
-    /// 5. inner diameter (id)
-    /// 6. shell outer diameter (od) assumed to be same as insulation id
-    /// 7. pipe shell material 
-    /// 8. pipe fluid 
-    /// 9. fluid pressure (if in doubt, 1 atmosphere will do)
-    /// 10. solid pressure (if in doubt, 1 atmosphere will do)
-    /// 11. heat transfer coeffficient to ambient
-    /// 12. how many inner axial nodes for both solid and fluid arrays
-    /// 13. insulation thickness 
-    /// 14. darcy loss correlation
-    ///
-    /// The number of total axial nodes is the number of inner nodes plus 2
-    ///
-    /// this is because there are two nodes at the periphery of the pipe 
-    /// and there
-    /// at each timestep, you are allowed to set a heater power, where 
-    /// heat is dumped into the heated tube surrounding the pipe
-    ///
-    /// so the pipe shell becomes the heating element so to speak
+    /// constructs a solid structure as a hollow cylinder
     pub fn new_hollow_cylinder(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         solid_pressure: Pressure,
+        cross_sectional_area: Area,
         shell_id: Length,
         shell_od: Length,
-        insulation_thickness: Length,
         cylinder_length: Length,
         pipe_shell_material: SolidMaterial,
-        htc_to_ambient: HeatTransfer,
         user_specified_inner_nodes: usize,) -> SolidStructure {
 
         // now the outer pipe array
@@ -104,19 +66,14 @@ impl SolidStructure {
             user_specified_inner_nodes 
         );
 
-        let insulation_id = shell_od;
-        let insulation_od = insulation_id + insulation_thickness;
-
 
         return Self { inner_nodes: user_specified_inner_nodes,
             solid_array: CVType::SolidArrayCV(pipe_shell).into(),
             ambient_temperature,
-            heat_transfer_to_ambient: htc_to_ambient,
             tube_od: shell_od,
             tube_id: shell_id,
-            insulation_od: shell_od,
-            insulation_id: insulation_od,
             strucutre_length: cylinder_length,
+            cross_sectional_area,
         };
     }
 }

@@ -29,17 +29,20 @@ impl SolidStructure {
     ///
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
-    pub fn lateral_and_miscellaneous_connections(&mut self
+    pub fn lateral_and_miscellaneous_connections(&mut self,
+        heat_transfer_to_ambient: HeatTransfer
         ) -> Result<(), ThermalHydraulicsLibError>{
 
         //
         // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
-        let heat_transfer_to_ambient: HeatTransfer = self.heat_transfer_to_ambient;
 
         let solid_array_to_air_nodal_conductance: ThermalConductance 
         = self.get_ambient_surroundings_to_hollow_cylinder_thermal_conductance(
-            heat_transfer_to_ambient
+            heat_transfer_to_ambient,
+            self.tube_id,
+            self.tube_od
         )?;
+
 
 
         // next, we need to consider discretisation, ie how much 
@@ -146,7 +149,9 @@ impl SolidStructure {
     /// it goes roughly to the middle of the hollow cylinder
     #[inline]
     pub fn get_ambient_surroundings_to_hollow_cylinder_thermal_conductance(&mut self,
-    h_air_to_pipe_surf: HeatTransfer) 
+    h_air_to_pipe_surf: HeatTransfer,
+    cylinder_id: Length,
+    cylinder_od: Length,) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
         // first, let's get a clone of the pipe_shell shell surface
         let mut structure_clone: SolidColumn = 
@@ -154,8 +159,6 @@ impl SolidStructure {
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = self.strucutre_length;
-        let cylinder_id = self.tube_id;
-        let cylinder_od = self.tube_od;
 
         // next is to have pipe_shell inner conductance
 
@@ -202,7 +205,8 @@ impl SolidStructure {
     ///
     /// once that is done, the join handle is returned 
     /// which when unwrapped, returns the heater object
-    pub fn lateral_connection_thread_spawn(&self) -> JoinHandle<Self>{
+    pub fn lateral_connection_thread_spawn(&self,
+        heat_transfer_to_ambient: HeatTransfer) -> JoinHandle<Self>{
 
         let mut heater_clone = self.clone();
 
@@ -213,7 +217,7 @@ impl SolidStructure {
 
                 // carry out the connection calculations
                 heater_clone.
-                    lateral_and_miscellaneous_connections().unwrap();
+                    lateral_and_miscellaneous_connections(heat_transfer_to_ambient).unwrap();
                 
                 heater_clone
 
