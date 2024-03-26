@@ -28,6 +28,9 @@ impl SolidStructure {
     /// you set it using the heater power input here.
     ///
     /// otherwise you set it to zero for an unpowered pipe
+    ///
+    /// the input conductance is given on a per node or per control volume 
+    /// basis (not total)
     #[inline]
     pub fn link_ambient_temperature_boundary_condition_laterally(&mut self,
         solid_array_to_ambient_nodal_conductance: ThermalConductance,
@@ -135,6 +138,8 @@ impl SolidStructure {
     /// obtains ambient (usually air) to insulation shell conductance
     ///
     /// it goes roughly to the middle of the hollow cylinder
+    ///
+    /// Conductance is given on a per node basis
     #[inline]
     pub fn get_ambient_surroundings_to_hollow_cylinder_thermal_conductance(&mut self,
     h_air_to_pipe_surf: HeatTransfer,
