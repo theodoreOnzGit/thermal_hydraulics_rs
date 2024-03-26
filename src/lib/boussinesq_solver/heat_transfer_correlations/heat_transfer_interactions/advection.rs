@@ -1,5 +1,7 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
+
+use super::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
 /// now, advection is quite tricky because for conduction, the 
 /// heat transfer formula is for two control volumes cv_a and cv_b
 /// can be as follows 
@@ -45,6 +47,29 @@ pub fn advection_heat_rate(mass_flow_from_a_to_b: MassRate,
     }
 
     Ok(heat_rate)
+}
+
+impl HeatTransferInteractionType {
+
+    /// constructs a new advection interaction so it's less 
+    /// cumbersome for the user
+    pub fn new_advection_interaction(
+    mass_flowrate: MassRate,
+    fluid_density_heat_transfer_entity_1: MassDensity,
+    fluid_density_heat_transfer_entity_2: MassDensity) -> Self {
+
+        let advection_interaction: HeatTransferInteractionType = 
+        HeatTransferInteractionType::Advection(
+            DataAdvection {
+                mass_flowrate,
+                fluid_density_heat_transfer_entity_1,
+                fluid_density_heat_transfer_entity_2,
+            }
+        );
+
+        return advection_interaction;
+
+    }
 }
 
 /// this is just a test for me to check if the advection signs work 
