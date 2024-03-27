@@ -48,7 +48,7 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
             fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
                 h_material),
         SteelSS304L => 
-            steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
+            steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
                 h_material),
         Copper => 
             copper_spline_temp_attempt_2_from_specific_enthalpy(
@@ -439,7 +439,7 @@ pub fn copper_temperature_from_enthalpy_test_spline_2(){
 /// This uses the spline methodology as an initial guess
 /// but then uses brent dekker to finish it off
 #[inline]
-fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
+fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
     h_steel: AvailableEnergy) -> ThermodynamicTemperature {
 
     // the idea is basically to evaluate enthalpy at the 
@@ -569,6 +569,9 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
         temperature_from_enthalpy_kelvin)
 
 }
+
+/// this is my third, and final iteration of getting enthalpy as a function 
+/// of temperature
 #[test]
 pub fn steel_temperature_from_enthalpy_test_spline_3(){
     // we'll test temperature at 375K 
@@ -585,7 +588,7 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
     // now we have an enthalpy, let's check the temperature 
 
     let temperature_from_enthalpy_test = 
-    steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
+    steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
         enthalpy_spline_zweibaum_375k);
 
     // we are basically off by less than 0.05K, which is 
@@ -608,7 +611,7 @@ pub fn steel_temperature_from_enthalpy_test_spline_3(){
             steel_temp, atmospheric_pressure).unwrap();
 
         let temperature_from_enthalpy_test = 
-        steel_304_l_spline_temp_attempt_3_from_specific_enthalpy(
+        steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
             enthalpy_spline_zweibaum);
 
         // we are basically off by less than 0.5K, which is 

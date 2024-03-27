@@ -327,11 +327,16 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLi
         steel_initial_temperature, 
         pressure)?;
 
+
+
     let steel_ball_diameter = OuterDiameterThermalConduction::from(
         Length::new::<centimeter>(2.0));
     let diameter: Length = steel_ball_diameter.into();
     let steel_ball_radius: Length = diameter/2.0;
 
+    // mass = rho * V 
+    //
+    // V = 4/3 pi R^3
     let steel_ball_volume: Volume = 4.0/3.0 * PI * 
         steel_ball_radius * steel_ball_radius * steel_ball_radius;
 
@@ -393,7 +398,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLi
         Mutex::new(ambient_temperature_boundary_condition)
     );
 
-    let timestep: Time = Time::new::<second>(5.0);
+    let timestep: Time = Time::new::<second>(0.5);
     let timestep_ptr = Arc::new(
         Mutex::new(timestep)
     );
@@ -493,6 +498,8 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLi
                 single_cv.current_timestep_control_volume_specific_enthalpy, 
                 pressure).unwrap();
 
+            //panic!("{:?}",temperature_for_export);
+
             let time_string = current_time_simulation_time.value.to_string();
             let temperature_string = temperature_for_export.value.to_string();
 
@@ -556,6 +563,10 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLi
             // clear the vector 
 
             single_cv.rate_enthalpy_change_vector.clear();
+
+            // update temperature
+            single_cv.temperature = temperature_for_export;
+
             // increase timestep (last step)
 
 

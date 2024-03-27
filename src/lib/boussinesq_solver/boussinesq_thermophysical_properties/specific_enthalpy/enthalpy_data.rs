@@ -192,7 +192,7 @@ fn dowtherm_a_specific_enthalpy(
 ///
 /// However, I analytically integrated it with wolfram alpha
 #[inline]
-pub fn steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(
+pub fn steel_ss_304_l_ornl_specific_enthalpy_graves(
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
 
     // first I define a function for specific enthalpy between two 
@@ -249,7 +249,7 @@ pub fn specific_enthalpy_test_steel_ornl(){
     let wolfram_enthalpy_value_joule_per_kg = 37.2524*1000.0;
 
     let enthalpy_analytical_ornl = 
-    steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature);
+    steel_ss_304_l_ornl_specific_enthalpy_graves(test_temperature);
 
     approx::assert_relative_eq!(
         wolfram_enthalpy_value_joule_per_kg,
@@ -283,8 +283,8 @@ pub fn specific_enthalpy_test_steel_ornl_and_zweibaum_spline(){
     let wolfram_enthalpy_value_joule_per_kg = 25.1515*1000.0;
 
     let enthalpy_analytical_ornl = 
-    steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature_2)
-    - steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature_1);
+    steel_ss_304_l_ornl_specific_enthalpy_graves(test_temperature_2)
+    - steel_ss_304_l_ornl_specific_enthalpy_graves(test_temperature_1);
 
     approx::assert_relative_eq!(
         wolfram_enthalpy_value_joule_per_kg,
