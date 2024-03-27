@@ -6,8 +6,8 @@ use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
 
-// contains specific enthalpy data for all materials
-mod enthalpy_data;
+/// contains specific enthalpy data for all materials
+pub mod enthalpy_data;
 use enthalpy_data::*;
 
 // contains functions to map enthalpy to a temperature 

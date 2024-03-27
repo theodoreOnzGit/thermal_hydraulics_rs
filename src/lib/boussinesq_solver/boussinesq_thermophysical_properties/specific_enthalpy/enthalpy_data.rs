@@ -37,7 +37,7 @@ fn solid_specific_enthalpy(material: Material,
 
     let specific_enthalpy: AvailableEnergy = match solid_material {
         Fiberglass => fiberglass_specific_enthalpy(temperature) ,
-        SteelSS304L => steel_304_l_spline_specific_enthalpy(temperature),
+        SteelSS304L => steel_304_l_spline_specific_enthalpy_ciet_zweibaum(temperature),
         Copper => copper_specific_enthalpy(temperature),
     };
 
@@ -120,7 +120,7 @@ fn fiberglass_enthalpy_test() {
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn copper_specific_enthalpy(
+pub fn copper_specific_enthalpy(
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
 
     let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
@@ -151,7 +151,7 @@ fn copper_specific_enthalpy(
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn steel_304_l_spline_specific_enthalpy(
+pub fn steel_304_l_spline_specific_enthalpy_ciet_zweibaum(
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
 
 
@@ -192,7 +192,7 @@ fn dowtherm_a_specific_enthalpy(
 ///
 /// However, I analytically integrated it with wolfram alpha
 #[inline]
-fn _steel_ss_304_l_ornl_specific_enthalpy(
+pub fn steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(
     temperature: ThermodynamicTemperature) -> AvailableEnergy {
 
     // first I define a function for specific enthalpy between two 
@@ -249,7 +249,7 @@ pub fn specific_enthalpy_test_steel_ornl(){
     let wolfram_enthalpy_value_joule_per_kg = 37.2524*1000.0;
 
     let enthalpy_analytical_ornl = 
-    _steel_ss_304_l_ornl_specific_enthalpy(test_temperature);
+    steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature);
 
     approx::assert_relative_eq!(
         wolfram_enthalpy_value_joule_per_kg,
@@ -283,8 +283,8 @@ pub fn specific_enthalpy_test_steel_ornl_and_zweibaum_spline(){
     let wolfram_enthalpy_value_joule_per_kg = 25.1515*1000.0;
 
     let enthalpy_analytical_ornl = 
-    _steel_ss_304_l_ornl_specific_enthalpy(test_temperature_2)
-    - _steel_ss_304_l_ornl_specific_enthalpy(test_temperature_1);
+    steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature_2)
+    - steel_ss_304_l_ornl_specific_enthalpy_graves_ornl(test_temperature_1);
 
     approx::assert_relative_eq!(
         wolfram_enthalpy_value_joule_per_kg,
@@ -294,8 +294,8 @@ pub fn specific_enthalpy_test_steel_ornl_and_zweibaum_spline(){
     // now let's test the spline version 
     //
     let enthalpy_spline_zweibaum = 
-    steel_304_l_spline_specific_enthalpy(test_temperature_2)
-    - steel_304_l_spline_specific_enthalpy(test_temperature_1);
+    steel_304_l_spline_specific_enthalpy_ciet_zweibaum(test_temperature_2)
+    - steel_304_l_spline_specific_enthalpy_ciet_zweibaum(test_temperature_1);
 
     // there is about a 4.5% difference between the ornl value 
     // and the spline value
