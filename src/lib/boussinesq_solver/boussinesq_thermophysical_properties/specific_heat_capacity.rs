@@ -73,7 +73,7 @@ fn solid_specific_heat_capacity(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => steel_ss_304_l_ornl_specific_heat_capacity(temperature)?,
+        SteelSS304L => steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(temperature)?,
         Copper => copper_specific_heat_capacity(temperature)?,
     };
 
@@ -126,7 +126,7 @@ fn fiberglass_specific_heat_capacity(
 ///
 /// It's only good for range of 300K to 700K
 #[inline]
-fn steel_ss_304_l_ornl_specific_heat_capacity(
+pub fn steel_ss_304_l_ornl_specific_heat_capacity(
     temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
 
     range_check(
@@ -192,7 +192,7 @@ fn copper_specific_heat_capacity(
 /// data (No. ANL/NSE-19/11). Argonne National 
 /// Lab.(ANL), Argonne, IL (United States).
 #[inline]
-fn _steel_304_l_spline_specific_heat_capacity(
+pub fn steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
     temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
 
     range_check(
@@ -235,7 +235,7 @@ pub fn specific_heat_capacity_test_steel(){
     // cp, we expect at 350K 
     // 469.4894 J/(kg K)
 
-    let thermal_cond_spline = _steel_304_l_spline_specific_heat_capacity(
+    let thermal_cond_spline = steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
     approx::assert_relative_eq!(
@@ -262,7 +262,7 @@ pub fn specific_heat_capacity_test_steel(){
     // we expect thermal specific_heat_capacity to be at 23.83
 
     let thermal_cond_spline = 
-    _steel_304_l_spline_specific_heat_capacity(
+    steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
         ThermodynamicTemperature::new::<kelvin>(1000.0));
 
     approx::assert_relative_eq!(

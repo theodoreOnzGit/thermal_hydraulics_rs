@@ -398,7 +398,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLi
         Mutex::new(ambient_temperature_boundary_condition)
     );
 
-    let timestep: Time = Time::new::<second>(0.5);
+    let timestep: Time = Time::new::<second>(5.0);
     let timestep_ptr = Arc::new(
         Mutex::new(timestep)
     );
