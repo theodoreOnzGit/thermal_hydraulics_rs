@@ -1,9 +1,9 @@
 use uom::si::available_energy::joule_per_gram;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
-use crate::fluid_mechanics_lib::therminol_component::
-dowtherm_a_properties::getDowthermAEnthalpy;
 use uom::si::thermodynamic_temperature::{degree_celsius,kelvin};
+
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
 
 use super::LiquidMaterial;
 use super::Material;
@@ -177,7 +177,7 @@ fn steel_304_l_spline_specific_enthalpy(
 #[inline]
 fn dowtherm_a_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> AvailableEnergy{
-    return getDowthermAEnthalpy(fluid_temp);
+    return dowtherm_a::get_dowtherm_a_enthalpy(fluid_temp).unwrap();
 }
 
 ///

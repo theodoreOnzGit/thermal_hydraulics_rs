@@ -1,7 +1,6 @@
 use roots::SimpleConvergency;
 use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
-use crate::fluid_mechanics_lib::therminol_component::dowtherm_a_properties;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::LiquidMaterial;
@@ -10,6 +9,7 @@ use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
 ::try_get_h;
 
@@ -87,8 +87,8 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
 #[inline]
 fn dowtherm_a_get_temperature_from_enthalpy(
     fluid_temp: AvailableEnergy) -> ThermodynamicTemperature{
-    return dowtherm_a_properties::
-        get_temperature_from_enthalpy(fluid_temp);
+
+    return dowtherm_a::get_temperature_from_enthalpy(fluid_temp).unwrap();
 }
 
 
