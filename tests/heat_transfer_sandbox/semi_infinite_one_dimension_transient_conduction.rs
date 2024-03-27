@@ -3,20 +3,16 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use peroxide::prelude::erfc;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType, calculate_timescales_for_heat_transfer_entity};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::Copper;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::Material;
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, SingleCVNode, XThicknessThermalConduction, CartesianConduction1DArray, BCType};
-
-
-
-
-
-
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use thermal_hydraulics_rs::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{Material, SolidMaterial};
+use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::XThicknessThermalConduction;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::{calculate_timescales_for_heat_transfer_entity, link_heat_transfer_entity};
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
+use thermal_hydraulics_rs::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::f64::*;
 use uom::si::length::{centimeter, meter};
 use uom::si::power::watt;
@@ -26,8 +22,6 @@ use uom::si::pressure::atmosphere;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
 
 /// This is an example of transient conduction case where analytical 
 /// solutions have been well know 
@@ -70,14 +64,14 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 #[test]
 fn transient_conduction_semi_infinite_copper_medium() 
--> Result<(), String>{
+-> Result<(), ThermalHydraulicsLibError>{
 
     // let's do the thread spawn for the calculated solution before 
     // the analytical solution
 
     // before we start, we need the copper thermal_diffusivity
 
-    let copper = Material::Solid(Copper);
+    let copper = Material::Solid(SolidMaterial::Copper);
     let pressure = Pressure::new::<atmosphere>(1.0);
     let copper_initial_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(21.67);
@@ -108,36 +102,36 @@ fn transient_conduction_semi_infinite_copper_medium()
     // so I'll need to make 1 BC and 10 control volumes
     // simulate the transient temperatures for up to 20s
 
-    let single_cv_node_1 = SingleCVNode::new_one_dimension_volume(
+    let single_cv_node_1 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_2 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_2 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_3 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_3 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_4 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_4 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_5 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_5 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_6 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_6 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_7 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_7 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_8 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_8 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_9 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_9 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
-    let single_cv_node_10 = SingleCVNode::new_one_dimension_volume(
+        pressure)?.into();
+    let single_cv_node_10 : HeatTransferEntity = SingleCVNode::new_one_dimension_volume(
         node_length, copper, copper_initial_temperature, 
-        pressure)?;
+        pressure)?.into();
 
     let single_cv_1_ptr = Arc::new(
         Mutex::new(single_cv_node_1)
@@ -172,7 +166,7 @@ fn transient_conduction_semi_infinite_copper_medium()
 
     let copper_surface_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(boundary_condition_temperature));
+        BCType::UserSpecifiedTemperature(boundary_condition_temperature));
 
     let surf_temp_ptr = Arc::new(
         Mutex::new(copper_surface_temperature_boundary_condition)
@@ -595,14 +589,14 @@ fn transient_conduction_semi_infinite_copper_medium()
 /// this is with 10 total nodes (8 inner nodes and two boundary nodes)
 /// 
 #[test]
-fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
+fn arraycv_transient_conduction_copper_medium() -> Result<(),ThermalHydraulicsLibError>{
 
     // let's do the thread spawn for the calculated solution before 
     // the analytical solution
 
     // before we start, we need the copper thermal_diffusivity
 
-    let copper = Material::Solid(Copper);
+    let copper = Material::Solid(SolidMaterial::Copper);
     let pressure = Pressure::new::<atmosphere>(1.0);
     let copper_initial_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(21.67);
@@ -634,12 +628,13 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
     // so I'll need to make 1 BC and 10 control volumes
     // simulate the transient temperatures for up to 20s
 
-    let copper_array_cv = CartesianConduction1DArray::new(
-        copper,
-        copper_initial_temperature,
-        pressure,
-        8,
-        Length::new::<centimeter>(20.0));
+    let copper_array_cv: HeatTransferEntity 
+        = SolidColumn::new_one_dimension_volume(
+            Length::new::<centimeter>(20.0),
+            copper_initial_temperature,
+            pressure,
+            copper.try_into()?,
+            8,).into();
 
     let array_cv_pointer = Arc::new(
         Mutex::new(copper_array_cv)
@@ -649,7 +644,7 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
 
     let copper_surface_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(boundary_condition_temperature));
+        BCType::UserSpecifiedTemperature(boundary_condition_temperature));
 
     let surf_temp_ptr = Arc::new(
         Mutex::new(copper_surface_temperature_boundary_condition)
@@ -792,9 +787,27 @@ fn arraycv_transient_conduction_copper_medium() -> Result<(),String>{
             TemperatureInterval::new::<
                 uom::si::temperature_interval::degree_celsius>(2.0);
 
-            let timestep_from_api = HeatTransferEntity::get_max_timestep(
-                &mut array_cv_in_loop,
+
+            // basically I need to get the max timestep,
+            // so I get it from the SolidColumn  method 
+            //
+            // the max timestep is then loaded into the resulting 
+            // solid column
+            //
+            // what I then do is to replace the array_cv_in_loop by 
+            // the new solid column.
+            //
+            // It's a little computationally expensive but it does the 
+            // job
+
+            let mut one_d_array_clone: SolidColumn = 
+                array_cv_in_loop.deref().clone().try_into().unwrap();
+
+            let timestep_from_api = one_d_array_clone.get_max_timestep(
                 max_temperature_change).unwrap();
+
+            *array_cv_in_loop.deref_mut() = one_d_array_clone.into();
+
             timestep_value = timestep_from_api;
             // update timestep value
 
