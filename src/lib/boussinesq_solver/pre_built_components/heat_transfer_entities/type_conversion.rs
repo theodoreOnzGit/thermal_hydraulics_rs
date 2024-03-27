@@ -1,6 +1,7 @@
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boundary_conditions::BCType;
+use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::cv_types::CVType;
@@ -89,6 +90,28 @@ impl TryInto<SolidColumn> for HeatTransferEntity {
             CVType::SolidArrayCV(solid_array)) = self {
 
             Ok(solid_array)
+
+        } else {
+            return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
+        }
+
+    }
+}
+
+impl Into<HeatTransferEntity> for SingleCVNode{
+    fn into(self) -> HeatTransferEntity {
+        HeatTransferEntity::ControlVolume(CVType::SingleCV(self))
+    }
+}
+
+impl TryInto<SingleCVNode> for HeatTransferEntity {
+    type Error = ThermalHydraulicsLibError;
+
+    fn try_into(self) -> Result<SingleCVNode, Self::Error> {
+        if let HeatTransferEntity::ControlVolume(
+            CVType::SingleCV(single_cv)) = self {
+
+            Ok(single_cv)
 
         } else {
             return Err(ThermalHydraulicsLibError::TypeConversionErrorHeatTransferEntity);
