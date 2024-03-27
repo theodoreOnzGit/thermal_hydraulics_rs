@@ -64,11 +64,12 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// this first function allows for custom fldk, 
 /// ie both friction factor and form loss k are user defined
 /// <https://stackoverflow.com/questions/36390665/how-do-you-pass-a-rust-function-as-a-parameter>
-pub fn custom_f_ldk(custom_darcy: &dyn Fn(f64, f64) -> f64,
+pub fn custom_f_ldk(custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
         reynolds_number: f64,
         roughness_ratio: f64,
         length_to_diameter_ratio: f64,
-        custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
+        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) 
+    -> Result<f64,ThermalHydraulicsLibError>{
 
     if roughness_ratio < 0.0 {
         panic!("roughnessRatio<0.0");
@@ -78,10 +79,10 @@ pub fn custom_f_ldk(custom_darcy: &dyn Fn(f64, f64) -> f64,
         panic!("lengthToDiameterRatio<=0.0");
     }
 
-    let k = custom_k(reynolds_number);
+    let k = custom_k(reynolds_number)?;
 
 
-    let f = custom_darcy(reynolds_number, roughness_ratio);
+    let f = custom_darcy(reynolds_number, roughness_ratio)?;
     let f_ldk = f*length_to_diameter_ratio + k;
 
     return Ok(f_ldk);
@@ -93,11 +94,11 @@ pub fn custom_f_ldk(custom_darcy: &dyn Fn(f64, f64) -> f64,
 pub fn custom_kpipe(reynolds_number: f64,
     roughness_ratio: f64,
     length_to_diameter_ratio: f64,
-    custom_k: &dyn Fn(f64) -> f64) -> 
+    custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
 Result<f64, ThermalHydraulicsLibError>{
 
-    let darcy_fn = crate::fluid_mechanics_lib::
-        churchill_friction_factor::darcy;
+    let darcy_fn = crate::boussinesq_solver::fluid_mechanics_correlations::
+        darcy;
 
     let f_ldk_result = custom_f_ldk(&darcy_fn,
         reynolds_number,
@@ -118,7 +119,8 @@ Result<f64, ThermalHydraulicsLibError>{
 pub fn custom_kpipe_be_d(reynolds_number: f64,
                     roughness_ratio: f64,
                     length_to_diameter_ratio: f64,
-                    custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
+                    custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) 
+    -> Result<f64,ThermalHydraulicsLibError>{
 
     if reynolds_number == 0.0 {
         return Ok(0.0);
@@ -138,11 +140,12 @@ pub fn custom_kpipe_be_d(reynolds_number: f64,
 
 /// this functions calculates the bejan number using the
 /// custom fLDK formula
-pub fn custom_f_ldk_be_d(custom_darcy: &dyn Fn(f64, f64) -> f64, 
+pub fn custom_f_ldk_be_d(custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>, 
                         reynolds_number: f64,
                         roughness_ratio: f64,
                         length_to_diameter_ratio: f64,
-                        custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError>{
+                        custom_k: &dyn Fn(f64) -> 
+                        Result<f64,ThermalHydraulicsLibError>) -> Result<f64,ThermalHydraulicsLibError>{
 
     if reynolds_number == 0.0 {
         return Ok(0.0);
@@ -169,11 +172,11 @@ pub fn custom_f_ldk_be_d(custom_darcy: &dyn Fn(f64, f64) -> f64,
 /// that is up to the user to decide when 
 /// customDarcy and customK is put in
 pub fn get_reynolds(
-    custom_darcy: &dyn Fn(f64, f64) -> f64, 
+    custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>, 
     bejan_d: f64,
     roughness_ratio: f64,
     length_to_diameter: f64,
-    custom_k: &dyn Fn(f64) -> f64) -> Result<f64,ThermalHydraulicsLibError> {
+    custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> Result<f64,ThermalHydraulicsLibError> {
 
     if length_to_diameter <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");

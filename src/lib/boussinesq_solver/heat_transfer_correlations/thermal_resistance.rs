@@ -48,11 +48,11 @@ use uom::si::f64::*;
 ///
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::heat_transfer_lib
-/// ::control_volume_calculations::common_functions;
 ///
 /// use uom::si::{temperature_interval, thermodynamic_temperature};
 /// use uom::si::f64::*;
+/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// thermal_resistance::subtract_two_thermodynamic_temperatures;
 ///
 /// let t1 = ThermodynamicTemperature::new::
 /// <thermodynamic_temperature::kelvin>(600_f64);
@@ -62,7 +62,7 @@ use uom::si::f64::*;
 ///
 /// let expected_temp_value = t1.value - t2.value;
 ///
-/// let test_temp = common_functions::subtract_two_thermodynamic_temperatures(
+/// let test_temp = subtract_two_thermodynamic_temperatures(
 /// t1,t2);
 /// approx::assert_relative_eq!(expected_temp_value, test_temp.value, 
 /// max_relative=0.001);
