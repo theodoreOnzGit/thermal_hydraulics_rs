@@ -330,15 +330,15 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let mut therminol_cylinder_clone_cv: FluidArray = 
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
                 therminol_cylinder_in_loop.clone().try_into().unwrap();
 
             let auto_calculated_timestep = 
                 therminol_cylinder_clone_cv.
                 get_max_timestep(
-                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0),
-                therminol_mass_flowrate)
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
+
 
             *therminol_cylinder_in_loop.deref_mut() = therminol_cylinder_clone_cv.into();
 
@@ -399,7 +399,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 }
 
 #[test]
-//#[ignore = "already collected auto timestep test data"]
+#[ignore = "already collected auto timestep test data"]
 pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
 
@@ -973,13 +973,12 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let mut therminol_cylinder_clone_cv: FluidArray = 
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
                 therminol_cylinder_in_loop.clone().try_into().unwrap();
 
             let auto_calculated_timestep = 
                 therminol_cylinder_clone_cv.get_max_timestep(
-                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0),
-                therminol_mass_flowrate)
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
 
             *therminol_cylinder_in_loop.deref_mut() = 
@@ -1036,6 +1035,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
                 },
                 HeatTransferEntity::BoundaryConditions(_) => todo!(),
             };
+
 
 
             wtr.write_record(&[current_time_string,
