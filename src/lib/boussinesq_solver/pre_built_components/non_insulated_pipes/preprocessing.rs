@@ -1,7 +1,8 @@
 use std::thread::JoinHandle;
 use std::thread;
 
-use uom::{si::{length::meter, pressure::atmosphere}, ConstZero};
+use uom::ConstZero;
+use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
 use ndarray::*;
 use super::NonInsulatedPipe;

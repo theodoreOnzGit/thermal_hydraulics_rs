@@ -1,18 +1,10 @@
 
 
-use std::f64::consts::PI;
 
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-use crate::boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
@@ -21,7 +13,6 @@ use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interact
 use uom::num_traits::Zero;
 
 use super::try_get_thermal_conductance_based_on_interaction;
-use super::HeatTransferEntity;
 /// which calls other functions depending on whether the 
 /// heat transfer interaction is conductance based on advection based
 #[inline]

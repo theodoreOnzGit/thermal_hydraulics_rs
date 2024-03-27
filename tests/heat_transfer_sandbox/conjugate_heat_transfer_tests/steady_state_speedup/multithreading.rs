@@ -1457,10 +1457,13 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_1_speedup_threads(){
                     st_11_node).unwrap()
                     .get::<degree_celsius>().to_string();
 
-                // drop the mutable references manually
+                //// drop the mutable references manually
+                //// I did this mostly because of wanting to drop the mutex 
+                //// lock or because I wanted to re-alias the reference in 
+                //// an immutable fashion. But this is not necessary anymore
 
-                drop(thermoinol_outlet_node);
-                drop(st_11_node);
+                //drop(thermoinol_outlet_node);
+                //drop(st_11_node);
 
                 // then I want to get the max timestep
                 //
@@ -2818,10 +2821,13 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_1(){
                     st_11_node).unwrap()
                     .get::<degree_celsius>().to_string();
 
-                // drop the mutable references manually
+                //// drop the mutable references manually
+                //// I did this mostly because of wanting to drop the mutex 
+                //// lock or because I wanted to re-alias the reference in 
+                //// an immutable fashion. But this is not necessary anymore
 
-                drop(thermoinol_outlet_node);
-                drop(st_11_node);
+                //drop(thermoinol_outlet_node);
+                //drop(st_11_node);
 
                 // then I want to get the max timestep
                 //

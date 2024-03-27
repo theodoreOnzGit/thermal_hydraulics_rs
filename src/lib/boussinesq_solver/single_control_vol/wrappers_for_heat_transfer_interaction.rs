@@ -339,6 +339,10 @@ impl SingleCVNode {
         Ok(())
     }
 
+    /// calculates the heat transfer interaction between a single cv node 
+    /// and boundary condition 
+    ///
+    /// the arrangement will matter usually in the case of advection
     #[inline]
     pub fn calculate_single_cv_node_front_constant_temperature_back(
         boundary_condition_temperature: ThermodynamicTemperature,

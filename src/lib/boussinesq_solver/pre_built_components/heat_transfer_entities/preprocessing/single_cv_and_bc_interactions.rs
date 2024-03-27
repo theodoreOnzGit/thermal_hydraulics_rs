@@ -1,18 +1,13 @@
 use std::f64::consts::PI;
 
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 
 use super::heat_transfer_interaction_enums::HeatTransferInteractionType;
 use uom::si::f64::*;
 
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-use crate::boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;

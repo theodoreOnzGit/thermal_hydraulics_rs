@@ -416,6 +416,11 @@ impl HeaterVersion2Bare {
         return therminol_steel_nodal_thermal_conductance;
     }
 
+    /// obtains Reynolds number for the heater given a temperature and 
+    /// mass flowrate 
+    ///
+    /// hydraulic diameter and flow area are 
+    /// 0.5776 in and 1.63 in^2 respectively
     #[inline]
     pub fn heater_v2_hydraulic_diameter_reynolds(mass_flowrate: MassRate,
         temperature: ThermodynamicTemperature) -> Ratio {

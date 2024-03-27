@@ -1,7 +1,8 @@
 
 #[test]
 pub fn example_heated_section_test(){
-    use std::{time::SystemTime, thread::{JoinHandle, self}};
+    use std::time::SystemTime;
+    use std::thread::JoinHandle;
 
     use uom::{si::{time::second, power::kilowatt}, ConstZero};
 
@@ -69,7 +70,7 @@ pub fn example_heated_section_test(){
         steel_array_clone.get_temperature_vector().unwrap();
 
         let _twisted_tape_temperature: Vec<ThermodynamicTemperature>
-        = heater_v2_bare._twisted_tape_temperature();
+        = heater_v2_bare.twisted_tape_temperature();
 
         let back_cv_temperature: ThermodynamicTemperature = 
             therminol_array_temperature[0];

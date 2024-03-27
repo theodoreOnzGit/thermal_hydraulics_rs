@@ -26,12 +26,23 @@ pub struct StructuralSupport {
 
     inner_nodes: usize,
 
+    /// 1D array of control volumes that simulates the 
+    /// conduction heat transfer and thermal inertia within 
+    /// the structural support
     pub support_array: HeatTransferEntity,
 
+    /// representative ambient temperature around the structural 
+    /// support, meant for calculating parasitic heat loss
     pub ambient_temperature: ThermodynamicTemperature,
 
+    /// representative heat transfer coefficient to surroundings
+    /// around the structural 
+    /// support, meant for calculating parasitic heat loss
     pub heat_transfer_to_air: HeatTransfer,
 
+    /// representative surface area in contact with surroundings
+    /// around the structural 
+    /// support, meant for calculating parasitic heat loss
     pub total_lateral_surface_area: Area,
 
 
@@ -93,8 +104,15 @@ impl StructuralSupport {
 
 
 
+/// contains method implementations for obtaining conductances 
+/// between the different arrays, and also laterally coupling 
+/// the arrays to one another using a radial thermal resistance
 pub mod preprocessing;
 
+/// contains methods to help advance timesteps (ie update the 
+/// state of the control volumes after each timestep)
 pub mod calculation;
 
+/// for postprocessing, one can obtain temperature profiles 
+/// of the component using the postprocessing modules
 pub mod postprocessing;

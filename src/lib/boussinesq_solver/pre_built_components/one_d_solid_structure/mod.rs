@@ -36,7 +36,6 @@ impl SolidStructure {
 
     /// constructs a solid structure as a hollow cylinder
     pub fn new_hollow_cylinder(initial_temperature: ThermodynamicTemperature,
-        ambient_temperature: ThermodynamicTemperature,
         solid_pressure: Pressure,
         cross_sectional_area: Area,
         shell_id: Length,

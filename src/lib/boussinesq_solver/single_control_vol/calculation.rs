@@ -1,17 +1,8 @@
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::advection_heat_rate;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::
-heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
-use crate::boussinesq_solver::heat_transfer_correlations::
-heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::
-specific_enthalpy::try_get_temperature_from_h;
 
 use super::SingleCVNode;
 use uom::si::f64::*;
 use uom::si::power::watt;
-use uom::si::thermodynamic_temperature::kelvin;
-use uom::num_traits::Zero;
 
 impl SingleCVNode {
     /// this function performs necessary calculations to move 

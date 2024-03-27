@@ -69,10 +69,6 @@
 extern crate uom;
 use thermal_hydraulics_rs::fluid_mechanics_lib;
 mod manual_tests;
-/// this contains examples on how to use the thermal_hydraulics_rs 
-/// library
-/// to make your own components and simulations
-mod examples;
 
 use crate::manual_tests::*;
 

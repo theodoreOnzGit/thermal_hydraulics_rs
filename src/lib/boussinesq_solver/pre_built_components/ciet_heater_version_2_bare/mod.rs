@@ -32,14 +32,24 @@ pub struct HeaterVersion2Bare {
 
     inner_nodes: usize,
 
+
+    /// heat transfer entity representing control volumes 
+    /// for the twisted tape in the heated section of CIET's Heater
     pub twisted_tape_interior: HeatTransferEntity,
 
+    /// heat transfer entity representing control volumes 
+    /// for the steel piping in the heated section of CIET's Heater
     pub steel_shell: HeatTransferEntity,
 
+    /// heat transfer entity representing control volumes 
+    /// for the therminol fluid in the heated section of CIET's Heater
     pub therminol_array: HeatTransferEntity,
 
+    /// ambient temperature of air used to calculate heat loss
     pub ambient_temperature: ThermodynamicTemperature,
 
+    /// heat transfer coefficient used to calculate heat loss 
+    /// to air
     pub heat_transfer_to_air: HeatTransfer,
 
 
@@ -316,13 +326,23 @@ impl HeaterVersion2Bare {
 
 
 
+/// contains method implementations for obtaining conductances 
+/// between the different arrays, and also laterally coupling 
+/// the arrays to one another using a radial thermal resistance
 pub mod preprocessing;
 
+/// contains method implementations for FluidComponentTrait
+/// This means all the stuff about getting mass flowrate from pressure 
+/// and vice versa
 pub mod fluid_entity;
 
 
+/// contains methods to help advance timesteps (ie update the 
+/// state of the control volumes after each timestep)
 pub mod calculation;
 
+/// for postprocessing, one can obtain temperature profiles 
+/// of the component using the postprocessing modules
 pub mod postprocessing;
 
 

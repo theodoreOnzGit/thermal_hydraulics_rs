@@ -1,9 +1,9 @@
 /// deals with fluid nodes in the core region
-pub (crate) mod core_fluid_node;
+pub mod core_fluid_node;
 
 /// deals with fluid nodes as if they were in a shell region 
 /// that means they are exposed to an inner region and an outer region
-pub (crate) mod shell_fluid_node;
+pub mod shell_fluid_node;
 
 use ndarray_linalg::{Solve, error};
 use uom::si::f64::*;
@@ -11,8 +11,10 @@ use uom::ConstZero;
 use ndarray::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
+/// this basically solves for a temperature vector 
+/// given a conductance matrix and power vector
 #[inline]
-pub (crate) fn solve_conductance_matrix_power_vector(
+pub fn solve_conductance_matrix_power_vector(
     thermal_conductance_matrix: Array2<ThermalConductance>,
     power_vector: Array1<Power>)
 -> Result<Array1<ThermodynamicTemperature>, error::LinalgError>{

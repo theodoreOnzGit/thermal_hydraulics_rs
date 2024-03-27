@@ -928,7 +928,7 @@ pub mod fluid_component_tests_and_examples {
             fn get_custom_darcy(&mut self) 
                 -> &dyn Fn(f64, f64) -> f64 {
 
-                    return self.custom_darcy.clone();
+                    return self.custom_darcy;
 
             }
 
@@ -936,21 +936,21 @@ pub mod fluid_component_tests_and_examples {
             fn get_custom_darcy_immutable(&self) 
                 -> &dyn Fn(f64, f64) -> f64 {
 
-                    return self.custom_darcy.clone();
+                    return self.custom_darcy;
 
             }
 
             fn get_custom_k(&mut self) 
                 -> &dyn Fn(f64) -> f64 {
 
-                    return self.custom_k.clone();
+                    return self.custom_k;
 
             }
             
             fn get_custom_k_immutable(&self) 
                 -> &dyn Fn(f64) -> f64 {
 
-                    return self.custom_k.clone();
+                    return self.custom_k;
 
             }
 
