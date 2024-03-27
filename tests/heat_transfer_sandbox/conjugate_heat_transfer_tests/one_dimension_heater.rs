@@ -6,13 +6,13 @@ use std::thread;
 use csv::Writer;
 
 
-
-use thermal_hydraulics_rs::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
 use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
 use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material, SolidMaterial};
 use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::SurfaceArea;
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataAdvection, DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataUserSpecifiedConvectionResistance;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
@@ -76,7 +76,7 @@ use uom::si::time::second;
 ///
 ///
 #[test]
-#[ignore = "takes about 20min, only use for data collection"]
+//#[ignore = "takes about 20min, only use for data collection"]
 pub fn one_dimension_ciet_heater_v_1_0_test(){
 
 
@@ -242,6 +242,8 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             HeatTransferEntity::density_vector( 
                 therminol_cylinder_in_loop.deref_mut()).unwrap();
 
+            dbg!(&therminol_cylinder_in_loop.get_bulk_temperature());
+
             let heater_fluid_cv_density: MassDensity = 
             therminol_cv_density_vec[0];
 
@@ -399,7 +401,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
 }
 
 #[test]
-#[ignore = "already collected auto timestep test data"]
+//#[ignore = "already collected auto timestep test data"]
 pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
 
@@ -650,13 +652,12 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let mut therminol_cylinder_clone_cv: FluidArray = 
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
                 therminol_cylinder_in_loop.clone().try_into().unwrap();
 
             let auto_calculated_timestep = 
                 therminol_cylinder_clone_cv.get_max_timestep(
-                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0),
-                therminol_mass_flowrate)
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
 
             *therminol_cylinder_in_loop.deref_mut() = 
