@@ -22,16 +22,17 @@ pub use crate::boussinesq_solver::pre_built_components::ciet_heater_top_and_bott
 pub use crate::boussinesq_solver::pre_built_components::ciet_struct_supports::StructuralSupport;
 pub use crate::boussinesq_solver::pre_built_components::ciet_static_mixer_mx_10::StaticMixerMX10;
 pub use crate::boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
+pub use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
 
 
 // thermophysical properties 
 pub use crate::boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 pub use crate::boussinesq_solver::boussinesq_thermophysical_properties::prandtl::try_get_prandtl;
 pub use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+pub use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
 
-// heat transfer interactions and correlations 
+// heat transfer dimensions, interactions and correlations 
 
 pub use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::*;
-pub use crate::boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
-pub use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-pub use crate::boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
+pub use crate::boussinesq_solver::control_volume_dimensions::*;
+

@@ -5,9 +5,6 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::CylinderLengthThermalConduction;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
 use uom::si::area::square_meter;
 use uom::si::f64::*;
 use uom::si::length::{centimeter, meter, inch};
