@@ -242,7 +242,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             HeatTransferEntity::density_vector( 
                 therminol_cylinder_in_loop.deref_mut()).unwrap();
 
-            dbg!(&therminol_cylinder_in_loop.get_bulk_temperature());
+            //dbg!(&therminol_cylinder_in_loop.get_bulk_temperature());
 
             let heater_fluid_cv_density: MassDensity = 
             therminol_cv_density_vec[0];
@@ -313,11 +313,12 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             let _heater_power = mfbs_poresky_2017_power_signal(
                 current_time_simulation_time);
 
-            let heater_power = mfbs_power_signal_logspace_custom(
+            let heater_power_logspace = mfbs_power_signal_logspace_custom(
                 current_time_simulation_time);
 
             let mut electrical_heat_bc: HeatTransferEntity = 
-            BCType::new_const_heat_addition(heater_power).into();
+            BCType::new_const_heat_addition(
+                heater_power_logspace).into();
 
             let heat_addition_interaction = 
             HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -349,7 +350,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             current_time_simulation_time.get::<second>().to_string();
 
             let heater_power_kilowatt_string = 
-            heater_power.get::<kilowatt>().to_string();
+            heater_power_logspace.get::<kilowatt>().to_string();
 
             let therminol_celsius_string = 
             HeatTransferEntity::temperature(
@@ -570,6 +571,8 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             let heater_fluid_cv_density: MassDensity = 
             therminol_cv_density_vec[0];
 
+            dbg!(&therminol_cylinder_in_loop.get_bulk_temperature());
+
             // now crate the dataset 
             //
             // the diagram is like so 
@@ -619,6 +622,12 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             link_heat_transfer_entity(&mut inlet_const_temp_in_loop, 
                 &mut therminol_cylinder_in_loop, 
                 inlet_interaction).unwrap();
+            {
+                // debugging
+                let therminol_cylinder_clone_cv: SingleCVNode = 
+                    therminol_cylinder_in_loop.clone().try_into().unwrap();
+                dbg!(&therminol_cylinder_clone_cv.rate_enthalpy_change_vector);
+            }
             // (2) fluid to outlet
             link_heat_transfer_entity(&mut therminol_cylinder_in_loop, 
                 &mut outlet_zero_heat_flux_in_loop, 
@@ -659,6 +668,10 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
                 therminol_cylinder_clone_cv.get_max_timestep(
                 TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
+
+            dbg!(&therminol_cylinder_clone_cv.rate_enthalpy_change_vector);
+            // volumetric flowrate is okay...
+            dbg!(&therminol_cylinder_clone_cv.volumetric_flowrate_vector);
 
             *therminol_cylinder_in_loop.deref_mut() = 
                 therminol_cylinder_clone_cv.into();

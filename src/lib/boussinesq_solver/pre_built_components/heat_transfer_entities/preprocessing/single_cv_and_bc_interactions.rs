@@ -30,7 +30,7 @@ pub fn calculate_single_cv_node_front_constant_temperature_back(
         advection_dataset) => {
 
                 // I'm mapping my own error to string, so off
-                calculate_cv_front_bc_back_advection(
+                calculate_cv_front_bc_back_advection_for_heat_flux_or_heat_addition(
                     control_vol,
                     advection_dataset)?;
                 return Ok(());
@@ -167,7 +167,7 @@ pub fn calculate_single_cv_front_heat_flux_back(
         HeatTransferInteractionType::
             Advection(advection_data) => 
             {
-                calculate_cv_front_bc_back_advection(
+                calculate_cv_front_bc_back_advection_for_heat_flux_or_heat_addition(
                     control_vol,
                     advection_data)?;
 
@@ -243,7 +243,7 @@ pub fn calculate_constant_heat_addition_front_single_cv_back(
             ()
         },
         HeatTransferInteractionType::Advection(advection_data) => {
-            calculate_bc_front_cv_back_advection(
+            calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition(
                 control_vol,
                 advection_data)?;
 
@@ -327,7 +327,7 @@ pub fn calculate_single_cv_front_constant_heat_addition_back(
             ()
         },
         HeatTransferInteractionType::Advection(advection_data) => {
-            calculate_cv_front_bc_back_advection(
+            calculate_cv_front_bc_back_advection_for_heat_flux_or_heat_addition(
                 control_vol,
                 advection_data)?;
 
@@ -835,7 +835,7 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
 /// at zero gradient BCs
 /// 
 #[inline]
-pub (crate) fn calculate_cv_front_bc_back_advection(
+pub (crate) fn calculate_cv_front_bc_back_advection_for_heat_flux_or_heat_addition(
     control_vol: &mut SingleCVNode,
     advection_data: DataAdvection
 ) -> Result<(), ThermalHydraulicsLibError>{
@@ -853,7 +853,7 @@ pub (crate) fn calculate_cv_front_bc_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
-    let control_vol_temperature = control_vol.get_temperature_from_enthalpy_and_set()?;
+    let control_vol_temperature = control_vol.temperature;
 
     let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,
@@ -920,7 +920,7 @@ pub (crate) fn calculate_cv_front_bc_back_advection(
 /// at zero gradient BCs
 ///
 #[inline]
-pub (crate) fn calculate_bc_front_cv_back_advection(
+pub (crate) fn calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition(
     control_vol: &mut SingleCVNode,
     advection_data: DataAdvection
 ) -> Result<(), ThermalHydraulicsLibError>{
@@ -938,7 +938,7 @@ pub (crate) fn calculate_bc_front_cv_back_advection(
 
     let control_vol_material = control_vol.material_control_volume;
     let control_vol_pressure = control_vol.pressure_control_volume;
-    let control_vol_temperature = control_vol.get_temperature_from_enthalpy_and_set()?;
+    let control_vol_temperature = control_vol.temperature;
 
     let specific_enthalpy_bc_zero_gradient: AvailableEnergy = try_get_h(
         control_vol_material,

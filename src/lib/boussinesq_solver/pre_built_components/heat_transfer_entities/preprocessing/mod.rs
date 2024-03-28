@@ -13,7 +13,7 @@ use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
 
-use self::single_cv_and_bc_interactions::calculate_bc_front_cv_back_advection;
+use self::single_cv_and_bc_interactions::calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition;
 use self::single_cv_and_bc_interactions::calculate_constant_heat_addition_front_single_cv_back;
 use self::single_cv_and_bc_interactions::calculate_mesh_stability_conduction_timestep_for_single_node_and_bc;
 use self::single_cv_and_bc_interactions::calculate_single_cv_front_heat_flux_back;
@@ -952,7 +952,7 @@ pub fn calculate_constant_temperature_front_single_cv_back(
             advection_dataset) => {
 
             // I'm mapping my own error to string, so off
-            calculate_bc_front_cv_back_advection(
+            calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition(
                 control_vol,
                 advection_dataset)?;
             return Ok(());
@@ -1091,7 +1091,7 @@ pub fn calculate_constant_heat_flux_front_single_cv_back(
         HeatTransferInteractionType::
             Advection(advection_data) => {
 
-                calculate_bc_front_cv_back_advection(
+                calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition(
                     control_vol,
                     advection_data)?;
 

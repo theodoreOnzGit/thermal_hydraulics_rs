@@ -1,4 +1,4 @@
-use uom::si::f64::*;
+use uom::{si::f64::*, ConstZero};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
@@ -40,9 +40,11 @@ pub fn advection_heat_rate(mass_flow_from_a_to_b: MassRate,
     //
     // power is dependent on control volume b
     let heat_rate: Power;
-    if mass_flow_from_a_to_b.value < 0.0_f64 {
+    if mass_flow_from_a_to_b < MassRate::ZERO {
+        // in this case, mass flowrate is from b to a (backflow)
         heat_rate = mass_flow_from_a_to_b * specific_enthalpy_of_b;
     } else {
+        // in this case, mass flowrate is from a to b (forward flow)
         heat_rate = mass_flow_from_a_to_b * specific_enthalpy_of_a;
     }
 
