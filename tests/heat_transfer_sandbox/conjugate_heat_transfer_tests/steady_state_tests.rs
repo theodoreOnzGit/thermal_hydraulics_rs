@@ -1333,7 +1333,6 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
         // it needs a simulation time, computation time elapsed, 
         // and a temperature for the outer surface temperature node 
         // for all nodes 
-
         let mut temp_profile_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_temp_profile.csv")
             .unwrap();
 
@@ -1980,31 +1979,58 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
                 // timestep
 
 
-                // now loop over all nodes, get its temperature 
-
-
                 for therminol_node in fluid_vec_in_loop.iter_mut() {
-                    HeatTransferEntity::advance_timestep(
-                        therminol_node,
-                        auto_calculated_timestep).unwrap();
+
+                    let mut therminol_node_clone_single_cv: SingleCVNode = 
+                        therminol_node.clone().try_into().unwrap();
+
+                    let local_timestep: Time = therminol_node_clone_single_cv.get_max_timestep(
+                        TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                    *therminol_node = therminol_node_clone_single_cv.into();
 
                 }
 
                 for steel_inner_node in steel_shell_inner_node_vec_in_loop.iter_mut() {
 
-                    HeatTransferEntity::advance_timestep(
-                        steel_inner_node,
-                        auto_calculated_timestep).unwrap();
+                    let mut steel_inner_node_clone_single_cv: SingleCVNode = 
+                        steel_inner_node.clone().try_into().unwrap();
+
+                    let local_timestep: Time = steel_inner_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                    *steel_inner_node = steel_inner_node_clone_single_cv.into();
 
                 }
 
 
                 for steel_outer_node in steel_shell_outer_node_vec_in_loop.iter_mut() {
 
-                    HeatTransferEntity::advance_timestep(
-                        steel_outer_node,
-                        auto_calculated_timestep).unwrap();
+                    let mut steel_outer_node_clone_single_cv: SingleCVNode = 
+                        steel_outer_node.clone().try_into().unwrap();
 
+                    let local_timestep: Time = steel_outer_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
+                        .unwrap();
+
+
+                    if local_timestep < auto_calculated_timestep {
+                        auto_calculated_timestep = local_timestep
+                    }
+
+                    *steel_outer_node = steel_outer_node_clone_single_cv.into();
                 }
 
                 
