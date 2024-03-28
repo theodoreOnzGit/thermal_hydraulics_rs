@@ -29,9 +29,8 @@ pub fn calculate_single_cv_node_front_constant_temperature_back(
         HeatTransferInteractionType::Advection(
         advection_dataset) => {
 
-                // I'm mapping my own error to string, so off
-                calculate_cv_front_bc_back_advection_for_heat_flux_or_heat_addition(
-                    control_vol,
+                control_vol.calculate_cv_front_bc_back_advection_set_temperature(
+                    boundary_condition_temperature, 
                     advection_dataset)?;
                 return Ok(());
             },
