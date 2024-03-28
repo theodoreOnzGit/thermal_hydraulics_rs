@@ -77,8 +77,8 @@ use uom::ConstZero;
 ///
 ///
 #[test]
-//#[ignore = "takes about 20min, only use for data collection"]
-pub fn one_dimension_ciet_heater_v_1_0_test(){
+#[ignore = "takes about 20min, only use for data collection"]
+pub fn one_dimension_ciet_heater_v_1_0_test_for_better_sampling_frequency(){
 
 
     // okay, let's make two control volumes 
