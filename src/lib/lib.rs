@@ -73,7 +73,7 @@ extern crate uom;
 pub mod fluid_mechanics_lib;
 
 /// Heat Transfer Module (testing)
-pub mod heat_transfer_lib;
+//pub mod heat_transfer_lib;
 
 /// for mostly incompressible fluids using the Boussinesq Approximation
 /// that is, density doesn't change much except for natural convection
