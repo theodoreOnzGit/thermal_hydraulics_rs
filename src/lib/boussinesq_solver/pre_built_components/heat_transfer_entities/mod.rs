@@ -49,3 +49,9 @@ pub mod calculation;
 /// type conversion 
 /// converts underlying nested enums into HeatTransferEntity objects
 pub mod type_conversion;
+
+
+/// convert to data_advection 
+/// that is to say, you can construct a DataAdvection struct from 
+/// a HeatTransferEntity
+pub mod conversion_to_data_advection;

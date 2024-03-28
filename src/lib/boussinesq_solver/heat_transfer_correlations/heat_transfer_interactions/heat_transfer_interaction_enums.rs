@@ -1,5 +1,5 @@
 use crate::boussinesq_solver::control_volume_dimensions::*;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material};
 use uom::si::f64::*;
 
 use super::heat_transfer_geometry::*;
@@ -327,6 +327,34 @@ pub struct DataAdvection{
 
 }
 
+impl DataAdvection {
+
+    /// constructs an advection interaction by specifying 
+    /// a fluid material 
+    /// temperature of the heat transfer entity 1
+    /// and temperature of heat transfer entity 2
+    ///
+    ///
+    /// (heat tranfer entity 1) ----mass flowrate --> (heat transfer entity 2)
+    ///
+    #[inline]
+    pub fn new_from_temperature_and_liquid_material(
+        user_input_mass_flowrate: MassRate,
+        fluid_material: LiquidMaterial,
+        temperature_1: ThermodynamicTemperature,
+        temperature_2: ThermodynamicTemperature,
+    ) -> Self {
+
+
+        let density_1 = fluid_material.density(temperature_1).unwrap();
+        let density_2 = fluid_material.density(temperature_2).unwrap();
+        return Self {
+            mass_flowrate: user_input_mass_flowrate,
+            fluid_density_heat_transfer_entity_1: density_1,
+            fluid_density_heat_transfer_entity_2: density_2,
+        };
+    }
+}
 
 impl Into<HeatTransferInteractionType> for DataAdvection {
     fn into(self) -> HeatTransferInteractionType {
