@@ -320,3 +320,12 @@ pub fn get_reynolds_number(bejan_d: f64,
 }
 
 
+/// some examples which show how to use the functionality of the fluid 
+/// mechanics correlation libraries
+pub mod tests_and_examples;
+
+/// pipe calculations 
+///
+/// these are pre-built functions which make calculating mass flowrate 
+/// and pressure drop across pipes easier
+pub mod pipe_calculations;
