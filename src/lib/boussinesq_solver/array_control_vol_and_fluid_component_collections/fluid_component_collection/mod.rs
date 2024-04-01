@@ -94,6 +94,9 @@ pub mod fluid_component_collection;
 /// usually used for calculating multiple branches in parallel 
 pub mod fluid_component_super_collection;
 
+/// some examples which show how to use the functionality of the fluid 
+/// mechanics correlation libraries
+pub mod tests_and_examples;
 
 
 
