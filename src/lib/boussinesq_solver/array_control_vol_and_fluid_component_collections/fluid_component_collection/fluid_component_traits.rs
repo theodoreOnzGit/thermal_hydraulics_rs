@@ -3,6 +3,8 @@ use uom::si::f64::*;
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::mass_rate::kilogram_per_second;
 
+use crate::boussinesq_solver::fluid_mechanics_correlations::custom_fldk;
+use crate::fluid_mechanics_lib::prelude::DimensionlessDarcyLossCorrelations;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::fluid_mechanics_correlations::dimensionalisation;
 use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
@@ -625,4 +627,313 @@ FluidComponentTrait{
         return hydrostatic_pressure_increase;
     }
 
+}
+
+
+/// provides generic methods to calculate pressure
+/// loss for a custom fluid component (with flow flowing
+/// inside it)
+/// given a custom darcy friction factor and
+/// custom form loss correlation
+pub trait FluidCustomComponentCalcPressureLoss {
+
+    /// returns the custom darcy friction factor function
+    /// for the component
+    fn get_custom_darcy(&mut self) ->
+        &dyn Fn(f64, f64) -> f64 ;
+
+    /// returns the custom darcy friction factor function
+    /// for the component
+    /// using an immutable reference to self
+    fn get_custom_darcy_immutable(&self) ->
+        &dyn Fn(f64, f64) -> f64 ;
+
+    /// returns the custom form loss factors
+    /// for the component
+    fn get_custom_k(&mut self) ->
+        &dyn Fn(f64) -> f64;
+
+    /// returns the custom form loss factors
+    /// for the component
+    /// using an immutable reference to self
+    fn get_custom_k_immutable(&self) ->
+        &dyn Fn(f64) -> f64;
+
+    /// sets the custom darcy friction factor function
+    /// usually a function of Re and roughness ratio
+    /// for the component
+    fn set_custom_loss_correlations(
+        &mut self,
+        custom_loss_correlation: DimensionlessDarcyLossCorrelations);
+
+    /// gets the component absolute roughness for
+    /// the component in question
+    fn get_custom_component_absolute_roughness(
+        &mut self) -> Length;
+
+    /// gets the custom component absolute roughness 
+    /// using an immutable reference to self
+    fn get_custom_component_absolute_roughness_immutable(
+        &self) -> Length;
+
+    /// calculates pressure loss for a component given 
+    /// pipe parameter inputs and
+    /// custom darcy friction factor and custom form loss
+    /// correlations
+    fn fluid_custom_component_calc_pressure_loss(
+        fluid_mass_flowrate: MassRate,
+        cross_sectional_area: Area,
+        hydraulic_diameter: Length,
+        fluid_viscosity: DynamicViscosity,
+        fluid_density: MassDensity,
+        component_length: Length,
+        absolute_roughness: Length,
+        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
+        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        Result<Pressure,ThermalHydraulicsLibError> {
+
+        // first we get our Reynolds number
+
+        let reynolds_number_quantity_object = fluid_mass_flowrate/
+            cross_sectional_area*
+            hydraulic_diameter/
+            fluid_viscosity;
+
+        let reynolds_number_calculated_using_diameter : f64 = 
+                reynolds_number_quantity_object.into();
+
+        // second we get the darcy factor and custom K
+        // note that reverse flow logic should be taken care of in
+        // user supplied darcy factor and K, not here
+
+        let roughness_ratio_quantity_object = absolute_roughness/hydraulic_diameter;
+        let roughness_ratio : f64 = roughness_ratio_quantity_object.into();
+
+        let length_to_diameter_quantity_object = 
+            component_length/
+            hydraulic_diameter;
+
+        let length_to_diameter: f64 = length_to_diameter_quantity_object.into();
+
+
+        // now we have this, we can calculate bejan number
+
+        let bejan_number_calculated_using_diameter = custom_fldk::custom_f_ldk_be_d(
+            custom_darcy,
+            reynolds_number_calculated_using_diameter,
+            roughness_ratio,
+            length_to_diameter,
+            custom_k)?;
+
+
+        // once we get Be, we can get the pressure loss terms
+        //
+        let pressure_loss = dimensionalisation::calc_bejan_to_pressure(
+            bejan_number_calculated_using_diameter,
+            hydraulic_diameter,
+            fluid_density,
+            fluid_viscosity);
+
+
+
+        return Ok(pressure_loss);
+    }
+
+    /// calculates mass flowrate using input parameters
+    fn fluid_custom_component_calc_mass_flowrate_from_pressure_loss(
+        pressure_loss: Pressure,
+        cross_sectional_area: Area,
+        hydraulic_diameter: Length,
+        fluid_viscosity: DynamicViscosity,
+        fluid_density: MassDensity,
+        component_length: Length,
+        absolute_roughness: Length,
+        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
+        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) 
+        -> Result<MassRate,ThermalHydraulicsLibError> {
+
+
+        // first let's get our relevant ratios:
+        let roughness_ratio_quantity = absolute_roughness/hydraulic_diameter;
+
+        let roughness_ratio: f64 = roughness_ratio_quantity.into();
+
+        let length_to_diameter_ratio: f64
+            = (component_length/hydraulic_diameter).into();
+
+        // then get Bejan number:
+        let bejan_number_calculated_using_diameter = 
+            dimensionalisation::calc_bejan_from_pressure(
+            pressure_loss, 
+            hydraulic_diameter, 
+            fluid_density, 
+            fluid_viscosity);
+
+        // let's get Re
+        let reynolds_number_calculated_using_diameter = 
+            custom_fldk::get_reynolds(custom_darcy,
+                               bejan_number_calculated_using_diameter.into(),
+                               roughness_ratio,
+                               length_to_diameter_ratio,
+                               custom_k)?;
+
+
+        // and finally return mass flowrate
+        //
+        let fluid_mass_flowrate = 
+            dimensionalisation::calc_reynolds_to_mass_rate(
+                cross_sectional_area,
+                reynolds_number_calculated_using_diameter.into(),
+                hydraulic_diameter,
+                fluid_viscosity);
+
+        return Ok(fluid_mass_flowrate);
+    }
+}
+
+/// Contains default implementations for calculating
+/// mass flowrate from pressure change and vice versea
+///
+/// refer to examples in fluid_component_calculation
+/// to see how its used
+pub trait FluidCustomComponentCalcPressureChange :
+FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
+
+    /// calculates the pressure change for a custom
+    /// fluid component given a mass flowrate
+    /// and other fluid component parameters
+    fn fluid_custom_component_calc_pressure_change(
+        fluid_mass_flowrate: MassRate,
+        cross_sectional_area: Area,
+        hydraulic_diameter: Length,
+        fluid_viscosity: DynamicViscosity,
+        fluid_density: MassDensity,
+        component_length: Length,
+        absolute_roughness: Length,
+        incline_angle: Angle,
+        source_pressure: Pressure,
+        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
+        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        Result<Pressure,ThermalHydraulicsLibError> {
+
+        // now we need to calculate a pressure loss term
+        // we use:
+        // Pressure Change = - pressure loss + hydrostatic pressure +
+        // source pressure
+        //
+        // so we just add pressure loss to both sides and subtract pressure
+        // change to both sides
+        // pressure loss  = - pressure change + hydrostatic pressure +
+        // source pressure
+        //
+
+        let pressure_loss = <Self as FluidCustomComponentCalcPressureLoss>::
+            fluid_custom_component_calc_pressure_loss(
+                fluid_mass_flowrate, 
+                cross_sectional_area, 
+                hydraulic_diameter, 
+                fluid_viscosity, 
+                fluid_density, 
+                component_length, 
+                absolute_roughness, 
+                custom_darcy, 
+                custom_k)?;
+
+
+        let hydrostatic_pressure =
+            <Self as FluidCustomComponentCalcPressureChange>::
+            get_hydrostatic_pressure_change(
+                component_length, 
+                incline_angle, 
+                fluid_density);
+
+        let pressure_change =
+            - pressure_loss 
+            + hydrostatic_pressure 
+            + source_pressure;
+
+
+        return Ok(pressure_change);
+    }
+
+    /// calculates the mass flowrate given pressure change
+    /// and other parameters of the component
+    ///
+    fn fluid_custom_component_calc_mass_flowrate_from_pressure_change(
+        pressure_change: Pressure,
+        cross_sectional_area: Area,
+        hydraulic_diameter: Length,
+        fluid_viscosity: DynamicViscosity,
+        fluid_density: MassDensity,
+        component_length: Length,
+        absolute_roughness: Length,
+        incline_angle: Angle,
+        source_pressure: Pressure,
+        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
+        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        Result<MassRate,ThermalHydraulicsLibError> {
+
+        // now we need to calculate a pressure loss term
+        // we use:
+        // Pressure Change = - pressure loss + hydrostatic pressure +
+        // source pressure
+        //
+        // so we just add pressure loss to both sides and subtract pressure
+        // change to both sides
+        // pressure loss  = - pressure change + hydrostatic pressure +
+        // source pressure
+
+        let hydrostatic_pressure = 
+            <Self as FluidCustomComponentCalcPressureChange>::
+            get_hydrostatic_pressure_change(
+                component_length, 
+                incline_angle, 
+                fluid_density);
+
+        let pressure_loss = 
+            - pressure_change
+            + hydrostatic_pressure 
+            + source_pressure;
+
+        // once we have pressure loss
+        // we can get mass flowrate
+
+        let mass_flowrate: MassRate 
+            = <Self as FluidCustomComponentCalcPressureLoss>::
+            fluid_custom_component_calc_mass_flowrate_from_pressure_loss(
+                pressure_loss, 
+                cross_sectional_area, 
+                hydraulic_diameter, 
+                fluid_viscosity, 
+                fluid_density, 
+                component_length, 
+                absolute_roughness, 
+                custom_darcy, 
+                custom_k)?;
+
+        return Ok(mass_flowrate);
+    }
+
+    /// calculates hydrostatic pressure change
+    /// kind of boilerplate code but i want
+    /// to use it as an associated function rather 
+    /// than a method
+    ///
+    /// this is because i want the method in FluidComponent
+    /// to take &mut self or &self
+    /// so that we can have object safety (or something like that)
+    fn get_hydrostatic_pressure_change(
+        pipe_length: Length,
+        incline_angle: Angle,
+        fluid_density: MassDensity) -> Pressure {
+
+        let g: Acceleration = 
+            Acceleration::new::<meter_per_second_squared>(-9.81);
+        let delta_h: Length = pipe_length*incline_angle.sin();
+
+        let hydrostatic_pressure_increase: Pressure =
+            fluid_density * g * delta_h;
+
+        return hydrostatic_pressure_increase;
+    }
 }
