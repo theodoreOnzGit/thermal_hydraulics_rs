@@ -3,7 +3,6 @@ use uom::si::f64::*;
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::mass_rate::kilogram_per_second;
 
-use crate::boussinesq_solver::fluid_mechanics_correlations::custom_fldk;
 use crate::fluid_mechanics_lib::prelude::DimensionlessDarcyLossCorrelations;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::fluid_mechanics_correlations::dimensionalisation;
@@ -637,27 +636,17 @@ FluidComponentTrait{
 /// custom form loss correlation
 pub trait FluidCustomComponentCalcPressureLoss {
 
-    /// returns the custom darcy friction factor function
-    /// for the component
-    fn get_custom_darcy(&mut self) ->
-        &dyn Fn(f64, f64) -> f64 ;
-
-    /// returns the custom darcy friction factor function
-    /// for the component
-    /// using an immutable reference to self
-    fn get_custom_darcy_immutable(&self) ->
-        &dyn Fn(f64, f64) -> f64 ;
 
     /// returns the custom form loss factors
     /// for the component
-    fn get_custom_k(&mut self) ->
-        &dyn Fn(f64) -> f64;
+    fn get_custom_loss_correlations(&mut self) ->
+        DimensionlessDarcyLossCorrelations;
 
-    /// returns the custom form loss factors
+    /// returns the custom loss correlations
     /// for the component
     /// using an immutable reference to self
-    fn get_custom_k_immutable(&self) ->
-        &dyn Fn(f64) -> f64;
+    fn get_custom_loss_correlations_immutable(&self) ->
+        DimensionlessDarcyLossCorrelations;
 
     /// sets the custom darcy friction factor function
     /// usually a function of Re and roughness ratio
@@ -686,10 +675,7 @@ pub trait FluidCustomComponentCalcPressureLoss {
         hydraulic_diameter: Length,
         fluid_viscosity: DynamicViscosity,
         fluid_density: MassDensity,
-        component_length: Length,
-        absolute_roughness: Length,
-        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
-        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        loss_correlation: DimensionlessDarcyLossCorrelations,) -> 
         Result<Pressure,ThermalHydraulicsLibError> {
 
         // first we get our Reynolds number
@@ -699,37 +685,22 @@ pub trait FluidCustomComponentCalcPressureLoss {
             hydraulic_diameter/
             fluid_viscosity;
 
-        let reynolds_number_calculated_using_diameter : f64 = 
-                reynolds_number_quantity_object.into();
+        let reynolds_number_calculated_using_diameter = 
+                reynolds_number_quantity_object;
 
-        // second we get the darcy factor and custom K
-        // note that reverse flow logic should be taken care of in
-        // user supplied darcy factor and K, not here
-
-        let roughness_ratio_quantity_object = absolute_roughness/hydraulic_diameter;
-        let roughness_ratio : f64 = roughness_ratio_quantity_object.into();
-
-        let length_to_diameter_quantity_object = 
-            component_length/
-            hydraulic_diameter;
-
-        let length_to_diameter: f64 = length_to_diameter_quantity_object.into();
 
 
         // now we have this, we can calculate bejan number
 
-        let bejan_number_calculated_using_diameter = custom_fldk::custom_f_ldk_be_d(
-            custom_darcy,
-            reynolds_number_calculated_using_diameter,
-            roughness_ratio,
-            length_to_diameter,
-            custom_k)?;
 
+        let bejan_number_calculated_using_diameter = 
+            loss_correlation.get_bejan_number_from_reynolds(
+                reynolds_number_calculated_using_diameter)?;
 
         // once we get Be, we can get the pressure loss terms
         //
         let pressure_loss = dimensionalisation::calc_bejan_to_pressure(
-            bejan_number_calculated_using_diameter,
+            bejan_number_calculated_using_diameter.into(),
             hydraulic_diameter,
             fluid_density,
             fluid_viscosity);
@@ -748,8 +719,7 @@ pub trait FluidCustomComponentCalcPressureLoss {
         fluid_density: MassDensity,
         component_length: Length,
         absolute_roughness: Length,
-        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
-        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) 
+        loss_correlation: DimensionlessDarcyLossCorrelations,) 
         -> Result<MassRate,ThermalHydraulicsLibError> {
 
 
@@ -769,13 +739,10 @@ pub trait FluidCustomComponentCalcPressureLoss {
             fluid_density, 
             fluid_viscosity);
 
-        // let's get Re
+
         let reynolds_number_calculated_using_diameter = 
-            custom_fldk::get_reynolds(custom_darcy,
-                               bejan_number_calculated_using_diameter.into(),
-                               roughness_ratio,
-                               length_to_diameter_ratio,
-                               custom_k)?;
+            loss_correlation.get_reynolds_number_from_bejan(
+                bejan_number_calculated_using_diameter)?;
 
 
         // and finally return mass flowrate
@@ -809,11 +776,9 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
         fluid_viscosity: DynamicViscosity,
         fluid_density: MassDensity,
         component_length: Length,
-        absolute_roughness: Length,
         incline_angle: Angle,
         source_pressure: Pressure,
-        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
-        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        loss_correlation: DimensionlessDarcyLossCorrelations) -> 
         Result<Pressure,ThermalHydraulicsLibError> {
 
         // now we need to calculate a pressure loss term
@@ -834,10 +799,7 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
                 hydraulic_diameter, 
                 fluid_viscosity, 
                 fluid_density, 
-                component_length, 
-                absolute_roughness, 
-                custom_darcy, 
-                custom_k)?;
+                loss_correlation)?;
 
 
         let hydrostatic_pressure =
@@ -869,8 +831,7 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
         absolute_roughness: Length,
         incline_angle: Angle,
         source_pressure: Pressure,
-        custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
-        custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
+        loss_correlation: DimensionlessDarcyLossCorrelations) -> 
         Result<MassRate,ThermalHydraulicsLibError> {
 
         // now we need to calculate a pressure loss term
@@ -908,8 +869,7 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
                 fluid_density, 
                 component_length, 
                 absolute_roughness, 
-                custom_darcy, 
-                custom_k)?;
+                loss_correlation)?;
 
         return Ok(mass_flowrate);
     }

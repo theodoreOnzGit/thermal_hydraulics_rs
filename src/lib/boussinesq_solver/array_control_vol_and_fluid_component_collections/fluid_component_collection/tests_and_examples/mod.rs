@@ -26,3 +26,16 @@ pub mod air_pipe_example;
 /// FluidPipeCalcPressureChange trait
 ///
 pub mod water_pipe_example;
+
+/// Example 3,
+/// 
+/// suppose now we have a coriolis flowmeter
+/// with a custom friction factor correlation
+///
+/// (f_darcy L/D + K) = 18 + 93000/Re^1.35
+///
+/// we shall use water to push flow through this coriolis flowmeter
+///
+/// also, the programming is rather tedious
+/// because of lifetimes, but this is one example of how it can be done
+pub mod coriolis_flowmeter_example;
