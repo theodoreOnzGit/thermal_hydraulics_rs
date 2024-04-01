@@ -2,8 +2,9 @@
 use uom::si::f64::*;
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::mass_rate::kilogram_per_second;
+use uom::ConstZero;
 
-use crate::fluid_mechanics_lib::prelude::DimensionlessDarcyLossCorrelations;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::fluid_mechanics_correlations::dimensionalisation;
 use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
@@ -720,33 +721,54 @@ pub trait FluidCustomComponentCalcPressureLoss {
         loss_correlation: DimensionlessDarcyLossCorrelations,) 
         -> Result<MassRate,ThermalHydraulicsLibError> {
 
+            // need to first consider reverse flow and zero flow
+            // if pressure loss is zero, then return a zero mass flowrate
+
+            if pressure_loss == Pressure::ZERO {
+                return Ok(MassRate::ZERO);
+            }
+
+            let reverse_flow: bool;
+            let pressure_loss_abs: Pressure = pressure_loss.abs();
+
+            if pressure_loss > Pressure::ZERO {
+                // if pressure loss more than zero, we get forward flow 
+                reverse_flow = false;
+            } else {
+                reverse_flow = true;
+            }
 
 
-        // then get Bejan number:
-        let bejan_number_calculated_using_diameter = 
-            dimensionalisation::calc_bejan_from_pressure(
-            pressure_loss, 
-            hydraulic_diameter, 
-            fluid_density, 
-            fluid_viscosity);
+            // then get Bejan number:
+            // which is dimensionless pressure loss
+            let bejan_number_calculated_using_diameter = 
+                dimensionalisation::calc_bejan_from_pressure(
+                    pressure_loss_abs, 
+                    hydraulic_diameter, 
+                    fluid_density, 
+                    fluid_viscosity);
 
 
-        let reynolds_number_calculated_using_diameter = 
-            loss_correlation.get_reynolds_number_from_bejan(
-                bejan_number_calculated_using_diameter)?;
+            let reynolds_number_calculated_using_diameter = 
+                loss_correlation.get_reynolds_number_from_bejan(
+                    bejan_number_calculated_using_diameter)?;
 
 
-        // and finally return mass flowrate
-        //
-        let fluid_mass_flowrate = 
-            dimensionalisation::calc_reynolds_to_mass_rate(
-                cross_sectional_area,
-                reynolds_number_calculated_using_diameter.into(),
-                hydraulic_diameter,
-                fluid_viscosity);
+            // and finally return mass flowrate
+            //
+            let fluid_mass_flowrate = 
+                dimensionalisation::calc_reynolds_to_mass_rate(
+                    cross_sectional_area,
+                    reynolds_number_calculated_using_diameter.into(),
+                    hydraulic_diameter,
+                    fluid_viscosity);
 
-        return Ok(fluid_mass_flowrate);
-    }
+            if reverse_flow {
+                return Ok(-fluid_mass_flowrate);
+            } else {
+                return Ok(fluid_mass_flowrate);
+            }
+        }
 }
 
 /// Contains default implementations for calculating
