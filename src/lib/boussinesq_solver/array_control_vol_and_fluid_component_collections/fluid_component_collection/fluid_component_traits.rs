@@ -717,19 +717,10 @@ pub trait FluidCustomComponentCalcPressureLoss {
         hydraulic_diameter: Length,
         fluid_viscosity: DynamicViscosity,
         fluid_density: MassDensity,
-        component_length: Length,
-        absolute_roughness: Length,
         loss_correlation: DimensionlessDarcyLossCorrelations,) 
         -> Result<MassRate,ThermalHydraulicsLibError> {
 
 
-        // first let's get our relevant ratios:
-        let roughness_ratio_quantity = absolute_roughness/hydraulic_diameter;
-
-        let roughness_ratio: f64 = roughness_ratio_quantity.into();
-
-        let length_to_diameter_ratio: f64
-            = (component_length/hydraulic_diameter).into();
 
         // then get Bejan number:
         let bejan_number_calculated_using_diameter = 
@@ -828,7 +819,6 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
         fluid_viscosity: DynamicViscosity,
         fluid_density: MassDensity,
         component_length: Length,
-        absolute_roughness: Length,
         incline_angle: Angle,
         source_pressure: Pressure,
         loss_correlation: DimensionlessDarcyLossCorrelations) -> 
@@ -867,8 +857,6 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
                 hydraulic_diameter, 
                 fluid_viscosity, 
                 fluid_density, 
-                component_length, 
-                absolute_roughness, 
                 loss_correlation)?;
 
         return Ok(mass_flowrate);

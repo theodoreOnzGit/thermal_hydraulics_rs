@@ -1,19 +1,5 @@
 #[cfg(test)]
 pub mod fluid_component_tests_and_examples {
-    use std::f64::consts::PI;
-
-    use crate::fluid_mechanics_lib::fluid_component_calculation::FluidComponent;
-    use crate::fluid_mechanics_lib::fluid_component_calculation::
-        custom_component_calc::{FluidCustomComponentCalcPressureChange, FluidCustomComponentCalcPressureLoss};
-    use crate::fluid_mechanics_lib::fluid_component_calculation::standard_pipe_calc
-        ::{FluidPipeCalcPressureLoss,FluidPipeCalcPressureChange};
-    use uom::si::dynamic_viscosity::{millipascal_second, poise};
-    use uom::si::f64::*;
-    use uom::si::length::{meter, inch, millimeter};
-    use uom::si::mass_density::kilogram_per_cubic_meter;
-    use uom::si::mass_rate::kilogram_per_second;
-    use uom::si::pressure::{pascal, kilopascal};
-    use uom::si::angle::degree;
     
 
     /// Example 3,
@@ -30,6 +16,18 @@ pub mod fluid_component_tests_and_examples {
     #[test]
     pub fn coriolis_flowmeter_empirical_custom_component_example_3(){
 
+        use std::f64::consts::PI;
+
+        use crate::fluid_mechanics_lib::fluid_component_calculation::FluidComponent;
+        use crate::fluid_mechanics_lib::fluid_component_calculation::
+            custom_component_calc::{FluidCustomComponentCalcPressureChange, FluidCustomComponentCalcPressureLoss};
+        use uom::si::dynamic_viscosity::poise;
+        use uom::si::f64::*;
+        use uom::si::length::{meter, inch, millimeter};
+        use uom::si::mass_density::kilogram_per_cubic_meter;
+        use uom::si::mass_rate::kilogram_per_second;
+        use uom::si::pressure::pascal;
+        use uom::si::angle::degree;
         struct CoriolisFlowmeter<'coriolis_lifetime> {
 
             pressure_loss: Pressure,
