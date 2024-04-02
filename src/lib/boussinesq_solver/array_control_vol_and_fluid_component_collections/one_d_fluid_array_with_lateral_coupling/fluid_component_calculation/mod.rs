@@ -1,4 +1,3 @@
-
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
@@ -522,4 +521,5 @@ impl FluidArray {
     }
 }
 
-
+/// unit tests for DimensionlessDarcyLossCorrelations 
+pub mod unit_test_dimensionless_darcy_loss_correlations;

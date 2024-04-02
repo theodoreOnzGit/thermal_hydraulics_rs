@@ -288,4 +288,5 @@ pub mod default;
 pub mod constructors;
 
 /// fluid component calculations 
+/// with the DimensionlessDarcyLossCorrelations
 pub mod fluid_component_calculation;
