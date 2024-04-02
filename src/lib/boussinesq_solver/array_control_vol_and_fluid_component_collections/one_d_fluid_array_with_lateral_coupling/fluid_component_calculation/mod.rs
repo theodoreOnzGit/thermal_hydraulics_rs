@@ -7,6 +7,7 @@ use uom::typenum::P2;
 use uom::num_traits::Zero;
 use uom::si::ratio::ratio;
 use uom::si::f64::*;
+use uom::ConstZero;
 
 use super::FluidArray;
 
@@ -156,6 +157,12 @@ impl DimensionlessDarcyLossCorrelations {
     pub fn get_bejan_number_from_reynolds(&self, reynolds_input: Ratio,)
     -> Result<Ratio, ThermalHydraulicsLibError>{
 
+        // first the zero test, 
+        // if reynolds is zero, then bejan is zero 
+
+        if reynolds_input == Ratio::ZERO {
+            return Ok(Ratio::ZERO);
+        }
 
         // this is the fldk term
         // it will take care of Re = 0 but not directionality
@@ -216,7 +223,7 @@ impl DimensionlessDarcyLossCorrelations {
 
 
 
-        let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:30 };
+        let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:70 };
 
         let reynolds_number_result
         = find_root_brent(upper_limit,
