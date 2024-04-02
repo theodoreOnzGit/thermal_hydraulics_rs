@@ -530,3 +530,7 @@ impl FluidArray {
 
 /// unit tests for DimensionlessDarcyLossCorrelations 
 pub mod unit_test_dimensionless_darcy_loss_correlations;
+
+/// unit tests for DimensionlessDarcyLossCorrelations get and set 
+/// mass flowrate and pressure change
+pub mod unit_test_mass_flowrate_and_pressure_change_dimensionless_darcy_loss;

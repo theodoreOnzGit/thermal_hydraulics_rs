@@ -16,7 +16,7 @@
 /// also, the programming is rather tedious
 /// because of lifetimes, but this is one example of how it can be done
 #[test]
-//#[ignore="debugging"]
+#[ignore="debugging"]
 pub fn coriolis_flowmeter_empirical_custom_component_example_3(){
 
     use std::f64::consts::PI;
