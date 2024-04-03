@@ -223,55 +223,6 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         absolute_roughness,
     };
 
-    // associated functions test
-    // for getting mass flowrate from pressure change
-    {
-        // forward test 
-        
-        let input_pressure_change = Pressure::new::<pascal>(-6335.0);
-
-        let mass_flowrate_test: MassRate = 
-            CoriolisFlowmeter::fluid_custom_component_calc_mass_flowrate_from_pressure_change(
-                input_pressure_change, 
-                coriolis_flowmeter.get_cross_sectional_area_immutable(), 
-                coriolis_flowmeter.hydraulic_diameter, 
-                coriolis_flowmeter.fluid_viscosity, 
-                coriolis_flowmeter.fluid_density, 
-                coriolis_flowmeter.get_component_length_immutable(), 
-                coriolis_flowmeter.get_incline_angle_immutable(), 
-                coriolis_flowmeter.get_internal_pressure_source_immutable(), 
-                coriolis_flowmeter.get_custom_loss_correlations_immutable())?;
-
-        // expected mass flowrate is 0.2 kg/s (positive)
-        approx::assert_relative_eq!(
-            mass_flowrate_test.get::<kilogram_per_second>(),
-            fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
-            max_relative=0.01);
-    }
-
-    {
-        // reverse test 
-
-        let input_pressure_change = Pressure::new::<pascal>(-3474.0);
-
-        let mass_flowrate_test: MassRate = 
-            CoriolisFlowmeter::fluid_custom_component_calc_mass_flowrate_from_pressure_change(
-                input_pressure_change, 
-                coriolis_flowmeter.get_cross_sectional_area_immutable(), 
-                coriolis_flowmeter.hydraulic_diameter, 
-                coriolis_flowmeter.fluid_viscosity, 
-                coriolis_flowmeter.fluid_density, 
-                coriolis_flowmeter.get_component_length_immutable(), 
-                coriolis_flowmeter.get_incline_angle_immutable(), 
-                coriolis_flowmeter.get_internal_pressure_source_immutable(), 
-                coriolis_flowmeter.get_custom_loss_correlations_immutable())?;
-
-        // expected mass flowrate is -0.2 kg/s (other direction)
-        approx::assert_relative_eq!(
-            mass_flowrate_test.get::<kilogram_per_second>(),
-            -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
-            max_relative=0.01);
-    }
 
     // methods test for getting mass flowrate from pressure change
     {
