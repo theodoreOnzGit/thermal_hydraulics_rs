@@ -42,11 +42,13 @@
 //!
 //! Btw, I have no affiliation with the Rust foundation.
 
+/// [done transfer]
 /// calculate darcy, fanning friction factor
 /// using churchill correlation
 pub mod churchill_friction_factor;
 
 
+/// [done transfer]
 /// contains functions and/or structs
 /// which help you calcualte a custom fLDK factor
 ///
@@ -54,12 +56,14 @@ pub mod churchill_friction_factor;
 ///
 /// (f L/D +K ) 
 ///
+/// 
 /// f is the darcy firction factor
 /// L/D is length to diameter ratio
 /// K is the form loss
 pub mod custom_fldk;
 
 
+/// [done transfer]
 /// contains functions and/or structs
 /// which help you dimensionalise and nondimensionalise variables
 /// eg Reynold's number
@@ -67,12 +71,14 @@ pub mod dimensionalisation;
 
 
 
+/// [partial test transfer complete]
 /// Contains structs or classes which
 /// help you calculate pressure loss from mass 
 /// flowrate and vice versa for pipes and custom components
 pub mod fluid_component_calculation;
 
 
+/// [therminol component needs test transfer, but with new components]
 /// Contains structs or classes which
 /// help you calculate pressure loss from mass 
 /// flowrate and vice versa for therminol VP 1 or
@@ -80,17 +86,22 @@ pub mod fluid_component_calculation;
 pub mod therminol_component;
 
 
+/// [pending test transfer]
 /// Contains traits which allow you to calculate 
 /// mass flowrate, pressure drop and pressure change
 /// for fluid components in series or parallel
 pub mod fluid_component_collection;
 
 
+/// [no test needed]
 /// contains traits dealing with fluid thermophysical
 /// properties, more generically
+///
+/// no test needed
 pub mod fluid_thermophysical_properties;
 
 
+/// [no test needed]
 /// the prelude, meant to make starting your own fluid components easy to make
 pub mod prelude;
 
