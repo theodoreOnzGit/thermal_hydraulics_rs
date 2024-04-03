@@ -533,18 +533,18 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     impl FluidCustomComponentCalcPressureLoss for TestComponent {
         fn get_custom_loss_correlations(&mut self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn get_custom_loss_correlations_immutable(&self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn set_custom_loss_correlations(
             &mut self,
-            custom_loss_correlation: crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
+            custom_loss_correlation: DimensionlessDarcyLossCorrelations) {
             self.loss_correlation = custom_loss_correlation;
         }
 
