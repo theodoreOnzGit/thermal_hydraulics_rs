@@ -907,3 +907,6 @@ FluidCustomComponentCalcPressureLoss+ FluidComponentTrait{
         return hydrostatic_pressure_increase;
     }
 }
+
+/// unit tests for fluid_component traits 
+pub mod unit_test_fluid_component_traits;
