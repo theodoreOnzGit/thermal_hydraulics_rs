@@ -80,6 +80,10 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
         fn set_mass_flowrate(&mut self, mass_flowrate: MassRate) {
             self.mass_flowrate = mass_flowrate;
+
+            // setting mass flowrate should result in new pressure loss
+            let pressure_loss = self.get_pressure_change_immutable(mass_flowrate);
+            self.pressure_loss = pressure_loss;
         }
 
         fn get_mass_flowrate_from_pressure_loss_immutable(
@@ -101,6 +105,15 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
         fn set_pressure_loss(&mut self, pressure_loss: Pressure) {
             self.pressure_loss = pressure_loss;
+            // setting pressure loss should result in new mass flowrate
+            let mass_flowrate = CoriolisFlowmeter::fluid_custom_component_calc_mass_flowrate_from_pressure_loss(
+                pressure_loss, 
+                self.get_cross_sectional_area_immutable(), 
+                self.get_hydraulic_diameter_immutable(), 
+                self.get_fluid_viscosity_immutable_at_ref_temperature(), 
+                self.get_fluid_density_immutable_at_ref_temperature(), 
+                self.loss_correlation).unwrap();
+            self.mass_flowrate = mass_flowrate;
         }
 
         fn get_pressure_loss_immutable(
@@ -252,6 +265,106 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         approx::assert_relative_eq!(
             mass_flowrate_test.get::<kilogram_per_second>(),
             -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
+            max_relative=0.01);
+    }
+
+    // methods test for getting pressure_change from mass flowrate
+    {
+        // forward test (immutable)
+        
+        let mass_flowrate = fluid_mass_flowrate_expected;
+
+        let pressure_change_forward_test = coriolis_flowmeter.
+            get_pressure_change_immutable(mass_flowrate);
+
+        // expected pressure change is -6335 Pa
+        approx::assert_relative_eq!(
+            pressure_change_forward_test.get::<pascal>(),
+            -6335.0,
+            max_relative=0.01);
+    }
+
+    {
+        // reverse test (immutable)
+
+        let mass_flowrate = -fluid_mass_flowrate_expected;
+
+        let pressure_change_forward_test = coriolis_flowmeter.
+            get_pressure_change_immutable(mass_flowrate);
+
+        // expected pressure change is -3474 Pa
+        approx::assert_relative_eq!(
+            pressure_change_forward_test.get::<pascal>(),
+            -3474.0,
+            max_relative=0.01);
+    }
+
+    // change coriolis_flowmeter to mutable
+    let mut coriolis_flowmeter = coriolis_flowmeter;
+    // methods test for getting mass flowrate from pressure change
+    {
+        // forward test (mutable)
+        
+        let input_pressure_change = Pressure::new::<pascal>(-6335.0);
+        coriolis_flowmeter.set_pressure_change(input_pressure_change);
+
+        let mass_flowrate_test = coriolis_flowmeter.
+            get_mass_flowrate();
+
+        // expected mass flowrate is 0.2 kg/s (positive)
+        approx::assert_relative_eq!(
+            mass_flowrate_test.get::<kilogram_per_second>(),
+            fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
+            max_relative=0.01);
+    }
+
+    {
+        // reverse test (mutable)
+
+        let input_pressure_change = Pressure::new::<pascal>(-3474.0);
+
+        coriolis_flowmeter.set_pressure_change(input_pressure_change);
+
+        let mass_flowrate_test = coriolis_flowmeter.
+            get_mass_flowrate();
+
+        // expected mass flowrate is -0.2 kg/s (other direction)
+        approx::assert_relative_eq!(
+            mass_flowrate_test.get::<kilogram_per_second>(),
+            -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
+            max_relative=0.01);
+    }
+
+    // methods test for getting pressure_change from mass flowrate
+    {
+        // forward test (mutable)
+        
+        let mass_flowrate = fluid_mass_flowrate_expected;
+
+        coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
+        let pressure_change_forward_test = coriolis_flowmeter.
+            get_pressure_change();
+
+        // expected pressure change is -6335 Pa
+        approx::assert_relative_eq!(
+            pressure_change_forward_test.get::<pascal>(),
+            -6335.0,
+            max_relative=0.01);
+    }
+
+    {
+        // reverse test (mutable)
+
+        let mass_flowrate = -fluid_mass_flowrate_expected;
+
+        coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
+        let pressure_change_forward_test = coriolis_flowmeter.
+            get_pressure_change();
+
+        // expected pressure change is -3474 Pa
+        approx::assert_relative_eq!(
+            pressure_change_forward_test.get::<pascal>(),
+            -3474.0,
             max_relative=0.01);
     }
     Ok(())
