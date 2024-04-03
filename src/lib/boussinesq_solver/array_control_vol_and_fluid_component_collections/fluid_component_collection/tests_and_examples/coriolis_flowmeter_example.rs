@@ -275,66 +275,30 @@ pub fn coriolis_flowmeter_empirical_custom_component_example_3(){
             //i'll have to get the pressure change
             //
             // pressure_change = 
-            // - pressure_change
+            // - pressure_loss
             // + hydrostatic pressure change
             // + internal pressure source
             //
 
-            // internal pressure source
-            let internal_pressure_source = 
-                self.get_internal_pressure_source();
-
-            // hydrostatic pressure
-            let incline_angle = 
-                self.get_incline_angle();
-
-            let hydrostatic_pressure_change =
-                self.get_hydrostatic_pressure_change_at_ref_temperature();
-
-            // pressure_loss term
-            //
-            //
-            let pressure_loss = 
-                self.get_pressure_loss();
-
             // now we get pressure change
 
             let pressure_change =
-                - pressure_loss
-                + hydrostatic_pressure_change
-                + internal_pressure_source;
+                - self.pressure_loss
+                + self.get_hydrostatic_pressure_change_immutable_at_ref_temperature()
+                + self.get_internal_pressure_source_immutable();
 
-
-            let cross_sectional_area = 
-                self.get_cross_sectional_area();
-
-            let hydraulic_diameter = 
-                self.get_hydraulic_diameter();
-
-            let fluid_viscosity = 
-                self.get_fluid_viscosity_at_ref_temperature();
-
-            let fluid_density = 
-                self.get_fluid_density_at_ref_temperature();
-
-
-            let absolute_roughness = 
-                self.get_custom_component_absolute_roughness();
-
-            let source_pressure = 
-                self.get_internal_pressure_source();
 
             let mass_flowrate =
                 CoriolisFlowmeter::
                 fluid_custom_component_calc_mass_flowrate_from_pressure_change(
                     pressure_change, 
-                    cross_sectional_area, 
-                    hydraulic_diameter, 
-                    fluid_viscosity, 
-                    fluid_density, 
-                    absolute_roughness, 
-                    incline_angle, 
-                    source_pressure, 
+                    self.get_cross_sectional_area(), 
+                    self.get_hydraulic_diameter_immutable(), 
+                    self.get_fluid_viscosity_immutable_at_ref_temperature(), 
+                    self.get_fluid_density_immutable_at_ref_temperature(), 
+                    self.get_custom_component_absolute_roughness_immutable(), 
+                    self.get_incline_angle_immutable(), 
+                    self.get_internal_pressure_source_immutable(), 
                     self.loss_correlation).unwrap();
 
             self.mass_flowrate = mass_flowrate;
@@ -501,14 +465,13 @@ pub fn coriolis_flowmeter_empirical_custom_component_example_3(){
     pressure_change = Pressure::new::<pascal>(-6335_f64);
 
     flowmeter_object.set_pressure_change(pressure_change);
+    // check that pressure loss is 1430
+    approx::assert_relative_eq!(
+        1430.0,
+        flowmeter_object.get_pressure_loss().value,
+        max_relative=0.01);
 
     mass_flowrate = flowmeter_object.get_mass_flowrate();
-
-
-    approx::assert_relative_eq!(
-        0.2,
-        mass_flowrate.value,
-        max_relative=0.01);
 
     // of these functions and see if they work well
     //
@@ -520,11 +483,17 @@ pub fn coriolis_flowmeter_empirical_custom_component_example_3(){
 
 
     approx::assert_relative_eq!(
-        mass_flowrate.value,
+        0.2,
         flowmeter_object.
         get_mass_flowrate_from_pressure_change_immutable(pressure_change)
         .value,
         max_relative=0.01);
+
+    approx::assert_relative_eq!(
+        0.2,
+        mass_flowrate.value,
+        max_relative=0.01);
+
 
     // now we can get pressure loss in both direction
     // one should be the negative value of the other if
