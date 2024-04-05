@@ -80,7 +80,7 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             self.mass_flowrate = mass_flowrate;
 
             // setting mass flowrate should result in new pressure loss
-            let pressure_loss = self.get_pressure_change_immutable(mass_flowrate);
+            let pressure_loss = self.get_pressure_loss_immutable(mass_flowrate);
             self.pressure_loss = pressure_loss;
         }
 
