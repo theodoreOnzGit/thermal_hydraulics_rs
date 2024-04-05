@@ -99,4 +99,4 @@ pub mod concurrency_and_multithreading_example;
 /// Example 5 
 ///
 /// fluid components in series 
-pub mod fluid_components_in_series;
+pub mod collection_fluid_components_in_series;

@@ -65,8 +65,8 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 ///
 #[derive(Debug,Clone,PartialEq)]
 pub struct FluidComponentCollection {
-    components: Vec<FluidComponent>,
-    orientation: FluidComponentCollectionOreintation
+    pub components: Vec<FluidComponent>,
+    pub orientation: FluidComponentCollectionOreintation
 }
 
 /// tells you whether the components in FluidComponentCollection

@@ -124,7 +124,7 @@ pub fn range_check(material: &Material,
         println!("{}{}{:?}{}{}",
                error_msg,
                error_msg1,
-               material_temperature,
+               temp_value_celsius,
                error_msg3,
                error_msg4);
         dbg!(&material);
@@ -133,7 +133,7 @@ pub fn range_check(material: &Material,
 
 
     if temp_value_celsius > high_temp_value_celsius {
-        let error_msg = "Your fluid temperature \n";
+        let error_msg = "Your material temperature \n";
         let error_msg1 = "is too high :";
         let error_msg3 = "C \n";
         let error_msg4 = "\n the max is".to_owned()+ &high_temp_value_celsius.to_string()+"C";
@@ -141,7 +141,7 @@ pub fn range_check(material: &Material,
         println!("{}{}{:?}{}{}",
                error_msg,
                error_msg1,
-               material_temperature,
+               temp_value_celsius,
                error_msg3,
                error_msg4);
         dbg!(&material);

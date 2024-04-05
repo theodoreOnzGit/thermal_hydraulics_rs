@@ -383,6 +383,35 @@ pub fn simple_fluid_collection_example_1 () {
     let air_pipe_9 = AirPipe::new();
     let air_pipe_10 = AirPipe::new();
 
+    // honestly, I am quite unsure as to how to structure the 
+    //
+    // fluid mechanics and thermal hydraulics calculations.
+    // 
+    //
+    // there are several ways we can do this... 
+    //
+    //
+    // We could first manage one component at a time, and manually 
+    // sum up the pressure drop contributions of each component as well 
+    // as manually update each of the component temperatures
+    //
+    // This, however, is a very cumbersome way to coding. It is extremely 
+    // error prone.
+    //
+    // To abstract away some of this, we could have individual heat 
+    // transfer entities, and at each timestep, clone their relevant fluid 
+    // arrays into a FluidComponentCollection. These FluidComponentCollections 
+    // can then be arranged into a FluidComponentSuperCollection
+    // and then the relevant fluid mechanics calculations could be 
+    // performed
+    //
+    // 
+
+
+
+
+
+
 
 
 }

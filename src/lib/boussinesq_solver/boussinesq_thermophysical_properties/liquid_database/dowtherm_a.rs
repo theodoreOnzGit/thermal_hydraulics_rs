@@ -66,6 +66,7 @@ use uom::si::available_energy::joule_per_kilogram;
 extern crate peroxide;
 use peroxide::prelude::*;
 
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// function to obtain dowtherm A density
@@ -307,43 +308,14 @@ pub fn get_temperature_from_enthalpy(
 pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) 
     -> Result<bool,ThermalHydraulicsLibError>{
 
-    // first i convert the fluidTemp object into a degree 
-    // celsius
-    let temp_value_celsius = 
-        fluid_temp.get::<degree_celsius>();
+        // first i convert the fluidTemp object into a degree 
+        // celsius
 
-    if temp_value_celsius < 20.0 {
-        let error_msg = "Your fluid temperature \n";
-        let error_msg1 = "is too low :";
-        let error_msg3 = "C \n";
-        let error_msg4 = "\n the minimum is 20C";
+        range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
+            fluid_temp, 
+            ThermodynamicTemperature::new::<degree_celsius>(180.0), 
+            ThermodynamicTemperature::new::<degree_celsius>(20.0))?;
 
+        return Ok(true);
 
-        println!("{}{}{:?}{}{}",
-               error_msg,
-               error_msg1,
-               fluid_temp,
-               error_msg3,
-               error_msg4);
-        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
     }
-
-
-    if temp_value_celsius > 180.0 {
-        let error_msg = "Your fluid temperature \n";
-        let error_msg1 = "is too high :";
-        let error_msg3 = "C \n";
-        let error_msg4 = "\n the max is 180C";
-
-        println!("{}{}{:?}{}{}",
-               error_msg,
-               error_msg1,
-               fluid_temp,
-               error_msg3,
-               error_msg4);
-        return Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError);
-    }
-
-    return Ok(true);
-
-}
