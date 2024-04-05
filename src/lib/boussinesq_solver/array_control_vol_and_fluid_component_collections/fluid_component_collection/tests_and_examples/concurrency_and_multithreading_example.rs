@@ -1,12 +1,18 @@
-/// Example 3,
+use std::{ops::Deref, sync::{Arc, Mutex}, thread};
+
+/// Example 4 
+///
+///
+/// Testing if fluid component structs can be put into threads with move closures
 /// 
-/// suppose now we have a coriolis flowmeter
+/// suppose now we have a coriolis flowmeter, same as in example 3
 /// with a custom friction factor correlation
 ///
 /// (f_darcy L/D + K) = 18 + 93000/Re^1.35
 ///
 /// we shall use water to push flow through this coriolis flowmeter
-///
+/// 
+/// Also using mutex locks and Arc pointers to move it into the loop
 #[test]
 pub fn coriolis_flowmeter_empirical_custom_component_example_3() -> Result<(),
 crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
@@ -233,15 +239,28 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         fluid_viscosity,
         absolute_roughness,
     };
+    // create pointers and clone 
+
+    let coriolis_flowmeter_ptr = Arc::new(Mutex::new(
+            coriolis_flowmeter
+    ));
+
+    let coriolis_flowmeter_ptr_clone_one = coriolis_flowmeter_ptr.clone();
+    let coriolis_flowmeter_ptr_clone_two = coriolis_flowmeter_ptr.clone();
+    let coriolis_flowmeter_ptr_clone_three = coriolis_flowmeter_ptr.clone();
+    let coriolis_flowmeter_ptr_clone_four = coriolis_flowmeter_ptr.clone();
 
 
     // methods test for getting mass flowrate from pressure change
-    {
+    let pressure_chg_test_fwd = move||{
         // forward test (immutable)
         
         let input_pressure_change = Pressure::new::<pascal>(-6335.0);
 
-        let mass_flowrate_test = coriolis_flowmeter.
+        let mass_flowrate_test = coriolis_flowmeter_ptr_clone_one.
+            lock().
+            unwrap().
+            deref().
             get_mass_flowrate_from_pressure_change_immutable(input_pressure_change);
 
         // expected mass flowrate is 0.2 kg/s (positive)
@@ -249,14 +268,19 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             mass_flowrate_test.get::<kilogram_per_second>(),
             fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
             max_relative=0.01);
-    }
+    };
+    let concurrent_thread_1 = thread::spawn(pressure_chg_test_fwd);
 
-    {
+
+    let pressure_chg_test_backwd = move||{
         // reverse test (immutable)
 
         let input_pressure_change = Pressure::new::<pascal>(-3474.0);
 
-        let mass_flowrate_test = coriolis_flowmeter.
+        let mass_flowrate_test = coriolis_flowmeter_ptr_clone_two.
+            lock().
+            unwrap().
+            deref().
             get_mass_flowrate_from_pressure_change_immutable(input_pressure_change);
 
         // expected mass flowrate is -0.2 kg/s (other direction)
@@ -264,15 +288,20 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             mass_flowrate_test.get::<kilogram_per_second>(),
             -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
             max_relative=0.01);
-    }
+    };
+
+    let concurrent_thread_2 = thread::spawn(pressure_chg_test_backwd);
 
     // methods test for getting pressure_change from mass flowrate
-    {
+    let mass_flowrate_fwd = move||{
         // forward test (immutable)
         
         let mass_flowrate = fluid_mass_flowrate_expected;
 
-        let pressure_change_forward_test = coriolis_flowmeter.
+        let pressure_change_forward_test = coriolis_flowmeter_ptr_clone_three.
+            lock().
+            unwrap().
+            deref().
             get_pressure_change_immutable(mass_flowrate);
 
         // expected pressure change is -6335 Pa
@@ -280,14 +309,20 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             pressure_change_forward_test.get::<pascal>(),
             -6335.0,
             max_relative=0.01);
-    }
+    };
 
-    {
+    let concurrent_thread_3 = thread::spawn(mass_flowrate_fwd);
+
+
+    let mass_flowrate_backwd = move ||{
         // reverse test (immutable)
 
         let mass_flowrate = -fluid_mass_flowrate_expected;
 
-        let pressure_change_forward_test = coriolis_flowmeter.
+        let pressure_change_forward_test = coriolis_flowmeter_ptr_clone_four.
+            lock().
+            unwrap().
+            deref().
             get_pressure_change_immutable(mass_flowrate);
 
         // expected pressure change is -3474 Pa
@@ -295,75 +330,81 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             pressure_change_forward_test.get::<pascal>(),
             -3474.0,
             max_relative=0.01);
-    }
+    };
+    let concurrent_thread_4 = thread::spawn(mass_flowrate_backwd);
 
-    // change coriolis_flowmeter to mutable
-    let mut coriolis_flowmeter = coriolis_flowmeter;
-    // methods test for getting mass flowrate from pressure change
-    {
-        // forward test (mutable)
-        
-        let input_pressure_change = Pressure::new::<pascal>(-6335.0);
-        coriolis_flowmeter.set_pressure_change(input_pressure_change);
+    concurrent_thread_1.join().unwrap();
+    concurrent_thread_2.join().unwrap();
+    concurrent_thread_3.join().unwrap();
+    concurrent_thread_4.join().unwrap();
 
-        let mass_flowrate_test = coriolis_flowmeter.
-            get_mass_flowrate();
+    //// change coriolis_flowmeter to mutable
+    //let mut coriolis_flowmeter = coriolis_flowmeter;
+    //// methods test for getting mass flowrate from pressure change
+    //{
+    //    // forward test (mutable)
+    //    
+    //    let input_pressure_change = Pressure::new::<pascal>(-6335.0);
+    //    coriolis_flowmeter.set_pressure_change(input_pressure_change);
 
-        // expected mass flowrate is 0.2 kg/s (positive)
-        approx::assert_relative_eq!(
-            mass_flowrate_test.get::<kilogram_per_second>(),
-            fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
-            max_relative=0.01);
-    }
+    //    let mass_flowrate_test = coriolis_flowmeter.
+    //        get_mass_flowrate();
 
-    {
-        // reverse test (mutable)
+    //    // expected mass flowrate is 0.2 kg/s (positive)
+    //    approx::assert_relative_eq!(
+    //        mass_flowrate_test.get::<kilogram_per_second>(),
+    //        fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
+    //        max_relative=0.01);
+    //}
 
-        let input_pressure_change = Pressure::new::<pascal>(-3474.0);
+    //{
+    //    // reverse test (mutable)
 
-        coriolis_flowmeter.set_pressure_change(input_pressure_change);
+    //    let input_pressure_change = Pressure::new::<pascal>(-3474.0);
 
-        let mass_flowrate_test = coriolis_flowmeter.
-            get_mass_flowrate();
+    //    coriolis_flowmeter.set_pressure_change(input_pressure_change);
 
-        // expected mass flowrate is -0.2 kg/s (other direction)
-        approx::assert_relative_eq!(
-            mass_flowrate_test.get::<kilogram_per_second>(),
-            -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
-            max_relative=0.01);
-    }
+    //    let mass_flowrate_test = coriolis_flowmeter.
+    //        get_mass_flowrate();
 
-    // methods test for getting pressure_change from mass flowrate
-    {
-        // forward test (mutable)
-        
-        let mass_flowrate = fluid_mass_flowrate_expected;
+    //    // expected mass flowrate is -0.2 kg/s (other direction)
+    //    approx::assert_relative_eq!(
+    //        mass_flowrate_test.get::<kilogram_per_second>(),
+    //        -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
+    //        max_relative=0.01);
+    //}
 
-        coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
-        let pressure_change_forward_test = coriolis_flowmeter.
-            get_pressure_change();
+    //// methods test for getting pressure_change from mass flowrate
+    //{
+    //    // forward test (mutable)
+    //    
+    //    let mass_flowrate = fluid_mass_flowrate_expected;
 
-        // expected pressure change is -6335 Pa
-        approx::assert_relative_eq!(
-            pressure_change_forward_test.get::<pascal>(),
-            -6335.0,
-            max_relative=0.01);
-    }
+    //    coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
+    //    let pressure_change_forward_test = coriolis_flowmeter.
+    //        get_pressure_change();
 
-    {
-        // reverse test (mutable)
+    //    // expected pressure change is -6335 Pa
+    //    approx::assert_relative_eq!(
+    //        pressure_change_forward_test.get::<pascal>(),
+    //        -6335.0,
+    //        max_relative=0.01);
+    //}
 
-        let mass_flowrate = -fluid_mass_flowrate_expected;
+    //{
+    //    // reverse test (mutable)
 
-        coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
-        let pressure_change_forward_test = coriolis_flowmeter.
-            get_pressure_change();
+    //    let mass_flowrate = -fluid_mass_flowrate_expected;
 
-        // expected pressure change is -3474 Pa
-        approx::assert_relative_eq!(
-            pressure_change_forward_test.get::<pascal>(),
-            -3474.0,
-            max_relative=0.01);
-    }
+    //    coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
+    //    let pressure_change_forward_test = coriolis_flowmeter.
+    //        get_pressure_change();
+
+    //    // expected pressure change is -3474 Pa
+    //    approx::assert_relative_eq!(
+    //        pressure_change_forward_test.get::<pascal>(),
+    //        -3474.0,
+    //        max_relative=0.01);
+    //}
     Ok(())
 }

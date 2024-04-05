@@ -39,3 +39,9 @@ pub mod water_pipe_example;
 /// also, the programming is rather tedious
 /// because of lifetimes, but this is one example of how it can be done
 pub mod coriolis_flowmeter_example;
+
+/// Example 4 
+///
+///
+/// Testing if fluid component structs can be put into threads with move closures
+pub mod concurrency_and_multithreading_example;
