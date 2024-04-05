@@ -314,7 +314,7 @@ impl DimensionlessDarcyLossCorrelations {
 
 impl FluidArray {
 
-    /// gets mass flowrate for the fluid arary
+    /// gets mass flowrate for the fluid array
     pub fn get_mass_flowrate(&mut self) -> MassRate  {
         self.mass_flowrate
     }
@@ -356,13 +356,6 @@ impl FluidArray {
     /// gets the pressure loss for the fluid array
     /// using a mutable borrow
     pub fn get_pressure_loss(&mut self) -> Pressure {
-
-        // utilise existing mass flowrate to get the pressure loss 
-
-        let mass_flowrate = self.mass_flowrate;
-
-        let pressure_loss = self.get_pressure_loss_immutable(mass_flowrate);
-        self.set_pressure_loss(pressure_loss);
         self.pressure_loss
     }
 
