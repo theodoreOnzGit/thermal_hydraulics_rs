@@ -356,12 +356,12 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         let mass_flowrate = -fluid_mass_flowrate_expected;
 
         coriolis_flowmeter.set_mass_flowrate(mass_flowrate);
-        let pressure_change_forward_test = coriolis_flowmeter.
+        let pressure_change_reverse_test = coriolis_flowmeter.
             get_pressure_change();
 
         // expected pressure change is -3474 Pa
         approx::assert_relative_eq!(
-            pressure_change_forward_test.get::<pascal>(),
+            pressure_change_reverse_test.get::<pascal>(),
             -3474.0,
             max_relative=0.01);
     }
