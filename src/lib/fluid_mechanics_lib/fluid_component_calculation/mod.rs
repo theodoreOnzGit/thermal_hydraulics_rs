@@ -75,15 +75,6 @@ pub mod fluid_component_trait;
 pub use fluid_component_trait::*;
 
 
-/// primitive tests and examples to use the FluidComponent 
-/// Traits
-pub mod tests_and_examples_simple;
-
-
-
-/// tests to show use of the traits in concurrency situations
-/// with thread spawn and everything...
-pub mod tests_and_examples_concurrency_multithreading;
 
 
 

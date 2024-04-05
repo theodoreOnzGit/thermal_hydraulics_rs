@@ -231,7 +231,7 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         a, b, c);
     
     // create object 
-    let mut coriolis_flowmeter = CoriolisFlowmeter{ 
+    let coriolis_flowmeter = CoriolisFlowmeter{ 
         loss_correlation,
         mass_flowrate: MassRate::ZERO,
         pressure_loss: Pressure::ZERO,
@@ -348,7 +348,7 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     let coriolis_flowmeter_ptr_clone_seven = coriolis_flowmeter_ptr.clone();
     let coriolis_flowmeter_ptr_clone_eight = coriolis_flowmeter_ptr.clone();
     // methods test for getting mass flowrate from pressure change
-    {
+    let mass_flowrate_fwd_mutable = move||{
         // forward test (mutable)
         
         let input_pressure_change = Pressure::new::<pascal>(-6335.0);
@@ -370,9 +370,11 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             mass_flowrate_test.get::<kilogram_per_second>(),
             fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
             max_relative=0.01);
-    }
+    };
 
-    {
+    let concurrent_thread_5 = thread::spawn(mass_flowrate_fwd_mutable);
+
+    let mass_flworate_backwd_mutable = move||{
         // reverse test (mutable)
 
         let input_pressure_change = Pressure::new::<pascal>(-3474.0);
@@ -395,21 +397,24 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             mass_flowrate_test.get::<kilogram_per_second>(),
             -fluid_mass_flowrate_expected.get::<kilogram_per_second>(),
             max_relative=0.01);
-    }
+    };
+
+    let concurrent_thread_6 = thread::spawn(mass_flworate_backwd_mutable);
+
 
     // methods test for getting pressure_change from mass flowrate
-    {
+    let pressure_chg_test_fwd_mutable = move||{
         // forward test (mutable)
         
         let mass_flowrate = fluid_mass_flowrate_expected;
 
-        coriolis_flowmeter_ptr_clone_six
+        coriolis_flowmeter_ptr_clone_seven
             .lock()
             .unwrap()
             .deref_mut()
             .set_mass_flowrate(mass_flowrate);
         let pressure_change_forward_test = 
-            coriolis_flowmeter_ptr_clone_six
+            coriolis_flowmeter_ptr_clone_seven
             .lock()
             .unwrap()
             .deref_mut()
@@ -420,20 +425,21 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             pressure_change_forward_test.get::<pascal>(),
             -6335.0,
             max_relative=0.01);
-    }
+    };
+    let concurrent_thread_7 = thread::spawn(pressure_chg_test_fwd_mutable);
 
-    {
+    let pressure_chg_test_backwd_mutable = move||{
         // reverse test (mutable)
 
         let mass_flowrate = -fluid_mass_flowrate_expected;
 
-        coriolis_flowmeter_ptr_clone_six
+        coriolis_flowmeter_ptr_clone_eight
             .lock()
             .unwrap()
             .deref_mut()
             .set_mass_flowrate(mass_flowrate);
         let pressure_change_reverse_test = 
-            coriolis_flowmeter_ptr_clone_six
+            coriolis_flowmeter_ptr_clone_eight
             .lock()
             .unwrap()
             .deref_mut()
@@ -444,6 +450,13 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             pressure_change_reverse_test.get::<pascal>(),
             -3474.0,
             max_relative=0.01);
-    }
+    };
+    let concurrent_thread_8 = thread::spawn(pressure_chg_test_backwd_mutable);
+
+    concurrent_thread_5.join().unwrap();
+    concurrent_thread_6.join().unwrap();
+    concurrent_thread_7.join().unwrap();
+    concurrent_thread_8.join().unwrap();
+
     Ok(())
 }
