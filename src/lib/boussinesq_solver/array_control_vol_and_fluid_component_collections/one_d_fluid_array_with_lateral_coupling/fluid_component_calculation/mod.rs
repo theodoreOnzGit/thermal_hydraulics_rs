@@ -321,7 +321,10 @@ impl FluidArray {
 
     /// sets the mass flowrate for the fluid array
     pub fn set_mass_flowrate(&mut self, mass_flowrate: MassRate) {
-        self.mass_flowrate = mass_flowrate
+        self.mass_flowrate = mass_flowrate;
+        // setting mass flowrate should result in new pressure loss
+        let pressure_loss = self.get_pressure_loss_immutable(mass_flowrate);
+        self.pressure_loss = pressure_loss;
     }
 
     /// gets the mass flowrate for the fluid array
@@ -334,7 +337,7 @@ impl FluidArray {
         let fluid_density = self.get_fluid_density_immutable();
         let xs_area = self.xs_area;
 
-        let reynolds_number: Ratio = self.pipe_loss_properties. 
+        let reynolds_number: Ratio = self.fluid_component_loss_properties. 
             get_reynolds_from_pressure_loss(
                 pressure_loss,
                 hydraulic_diameter,
@@ -366,7 +369,11 @@ impl FluidArray {
     /// sets the pressure loss for the fluid array
     /// using a mutable borrow
     pub fn set_pressure_loss(&mut self, pressure_loss: Pressure) {
-        self.pressure_loss = pressure_loss
+        self.pressure_loss = pressure_loss;
+        // setting pressure loss should result in new mass flowrate
+        let mass_flowrate = self.get_mass_flowrate_from_pressure_loss_immutable(
+            pressure_loss);
+        self.mass_flowrate = mass_flowrate;
     }
 
     /// to get mass flowrate from pressure loss, we need to 
@@ -390,7 +397,7 @@ impl FluidArray {
         // this should be dependency injected at 
         // object construction time
 
-        let pressure_loss = self.pipe_loss_properties.
+        let pressure_loss = self.fluid_component_loss_properties.
             get_pressure_loss_from_reynolds(
                 reynolds_number,
                 hydraulic_diameter,

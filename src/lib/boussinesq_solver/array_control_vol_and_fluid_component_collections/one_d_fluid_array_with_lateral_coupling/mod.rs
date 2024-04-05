@@ -92,8 +92,9 @@ pub struct FluidArray {
     /// internal pressure source 
     internal_pressure_source: Pressure,
 
-    /// pipe loss properties 
-    pub pipe_loss_properties: DimensionlessDarcyLossCorrelations,
+    /// fluid component loss properties 
+    /// be it for pipe or something else
+    pub fluid_component_loss_properties: DimensionlessDarcyLossCorrelations,
 
     /// nusselt correlation 
     pub nusselt_correlation: NusseltCorrelation,

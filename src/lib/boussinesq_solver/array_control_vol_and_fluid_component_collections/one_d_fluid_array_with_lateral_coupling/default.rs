@@ -111,7 +111,7 @@ impl Default for FluidArray {
             wetted_perimeter: PI * hydraulic_diameter,
             incline_angle: Angle::new::<radian>(0.0),
             internal_pressure_source: Pressure::new::<atmosphere>(0.0),
-            pipe_loss_properties: pipe_losses,
+            fluid_component_loss_properties: pipe_losses,
             nusselt_correlation: pipe_nusselt,
             lateral_adjacent_array_temperature_vector: vec![],
             lateral_adjacent_array_conductance_vector: vec![],
