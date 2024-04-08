@@ -47,6 +47,9 @@
 /// Professor Per F. Peterson
 
 use super::fluid_component_collection::*;
+use super::super_collection_series_and_parallel_functions::FluidComponentSuperCollectionSeriesAssociatedFunctions;
+use super::super_collection_series_and_parallel_functions::FluidComponentSuperCollectionParallelAssociatedFunctions;
+use uom::si::f64::*;
 
 /// A struct containing a vector of fluid component collections
 #[derive(Debug,Clone,PartialEq)]
@@ -54,6 +57,9 @@ pub struct FluidComponentSuperCollection {
     /// this vector contains a collection of fluid component collections
     /// usually, these are in series
     pub fluid_component_super_vector: Vec<FluidComponentCollection>,
+    /// orientation of the fluid component collections 
+    /// are these in series or parallel 
+    pub orientation: FluidComponentCollectionOreintation,
 }
 
 
@@ -177,13 +183,89 @@ impl FluidComponentSuperCollection {
         self.set_vector(fluid_component_super_vector_mutable);
     }
 
+    /// sets the orientation to series 
+    pub fn set_oritentation_to_series(&mut self){
+        self.orientation = FluidComponentCollectionOreintation::Series
+    }
+
+    /// sets the orientation to parallel 
+    pub fn set_oritentation_to_parallel(&mut self){
+        self.orientation = FluidComponentCollectionOreintation::Parallel
+    }
 
 
 }
 
 /// the default is to provide an empty vector
+/// and arrange it in parallel
 impl Default for FluidComponentSuperCollection {
     fn default() -> Self {
-        Self { fluid_component_super_vector: vec![] }
+        Self 
+        { 
+            fluid_component_super_vector: vec![], 
+            orientation: FluidComponentCollectionOreintation::Parallel 
+        }
+    }
+}
+
+/// brings the associated functions for series super collections into scope 
+/// (not tested yet)
+impl FluidComponentSuperCollectionSeriesAssociatedFunctions for FluidComponentSuperCollection {
+
+}
+/// brings the associated functions for parallel super collections into scope 
+impl FluidComponentSuperCollectionParallelAssociatedFunctions for FluidComponentSuperCollection {
+
+}
+
+/// fluid component collection methods trait 
+/// allows you to get and set pressure change from mass flowrate and vice 
+/// versa
+
+
+impl FluidComponentCollectionMethods for FluidComponentSuperCollection {
+    fn get_pressure_change(
+        &self, 
+        fluid_mass_flowrate: MassRate) -> Pressure {
+        
+        let orientation = &self.orientation;
+
+        match orientation {
+            FluidComponentCollectionOreintation::Parallel => {
+                let fluid_component_vector = &self.fluid_component_super_vector;
+                <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
+                    calculate_pressure_change_from_mass_flowrate(
+                        fluid_mass_flowrate, fluid_component_vector)
+            },
+            FluidComponentCollectionOreintation::Series => {
+                let fluid_component_vector = &self.fluid_component_super_vector;
+                <Self as FluidComponentSuperCollectionSeriesAssociatedFunctions>::
+                    calculate_pressure_change_from_mass_flowrate(
+                        fluid_mass_flowrate, fluid_component_vector)
+            },
+        }
+
+
+    }
+
+    fn get_mass_flowrate_from_pressure_change(
+        &self,
+        pressure_change: Pressure) -> MassRate {
+        let orientation = &self.orientation;
+
+        match orientation {
+            FluidComponentCollectionOreintation::Parallel => {
+                let fluid_component_vector = &self.fluid_component_super_vector;
+                <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
+                    calculate_mass_flowrate_from_pressure_change(
+                        pressure_change, fluid_component_vector)
+            },
+            FluidComponentCollectionOreintation::Series => {
+                let fluid_component_vector = &self.fluid_component_super_vector;
+                <Self as FluidComponentSuperCollectionSeriesAssociatedFunctions>::
+                    calculate_mass_flowrate_from_pressure_change(
+                        pressure_change, fluid_component_vector)
+            },
+        }
     }
 }
