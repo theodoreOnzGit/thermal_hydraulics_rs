@@ -208,8 +208,7 @@ pub fn new_static_mixer_41() -> InsulatedFluidComponent {
 }
 
 /// creates a new ctah vertical for CIET using the RELAP5-3D and SAM parameters 
-/// Component 6 in Compact Integral Effects Test (CIET)
-/// CTAH branch  (also known as static mixer 41)
+/// in Compact Integral Effects Test (CIET)
 ///
 /// this is inactive, so it behaves more like a pipe rather than a 
 /// heat exchanger
