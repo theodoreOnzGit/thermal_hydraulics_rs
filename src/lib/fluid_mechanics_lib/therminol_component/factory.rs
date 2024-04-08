@@ -215,33 +215,6 @@ impl CTAHHorizontal {
     }
 }
 
-/// Static mixer pipe 8a
-/// adjacent to MX-40 in the CTAH branch
-pub struct Pipe8a {
-    // pipe 8a
-    // otherwise known as the static mixer pipe 8a
-}
-
-impl Pipe8a {
-
-    /// returns and instance of pipe 8a
-    pub fn get() -> DowthermAPipe {
-        let pipe_8a: DowthermAPipe
-            = StandardPipeProperties::new(
-                "static_mixer_pipe_8a".to_string(),
-                2.79e-2, // component diameter in meters
-                0.22245, // component length in meters
-                0.015, // estimated component wall roughness (doesn't matter here,
-                       // but i need to fill in
-                       // in millimeters
-                -90.0, // angle in degrees
-                3.75 // form loss K value
-                );
-
-        return pipe_8a;
-    }
-
-}
 
 /// static mixer 40 (MX-40) on CIET diagram
 /// just after CTAH (AKA IHX)
