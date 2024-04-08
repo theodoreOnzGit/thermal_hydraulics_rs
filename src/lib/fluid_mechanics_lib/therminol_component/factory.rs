@@ -65,6 +65,86 @@ use super::StandardPipeProperties;
 
 
 
+/// Vertical part of Coiled Tube Air Heater (CTAH)
+/// label component 7a
+/// in Compact Integral Effects Test (CIET)
+/// CTAH branch 
+///
+pub struct CTAHVertical {
+
+    // coiled tube air heater,
+    // uses pipe friction factors but has a constant K value
+    // also pipe isn't circular
+    // so we'll have to use custom fldk to help
+    // label 7a
+}
+
+/// CTAH vertical is actually an fldk type pipe
+///
+/// but because I was quickly copying templates from
+/// other fldk components, it became easy just
+/// to force the vertical CTAH to be a custom fldk component
+///
+impl CTAHVertical {
+
+
+    /// CTAH has a darcy friction factor from churchill
+    /// correlation
+    pub fn custom_darcy(mut reynolds_number: f64, roughness_ratio: f64) -> f64 {
+
+        if roughness_ratio < 0.0 {
+            panic!("roughness_ratio < 0.0");
+        }
+
+        use crate::fluid_mechanics_lib::churchill_friction_factor;
+        let mut reverse_flow = false;
+
+        // the user account for reverse flow scenarios...
+        if reynolds_number < 0.0 {
+            reverse_flow = true;
+            reynolds_number = reynolds_number * -1.0;
+        }
+
+        let darcy = churchill_friction_factor::darcy(reynolds_number,
+                                                     roughness_ratio);
+
+        if reverse_flow {
+            return -darcy;
+        }
+        return darcy;
+    }
+
+    /// CTAH has a fixed K value of 3.9 
+    pub fn custom_k(reynolds_number: f64) -> f64 {
+
+        let custom_k_value = 3.9;
+
+        if reynolds_number < 0.0 {
+            return -custom_k_value
+        }
+
+        return custom_k_value;
+
+    }
+
+    /// returns an instance of the vertical component of CTAH
+    pub fn get() -> DowthermACustomComponent {
+
+        let ctah_vertical: DowthermACustomComponent
+            = StandardCustomComponentProperties::new(
+                "ctah_vertical_label_7a".to_string(),
+                1.19e-2, // component diameter in meters
+                1.33e-3, //component area in sq meters
+                0.3302, // component length in meters
+                0.015, // estimated component wall roughness (doesn't matter here,
+                       // but i need to fill in
+                -90.0, //incline angle in degrees
+                &CTAHVertical::custom_darcy,
+                &CTAHVertical::custom_k);
+
+        return ctah_vertical;
+    }
+}
 
 /// Horizontal part of Coiled Tube Air Heater (CTAH)
 /// label component 7b

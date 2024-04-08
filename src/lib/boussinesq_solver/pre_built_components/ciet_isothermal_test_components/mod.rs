@@ -247,6 +247,7 @@ pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
     let form_loss = Ratio::new::<ratio>(3.9);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
     let id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.000406);
     let od = id + pipe_thickness;
@@ -270,6 +271,7 @@ pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
         od, 
         pipe_length, 
         hydraulic_diameter, 
+        surface_roughness, 
         pipe_shell_material, 
         pipe_fluid, 
         htc_to_ambient, 

@@ -1,3 +1,4 @@
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -44,6 +45,12 @@ pub struct NonInsulatedFluidComponent {
     /// pipe inner diameter 
     pub id: Length,
 
+    /// flow area 
+    pub flow_area: Area,
+
+    /// loss correlation 
+    pub custom_component_loss_correlation: DimensionlessDarcyLossCorrelations
+
 }
 
 impl NonInsulatedFluidComponent {
@@ -88,6 +95,7 @@ impl NonInsulatedFluidComponent {
         od: Length,
         pipe_length: Length,
         hydraulic_diameter: Length,
+        surface_roughness: Length,
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
@@ -127,6 +135,92 @@ impl NonInsulatedFluidComponent {
             heat_transfer_to_ambient: htc_to_ambient,
             od,
             id,
+            flow_area,
+            custom_component_loss_correlation: DimensionlessDarcyLossCorrelations::
+                new_pipe(pipe_length, 
+                    surface_roughness, 
+                    hydraulic_diameter, 
+                    form_loss),
+        };
+    }
+    /// constructs a new insulated pipe
+    ///
+    /// you need to supply the initial temperature, ambient temperature
+    /// as well as all the pipe parameters 
+    ///
+    /// The loss coefficient is calculated as:
+    ///
+    /// f_darcy = form_loss + b Re^(c)
+    ///
+    /// b is the reynolds_coefficient
+    /// c is reynolds power
+    pub fn new_custom_component(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
+        solid_pressure: Pressure,
+        flow_area: Area,
+        incline_angle: Angle,
+        form_loss: Ratio,
+        reynolds_coefficient: Ratio,
+        reynolds_power: f64,
+        shell_id: Length,
+        shell_od: Length,
+        component_length: Length,
+        hydraulic_diameter: Length,
+        pipe_shell_material: SolidMaterial,
+        pipe_fluid: LiquidMaterial,
+        htc_to_ambient: HeatTransfer,
+        user_specified_inner_nodes: usize,) -> NonInsulatedFluidComponent {
+
+        // inner fluid_array
+
+        let a = form_loss;
+        let b = reynolds_coefficient;
+        let c = reynolds_power;
+
+        let fluid_array: FluidArray = 
+            FluidArray::new_custom_component(
+                component_length, 
+                hydraulic_diameter, 
+                flow_area, 
+                initial_temperature, 
+                fluid_pressure, 
+                pipe_fluid, 
+                form_loss, 
+                b, 
+                c, 
+                user_specified_inner_nodes, 
+                incline_angle);
+
+        // now the outer pipe array
+        let pipe_shell = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            shell_id,
+            shell_od,
+            initial_temperature,
+            solid_pressure,
+            pipe_shell_material,
+            user_specified_inner_nodes 
+        );
+
+
+        // custom component loss correlation
+        //
+
+
+        let custom_component_loss_correlation = DimensionlessDarcyLossCorrelations::
+            new_simple_reynolds_power_component(a, b, c);
+
+        return Self { inner_nodes: user_specified_inner_nodes,
+            pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),
+            pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
+            ambient_temperature,
+            heat_transfer_to_ambient: htc_to_ambient,
+            od: shell_od,
+            id: shell_id,
+            flow_area,
+            custom_component_loss_correlation,
         };
     }
 }
