@@ -60,6 +60,7 @@ use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMateria
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 
 use super::insulated_pipes_and_fluid_components::InsulatedFluidComponent;
+use super::non_insulated_fluid_components::NonInsulatedFluidComponent;
 
 /// creates a new pipe6a for CIET using the RELAP5-3D and SAM parameters 
 /// Pipe6a in Compact Integral Effects Test (CIET)
@@ -206,3 +207,73 @@ pub fn new_static_mixer_41() -> InsulatedFluidComponent {
     insulated_component
 }
 
+/// creates a new ctah vertical for CIET using the RELAP5-3D and SAM parameters 
+/// Component 6 in Compact Integral Effects Test (CIET)
+/// CTAH branch  (also known as static mixer 41)
+///
+/// this is inactive, so it behaves more like a pipe rather than a 
+/// heat exchanger
+///
+/// Vertical part of Coiled Tube Air Heater (CTAH)
+/// label component 7a
+/// in Compact Integral Effects Test (CIET)
+/// CTAH branch 
+///
+/// It is NOT insulated by the way
+///
+/// It is a static mixer pipe
+/// otherwise known as the static mixer pipe 6a
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+///
+pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    let pipe_length = Length::new::<meter>(0.3302);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(-90.0);
+    let form_loss = Ratio::new::<ratio>(3.9);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 2 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is zero
+    let user_specified_inner_nodes = 0; 
+
+    let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        id, 
+        od, 
+        pipe_length, 
+        hydraulic_diameter, 
+        pipe_shell_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes);
+
+    non_insulated_component
+}
