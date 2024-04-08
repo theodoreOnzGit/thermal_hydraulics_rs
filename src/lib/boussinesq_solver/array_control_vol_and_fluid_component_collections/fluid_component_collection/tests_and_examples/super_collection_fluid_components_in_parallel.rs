@@ -72,8 +72,6 @@ pub fn super_fluid_collection_example_7 () {
     use uom::si::length::meter;
     use uom::si::angle::degree;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-
     use uom::si::{pressure::atmosphere, thermodynamic_temperature::kelvin};
 
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
@@ -185,13 +183,71 @@ pub fn super_fluid_collection_example_7 () {
         collection_2,
         collection_3];
 
+    
 
     // you can initiate a super collection using a struct as per normal
     let mut super_collection = FluidComponentSuperCollection::default();
     super_collection.set_vector(collection_vector);
+    super_collection.set_oritentation_to_parallel();
+
+    // forward tests 
+
+    {
+
+        let test_pressure = Pressure::new::<pascal>(5000.0);
 
 
+        let super_collection_mass_flowrate = 
+            super_collection.
+            get_mass_flowrate_from_pressure_change(test_pressure);
 
+        // if this is set up correct, we expect about -2.61 kg/s of mass flowrate
+        approx::assert_relative_eq!(
+            -2.61,
+            super_collection_mass_flowrate.get::<kilogram_per_second>(),
+            max_relative=0.001);
 
+        // now, let's check internal consistency if setting a mass flowrate 
+        // of -2.61 kg/s gets the right pressure drop 
 
+        let test_mass_flowrate = MassRate::new::<kilogram_per_second>(-2.61);
+
+        let super_collection_pressure_change = 
+            super_collection.
+            get_pressure_change(test_mass_flowrate);
+
+        // if this is set up correct, we expect about 5000 Pa of pressure change
+        approx::assert_relative_eq!(
+            5000.0,
+            super_collection_pressure_change.get::<pascal>(),
+            max_relative=0.001);
+
+    }
+
+    // let's do a reverse flow scenario also
+    {
+
+        let test_pressure = Pressure::new::<pascal>(5000.0);
+        let super_collection_mass_flowrate_reverse = 
+            super_collection.
+            get_mass_flowrate_from_pressure_change(-test_pressure);
+
+        // if this is set up correct, we expect about -2.61 kg/s of mass flowrate
+        approx::assert_relative_eq!(
+            2.61,
+            super_collection_mass_flowrate_reverse.get::<kilogram_per_second>(),
+            max_relative=0.001);
+
+        let test_mass_flowrate = MassRate::new::<kilogram_per_second>(-2.61);
+
+        let super_collection_pressure_change_reverse = 
+            super_collection.
+            get_pressure_change(-test_mass_flowrate);
+
+        // if this is set up correct, we expect about 5000 Pa of pressure change
+        approx::assert_relative_eq!(
+            -5000.0,
+            super_collection_pressure_change_reverse.get::<pascal>(),
+            max_relative=0.001);
+    }
 }
