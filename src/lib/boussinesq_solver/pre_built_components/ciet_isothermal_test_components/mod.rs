@@ -253,10 +253,10 @@ pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 3 nodes only, 
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
+    let user_specified_inner_nodes = 3-2; 
 
     let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
@@ -275,6 +275,90 @@ pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
         pipe_fluid, 
         htc_to_ambient, 
         user_specified_inner_nodes);
+
+    non_insulated_component
+}
+
+
+
+/// creates a new ctah vertical for CIET using the RELAP5-3D and SAM parameters 
+/// in Compact Integral Effects Test (CIET)
+///
+/// this is inactive, so it behaves more like a pipe rather than a 
+/// heat exchanger
+///
+/// Horizontal part of Coiled Tube Air Heater (CTAH)
+/// label component 7b
+/// in Compact Integral Effects Test (CIET)
+/// CTAH branch 
+/// coiled tube air heater
+/// has fldk = 400 + 52,000/Re
+///
+/// label is 7b
+/// empirical data in page 48 on pdf viewer in Dr
+/// Zweibaum thesis shows reverse flow has same
+/// pressure drop characteristics as forward flow
+///
+/// It is NOT insulated by the way
+///
+/// It is a static mixer pipe
+/// otherwise known as the static mixer pipe 6a
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+///
+pub fn new_inactive_ctah_horizontal() -> NonInsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    let component_length = Length::new::<meter>(1.2342);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(0.0);
+    let form_loss = Ratio::new::<ratio>(400.0);
+    let reynolds_power = -1_f64;
+    let reynolds_coefficient = Ratio::new::<ratio>(52000_f64);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let shell_od = shell_id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 11 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is zero
+    let user_specified_inner_nodes = 11-2; 
+
+    let non_insulated_component = NonInsulatedFluidComponent::
+        new_custom_component(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            reynolds_coefficient, 
+            reynolds_power, 
+            shell_id, 
+            shell_od, 
+            component_length, 
+            hydraulic_diameter, 
+            pipe_shell_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes);
 
     non_insulated_component
 }

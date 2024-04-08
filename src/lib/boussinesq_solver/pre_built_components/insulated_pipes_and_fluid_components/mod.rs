@@ -65,7 +65,7 @@ pub struct InsulatedFluidComponent {
     flow_area: Area,
 
     /// loss correlations
-    darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
+    pub darcy_loss_correlation: DimensionlessDarcyLossCorrelations,
 
 }
 
