@@ -56,9 +56,9 @@
 /// to hold and calculate fluid component collections
 ///
 /// First i make a typical fluid component, a set of air pipes
-/// perhaps 10 air pipes and i want to put them in series
+/// perhaps 10 air pipes and i want to put them in parallel
 #[test]
-pub fn simple_fluid_collection_example_5 () {
+pub fn simple_fluid_collection_example_6 () {
 
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
@@ -154,7 +154,7 @@ pub fn simple_fluid_collection_example_5 () {
 
     // let's now put all of them in series.
     
-    let series_collection_of_therminol_pipes = 
+    let parallel_collection_of_therminol_pipes = 
         FluidComponentCollection{
             components: vec![therminol_pipe_1.clone(),
             therminol_pipe_2.clone(),
@@ -166,60 +166,75 @@ pub fn simple_fluid_collection_example_5 () {
             therminol_pipe_8.clone(),
             therminol_pipe_9.clone(),
             therminol_pipe_10.clone(),],
-            orientation: FluidComponentCollectionOreintation::Series,
+            orientation: FluidComponentCollectionOreintation::Parallel,
         };
 
 
-    // now let's push a 0.1kg/s fluid flow through this pipe series
-    //
-    let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.1);
-
-    // and then let's get the pressure change
-
-    let series_pipe_pressure_change = series_collection_of_therminol_pipes.
-        get_pressure_change(pipe_fluid_flow);
-
-    // the pressure losses are about -81.61 Pa
-    approx::assert_relative_eq!(
-        series_pipe_pressure_change.get::<pascal>(),
-        -81.61,
-        max_relative=0.001);
-    // the pressure drop across 1 pipe should be about 1/10th of this value
+    // now let's have a pressure change of 1000 Pa across the parallel 
+    // branches of pipes and compare it to just one pipe 
+    // for 10 pipes in parallel, we should expect 10 times the mass flowrate
     
-    therminol_pipe_9.set_mass_flowrate(pipe_fluid_flow);
-    let single_pipe_pressure_change = therminol_pipe_9.get_pressure_change();
+    let parallel_pipe_pressure_change = Pressure::new::<pascal>(1000.0);
 
-    // the pressure losses are about -81.61 Pa over the series of pipes,
-    // the pressure change across 1 pipe should be 1/10th of that if 
-    // in series
+    therminol_pipe_9.set_pressure_change(parallel_pipe_pressure_change);
+    let single_pipe_mass_flowrate = therminol_pipe_9.get_mass_flowrate();
+
+    let parallel_pipe_mass_flowrate = parallel_collection_of_therminol_pipes.
+        get_mass_flowrate_from_pressure_change(parallel_pipe_pressure_change);
+
     approx::assert_relative_eq!(
-        series_pipe_pressure_change.get::<pascal>()/10.0,
-        single_pipe_pressure_change.get::<pascal>(),
+        single_pipe_mass_flowrate.get::<kilogram_per_second>()*10.0,
+        parallel_pipe_mass_flowrate.get::<kilogram_per_second>(),
         max_relative=0.001);
 
-    // since there is no elevation, or pressure source internally
-    // the pressure change and pressure loss are the same (in magnitude)
 
-    let series_pipe_pressure_loss = series_collection_of_therminol_pipes.
-        get_pressure_loss(pipe_fluid_flow);
-
-    assert_eq!(-series_pipe_pressure_change,
-        series_pipe_pressure_loss);
-
-
-    // all right, so now we want to check if the same pressure loss
-    // will yield us 0.001 kg/s
-
-    let series_pipe_mass_flowrate = series_collection_of_therminol_pipes.
-        get_mass_flowrate_from_pressure_loss(series_pipe_pressure_loss);
-
-
-    // we should get back our 0.1 kg/s if all else works fine
+    // the expected mass flowrate for one pipe is about -1.238 kg/s
     approx::assert_relative_eq!(
-        series_pipe_mass_flowrate.get::<kilogram_per_second>(),
-        0.1,
+        single_pipe_mass_flowrate.get::<kilogram_per_second>(),
+        -1.238,
         max_relative=0.001);
 
-    // test complete!
+
+    // now let's get pressure change from mass flowrate 
+    // for 10 pipes, we should get back about 1000 Pa as before
+
+    let parallel_pipe_pressure_change = parallel_collection_of_therminol_pipes.
+        get_pressure_change(MassRate::new::<kilogram_per_second>(-12.38));
+
+    approx::assert_relative_eq!(
+        parallel_pipe_pressure_change.get::<pascal>(),
+        1000.0,
+        max_relative=0.001);
+
+    // now we don't have elevation, and no pressure source, so pressure 
+    // change should equal minus pressure loss 
+
+    let parallel_pipe_pressure_loss = parallel_collection_of_therminol_pipes.
+        get_pressure_loss(MassRate::new::<kilogram_per_second>(-12.38));
+
+    assert_eq!(-parallel_pipe_pressure_loss,
+        parallel_pipe_pressure_change);
+
+    // we also want to try tests for reverse flow, should be 12.38 kg/s
+
+    let parallel_pipe_reverse_mass_flowrate = parallel_collection_of_therminol_pipes.
+        get_mass_flowrate_from_pressure_change(-parallel_pipe_pressure_change);
+
+    approx::assert_relative_eq!(
+        parallel_pipe_reverse_mass_flowrate.get::<kilogram_per_second>(),
+        12.38,
+        max_relative=0.001);
+
+    // and when we subject the parallel collection to 12.38 kg/s of flow, 
+    // we should get -1000Pa of pressure change
+
+    let parallel_pipe_pressure_change_reverse = parallel_collection_of_therminol_pipes.
+        get_pressure_change(MassRate::new::<kilogram_per_second>(12.38));
+
+
+    approx::assert_relative_eq!(
+        parallel_pipe_pressure_change_reverse.get::<pascal>(),
+        -1000.0,
+        max_relative=0.001);
 
 }

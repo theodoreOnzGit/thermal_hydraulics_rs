@@ -100,3 +100,10 @@ pub mod concurrency_and_multithreading_example;
 ///
 /// fluid components in series 
 pub mod collection_fluid_components_in_series;
+
+/// Example 6
+///
+/// fluid components in parallel 
+pub mod collection_fluid_components_in_parallel;
+
+
