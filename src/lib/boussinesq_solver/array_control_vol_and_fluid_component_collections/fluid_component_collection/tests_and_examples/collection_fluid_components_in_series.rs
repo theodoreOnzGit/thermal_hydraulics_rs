@@ -1,4 +1,52 @@
 
+// This library was developed for use in my PhD thesis under supervision 
+// of Professor Per F. Peterson. It is part of a thermal hydraulics
+// library in Rust that is released under the GNU General Public License
+// v 3.0. This is partly due to the fact that some of the libraries 
+// inherit from GeN-Foam and OpenFOAM, both licensed under GNU General
+// Public License v3.0.
+//
+// As such, the entire library is released under GNU GPL v3.0. It is a strong 
+// copyleft license which means you cannot use it in proprietary software.
+//
+//
+// License
+//    This file is part of fluid_mechanics_rust, a partial library of the
+//    thermal hydraulics library written in rust meant to help with the
+//    fluid mechanics aspects of the calculations
+//     
+//    Copyright (C) 2022-2023  Theodore Kay Chen Ong, Singapore Nuclear
+//    Research and Safety Initiative, Per F. Peterson, University of 
+//    California, Berkeley Thermal Hydraulics Laboratory
+//
+//    fluid_mechanics_rust is free software; you can redistribute it and/or modify it
+//    under the terms of the GNU General Public License as published by the
+//    Free Software Foundation; either version 2 of the License, or (at your
+//    option) any later version.
+//
+//    fluid_mechanics_rust is distributed in the hope that it will be useful, but WITHOUT
+//    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+//    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+//    for more details.
+//
+//    This library is part of a thermal hydraulics library in rust
+//    and contains some code copied from GeN-Foam, and OpenFOAM derivative.
+//    This offering is not approved or endorsed by the OpenFOAM Foundation nor
+//    OpenCFD Limited, producer and distributor of the OpenFOAM(R)software via
+//    www.openfoam.com, and owner of the OPENFOAM(R) and OpenCFD(R) trademarks.
+//    Nor is it endorsed by the authors and owners of GeN-Foam.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// © All rights reserved. Theodore Kay Chen Ong,
+// Singapore Nuclear Research and Safety Initiative,
+// Per F. Peterson,
+// University of California, Berkeley Thermal Hydraulics Laboratory
+//
+// Main author of the code: Theodore Kay Chen Ong, supervised by
+// Professor Per F. Peterson
+
 
 
 
@@ -14,25 +62,13 @@ pub fn simple_fluid_collection_example_5 () {
 
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
-    use uom::ConstZero;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
     use uom::si::length::inch;
-    use std::f64::consts::PI;
-    use uom::si::ratio::ratio;
     use uom::si::mass_rate::kilogram_per_second;
-    use uom::si::mass_density::kilogram_per_cubic_meter;
-    use uom::si::dynamic_viscosity::poise;
     use uom::si::pressure::pascal;
     use uom::si::length::meter;
     use uom::si::angle::degree;
-    use uom::si::length::millimeter;
-    use uom::si::dynamic_viscosity::millipascal_second;
 
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureChange;
-    use crate::boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_mass_flowrate;
-    use crate::boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_pressure_loss;
 
     use uom::si::{pressure::atmosphere, thermodynamic_temperature::kelvin};
 
@@ -41,6 +77,7 @@ pub fn simple_fluid_collection_example_5 () {
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionOreintation;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
 
     // honestly, I am quite unsure as to how to structure the 
@@ -112,7 +149,7 @@ pub fn simple_fluid_collection_example_5 () {
     let therminol_pipe_6 = therminol_pipe_1.clone();
     let therminol_pipe_7 = therminol_pipe_1.clone();
     let therminol_pipe_8 = therminol_pipe_1.clone();
-    let therminol_pipe_9 = therminol_pipe_1.clone();
+    let mut therminol_pipe_9 = therminol_pipe_1.clone();
     let therminol_pipe_10 = therminol_pipe_1.clone();
 
     // let's now put all of them in series.
@@ -133,8 +170,56 @@ pub fn simple_fluid_collection_example_5 () {
         };
 
 
+    // now let's push a 0.1kg/s airflow through this pipe series
+    //
+    let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.1);
+
+    // and then let's get the pressure change
+
+    let series_pipe_pressure_change = series_collection_of_therminol_pipes.
+        get_pressure_change(pipe_fluid_flow);
+
+    // the pressure losses are about -81.61 Pa
+    approx::assert_relative_eq!(
+        series_pipe_pressure_change.get::<pascal>(),
+        -81.61,
+        max_relative=0.001);
+    // the pressure drop across 1 pipe should be about 1/10th of this value
+    
+    therminol_pipe_9.set_mass_flowrate(pipe_fluid_flow);
+    let single_pipe_pressure_change = therminol_pipe_9.get_pressure_change();
+
+    // the pressure losses are about -81.61 Pa over the series of pipes,
+    // the pressure change across 1 pipe should be 1/10th of that if 
+    // in series
+    approx::assert_relative_eq!(
+        series_pipe_pressure_change.get::<pascal>()/10.0,
+        single_pipe_pressure_change.get::<pascal>(),
+        max_relative=0.001);
+
+    // since there is no elevation, or pressure source internally
+    // the pressure change and pressure loss are the same (in magnitude)
+
+    let series_pipe_pressure_loss = series_collection_of_therminol_pipes.
+        get_pressure_loss(pipe_fluid_flow);
+
+    assert_eq!(-series_pipe_pressure_change,
+        series_pipe_pressure_loss);
 
 
+    // all right, so now we want to check if the same pressure loss
+    // will yield us 0.001 kg/s
 
+    let series_pipe_mass_flowrate = series_collection_of_therminol_pipes.
+        get_mass_flowrate_from_pressure_loss(series_pipe_pressure_loss);
+
+
+    // we should get back our 0.1 kg/s if all else works fine
+    approx::assert_relative_eq!(
+        series_pipe_mass_flowrate.get::<kilogram_per_second>(),
+        0.1,
+        max_relative=0.001);
+
+    // test complete!
 
 }
