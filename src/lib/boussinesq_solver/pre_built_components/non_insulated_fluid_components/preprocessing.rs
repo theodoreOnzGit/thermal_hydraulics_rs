@@ -328,7 +328,7 @@ impl NonInsulatedFluidComponent {
         // first let's get the fluid array out 
 
 
-        let pipe_correlation = fluid_array_clone.fluid_component_loss_properties;
+        let pipe_correlation = self.custom_component_loss_correlation;
 
         // For this, the friction factor is the sum of pipe friction 
         // factor and form losses 

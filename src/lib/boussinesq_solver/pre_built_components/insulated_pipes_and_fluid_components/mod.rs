@@ -121,7 +121,7 @@ impl InsulatedFluidComponent {
         surface_roughness: Length) -> InsulatedFluidComponent {
 
         // inner fluid_array
-        let fluid_array: FluidArray = 
+        let mut fluid_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             pipe_length,
             hydraulic_diameter,
@@ -168,6 +168,7 @@ impl InsulatedFluidComponent {
 
         let pipe_loss_correlation = DimensionlessDarcyLossCorrelations::
             new_pipe(pipe_length, surface_roughness, hydraulic_diameter, form_loss);
+        fluid_array.fluid_component_loss_properties = pipe_loss_correlation;
 
         return Self { inner_nodes: user_specified_inner_nodes,
             pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),

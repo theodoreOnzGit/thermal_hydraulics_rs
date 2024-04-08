@@ -102,7 +102,7 @@ impl NonInsulatedFluidComponent {
         user_specified_inner_nodes: usize) -> NonInsulatedFluidComponent {
 
         // inner fluid_array
-        let fluid_array: FluidArray = 
+        let mut fluid_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             pipe_length,
             hydraulic_diameter,
@@ -115,6 +115,13 @@ impl NonInsulatedFluidComponent {
             user_specified_inner_nodes,
             incline_angle
         );
+        let custom_component_loss_correlation = DimensionlessDarcyLossCorrelations::
+                new_pipe(pipe_length, 
+                    surface_roughness, 
+                    hydraulic_diameter, 
+                    form_loss);
+
+        fluid_array.fluid_component_loss_properties = custom_component_loss_correlation;
 
         // now the outer steel array
         let pipe_shell = 
@@ -136,11 +143,7 @@ impl NonInsulatedFluidComponent {
             od,
             id,
             flow_area,
-            custom_component_loss_correlation: DimensionlessDarcyLossCorrelations::
-                new_pipe(pipe_length, 
-                    surface_roughness, 
-                    hydraulic_diameter, 
-                    form_loss),
+            custom_component_loss_correlation,
         };
     }
     /// constructs a new insulated pipe
