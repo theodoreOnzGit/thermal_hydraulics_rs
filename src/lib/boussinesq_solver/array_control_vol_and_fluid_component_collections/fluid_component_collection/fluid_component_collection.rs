@@ -65,7 +65,10 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 ///
 #[derive(Debug,Clone,PartialEq)]
 pub struct FluidComponentCollection {
+    /// this vector is the collection of fluid components 
     pub components: Vec<FluidComponent>,
+    /// this decides if the components are connected in series 
+    /// or parallel
     pub orientation: FluidComponentCollectionOreintation
 }
 

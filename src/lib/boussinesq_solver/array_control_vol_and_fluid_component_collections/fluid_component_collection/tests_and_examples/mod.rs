@@ -106,4 +106,14 @@ pub mod collection_fluid_components_in_series;
 /// fluid components in parallel 
 pub mod collection_fluid_components_in_parallel;
 
+/// Example 7
+///
+/// a colletion of fluid component collections is known 
+/// as a super collection. 
+///
+/// for example, we have three branches of fluid components connected 
+/// in series 
+/// They are in turn connected in parallel for CIET. 
+/// To facilitate calculations here, we have super collections
+pub mod super_collection_fluid_components_in_parallel;
 

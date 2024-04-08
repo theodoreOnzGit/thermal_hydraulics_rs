@@ -51,7 +51,9 @@ use super::fluid_component_collection::*;
 /// A struct containing a vector of fluid component collections
 #[derive(Debug,Clone,PartialEq)]
 pub struct FluidComponentSuperCollection {
-    fluid_component_super_vector: Vec<FluidComponentCollection>,
+    /// this vector contains a collection of fluid component collections
+    /// usually, these are in series
+    pub fluid_component_super_vector: Vec<FluidComponentCollection>,
 }
 
 
@@ -177,4 +179,11 @@ impl FluidComponentSuperCollection {
 
 
 
+}
+
+/// the default is to provide an empty vector
+impl Default for FluidComponentSuperCollection {
+    fn default() -> Self {
+        Self { fluid_component_super_vector: vec![] }
+    }
 }

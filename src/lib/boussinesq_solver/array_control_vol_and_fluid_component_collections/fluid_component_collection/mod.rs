@@ -85,6 +85,10 @@ pub mod fluid_component_traits;
 /// for components connected in series or parallel 
 pub mod collection_series_and_parallel_functions;
 
+/// contains functions which calculate mass flowrate and pressure drop 
+/// for branches or fluid component collections connected in series or parallel 
+pub mod super_collection_series_and_parallel_functions;
+
 /// fluid component collections 
 /// these are vectors of fluid components 
 pub mod fluid_component_collection;
