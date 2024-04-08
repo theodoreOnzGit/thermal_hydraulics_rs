@@ -1,9 +1,9 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use super::NonInsulatedPipe;
+use super::NonInsulatedFluidComponent;
 
-impl NonInsulatedPipe {
+impl NonInsulatedFluidComponent {
 
     /// gets the temperature of the pipe shell array
     pub fn pipe_shell_temperature(&mut self) -> 

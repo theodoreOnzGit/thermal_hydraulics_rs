@@ -14,7 +14,7 @@ use uom::si::f64::*;
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
 #[derive(Clone,Debug,PartialEq)]
-pub struct NonInsulatedPipe {
+pub struct NonInsulatedFluidComponent {
 
     inner_nodes: usize,
 
@@ -46,7 +46,7 @@ pub struct NonInsulatedPipe {
 
 }
 
-impl NonInsulatedPipe {
+impl NonInsulatedFluidComponent {
 
     /// constructs a new pipe
     ///
@@ -91,7 +91,7 @@ impl NonInsulatedPipe {
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize) -> NonInsulatedPipe {
+        user_specified_inner_nodes: usize) -> NonInsulatedFluidComponent {
 
         // inner fluid_array
         let fluid_array: FluidArray = 

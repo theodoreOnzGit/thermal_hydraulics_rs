@@ -5,7 +5,7 @@ use uom::ConstZero;
 use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
 use ndarray::*;
-use super::InsulatedPipe;
+use super::InsulatedFluidComponent;
 use crate::boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::{enums::NusseltCorrelation, input_structs::GnielinskiData}, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
@@ -19,7 +19,7 @@ use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections:
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-impl InsulatedPipe {
+impl InsulatedFluidComponent {
 
 
     /// used to connect the arrays laterally 

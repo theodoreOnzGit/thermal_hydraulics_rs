@@ -1,10 +1,10 @@
-use super::InsulatedPipe;
+use super::NonInsulatedFluidComponent;
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use std::thread::JoinHandle;
 use std::thread;
 
-impl InsulatedPipe {
+impl NonInsulatedFluidComponent {
 
     /// advances timestep for each HeatTransferEntity within the 
     /// NonInsulatedPipe
@@ -14,7 +14,6 @@ impl InsulatedPipe {
 
         self.pipe_fluid_array.advance_timestep_mut_self(timestep)?;
         self.pipe_shell.advance_timestep_mut_self(timestep)?;
-        self.insulation.advance_timestep_mut_self(timestep)?;
         Ok(())
         
     }

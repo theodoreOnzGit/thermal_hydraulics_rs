@@ -12,17 +12,17 @@
 /// 
 pub mod heat_transfer_entities;
 
-/// for fluid flow through non insulated pipes, these pipes will 
+/// for fluid flow through non insulated pipes and fluid components, these pipes will 
 /// be represented by control volumes laterally coupled to one 
 /// another. 
-pub mod non_insulated_pipes;
+pub mod non_insulated_fluid_components;
 
 
-/// for fluid flow through insulated pipes with one layer 
+/// for fluid flow through insulated and fluid components with one layer 
 /// of insulation, these pipes will 
 /// be represented by control volumes laterally coupled to one 
 /// another. 
-pub mod insulated_pipes;
+pub mod insulated_pipes_and_fluid_components;
 
 /// represents one dimensional solid structure
 pub mod one_d_solid_structure;
@@ -59,3 +59,14 @@ pub mod ciet_heater_top_and_bottom_head_bare;
 /// Testbeds for Iterative Simulated Neutronics Feedback 
 /// Controller Development (Doctoral dissertation, UC Berkeley).
 pub mod ciet_static_mixer_mx_10;
+
+/// ciet components for pipes and valves for use in the isothermal test
+///
+/// Zweibaum, N. (2015). Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University 
+/// of California, Berkeley.
+///
+/// In my master's thesis, heat structure information was not included. However, 
+/// I shall include them in this round
+pub mod ciet_isothermal_test_components;

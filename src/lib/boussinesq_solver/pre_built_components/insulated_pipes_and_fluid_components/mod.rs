@@ -15,7 +15,7 @@ use uom::si::f64::*;
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
 #[derive(Clone,Debug,PartialEq)]
-pub struct InsulatedPipe {
+pub struct InsulatedFluidComponent {
 
     inner_nodes: usize,
 
@@ -69,7 +69,7 @@ pub struct InsulatedPipe {
 
 }
 
-impl InsulatedPipe {
+impl InsulatedFluidComponent {
 
     /// constructs a new insulated pipe
     ///
@@ -114,10 +114,11 @@ impl InsulatedPipe {
         pipe_length: Length,
         hydraulic_diameter: Length,
         pipe_shell_material: SolidMaterial,
+        insulation_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
         user_specified_inner_nodes: usize,
-        surface_roughness: Length) -> InsulatedPipe {
+        surface_roughness: Length) -> InsulatedFluidComponent {
 
         // inner fluid_array
         let fluid_array: FluidArray = 
@@ -157,7 +158,7 @@ impl InsulatedPipe {
             insulation_od,
             initial_temperature,
             solid_pressure,
-            SolidMaterial::Fiberglass,
+            insulation_material,
             user_specified_inner_nodes 
         );
 
@@ -179,6 +180,107 @@ impl InsulatedPipe {
             insulation_id: shell_od+insulation_thickness,
             flow_area,
             darcy_loss_correlation: pipe_loss_correlation,
+            insulation: CVType::SolidArrayCV(insulation).into(),
+        };
+    }
+
+
+    /// constructs a new insulated pipe
+    ///
+    /// you need to supply the initial temperature, ambient temperature
+    /// as well as all the pipe parameters 
+    ///
+    /// The loss coefficient is calculated as:
+    ///
+    /// f_darcy = form_loss + b Re^(c)
+    ///
+    /// b is the reynolds_coefficient
+    /// c is reynolds power
+    pub fn new_custom_component(initial_temperature: ThermodynamicTemperature,
+        ambient_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
+        solid_pressure: Pressure,
+        flow_area: Area,
+        incline_angle: Angle,
+        form_loss: Ratio,
+        reynolds_coefficient: Ratio,
+        reynolds_power: f64,
+        shell_id: Length,
+        shell_od: Length,
+        insulation_thickness: Length,
+        component_length: Length,
+        hydraulic_diameter: Length,
+        pipe_shell_material: SolidMaterial,
+        insulation_material: SolidMaterial,
+        pipe_fluid: LiquidMaterial,
+        htc_to_ambient: HeatTransfer,
+        user_specified_inner_nodes: usize,) -> InsulatedFluidComponent {
+
+        // inner fluid_array
+
+        let a = form_loss;
+        let b = reynolds_coefficient;
+        let c = reynolds_power;
+
+        let fluid_array: FluidArray = 
+            FluidArray::new_custom_component(
+                component_length, 
+                hydraulic_diameter, 
+                flow_area, 
+                initial_temperature, 
+                fluid_pressure, 
+                pipe_fluid, 
+                form_loss, 
+                b, 
+                c, 
+                user_specified_inner_nodes, 
+                incline_angle);
+
+        // now the outer pipe array
+        let pipe_shell = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            shell_id,
+            shell_od,
+            initial_temperature,
+            solid_pressure,
+            pipe_shell_material,
+            user_specified_inner_nodes 
+        );
+
+        let insulation_id = shell_od;
+        let insulation_od = insulation_id + insulation_thickness;
+
+        // insulation 
+        let insulation = 
+        SolidColumn::new_cylindrical_shell(
+            component_length,
+            insulation_id,
+            insulation_od,
+            initial_temperature,
+            solid_pressure,
+            insulation_material,
+            user_specified_inner_nodes 
+        );
+
+        // custom component loss correlation
+        //
+
+
+        let custom_component_loss_correlation = DimensionlessDarcyLossCorrelations::
+            new_simple_reynolds_power_component(a, b, c);
+
+        return Self { inner_nodes: user_specified_inner_nodes,
+            pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),
+            pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
+            ambient_temperature,
+            heat_transfer_to_ambient: htc_to_ambient,
+            tube_od: shell_od,
+            tube_id: shell_id,
+            insulation_od: shell_od,
+            insulation_id: shell_od+insulation_thickness,
+            flow_area,
+            darcy_loss_correlation: custom_component_loss_correlation,
             insulation: CVType::SolidArrayCV(insulation).into(),
         };
     }
