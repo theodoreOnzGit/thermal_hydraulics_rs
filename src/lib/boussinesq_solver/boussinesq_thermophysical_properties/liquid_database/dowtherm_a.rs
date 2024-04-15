@@ -305,6 +305,9 @@ pub fn get_temperature_from_enthalpy(
 ///
 /// If it falls outside this range, it will panic
 /// or throw an error, and the program will not run
+///
+/// TODO: find a dowtherm a correlation with larger temperature range
+/// of validity
 pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature) 
     -> Result<bool,ThermalHydraulicsLibError>{
 
@@ -314,7 +317,7 @@ pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature)
         range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
             fluid_temp, 
             ThermodynamicTemperature::new::<degree_celsius>(180.0), 
-            ThermodynamicTemperature::new::<degree_celsius>(20.0))?;
+            ThermodynamicTemperature::new::<degree_celsius>(19.8))?;
 
         return Ok(true);
 
