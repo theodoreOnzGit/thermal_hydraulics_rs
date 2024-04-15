@@ -725,7 +725,7 @@ pub fn new_pipe_12() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -793,7 +793,7 @@ pub fn new_pipe_13() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -932,7 +932,7 @@ pub fn new_pipe_14() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -1073,7 +1073,7 @@ pub fn new_pipe_15() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -1144,7 +1144,7 @@ pub fn new_pipe_16() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -1221,7 +1221,7 @@ pub fn new_branch_17() -> InsulatedFluidComponent {
     let shell_id = hydraulic_diameter;
     let pipe_thickness = Length::new::<meter>(0.0027686);
     let shell_od = shell_id + pipe_thickness;
-    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_thickness = Length::new::<meter>(0.0508);
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
@@ -1230,6 +1230,103 @@ pub fn new_branch_17() -> InsulatedFluidComponent {
     // now because there are two outer nodes, the 
     // number of inner nodes is 6-2
     let user_specified_inner_nodes = 6-2; 
+
+    let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        shell_id, 
+        shell_od, 
+        insulation_thickness, 
+        pipe_length, 
+        hydraulic_diameter, 
+        pipe_shell_material, 
+        insulation_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes, 
+        surface_roughness);
+
+    insulated_component
+}
+
+
+/// creates a new component for CIET using the RELAP5-3D and SAM parameters 
+///
+/// Branch 5 in the Heater Branch (top to bottom perspective)
+/// 
+/// Approximations were made for this branch though,
+/// technically branch 5a is part of DHX branch
+/// while 5b is part of the DHX branch,
+/// I combined both for convenience
+///
+/// This is treated as a single pipe though
+///
+/// Now I'd probably made a mistake putting branch 5 in
+/// the heater branch, it's probably better put inside the
+/// CTAH branch, (as of Oct 2022)
+/// I'll probably put this in the CTAH branch in future
+///
+/// But for forced isothermal circulation tests with only
+/// the heater branch and CTAH branch, it doesn't really matter
+/// since there are only two branches
+///
+/// So no matter which branch you put branch or pipe 5 in,
+/// it is still the same set of pipes in series
+/// calculations will still be the same numerically
+///
+/// 
+// this is reverse order compared to table A-1 in
+// the Zweibaum nodalised relap model
+/// pipe 5 on the diagram in Nico Zweibaum nodalisation
+/// and from a top to bottom direction from pipe 5
+/// to pipe 5, the incline angle is also
+/// 0 degrees
+/// i add 180 degrees so that it is
+/// properly reversed in
+/// inclination angle from top to bottom
+///
+/// This is treated as a single pipe though
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+pub fn new_branch_5() -> InsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+    let pipe_length = Length::new::<meter>(0.7493);
+    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let incline_angle = Angle::new::<degree>(0.0 + 180.0);
+    let form_loss = Ratio::new::<ratio>(0.0);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.0027686);
+    let shell_od = shell_id + pipe_thickness;
+    let insulation_thickness = Length::new::<meter>(0.0508);
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let insulation_material = SolidMaterial::Fiberglass;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 9 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is 9-2
+    let user_specified_inner_nodes = 9-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
