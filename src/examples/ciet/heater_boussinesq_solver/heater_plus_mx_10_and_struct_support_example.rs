@@ -75,13 +75,13 @@ pub fn heater_plus_mx_10_with_supports(){
             );
     }
 
-    let mut static_mixer_mx_10_object: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer(
+    let mut static_mixer_mx_10_object: StaticMixers 
+    = StaticMixers::new_static_mixer_2_mx10(
         initial_temperature,
         ambient_air_temp);
 
-    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer_pipe(
+    let mut static_mixer_mx_10_pipe: StaticMixers 
+    = StaticMixers::new_static_mixer_pipe_2a_mx10(
         initial_temperature,
         ambient_air_temp);
 

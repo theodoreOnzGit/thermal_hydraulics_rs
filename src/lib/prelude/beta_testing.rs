@@ -20,7 +20,7 @@ pub use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 // pre built CIET components
 pub use crate::boussinesq_solver::pre_built_components::ciet_heater_top_and_bottom_head_bare::HeaterTopBottomHead;
 pub use crate::boussinesq_solver::pre_built_components::ciet_struct_supports::StructuralSupport;
-pub use crate::boussinesq_solver::pre_built_components::ciet_static_mixer_mx_10::StaticMixerMX10;
+pub use crate::boussinesq_solver::pre_built_components::ciet_static_mixers::StaticMixers;
 pub use crate::boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
 pub use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
 

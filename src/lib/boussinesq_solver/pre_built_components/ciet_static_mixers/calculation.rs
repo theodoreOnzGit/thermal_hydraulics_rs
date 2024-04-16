@@ -5,10 +5,10 @@ use std::thread::JoinHandle;
 use std::ops::DerefMut;
 
 use uom::si::f64::*;
-use super::StaticMixerMX10;
+use super::StaticMixers;
 
 
-impl StaticMixerMX10 {
+impl StaticMixers {
     /// advances timestep for each HeatTransferEntity within the 
     /// HeaterVersion2Bare
     pub fn _advance_timestepp(&mut self, 

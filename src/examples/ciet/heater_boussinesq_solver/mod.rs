@@ -53,7 +53,7 @@ use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properti
 use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_heater_top_and_bottom_head_bare::HeaterTopBottomHead;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_static_mixer_mx_10::StaticMixerMX10;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_static_mixers::StaticMixers;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_struct_supports::StructuralSupport;
 use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;
@@ -131,13 +131,13 @@ pub fn example_heater(){
             );
     }
 
-    let mut static_mixer_mx_10_object: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer(
+    let mut static_mixer_mx_10_object: StaticMixers 
+    = StaticMixers::new_static_mixer_2_mx10(
         initial_temperature,
         ambient_air_temp);
 
-    let mut static_mixer_mx_10_pipe: StaticMixerMX10 
-    = StaticMixerMX10::new_static_mixer_pipe(
+    let mut static_mixer_mx_10_pipe: StaticMixers 
+    = StaticMixers::new_static_mixer_pipe_2a_mx10(
         initial_temperature,
         ambient_air_temp);
 

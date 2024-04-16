@@ -1,11 +1,11 @@
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 
-use super::StaticMixerMX10;
+use super::StaticMixers;
 use uom::si::f64::*;
 
 
-impl FluidComponentTrait for StaticMixerMX10 {
+impl FluidComponentTrait for StaticMixers {
     fn get_mass_flowrate(&mut self) -> MassRate  {
         let mut therminol_array: FluidArray = 
         self.therminol_array.clone().try_into().unwrap();

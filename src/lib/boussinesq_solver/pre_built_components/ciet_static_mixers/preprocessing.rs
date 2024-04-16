@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 use std::thread::{self, JoinHandle};
 
-use super::StaticMixerMX10;
+use super::StaticMixers;
 use uom::si::length::meter;
 use uom::ConstZero;
 use uom::si::pressure::atmosphere;
@@ -20,7 +20,7 @@ use crate::boussinesq_solver::boundary_conditions::BCType;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 
-impl StaticMixerMX10 {
+impl StaticMixers {
 
 
     /// used to connect the arrays laterally 

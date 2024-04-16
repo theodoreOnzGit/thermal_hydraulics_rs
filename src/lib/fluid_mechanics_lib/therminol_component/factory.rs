@@ -1435,7 +1435,6 @@ impl Pipe23a {
 /// pipe 22 within DHX branch in CIEt
 pub struct Pipe22 {
     // pipe 22
-    // otherwise known as the static mixer pipe 22
 }
 
 impl Pipe22 {
