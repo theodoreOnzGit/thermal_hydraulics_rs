@@ -67,7 +67,7 @@
 //! Btw, I no affiliation with the Rust Foundation. 
 //!
 extern crate uom;
-use thermal_hydraulics_rs::fluid_mechanics_lib;
+use thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::{darcy, fldk};
 mod manual_tests;
 
 use crate::manual_tests::*;
@@ -76,26 +76,25 @@ use crate::manual_tests::*;
 fn main() {
     println!("Hello, world!");
     test_friction_factor();
-    test_dimensionless_number();
-    test_standard_pipe_calc();
-    test_custom_fldk_component();
-    test_temperature_conversion();
-    test_therminol_pipe();
-    test_therminol_fldk_custom_component();
-    factory_test();
+    //test_dimensionless_number();
+    //test_standard_pipe_calc();
+    //test_custom_fldk_component();
+    //test_temperature_conversion();
+    //test_therminol_pipe();
+    //test_therminol_fldk_custom_component();
+    //factory_test();
 
 }
 
 
 fn test_friction_factor(){
     let darcy_friction_factor = 
-        fluid_mechanics_lib::darcy(1800.0,0.0015);
+        darcy(1800.0,0.0015).unwrap();
 
     println!("{}", darcy_friction_factor);
     
     let fldk = 
-        fluid_mechanics_lib::fldk(
-            15000.0,0.00014,10.0,5.0);
+        fldk( 15000.0,0.00014,10.0,5.0).unwrap();
 
     println!("{}", fldk);
 
