@@ -1634,6 +1634,152 @@ pub fn new_pipe_26() -> InsulatedFluidComponent {
     insulated_component
 }
 
+/// creates a new component for CIET using the RELAP5-3D and SAM parameters 
+///
+/// Static mixer pipe 25a adjacent to MX-21
+/// in DHX branch
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+pub fn new_pipe_25a() -> InsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+    let pipe_length = Length::new::<meter>(0.22245);
+    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(1.35);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.0027686);
+    let shell_od = shell_id + pipe_thickness;
+    let insulation_thickness = Length::new::<meter>(0.0381);
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let insulation_material = SolidMaterial::Fiberglass;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 2 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is zero
+    let user_specified_inner_nodes = 0; 
+
+    let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        shell_id, 
+        shell_od, 
+        insulation_thickness, 
+        pipe_length, 
+        hydraulic_diameter, 
+        pipe_shell_material, 
+        insulation_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes, 
+        surface_roughness);
+
+    insulated_component
+}
+
+/// creates a new component for CIET using the RELAP5-3D and SAM parameters 
+///
+/// static mixer 21 (MX-21) on CIET diagram
+/// in the DHX branch in primary loop
+/// just before the DRACS heat exchanger
+/// from top to bottom
+/// label 25
+///
+/// in reality flow goes from bottom to
+/// top in natural convection
+/// also in the DRACS
+/// loop there are flow diodes to make
+/// it such that flow going from bottom to top
+/// encounters more resistance
+///
+/// forced convection flow direction is same as top to bottom
+/// has a fldk of 21+4000/Re
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+pub fn new_static_mixer_21() -> InsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+    let component_length = Length::new::<meter>(0.33);
+    let flow_area = Area::new::<square_meter>(6.11e-4);
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(21.0);
+    let reynolds_power = -1_f64;
+    let reynolds_coefficient = Ratio::new::<ratio>(4000_f64);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.0027686);
+    let shell_od = shell_id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 2 nodes only, 
+    // now because there are two outer nodes, we subtract 2
+    let user_specified_inner_nodes = 2-2; 
+
+    // insulation 
+    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_material = SolidMaterial::Fiberglass;
+
+
+    let insulated_component = InsulatedFluidComponent::
+        new_custom_component(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            reynolds_coefficient, 
+            reynolds_power, 
+            shell_id, 
+            shell_od, 
+            insulation_thickness, 
+            component_length, 
+            hydraulic_diameter, 
+            pipe_shell_material, 
+            insulation_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes);
+
+    insulated_component
+
+}
 
 /// creates a new component for CIET using the RELAP5-3D and SAM parameters 
 ///
@@ -1705,6 +1851,157 @@ pub fn new_dhx_shell_side_heat_exchanger() -> InsulatedFluidComponent {
     insulated_component
 }
 
+/// creates a new component for CIET using the RELAP5-3D and SAM parameters 
+///
+/// static mixer pipe 23a in DHX branch in CIET
+///
+/// otherwise known as the static mixer pipe 
+/// to MX-20
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+pub fn new_pipe_23a() -> InsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+    let pipe_length = Length::new::<meter>(0.0891);
+    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(1.35);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.0027686);
+    let shell_od = shell_id + pipe_thickness;
+    let insulation_thickness = Length::new::<meter>(0.0381);
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let insulation_material = SolidMaterial::Fiberglass;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 2 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is zero
+    let user_specified_inner_nodes = 0; 
+
+    let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        shell_id, 
+        shell_od, 
+        insulation_thickness, 
+        pipe_length, 
+        hydraulic_diameter, 
+        pipe_shell_material, 
+        insulation_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes, 
+        surface_roughness);
+
+    insulated_component
+}
+
+/// creates a new component for CIET using the RELAP5-3D and SAM parameters 
+///
+/// static mixer 20 (MX-20) on CIET diagram
+/// in the DRACS branch in primary loop
+/// just after the DRACS heat exchanger
+/// from top to bottom
+/// label 23
+///
+/// in reality flow goes from bottom to
+/// top in natural convection
+/// also in the DRACS
+/// loop there are flow diodes to make
+/// it such that flow going from bottom to top
+/// encounters more resistance
+///
+/// original angle is is 90 degrees
+/// but i orientate from top to bottom
+///
+/// forced convection flow direction is same as top to bottom
+/// has a fldk of 21+4000/Re
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+pub fn new_static_mixer_20() -> InsulatedFluidComponent {
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(2.79e-2);
+    let component_length = Length::new::<meter>(0.33);
+    let flow_area = Area::new::<square_meter>(6.11e-4);
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(21.0);
+    let reynolds_power = -1_f64;
+    let reynolds_coefficient = Ratio::new::<ratio>(4000_f64);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.0027686);
+    let shell_od = shell_id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 2 nodes only, 
+    // now because there are two outer nodes, we subtract 2
+    let user_specified_inner_nodes = 2-2; 
+
+    // insulation 
+    let insulation_thickness = Length::new::<meter>(0.0381);
+    let insulation_material = SolidMaterial::Fiberglass;
+
+
+    let insulated_component = InsulatedFluidComponent::
+        new_custom_component(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            reynolds_coefficient, 
+            reynolds_power, 
+            shell_id, 
+            shell_od, 
+            insulation_thickness, 
+            component_length, 
+            hydraulic_diameter, 
+            pipe_shell_material, 
+            insulation_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes);
+
+    insulated_component
+
+}
 
 /// creates a new component for CIET using the RELAP5-3D and SAM parameters 
 ///
