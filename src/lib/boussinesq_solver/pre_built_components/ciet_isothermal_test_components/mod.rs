@@ -3,8 +3,11 @@ use std::f64::consts::PI;
 use uom::si::angle::degree;
 use uom::si::area::square_meter;
 
+pub mod ciet_branch_builders_isothermal;
 
+/// tests for the heater branch and ctah branch only
 pub mod isothermal_ctah_heater_branch_test;
+/// tests for the heater branch, ctah branch and dhx branch
 pub mod isothermal_ctah_heater_dhx_branch_test;
 
 // This library was developed for use in my PhD thesis under supervision 
@@ -61,7 +64,6 @@ use uom::si::ratio::ratio;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::pressure::atmosphere;
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 

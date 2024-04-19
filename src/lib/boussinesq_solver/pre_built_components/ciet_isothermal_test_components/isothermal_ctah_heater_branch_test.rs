@@ -1,4 +1,3 @@
-
 #[test]
 pub fn heater_branch_with_heater_v2_test(){
 
@@ -20,8 +19,6 @@ pub fn heater_branch_with_heater_v2_test(){
 
     let static_mixer_2 = new_static_mixer_10();
     let static_mixer_pipe_2a = new_pipe_2a();
-    // placeholders for now
-
     let heater_top_head_1a = new_heater_top_head_1a();
     let heated_section_1 = new_heated_section_version_1_label_1();
     let heater_bottom_head_1b = new_heater_bottom_head_1b();
@@ -200,3 +197,6 @@ pub fn ctah_branch_test(){
             max_relative=0.001);
     }
 }
+
+
+
