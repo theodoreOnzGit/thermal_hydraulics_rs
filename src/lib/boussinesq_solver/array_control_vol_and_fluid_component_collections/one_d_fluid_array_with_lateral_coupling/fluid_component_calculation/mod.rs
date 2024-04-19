@@ -223,7 +223,10 @@ impl DimensionlessDarcyLossCorrelations {
 
 
 
-        let mut convergency = SimpleConvergency { eps:1e-8f64, max_iter:70 };
+        let mut convergency = SimpleConvergency { 
+            eps:1e-8f64, 
+            max_iter:70 
+        };
 
         let reynolds_number_result
         = find_root_brent(upper_limit,

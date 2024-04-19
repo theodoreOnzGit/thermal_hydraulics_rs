@@ -212,13 +212,14 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
     use uom::si::f64::*;
     use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
 
-    {
-        let test_pressure_1 = Pressure::new::<pascal>(0.0);
+    fn validate_mass_flowrate_given_pressure_change(
+        test_pressure: Pressure,
+        expected_mass_flow: MassRate){
         let heater_branch = heater_branch_builder_isothermal_test();
-        let ctah_branch = ctah_branch_builder_isothermal_test(test_pressure_1);
+        let ctah_branch = ctah_branch_builder_isothermal_test(
+            test_pressure);
 
         // expected flowrate 
-        let expected_mass_flow_1 = MassRate::new::<kilogram_per_second>(0.0);
 
         // you'll now need to add this into a super collection
         let mut ctah_and_heater_branches = 
@@ -251,9 +252,35 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
             );
 
 
+        // let's obtain the mass flowrate, it should be zero 
+        // or close to it 
 
+        let mut mass_flowrate_test: MassRate = 
+            *mass_flowrate_across_each_branch
+            .first()
+            .unwrap();
+
+        // get absolute value
+        mass_flowrate_test = mass_flowrate_test.abs();
+
+        // pressure change is around zero
+        approx::assert_abs_diff_eq!(
+            mass_flowrate_test.get::<kilogram_per_second>(),
+            expected_mass_flow.get::<kilogram_per_second>(),
+            epsilon=0.0);
 
     }
+
+    // now let's validate this across all flowrates 
+
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(0.0), 
+        MassRate::new::<kilogram_per_second>(0.0)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(100.0), 
+        MassRate::new::<kilogram_per_second>(0.00263)
+        );
 
 
 }

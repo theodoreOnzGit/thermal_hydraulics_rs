@@ -1155,7 +1155,10 @@ pub trait FluidComponentSuperCollectionParallelAssociatedFunctions {
 
         // i can't use a convergency value too strict, perhaps 1e-9 will do!
         //
-        let mut convergency = SimpleConvergency { eps:1e-9_f64, max_iter:30 };
+        let mut convergency = SimpleConvergency { 
+            eps:1e-9_f64, 
+            max_iter: 70
+        };
 
         let pressure_change_pascals_result_user_specified_flow
             = find_root_brent(
