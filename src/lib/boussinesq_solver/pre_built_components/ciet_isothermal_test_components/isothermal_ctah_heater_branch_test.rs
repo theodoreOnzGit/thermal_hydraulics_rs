@@ -1,3 +1,8 @@
+use uom::si::{mass_rate::kilogram_per_second, pressure::pascal};
+
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::FluidComponentCollectionMethods, fluid_component_super_collection::FluidComponentSuperCollection};
+
+
 #[test]
 pub fn heater_branch_with_heater_v2_test(){
 
@@ -198,5 +203,41 @@ pub fn ctah_branch_test(){
     }
 }
 
+
+#[test]
+pub fn isothermal_ctah_and_heater_branch_validation_test(){
+
+    // let's construct the branches with test pressures and obtain 
+    // mass flowrates
+    use uom::si::f64::*;
+    use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
+
+    {
+        let test_pressure_1 = Pressure::new::<pascal>(0.0);
+        let heater_branch = heater_branch_builder_isothermal_test();
+        let ctah_branch = ctah_branch_builder_isothermal_test(test_pressure_1);
+
+        // expected flowrate 
+        let expected_mass_flow_1 = MassRate::new::<kilogram_per_second>(0.0);
+
+        // you'll now need to add this into a super collection
+        let mut ctah_and_heater_branches = 
+            FluidComponentSuperCollection::default();
+        ctah_and_heater_branches.set_oritentation_to_parallel();
+        ctah_and_heater_branches.fluid_component_super_vector
+            .push(heater_branch);
+        ctah_and_heater_branches.fluid_component_super_vector
+            .push(ctah_branch);
+
+        // obtain flowrate 
+        // the overall pressure change across each branch must be
+        // equal
+        
+        todo!()
+
+    }
+
+
+}
 
 
