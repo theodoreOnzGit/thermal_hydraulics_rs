@@ -92,20 +92,6 @@ pub fn heater_branch_with_heater_v2_test(){
             orientation: FluidComponentCollectionOreintation::Series,
         };
 
-    // now let's push a 0.1kg/s fluid flow through this pipe series
-    //
-    let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.1);
-
-    // and then let's get the pressure change
-
-    let series_pipe_pressure_change = heater_branch.
-        get_pressure_change(pipe_fluid_flow);
-
-    //// pressure change is around 36451 Pa
-    //approx::assert_relative_eq!(
-    //    series_pipe_pressure_change.get::<pascal>(),
-    //    36451.0,
-    //    max_relative=0.001);
 
     // let's check the hydrostatic pressure, 0.0 kg/s fluid flow 
     {
@@ -124,6 +110,20 @@ pub fn heater_branch_with_heater_v2_test(){
             39041.0,
             max_relative=0.001);
     }
+    // now let's push a 0.1kg/s fluid flow through this pipe series
+    //
+    let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.1);
+
+    // and then let's get the pressure change
+
+    let series_pipe_pressure_change = heater_branch.
+        get_pressure_change(pipe_fluid_flow);
+
+    // pressure change is around 36451 Pa
+    approx::assert_relative_eq!(
+        series_pipe_pressure_change.get::<pascal>(),
+        36451.0,
+        max_relative=0.001);
 }
 
 
