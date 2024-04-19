@@ -251,7 +251,7 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
             );
 
 
-        todo!()
+
 
     }
 

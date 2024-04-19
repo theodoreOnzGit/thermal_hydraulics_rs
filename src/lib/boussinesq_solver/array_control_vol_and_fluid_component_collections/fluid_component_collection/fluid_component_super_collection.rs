@@ -201,7 +201,26 @@ impl FluidComponentSuperCollection {
         pressure_change_across_each_branch: Pressure) ->
         Vec<MassRate> {
 
-            todo!()
+            // first, clone the vector of FluidComponentCollection 
+            // objects 
+
+            let parallel_branches: Vec<FluidComponentCollection> 
+                = self.fluid_component_super_vector.clone();
+
+            // then convert  each of them to a mass rate 
+
+            let mass_rate_vector: Vec<MassRate> 
+                = parallel_branches.iter().map(
+                    |branch: &FluidComponentCollection|{
+
+                        branch.get_mass_flowrate_from_pressure_change(
+                            pressure_change_across_each_branch
+                            )
+                    }
+                ).collect();
+
+
+            mass_rate_vector
     }
 
 }
