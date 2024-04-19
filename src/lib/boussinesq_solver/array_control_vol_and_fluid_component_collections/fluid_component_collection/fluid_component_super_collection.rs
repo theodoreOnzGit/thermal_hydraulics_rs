@@ -193,6 +193,16 @@ impl FluidComponentSuperCollection {
         self.orientation = FluidComponentCollectionOreintation::Parallel
     }
 
+    /// obtains a vector of mass flowrates that occur across each branch 
+    /// given that they are in parallel 
+    /// for branches in series, just treat the 
+    /// system as one branch
+    pub fn get_mass_flowrate_across_each_parallel_branch(&self,
+        pressure_change_across_each_branch: Pressure) ->
+        Vec<MassRate> {
+
+            todo!()
+    }
 
 }
 

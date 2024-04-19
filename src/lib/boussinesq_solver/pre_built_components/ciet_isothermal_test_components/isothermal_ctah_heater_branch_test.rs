@@ -1,4 +1,4 @@
-use uom::si::{mass_rate::kilogram_per_second, pressure::pascal};
+use uom::{si::{mass_rate::kilogram_per_second, pressure::pascal}, ConstZero};
 
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::FluidComponentCollectionMethods, fluid_component_super_collection::FluidComponentSuperCollection};
 
@@ -232,7 +232,25 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         // obtain flowrate 
         // the overall pressure change across each branch must be
         // equal
-        
+        //
+        // the total mass flowrate through the collection of parallel 
+        // branches is zero
+        let net_mass_flowrate_through_parallel_branches = 
+            MassRate::ZERO;
+        let pressure_change_across_each_branch = 
+            ctah_and_heater_branches.get_pressure_change(
+            net_mass_flowrate_through_parallel_branches);
+
+        // once we have pressure change across each branch,
+        // then we can calculate mass flowrate.
+
+        let mass_flowrate_across_each_branch: Vec<MassRate> = 
+            ctah_and_heater_branches.
+            get_mass_flowrate_across_each_parallel_branch(
+                pressure_change_across_each_branch
+            );
+
+
         todo!()
 
     }
