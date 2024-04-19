@@ -789,7 +789,7 @@ pub fn new_ctah_pump() -> NonInsulatedFluidComponent {
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let component_length = Length::new::<meter>(0.36);
     let flow_area = Area::new::<square_meter>(6.11e-4);
-    let incline_angle = Angle::new::<degree>(90.0);
+    let incline_angle = Angle::new::<degree>(0.0);
     let form_loss = Ratio::new::<ratio>(0.0);
     let reynolds_power = -1_f64;
     let reynolds_coefficient = Ratio::new::<ratio>(0.0);
@@ -990,7 +990,7 @@ pub fn new_pipe_14() -> InsulatedFluidComponent {
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_flowmeter_40() -> NonInsulatedFluidComponent {
+pub fn new_flowmeter_40_14a() -> NonInsulatedFluidComponent {
     let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -1820,7 +1820,7 @@ pub fn new_heater_bottom_head_1b() -> InsulatedFluidComponent {
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(6.60e-3);
-    let pipe_length = Length::new::<meter>(0.0889);
+    let pipe_length = Length::new::<meter>(0.19685);
     let flow_area = Area::new::<square_meter>(3.64e-4);
     let incline_angle = Angle::new::<degree>(90.0 + 180.0);
     let form_loss = Ratio::new::<ratio>(3.95);
