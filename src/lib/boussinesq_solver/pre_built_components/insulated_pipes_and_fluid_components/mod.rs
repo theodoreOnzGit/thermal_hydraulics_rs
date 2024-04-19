@@ -302,3 +302,6 @@ pub mod calculation;
 /// postprocessing stuff, ie, get the temperature vectors 
 /// of both arrays of control volumes 
 pub mod postprocessing;
+
+/// type conversions such as TryInto<FluidComponent> 
+pub mod type_conversion;

@@ -1,25 +1,15 @@
-use uom::si::pressure::pascal;
-
-
-
-
-
-
-
 
 #[test]
 pub fn heater_branch_with_heater_v2_test(){
 
-    use crate::boussinesq_solver::pre_built_components::ciet_static_mixers::StaticMixers;
+    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_heated_section_version_1_label_1, new_heater_bottom_head_1b, new_heater_top_head_1a, new_pipe_18, new_pipe_2a, new_static_mixer_10};
     use uom::si::f64::*;
-    use uom::si::thermodynamic_temperature::degree_celsius;
-    use crate::boussinesq_solver::pre_built_components::ciet_heater_top_and_bottom_head_bare::HeaterTopBottomHead;
-    use crate::boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component::FluidComponent, fluid_component_collection::FluidComponentCollectionOreintation};
     use uom::si::mass_rate::kilogram_per_second;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
+    use uom::si::pressure::pascal;
     use super::{new_branch_5, new_pipe_3, new_pipe_4};
     // first let's construct the heater branch
     // probably need the heater top and bottom head later
@@ -28,22 +18,15 @@ pub fn heater_branch_with_heater_v2_test(){
     let pipe_4 = new_pipe_4();
     let pipe_3 = new_pipe_3();
 
-    let initial_temperature = ThermodynamicTemperature::new::<
-        degree_celsius>(21.7);
-    let ambient_temperature = ThermodynamicTemperature::new::<
-        degree_celsius>(20.0);
-    let static_mixer_2 = StaticMixers::new_static_mixer_2_mx10(
-        initial_temperature, ambient_temperature);
-    let static_mixer_pipe_2a = StaticMixers::new_static_mixer_pipe_2a_mx10(
-        initial_temperature, ambient_temperature);
+    let static_mixer_2 = new_static_mixer_10();
+    let static_mixer_pipe_2a = new_pipe_2a();
     // placeholders for now
 
-    let heater_top_head_1a = HeaterTopBottomHead::new_top_head(
-        initial_temperature, ambient_temperature);
-    let heated_section_1 = HeaterVersion2Bare::new_dewet_model(
-        initial_temperature, ambient_temperature, 6);
-    let heater_bottom_head_1b = HeaterTopBottomHead::new_bottom_head(
-        initial_temperature, ambient_temperature);
+    let heater_top_head_1a = new_heater_top_head_1a();
+    let heated_section_1 = new_heated_section_version_1_label_1();
+    let heater_bottom_head_1b = new_heater_bottom_head_1b();
+
+    let pipe_18 = new_pipe_18();
 
     // from top to bottom convention, that is branch 5 to 1b
     // but first, need to convert them into fluid components first 
@@ -64,28 +47,34 @@ pub fn heater_branch_with_heater_v2_test(){
 
     let static_mixer_2_component: FluidComponent = 
         FluidComponent::FluidArray(
-            static_mixer_2.therminol_array.try_into().unwrap()
+            static_mixer_2.pipe_fluid_array.try_into().unwrap()
             );
 
     let static_mixer_pipe_2a_component: FluidComponent = 
         FluidComponent::FluidArray(
-            static_mixer_pipe_2a.therminol_array.try_into().unwrap()
+            static_mixer_pipe_2a.pipe_fluid_array.try_into().unwrap()
             );
 
     let heater_top_head_1a_component: FluidComponent = 
         FluidComponent::FluidArray(
-            heater_top_head_1a.therminol_array.try_into().unwrap()
+            heater_top_head_1a.pipe_fluid_array.try_into().unwrap()
             );
 
     let heater_1_component: FluidComponent = 
         FluidComponent::FluidArray(
-            heated_section_1.therminol_array.try_into().unwrap()
+            heated_section_1.pipe_fluid_array.try_into().unwrap()
             );
 
     let heater_bottom_head_1b_component: FluidComponent = 
         FluidComponent::FluidArray(
-            heater_bottom_head_1b.therminol_array.try_into().unwrap()
+            heater_bottom_head_1b.pipe_fluid_array.try_into().unwrap()
             );
+
+    let pipe_18_component: FluidComponent = 
+        FluidComponent::FluidArray(
+            pipe_18.pipe_fluid_array.try_into().unwrap()
+            );
+
 
     let heater_branch = 
         FluidComponentCollection{
@@ -97,7 +86,8 @@ pub fn heater_branch_with_heater_v2_test(){
                 static_mixer_pipe_2a_component,
                 heater_top_head_1a_component,
                 heater_1_component,
-                heater_bottom_head_1b_component
+                heater_bottom_head_1b_component,
+                pipe_18_component
             ],
             orientation: FluidComponentCollectionOreintation::Series,
         };
@@ -111,10 +101,10 @@ pub fn heater_branch_with_heater_v2_test(){
     let series_pipe_pressure_change = heater_branch.
         get_pressure_change(pipe_fluid_flow);
 
-    // pressure change is around -10283 Pa
+    // pressure change is around 35428 Pa
     approx::assert_relative_eq!(
         series_pipe_pressure_change.get::<pascal>(),
-        -10283.0,
+        35428.0,
         max_relative=0.001);
 
     // let's check the hydrostatic pressure, 0.0 kg/s fluid flow 
@@ -128,10 +118,85 @@ pub fn heater_branch_with_heater_v2_test(){
         let series_pipe_pressure_change = heater_branch.
             get_pressure_change(pipe_fluid_flow);
 
-        // pressure change is around -9735 Pa
+        // pressure change is around 37918 Pa
         approx::assert_relative_eq!(
             series_pipe_pressure_change.get::<pascal>(),
-            -9735.0,
+            37918.0,
+            max_relative=0.001);
+    }
+}
+
+
+#[test]
+pub fn ctah_branch_test(){
+
+    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_branch_17, new_ctah_pump, new_flowmeter_40, new_inactive_ctah_horizontal, new_inactive_ctah_vertical, new_pipe_10, new_pipe_11, new_pipe_12, new_pipe_13, new_pipe_14, new_pipe_15, new_pipe_16, new_pipe_6a, new_pipe_8a, new_pipe_9, new_static_mixer_40, new_static_mixer_41};
+    use uom::si::f64::*;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
+    use uom::si::mass_rate::kilogram_per_second;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
+
+    use uom::si::pressure::pascal;
+    // first let's construct the ctah branch
+    // this is pipe 6 all the way to branch 17
+
+    let static_mixer_41_label_6 = new_static_mixer_41();
+    let pipe_6a = new_pipe_6a();
+    let ctah_vertical_label_7a = new_inactive_ctah_vertical();
+    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal();
+    let pipe_8a = new_pipe_8a();
+    let static_mixer_40_label_8 = new_static_mixer_40();
+    let pipe_9 = new_pipe_9();
+    let pipe_10 = new_pipe_10();
+    let pipe_11 = new_pipe_11();
+    let pipe_12 = new_pipe_12();
+    let ctah_pump = new_ctah_pump();
+    let pipe_13 = new_pipe_13();
+    let pipe_14 = new_pipe_14();
+    let flowmeter_40_14a = new_flowmeter_40();
+    let pipe_15 = new_pipe_15();
+    let pipe_16 = new_pipe_16();
+    let branch_17 = new_branch_17();
+
+
+    // now I want to add each of these to the fluid component 
+    // collection without the constant hassle of having to convert types
+
+    let mut ctah_branch = FluidComponentCollection::new_series_component_collection();
+    
+    ctah_branch.clone_and_add_component(&static_mixer_41_label_6);
+    ctah_branch.clone_and_add_component(&pipe_6a);
+    ctah_branch.clone_and_add_component(&ctah_vertical_label_7a);
+    ctah_branch.clone_and_add_component(&ctah_horizontal_label_7b);
+    ctah_branch.clone_and_add_component(&pipe_8a);
+    ctah_branch.clone_and_add_component(&static_mixer_40_label_8);
+    ctah_branch.clone_and_add_component(&pipe_9);
+    ctah_branch.clone_and_add_component(&pipe_10);
+    ctah_branch.clone_and_add_component(&pipe_11);
+    ctah_branch.clone_and_add_component(&pipe_12);
+    ctah_branch.clone_and_add_component(&ctah_pump);
+    ctah_branch.clone_and_add_component(&pipe_13);
+    ctah_branch.clone_and_add_component(&pipe_14);
+    ctah_branch.clone_and_add_component(&flowmeter_40_14a);
+    ctah_branch.clone_and_add_component(&pipe_15);
+    ctah_branch.clone_and_add_component(&pipe_16);
+    ctah_branch.clone_and_add_component(&branch_17);
+
+    // let's check the hydrostatic pressure, 0.0 kg/s fluid flow 
+    {
+        // now let's push a 0.1kg/s fluid flow through this pipe series
+        //
+        let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.0);
+
+        // and then let's get the pressure change
+
+        let series_pipe_pressure_change = ctah_branch.
+            get_pressure_change(pipe_fluid_flow);
+
+        // pressure change is around 37918 Pa
+        approx::assert_relative_eq!(
+            series_pipe_pressure_change.get::<pascal>(),
+            37918.0,
             max_relative=0.001);
     }
 }

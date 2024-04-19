@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 // This library was developed for use in my PhD thesis under supervision 
 // of Professor Per F. Peterson. It is part of a thermal hydraulics
 // library in Rust that is released under the GNU General Public License
@@ -161,6 +163,71 @@ impl FluidComponentCollection{
         // then i change the pointer in this mutable copy
         self.components[component_index] = fluid_component;
 
+    }
+
+    /// new empty series component collection 
+    pub fn new_series_component_collection()-> Self {
+
+        Self { 
+            components: vec![], 
+            orientation: FluidComponentCollectionOreintation::Series 
+        }
+    }
+
+    /// new empty parallel component collection 
+    pub fn new_parallel_component_collection()-> Self {
+
+        Self { 
+            components: vec![], 
+            orientation: FluidComponentCollectionOreintation::Parallel
+        }
+    }
+
+    /// clones anything that can be converted (try)into a FluidComponent 
+    /// and adds it to the component list
+    pub fn try_clone_and_add_component
+        <T:TryInto<FluidComponent> + Clone + Debug >(
+        &mut self,
+        component: &T,
+    ) -> Result<(), ThermalHydraulicsLibError>
+        where <T as TryInto<FluidComponent>>::Error: Debug
+    {
+
+        // first, we clone the component, and convert it into a 
+        // fluid component
+
+        let component_clone: FluidComponent = 
+            component.clone().try_into().unwrap();
+
+        self.components.push(component_clone);
+
+        Ok(())
+    }
+
+    /// clones anything that can be converted into a FluidComponent 
+    /// and adds it to the component list
+    pub fn clone_and_add_component
+        <T:Into<FluidComponent> + Clone >(
+        &mut self,
+        component: &T,
+    ) -> ()
+    {
+
+        // first, we clone the component, and convert it into a 
+        // fluid component
+
+        let component_clone: FluidComponent = 
+            component.clone().into();
+
+        self.components.push(component_clone);
+
+    }
+
+    /// empties the vector 
+    pub fn empty_vector(&mut self,) -> 
+        Result<(),ThermalHydraulicsLibError>{
+            self.components.clear();
+            Ok(())
     }
 
 

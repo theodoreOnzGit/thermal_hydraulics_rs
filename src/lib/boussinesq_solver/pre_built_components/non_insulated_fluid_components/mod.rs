@@ -243,3 +243,6 @@ pub mod calculation;
 /// postprocessing stuff, ie, get the temperature vectors 
 /// of both arrays of control volumes 
 pub mod postprocessing;
+
+/// type conversion, such as into fluid component and such
+pub mod type_conversion;
