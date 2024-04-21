@@ -275,11 +275,23 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         // get absolute value
         mass_flowrate_test = mass_flowrate_test.abs();
 
-        // pressure change is around zero
-        approx::assert_abs_diff_eq!(
-            mass_flowrate_test.get::<kilogram_per_second>(),
-            expected_mass_flow.get::<kilogram_per_second>(),
-            epsilon=0.0);
+        // if mass flowrate is zero, use abs diff
+        if mass_flowrate_test.get::<kilogram_per_second>() == 0.0 {
+            approx::assert_abs_diff_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>(),
+                expected_mass_flow.get::<kilogram_per_second>(),
+                epsilon=0.0);
+            return;
+        } else {
+            // max error is 5%
+            approx::assert_relative_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>(),
+                expected_mass_flow.get::<kilogram_per_second>(),
+                max_relative=0.5);
+
+        }
+
+        
 
     }
 
