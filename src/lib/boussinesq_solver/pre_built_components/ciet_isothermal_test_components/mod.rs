@@ -1314,7 +1314,7 @@ pub fn new_branch_5() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.7493);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(0.0 + 180.0);
     let form_loss = Ratio::new::<ratio>(0.0);
     //estimated component wall roughness (doesn't matter here,
@@ -1384,7 +1384,7 @@ pub fn new_pipe_4() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.2413);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(49.743387 + 180.0);
     let form_loss = Ratio::new::<ratio>(2.4);
     //estimated component wall roughness (doesn't matter here,
@@ -1608,7 +1608,7 @@ pub fn new_pipe_2a() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.149425);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(90.0 + 180.0);
     let form_loss = Ratio::new::<ratio>(1.8);
     //estimated component wall roughness (doesn't matter here,
@@ -1889,7 +1889,7 @@ pub fn new_pipe_18() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.1778);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-40.00520 + 180.0);
     let form_loss = Ratio::new::<ratio>(5.15);
     //estimated component wall roughness (doesn't matter here,
