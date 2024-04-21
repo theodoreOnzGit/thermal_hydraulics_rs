@@ -281,6 +281,60 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         Pressure::new::<pascal>(100.0), 
         MassRate::new::<kilogram_per_second>(0.00263)
         );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(200.0), 
+        MassRate::new::<kilogram_per_second>(0.00263)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(500.0), 
+        MassRate::new::<kilogram_per_second>(0.0127)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(1000.0), 
+        MassRate::new::<kilogram_per_second>(0.0236)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(2000.0), 
+        MassRate::new::<kilogram_per_second>(0.0418)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(4000.0), 
+        MassRate::new::<kilogram_per_second>(0.0706)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(6000.0), 
+        MassRate::new::<kilogram_per_second>(0.0938)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(8000.0), 
+        MassRate::new::<kilogram_per_second>(0.114)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(10000.0), 
+        MassRate::new::<kilogram_per_second>(0.132)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(12000.0), 
+        MassRate::new::<kilogram_per_second>(0.148)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(15000.0), 
+        MassRate::new::<kilogram_per_second>(0.170)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(16000.0), 
+        MassRate::new::<kilogram_per_second>(0.177)
+        );
+    
+    // reverse flow tests
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(-2000.0), 
+        MassRate::new::<kilogram_per_second>(-0.0418)
+        );
+    validate_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(-10000.0), 
+        MassRate::new::<kilogram_per_second>(-0.132)
+        );
 
 
 }
