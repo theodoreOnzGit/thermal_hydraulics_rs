@@ -287,7 +287,7 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
             approx::assert_relative_eq!(
                 mass_flowrate_test.get::<kilogram_per_second>().abs(),
                 expected_mass_flow.get::<kilogram_per_second>().abs(),
-                max_relative=0.5);
+                max_relative=0.05);
 
         }
 

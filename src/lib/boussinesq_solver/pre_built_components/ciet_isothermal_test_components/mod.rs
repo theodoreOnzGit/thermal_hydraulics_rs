@@ -3,6 +3,7 @@ use std::f64::consts::PI;
 use uom::si::angle::degree;
 use uom::si::area::square_meter;
 
+/// builds ciet branches for the isothermal test
 pub mod ciet_branch_builders_isothermal;
 
 /// tests for the heater branch and ctah branch only
@@ -94,7 +95,7 @@ pub fn new_pipe_6a() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.1526);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(51.526384);
     let form_loss = Ratio::new::<ratio>(5.05);
     //estimated component wall roughness (doesn't matter here,
@@ -309,9 +310,6 @@ pub fn new_inactive_ctah_vertical() -> NonInsulatedFluidComponent {
 ///
 /// It is NOT insulated by the way
 ///
-/// It is a static mixer pipe
-/// otherwise known as the static mixer pipe 6a
-///
 /// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
 /// validation using the compact integral effects test (CIET) 
 /// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
@@ -395,7 +393,7 @@ pub fn new_pipe_8a() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.22245);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-90.0);
     let form_loss = Ratio::new::<ratio>(3.75);
     //estimated component wall roughness (doesn't matter here,
@@ -533,7 +531,7 @@ pub fn new_pipe_9() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.7112);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-42.73211);
     let form_loss = Ratio::new::<ratio>(0.8);
     //estimated component wall roughness (doesn't matter here,
@@ -596,7 +594,7 @@ pub fn new_pipe_10() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(2.4511);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-90.0);
     let form_loss = Ratio::new::<ratio>(0.45);
     //estimated component wall roughness (doesn't matter here,
@@ -659,7 +657,7 @@ pub fn new_pipe_11() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.4826);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-63.47465);
     let form_loss = Ratio::new::<ratio>(2.4);
     //estimated component wall roughness (doesn't matter here,
@@ -723,7 +721,7 @@ pub fn new_pipe_12() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.333375);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(0.0);
     let form_loss = Ratio::new::<ratio>(21.65);
     //estimated component wall roughness (doesn't matter here,
@@ -858,7 +856,7 @@ pub fn new_pipe_13() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(1.273175);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(0.0);
     let form_loss = Ratio::new::<ratio>(12.95);
     //estimated component wall roughness (doesn't matter here,
@@ -930,7 +928,7 @@ pub fn new_pipe_14() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.6687);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(90.0);
     let form_loss = Ratio::new::<ratio>(2.4);
     //estimated component wall roughness (doesn't matter here,
@@ -1071,7 +1069,7 @@ pub fn new_pipe_15() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.3556);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-49.36983);
     let form_loss = Ratio::new::<ratio>(0.8);
     //estimated component wall roughness (doesn't matter here,
@@ -1142,7 +1140,7 @@ pub fn new_pipe_16() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.644525);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-90.0);
     let form_loss = Ratio::new::<ratio>(1.9);
     //estimated component wall roughness (doesn't matter here,
@@ -1219,7 +1217,7 @@ pub fn new_branch_17() -> InsulatedFluidComponent {
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.473075);
-    let flow_area = hydraulic_diameter * hydraulic_diameter * PI/4.0;
+    let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(0.0);
     let form_loss = Ratio::new::<ratio>(0.0);
     //estimated component wall roughness (doesn't matter here,
