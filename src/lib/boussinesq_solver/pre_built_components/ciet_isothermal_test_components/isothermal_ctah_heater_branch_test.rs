@@ -250,6 +250,10 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
             isothermal_ciet_solve_pressure_change_across_each_branch_for_ctah_and_heater_branch(
                 &ctah_and_heater_branches);
 
+        dbg!(&pressure_change_across_each_branch);
+
+
+
         // once we have pressure change across each branch,
         // then we can calculate mass flowrate.
 
@@ -386,9 +390,10 @@ pub trait IsothermalCIETSolvers{
             .collect();
 
 
-            let total_mass_flowrate = mass_flowrate_vector_kg_per_s.into_iter().sum();
+            let total_mass_flowrate_ks_per_s: f64 = 
+                mass_flowrate_vector_kg_per_s.into_iter().sum();
 
-            return total_mass_flowrate;
+            return total_mass_flowrate_ks_per_s;
         };
 
         // let's get hydrostatic pressure (and pressure sources) next
@@ -414,7 +419,7 @@ pub trait IsothermalCIETSolvers{
             Pressure::new::<pascal>(-50000_f64);
 
 
-        let mut convergency = SimpleConvergency { eps:1e-9_f64, max_iter:30 };
+        let mut convergency = SimpleConvergency { eps:1e-12_f64, max_iter:30 };
 
 
         let pressure_change_pascals 
@@ -425,6 +430,7 @@ pub trait IsothermalCIETSolvers{
                 &mut convergency).unwrap();
 
 
+        dbg!(&pressure_change_pascals);
         Pressure::new::<pascal>(pressure_change_pascals)
 
 
