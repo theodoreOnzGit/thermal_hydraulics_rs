@@ -284,6 +284,7 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
             return;
         } else {
             // max error is 5%
+            // not sure if this is acceptable...
             approx::assert_relative_eq!(
                 mass_flowrate_test.get::<kilogram_per_second>().abs(),
                 expected_mass_flow.get::<kilogram_per_second>().abs(),
