@@ -1,6 +1,10 @@
-use uom::{si::{mass_rate::kilogram_per_second, pressure::pascal}, ConstZero};
+use roots::{find_root_brent, SimpleConvergency};
+use uom::si::f64::*;
+use uom::ConstZero;
+use uom::si::mass_rate::kilogram_per_second;
+use uom::si::pressure::pascal;
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::FluidComponentCollectionMethods, fluid_component_super_collection::FluidComponentSuperCollection};
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::{FluidComponentCollection, FluidComponentCollectionMethods}, fluid_component_super_collection::FluidComponentSuperCollection};
 
 
 #[test]
@@ -211,6 +215,9 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
     // mass flowrates
     use uom::si::f64::*;
     use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
+    use uom::ConstZero;
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::pressure::pascal;
 
     fn validate_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,
@@ -239,8 +246,9 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         let net_mass_flowrate_through_parallel_branches = 
             MassRate::ZERO;
         let pressure_change_across_each_branch = 
-            ctah_and_heater_branches.get_pressure_change(
-            net_mass_flowrate_through_parallel_branches);
+            FluidComponentSuperCollection::
+            isothermal_ciet_solve_pressure_change_across_each_branch_for_ctah_and_heater_branch(
+                &ctah_and_heater_branches);
 
         // once we have pressure change across each branch,
         // then we can calculate mass flowrate.
@@ -340,3 +348,89 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
 }
 
 
+/// specific functions and traits meant to solve mass flowrate 
+/// and pressure drop for CIET only
+pub trait IsothermalCIETSolvers{
+
+    /// assuming the branch only contains the ctah and heater branch 
+    /// and the max flowrate is 0.25 kg/s
+    ///
+    /// we can solve for pressure change across each of the branches
+    /// 
+    fn isothermal_ciet_solve_pressure_change_across_each_branch_for_ctah_and_heater_branch(
+        ctah_and_heater_branch: &FluidComponentSuperCollection) -> Pressure {
+
+        let pressure_change_root = |pressure_change_pascals: f64| -> f64 {
+            //# both branches must be subject to the same
+            //# pressure change since they are in parallel
+
+            // given a pressure change, obtain the mass flowrate
+
+            let mass_flowrate_vector_kg_per_s: Vec<f64> = 
+                ctah_and_heater_branch
+                .fluid_component_super_vector
+                .iter()
+                .map(|branch: &FluidComponentCollection|{
+
+                    let pressure_change: Pressure = 
+                        Pressure::new::<pascal>(pressure_change_pascals);
+
+                    let branch_mass_flowrate = 
+                        branch.get_mass_flowrate_from_pressure_change(
+                            pressure_change);
+
+                    branch_mass_flowrate.get::<kilogram_per_second>()
+
+
+                })
+            .collect();
+
+
+            let total_mass_flowrate = mass_flowrate_vector_kg_per_s.into_iter().sum();
+
+            return total_mass_flowrate;
+        };
+
+        // let's get hydrostatic pressure (and pressure sources) next
+        // I can pick any branch to get hydrostatic pressure
+        //
+        // So I'll
+        // get the first element of the vector
+        //
+        // then apply zero mass flowrate
+        let hydrostatic_pressure: Pressure = 
+            ctah_and_heater_branch
+            .fluid_component_super_vector
+            .first() 
+            .unwrap()
+            .get_pressure_change(MassRate::ZERO); // 
+
+        let upper_bound: Pressure = 
+            hydrostatic_pressure +
+            Pressure::new::<pascal>(50000_f64);
+
+        let lower_bound: Pressure = 
+            hydrostatic_pressure +
+            Pressure::new::<pascal>(-50000_f64);
+
+
+        let mut convergency = SimpleConvergency { eps:1e-9_f64, max_iter:30 };
+
+
+        let pressure_change_pascals 
+            = find_root_brent(
+                upper_bound.get::<pascal>(),
+                lower_bound.get::<pascal>(),
+                &pressure_change_root,
+                &mut convergency).unwrap();
+
+
+        Pressure::new::<pascal>(pressure_change_pascals)
+
+
+    }
+
+}
+
+impl IsothermalCIETSolvers for FluidComponentSuperCollection {
+}
