@@ -998,7 +998,7 @@ pub fn new_flowmeter_40_14a() -> NonInsulatedFluidComponent {
     let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(90.0);
     let form_loss = Ratio::new::<ratio>(18.0);
-    let reynolds_power = -1_f64;
+    let reynolds_power = -1.35_f64;
     let reynolds_coefficient = Ratio::new::<ratio>(93000_f64);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)

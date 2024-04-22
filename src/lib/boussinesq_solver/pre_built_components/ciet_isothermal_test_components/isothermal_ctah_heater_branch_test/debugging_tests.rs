@@ -1,3 +1,4 @@
+
 /// basically the ctah branch is rather buggy, so we have to 
 /// test one branch at a time
 #[test]
@@ -73,7 +74,7 @@ pub fn partial_ctah_branch_test(){
     ctah_branch.clone_and_add_component(&ctah_pump);
     ctah_branch.clone_and_add_component(&pipe_13);
     ctah_branch.clone_and_add_component(&pipe_14);
-    //ctah_branch.clone_and_add_component(&flowmeter_40_14a);
+    ctah_branch.clone_and_add_component(&flowmeter_40_14a);
     ctah_branch.clone_and_add_component(&pipe_15);
     ctah_branch.clone_and_add_component(&pipe_16);
     ctah_branch.clone_and_add_component(&branch_17);
@@ -92,7 +93,36 @@ pub fn partial_ctah_branch_test(){
         // pressure change is around 39041 Pa
         approx::assert_relative_eq!(
             series_pipe_pressure_change.get::<pascal>(),
-            28347.0,
+            442.0,
             max_relative=0.001);
     }
+}
+
+/// for the CTAH pump, I expect zero resistance or pressure drop 
+/// that is assumed
+///
+/// This is correct
+#[test]
+pub fn ctah_pump_should_give_zero_resistance(){
+    use uom::si::f64::*;
+    use uom::si::mass_rate::kilogram_per_second;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+    let ctah_pump = crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::new_ctah_pump();
+
+    let mass_rate = MassRate::new::<kilogram_per_second>(0.18);
+
+    let pressure_drop = ctah_pump.get_pressure_loss_immutable(mass_rate);
+
+    approx::assert_abs_diff_eq!(
+        pressure_drop.get::<uom::si::pressure::pascal>(),
+        0.0,
+        );
+
+    let pressure_change = ctah_pump.get_pressure_change_immutable(mass_rate);
+
+    approx::assert_abs_diff_eq!(
+        pressure_change.get::<uom::si::pressure::pascal>(),
+        0.0,
+        )
+
 }

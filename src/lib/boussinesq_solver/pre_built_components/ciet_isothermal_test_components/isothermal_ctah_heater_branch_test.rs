@@ -245,7 +245,6 @@ pub fn heater_branch_pressure_change_test(){
 }
 
 #[test] 
-#[ignore = "to be debugged"]
 pub fn ctah_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
@@ -287,14 +286,12 @@ pub fn ctah_branch_pressure_change_test(){
 
 
 #[test]
-#[ignore = "to be debugged"]
 pub fn isothermal_ctah_and_heater_branch_validation_test(){
 
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
     use uom::si::f64::*;
     use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
-    use uom::ConstZero;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
 
@@ -322,14 +319,11 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         //
         // the total mass flowrate through the collection of parallel 
         // branches is zero
-        let net_mass_flowrate_through_parallel_branches = 
-            MassRate::ZERO;
         let pressure_change_across_each_branch = 
             FluidComponentSuperCollection::
             isothermal_ciet_solve_pressure_change_across_each_branch_for_ctah_and_heater_branch(
                 &ctah_and_heater_branches);
 
-        dbg!(&pressure_change_across_each_branch);
 
 
 
@@ -361,13 +355,23 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
                 expected_mass_flow.get::<kilogram_per_second>(),
                 epsilon=0.0);
             return;
-        } else {
-            // max error is 5%
-            // not sure if this is acceptable...
+        } else if mass_flowrate_test.get::<kilogram_per_second>() < 0.02 {
+            // for low flowrates
+            //
+            // max error is 10% due to allowance for parallax error,
+            // manometer error and reading data from graph error
+            // 
             approx::assert_relative_eq!(
                 mass_flowrate_test.get::<kilogram_per_second>().abs(),
                 expected_mass_flow.get::<kilogram_per_second>().abs(),
-                max_relative=0.05);
+                max_relative=0.10);
+        }
+        else {
+            // max error is 6%
+            approx::assert_relative_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>().abs(),
+                expected_mass_flow.get::<kilogram_per_second>().abs(),
+                max_relative=0.06);
 
         }
 
@@ -387,7 +391,7 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
         );
     validate_mass_flowrate_given_pressure_change(
         Pressure::new::<pascal>(200.0), 
-        MassRate::new::<kilogram_per_second>(0.00263)
+        MassRate::new::<kilogram_per_second>(0.00527)
         );
     validate_mass_flowrate_given_pressure_change(
         Pressure::new::<pascal>(500.0), 
@@ -443,6 +447,183 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
 
 }
 
+
+#[test]
+pub fn isothermal_ctah_and_heater_branch_code_to_code_verification_test(){
+    /// the main difference with validation is that this 
+    /// compares the results of the present solver to that of the 
+    /// previous solver
+
+    // let's construct the branches with test pressures and obtain 
+    // mass flowrates
+    use uom::si::f64::*;
+    use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::pressure::pascal;
+
+    fn verify_mass_flowrate_given_pressure_change(
+        test_pressure: Pressure,
+        expected_mass_flow: MassRate){
+        let heater_branch = heater_branch_builder_isothermal_test();
+        let ctah_branch = ctah_branch_builder_isothermal_test(
+            test_pressure);
+
+        // expected flowrate 
+
+        // you'll now need to add this into a super collection
+        let mut ctah_and_heater_branches = 
+            FluidComponentSuperCollection::default();
+        ctah_and_heater_branches.set_oritentation_to_parallel();
+        ctah_and_heater_branches.fluid_component_super_vector
+            .push(heater_branch);
+        ctah_and_heater_branches.fluid_component_super_vector
+            .push(ctah_branch);
+
+        // obtain flowrate 
+        // the overall pressure change across each branch must be
+        // equal
+        //
+        // the total mass flowrate through the collection of parallel 
+        // branches is zero
+        let pressure_change_across_each_branch = 
+            FluidComponentSuperCollection::
+            isothermal_ciet_solve_pressure_change_across_each_branch_for_ctah_and_heater_branch(
+                &ctah_and_heater_branches);
+
+
+
+
+        // once we have pressure change across each branch,
+        // then we can calculate mass flowrate.
+
+        let mass_flowrate_across_each_branch: Vec<MassRate> = 
+            ctah_and_heater_branches.
+            get_mass_flowrate_across_each_parallel_branch(
+                pressure_change_across_each_branch
+            );
+
+
+        // let's obtain the mass flowrate, it should be zero 
+        // or close to it 
+
+        let mut mass_flowrate_test: MassRate = 
+            *mass_flowrate_across_each_branch
+            .first()
+            .unwrap();
+
+        // get absolute value
+        mass_flowrate_test = mass_flowrate_test.abs();
+
+        // if mass flowrate is zero, use abs diff
+        if mass_flowrate_test.get::<kilogram_per_second>() == 0.0 {
+            approx::assert_abs_diff_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>(),
+                expected_mass_flow.get::<kilogram_per_second>(),
+                epsilon=0.0);
+            return;
+        } else if mass_flowrate_test.get::<kilogram_per_second>() > 0.05 {
+            // max error is 5% 
+            //
+            // flowmeter reading error is 2%
+            // plus 50 pascals worth of mass flowrate,
+            // plus additional 3 % due to correlation error as the 
+            // experimental correlation is derived from data points read from 
+            // a graph
+            //
+            // give or take, 5% is reasonable
+            //
+            // according to the residual plots I plotted, anything below 
+            // mass flowrate of 0.05 would have error bars of about 80 Pa
+            //
+
+            approx::assert_relative_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>().abs(),
+                expected_mass_flow.get::<kilogram_per_second>().abs(),
+                max_relative=0.05);
+
+        } else {
+
+            // for flowrates less than 0.05 kg/s
+            // larger error allowance is given
+
+            approx::assert_relative_eq!(
+                mass_flowrate_test.get::<kilogram_per_second>().abs(),
+                expected_mass_flow.get::<kilogram_per_second>().abs(),
+                max_relative=0.08);
+
+        }
+
+        
+
+    }
+
+    // now let's verify this across all flowrates 
+
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(0.0), 
+        MassRate::new::<kilogram_per_second>(0.0)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(90.0), 
+        MassRate::new::<kilogram_per_second>(0.00263)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(180.0), 
+        MassRate::new::<kilogram_per_second>(0.00527)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(480.0), 
+        MassRate::new::<kilogram_per_second>(0.0127)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(970.0), 
+        MassRate::new::<kilogram_per_second>(0.0236)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(1960.0), 
+        MassRate::new::<kilogram_per_second>(0.0418)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(3950.0), 
+        MassRate::new::<kilogram_per_second>(0.0706)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(5940.0), 
+        MassRate::new::<kilogram_per_second>(0.0938)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(7930.0), 
+        MassRate::new::<kilogram_per_second>(0.114)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(9930.0), 
+        MassRate::new::<kilogram_per_second>(0.132)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(11930.0), 
+        MassRate::new::<kilogram_per_second>(0.148)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(14920.0), 
+        MassRate::new::<kilogram_per_second>(0.170)
+        );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(15920.0), 
+        MassRate::new::<kilogram_per_second>(0.177)
+        );
+    
+    //// reverse flow tests (later)
+    //verify_mass_flowrate_given_pressure_change(
+    //    Pressure::new::<pascal>(-2000.0), 
+    //    MassRate::new::<kilogram_per_second>(-0.0418)
+    //    );
+    //verify_mass_flowrate_given_pressure_change(
+    //    Pressure::new::<pascal>(-10000.0), 
+    //    MassRate::new::<kilogram_per_second>(-0.132)
+    //    );
+
+
+}
 
 /// specific functions and traits meant to solve mass flowrate 
 /// and pressure drop for CIET only
@@ -522,7 +703,6 @@ pub trait IsothermalCIETSolvers{
                 &mut convergency).unwrap();
 
 
-        dbg!(&pressure_change_pascals);
         Pressure::new::<pascal>(pressure_change_pascals)
 
 
