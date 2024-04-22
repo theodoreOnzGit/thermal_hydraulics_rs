@@ -229,8 +229,6 @@ pub fn new_static_mixer_41() -> InsulatedFluidComponent {
 ///
 /// It is NOT insulated by the way
 ///
-/// It is a static mixer pipe
-/// otherwise known as the static mixer pipe 6a
 ///
 /// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
 /// validation using the compact integral effects test (CIET) 

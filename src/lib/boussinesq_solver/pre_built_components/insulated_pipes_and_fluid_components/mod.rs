@@ -223,7 +223,7 @@ impl InsulatedFluidComponent {
         let b = reynolds_coefficient;
         let c = reynolds_power;
 
-        let fluid_array: FluidArray = 
+        let mut fluid_array: FluidArray = 
             FluidArray::new_custom_component(
                 component_length, 
                 hydraulic_diameter, 
@@ -270,6 +270,9 @@ impl InsulatedFluidComponent {
 
         let custom_component_loss_correlation = DimensionlessDarcyLossCorrelations::
             new_simple_reynolds_power_component(a, b, c);
+
+        fluid_array.fluid_component_loss_properties = 
+            custom_component_loss_correlation;
 
         return Self { inner_nodes: user_specified_inner_nodes,
             pipe_shell: CVType::SolidArrayCV(pipe_shell).into(),
