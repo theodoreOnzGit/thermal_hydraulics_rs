@@ -8,7 +8,6 @@ use super::*;
 /// builds a heater branch to simulate isothermal testing of ciet
 pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
 
-    let branch_5 = new_branch_5();
     let pipe_4 = new_pipe_4();
     let pipe_3 = new_pipe_3();
     let static_mixer_2 = new_static_mixer_10();
@@ -20,7 +19,6 @@ pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
 
     let mut heater_branch = FluidComponentCollection::new_series_component_collection();
 
-    heater_branch.clone_and_add_component(&branch_5);
     heater_branch.clone_and_add_component(&pipe_4);
     heater_branch.clone_and_add_component(&pipe_3);
     heater_branch.clone_and_add_component(&static_mixer_2);
@@ -38,6 +36,7 @@ pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
 pub fn ctah_branch_builder_isothermal_test(
     pump_pressure: Pressure) -> FluidComponentCollection {
 
+    let branch_5 = new_branch_5();
     let static_mixer_41_label_6 = new_static_mixer_41();
     let pipe_6a = new_pipe_6a();
     let ctah_vertical_label_7a = new_inactive_ctah_vertical();
@@ -63,6 +62,7 @@ pub fn ctah_branch_builder_isothermal_test(
 
     let mut ctah_branch = FluidComponentCollection::new_series_component_collection();
     
+    ctah_branch.clone_and_add_component(&branch_5);
     ctah_branch.clone_and_add_component(&static_mixer_41_label_6);
     ctah_branch.clone_and_add_component(&pipe_6a);
     ctah_branch.clone_and_add_component(&ctah_vertical_label_7a);

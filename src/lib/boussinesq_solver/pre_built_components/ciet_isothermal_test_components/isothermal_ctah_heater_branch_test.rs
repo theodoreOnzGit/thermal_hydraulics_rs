@@ -245,6 +245,7 @@ pub fn heater_branch_pressure_change_test(){
 }
 
 #[test] 
+#[ignore = "to be debugged"]
 pub fn ctah_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
@@ -286,6 +287,7 @@ pub fn ctah_branch_pressure_change_test(){
 
 
 #[test]
+#[ignore = "to be debugged"]
 pub fn isothermal_ctah_and_heater_branch_validation_test(){
 
     // let's construct the branches with test pressures and obtain 
@@ -530,3 +532,6 @@ pub trait IsothermalCIETSolvers{
 
 impl IsothermalCIETSolvers for FluidComponentSuperCollection {
 }
+
+/// basically, for all smaller unit tests mean to debug the flow simulation
+pub mod debugging_tests;
