@@ -172,6 +172,9 @@ impl FluidComponentTrait for InsulatedFluidComponent {
         let mut pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.set_pressure_loss(internal_pressure)
+        pipe_fluid_array.set_pressure_loss(internal_pressure);
+
+        self.pipe_fluid_array = pipe_fluid_array.into();
+
     }
 }

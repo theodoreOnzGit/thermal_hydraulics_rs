@@ -86,13 +86,26 @@ pub fn ctah_branch_builder_isothermal_test(
 
 /// for the CTAH pump, I expect zero resistance or pressure drop 
 /// that is assumed
+///
+/// This is correct
 #[test]
 pub fn ctah_pump_should_give_zero_resistance(){
-    let mut ctah_pump = new_ctah_pump();
+    let ctah_pump = new_ctah_pump();
 
     let mass_rate = MassRate::new::<kilogram_per_second>(0.18);
 
     let pressure_drop = ctah_pump.get_pressure_loss_immutable(mass_rate);
 
+    approx::assert_abs_diff_eq!(
+        pressure_drop.get::<uom::si::pressure::pascal>(),
+        0.0,
+        );
+
+    let pressure_change = ctah_pump.get_pressure_change_immutable(mass_rate);
+
+    approx::assert_abs_diff_eq!(
+        pressure_change.get::<uom::si::pressure::pascal>(),
+        0.0,
+        )
 
 }
