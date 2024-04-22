@@ -482,14 +482,13 @@ impl FluidArray {
         let surface_roughness = 
         adjacent_solid_material.surface_roughness().unwrap();
 
-        let pipe_default_form_loss = pipe_form_loss;
 
         let pipe_losses: DimensionlessDarcyLossCorrelations 
         = DimensionlessDarcyLossCorrelations::new_pipe(
             default_length,
             surface_roughness,
             hydraulic_diameter,
-            pipe_default_form_loss,
+            pipe_form_loss,
         );
         
         let pipe_prandtl = try_get_prandtl(
