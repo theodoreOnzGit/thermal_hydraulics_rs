@@ -47,17 +47,38 @@ pub fn partial_ctah_branch_test(){
     ctah_branch.clone_and_add_component(&static_mixer_40_label_8);
     ctah_branch.clone_and_add_component(&pipe_9);
     ctah_branch.clone_and_add_component(&pipe_10);
-    //ctah_branch.clone_and_add_component(&pipe_11);
-    //ctah_branch.clone_and_add_component(&pipe_12);
-    //ctah_branch.clone_and_add_component(&ctah_pump);
-    //ctah_branch.clone_and_add_component(&pipe_13);
-    //ctah_branch.clone_and_add_component(&pipe_14);
-    //ctah_branch.clone_and_add_component(&flowmeter_40_14a);
-    //ctah_branch.clone_and_add_component(&pipe_15);
-    //ctah_branch.clone_and_add_component(&pipe_16);
-    //ctah_branch.clone_and_add_component(&branch_17);
 
-    // let's the pressure change, 0.18 kg/s fluid flow 
+    // let's test the pressure change, 0.18 kg/s fluid flow 
+    {
+        // now let's push a 0.18kg/s fluid flow through this pipe series
+        //
+        let pipe_fluid_flow = MassRate::new::<kilogram_per_second>(0.18);
+
+        // and then let's get the pressure change
+
+        let series_pipe_pressure_change = ctah_branch.
+            get_pressure_change(pipe_fluid_flow);
+
+        // pressure change is around 39041 Pa
+        approx::assert_relative_eq!(
+            series_pipe_pressure_change.get::<pascal>(),
+            28347.0,
+            max_relative=0.001);
+    }
+
+    // clear the ctah branch 
+    ctah_branch.components.clear();
+    ctah_branch.clone_and_add_component(&pipe_11);
+    ctah_branch.clone_and_add_component(&pipe_12);
+    ctah_branch.clone_and_add_component(&ctah_pump);
+    ctah_branch.clone_and_add_component(&pipe_13);
+    ctah_branch.clone_and_add_component(&pipe_14);
+    //ctah_branch.clone_and_add_component(&flowmeter_40_14a);
+    ctah_branch.clone_and_add_component(&pipe_15);
+    ctah_branch.clone_and_add_component(&pipe_16);
+    ctah_branch.clone_and_add_component(&branch_17);
+
+    // let's test the pressure change, 0.18 kg/s fluid flow 
     {
         // now let's push a 0.18kg/s fluid flow through this pipe series
         //
