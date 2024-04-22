@@ -1,3 +1,5 @@
+use uom::si::mass_rate::kilogram_per_second;
+
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::FluidComponentCollection, fluid_component_traits::FluidComponentTrait};
 
 use super::*;
@@ -80,4 +82,17 @@ pub fn ctah_branch_builder_isothermal_test(
     ctah_branch.clone_and_add_component(&branch_17);
 
     ctah_branch
+}
+
+/// for the CTAH pump, I expect zero resistance or pressure drop 
+/// that is assumed
+#[test]
+pub fn ctah_pump_should_give_zero_resistance(){
+    let mut ctah_pump = new_ctah_pump();
+
+    let mass_rate = MassRate::new::<kilogram_per_second>(0.18);
+
+    let pressure_drop = ctah_pump.get_pressure_loss_immutable(mass_rate);
+
+
 }

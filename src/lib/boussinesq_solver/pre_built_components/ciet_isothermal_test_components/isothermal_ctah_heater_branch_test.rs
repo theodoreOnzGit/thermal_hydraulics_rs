@@ -257,12 +257,12 @@ pub fn ctah_branch_pressure_change_test(){
     use uom::si::pressure::pascal;
 
     let pump_pressure = Pressure::ZERO;
-    let heater_branch = ctah_branch_builder_isothermal_test(
+    let ctah_branch = ctah_branch_builder_isothermal_test(
         pump_pressure);
 
     // pressure change at 0 kg/s 
     let pressure_change_at_zero_kg_per_s = 
-        heater_branch.get_pressure_change(MassRate::ZERO);
+        ctah_branch.get_pressure_change(MassRate::ZERO);
 
     // pressure change should be 39041 +/- 1 Pa
     assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s.get::<pascal>(), 
@@ -271,7 +271,7 @@ pub fn ctah_branch_pressure_change_test(){
     // now at 0.18 kg/s
     // pressure change at 0 kg/s 
     let pressure_change_at_0_18_kg_per_s = 
-        heater_branch.get_pressure_change(
+        ctah_branch.get_pressure_change(
             MassRate::new::<kilogram_per_second>(0.18));
 
     // pressure change should be 28751.0 +/- 100 Pa
@@ -282,6 +282,8 @@ pub fn ctah_branch_pressure_change_test(){
 
 
 }
+
+
 
 #[test]
 pub fn isothermal_ctah_and_heater_branch_validation_test(){
