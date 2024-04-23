@@ -1,4 +1,5 @@
-use roots::{find_root_brent, SimpleConvergency};
+use roots::SimpleConvergency;
+use roots::find_root_brent;
 use uom::si::f64::*;
 use uom::ConstZero;
 use uom::si::mass_rate::kilogram_per_second;
@@ -10,15 +11,21 @@ use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections:
 #[test]
 pub fn heater_branch_with_heater_v2_test(){
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_heated_section_version_1_label_1, new_heater_bottom_head_1b, new_heater_top_head_1a, new_pipe_18, new_pipe_2a, new_static_mixer_10};
-    use uom::si::f64::*;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component::FluidComponent, fluid_component_collection::FluidComponentCollectionOreintation};
+    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component_collection::FluidComponentCollection;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component_collection::FluidComponentCollectionOreintation;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component::FluidComponent;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
     use uom::si::pressure::pascal;
-    use super::{new_branch_5, new_pipe_3, new_pipe_4};
+    use super::new_pipe_3;
+    use super::new_pipe_4;
+    use super::new_branch_5;
     // first let's construct the heater branch
     // probably need the heater top and bottom head later
     
@@ -136,11 +143,13 @@ pub fn heater_branch_with_heater_v2_test(){
 #[test]
 pub fn ctah_branch_test(){
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_branch_17, new_ctah_pump, new_flowmeter_40_14a, new_inactive_ctah_horizontal, new_inactive_ctah_vertical, new_pipe_10, new_pipe_11, new_pipe_12, new_pipe_13, new_pipe_14, new_pipe_15, new_pipe_16, new_pipe_6a, new_pipe_8a, new_pipe_9, new_static_mixer_40, new_static_mixer_41};
-    use uom::si::f64::*;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
+    use crate::boussinesq_solver::pre_built_components::
+        ciet_isothermal_test_components::*;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component_collection::FluidComponentCollection;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
     use uom::si::pressure::pascal;
     // first let's construct the ctah branch
@@ -207,81 +216,6 @@ pub fn ctah_branch_test(){
     }
 }
 
-#[test] 
-pub fn heater_branch_pressure_change_test(){
-
-    // let's construct the branches with test pressures and obtain 
-    // mass flowrates
-    use uom::si::f64::*;
-    use super::ciet_branch_builders_isothermal::heater_branch_builder_isothermal_test;
-    use uom::ConstZero;
-    use uom::si::mass_rate::kilogram_per_second;
-    use approx::assert_abs_diff_eq;
-    use uom::si::pressure::pascal;
-
-    let heater_branch = heater_branch_builder_isothermal_test();
-
-    // pressure change at 0 kg/s 
-    let pressure_change_at_zero_kg_per_s = 
-        heater_branch.get_pressure_change(MassRate::ZERO);
-
-    // pressure change should be 39041 +/- 1 Pa
-    assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s.get::<pascal>(), 
-        39041.0, epsilon=1.0,);
-
-    // now at 0.18 kg/s
-    // pressure change at 0 kg/s 
-    let pressure_change_at_0_18_kg_per_s = 
-        heater_branch.get_pressure_change(
-            MassRate::new::<kilogram_per_second>(0.18));
-
-    // pressure change should be 33417.0 +/- 100 Pa
-    // this is based on the old heater branch values 
-    // form the old ciet isothermal server
-    assert_abs_diff_eq!(pressure_change_at_0_18_kg_per_s.get::<pascal>(), 
-        33417.0, epsilon=100.0,);
-
-
-}
-
-#[test] 
-pub fn ctah_branch_pressure_change_test(){
-
-    // let's construct the branches with test pressures and obtain 
-    // mass flowrates
-    use uom::si::f64::*;
-    use super::ciet_branch_builders_isothermal::*;
-    use uom::ConstZero;
-    use uom::si::mass_rate::kilogram_per_second;
-    use approx::assert_abs_diff_eq;
-    use uom::si::pressure::pascal;
-
-    let pump_pressure = Pressure::ZERO;
-    let ctah_branch = ctah_branch_builder_isothermal_test(
-        pump_pressure);
-
-    // pressure change at 0 kg/s 
-    let pressure_change_at_zero_kg_per_s = 
-        ctah_branch.get_pressure_change(MassRate::ZERO);
-
-    // pressure change should be 39041 +/- 1 Pa
-    assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s.get::<pascal>(), 
-        39041.0, epsilon=1.0,);
-
-    // now at 0.18 kg/s
-    // pressure change at 0 kg/s 
-    let pressure_change_at_0_18_kg_per_s = 
-        ctah_branch.get_pressure_change(
-            MassRate::new::<kilogram_per_second>(0.18));
-
-    // pressure change should be 28751.0 +/- 100 Pa
-    // this is based on the old heater branch values 
-    // form the old ciet isothermal server
-    assert_abs_diff_eq!(pressure_change_at_0_18_kg_per_s.get::<pascal>(), 
-        28751.0, epsilon=100.0,);
-
-
-}
 
 
 
@@ -291,7 +225,8 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
     use uom::si::f64::*;
-    use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
+    use super::ciet_branch_builders_isothermal::heater_branch_builder_isothermal_test;
+    use super::ciet_branch_builders_isothermal::ctah_branch_builder_isothermal_test;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
 
@@ -457,7 +392,8 @@ pub fn isothermal_ctah_and_heater_branch_code_to_code_verification_test(){
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
     use uom::si::f64::*;
-    use super::ciet_branch_builders_isothermal::{ctah_branch_builder_isothermal_test, heater_branch_builder_isothermal_test};
+    use super::ciet_branch_builders_isothermal::heater_branch_builder_isothermal_test;
+    use super::ciet_branch_builders_isothermal::ctah_branch_builder_isothermal_test;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
 

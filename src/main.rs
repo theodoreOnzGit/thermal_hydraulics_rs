@@ -70,7 +70,6 @@ extern crate uom;
 use thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::{darcy, fldk};
 mod manual_tests;
 
-use crate::manual_tests::*;
 
 
 fn main() {

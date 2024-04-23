@@ -976,7 +976,7 @@ pub fn new_pipe_14() -> InsulatedFluidComponent {
 ///
 /// ctah line flowmeter 40
 /// label 14a on simulation diagram
-/// fldk = 18.0+93000/Re
+/// fldk = 18.0+93000/(Re^1.35)
 ///
 /// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
 /// validation using the compact integral effects test (CIET) 
@@ -2449,7 +2449,7 @@ pub fn new_pipe_22() -> InsulatedFluidComponent {
 ///
 /// ctah line flowmeter 40
 /// label 14a on simulation diagram
-/// fldk = 18.0+93000/Re
+/// fldk = 18.0+93000/(Re^1.35)
 ///
 /// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
 /// validation using the compact integral effects test (CIET) 
@@ -2471,7 +2471,7 @@ pub fn new_flowmeter_20() -> NonInsulatedFluidComponent {
     let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(90.0 - 180.0);
     let form_loss = Ratio::new::<ratio>(18.0);
-    let reynolds_power = -1_f64;
+    let reynolds_power = -1.35_f64;
     let reynolds_coefficient = Ratio::new::<ratio>(93000_f64);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)
