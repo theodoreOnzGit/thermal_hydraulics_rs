@@ -69,9 +69,6 @@
 #![warn(missing_docs)]
 extern crate uom;
 
-/// Fluid Mechanics Module (testing)
-pub mod fluid_mechanics_lib;
-
 /// Heat Transfer Module (testing)
 //pub mod heat_transfer_lib;
 
