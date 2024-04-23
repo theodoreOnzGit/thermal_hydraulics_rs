@@ -70,3 +70,19 @@ pub mod ciet_static_mixers;
 /// In my master's thesis, heat structure information was not included. However, 
 /// I shall include them in this round
 pub mod ciet_isothermal_test_components;
+
+
+/// ciet components for pipes and valves for use in the natural circulation 
+/// test. I attempt to reproduce some results in the following 
+/// publications:
+///
+/// Zweibaum, N. (2015). Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University 
+/// of California, Berkeley.
+///
+/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
+/// validation using the compact integral effects test (CIET) experimental 
+/// data (No. ANL/NSE-19/11). Argonne National 
+/// Lab.(ANL), Argonne, IL (United States).
+pub mod ciet_steady_state_natural_circulation_test_components;

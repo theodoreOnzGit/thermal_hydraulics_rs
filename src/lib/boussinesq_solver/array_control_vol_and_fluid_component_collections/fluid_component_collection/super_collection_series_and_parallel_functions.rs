@@ -833,8 +833,6 @@ pub trait FluidComponentSuperCollectionParallelAssociatedFunctions {
             //
             // the easiest solution is each branch has zero mass flowrate
 
-            let individual_branch_guess_average_mass_flowrate =
-                zero_mass_flowrate;
 
             // however, more often than not, the trivial solution doesn't work
             // I then need to obtain the largest difference in pressure changes 
@@ -857,7 +855,6 @@ pub trait FluidComponentSuperCollectionParallelAssociatedFunctions {
                     max_pressure_change_between_branches, 
                     fluid_component_collection_vector);
 
-            dbg!(&max_mass_flowrate_across_each_branch);
             
 
 
@@ -868,7 +865,6 @@ pub trait FluidComponentSuperCollectionParallelAssociatedFunctions {
                     fluid_component_collection_vector);
         }
 
-        // TODO: stuff after this isn't quite tested yet
 
         // if flow is non zero, then we will have to deal with 3 bounding cases
         // so that we can guess the bounds of root finding
