@@ -2167,7 +2167,7 @@ pub fn new_static_mixer_21() -> InsulatedFluidComponent {
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_dhx_shell_side_heat_exchanger() -> InsulatedFluidComponent {
+pub fn new_inactive_dhx_shell_side_heat_exchanger() -> InsulatedFluidComponent {
     let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -2461,7 +2461,7 @@ pub fn new_pipe_22() -> InsulatedFluidComponent {
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_flowmeter_20() -> NonInsulatedFluidComponent {
+pub fn new_flowmeter_20_21a() -> NonInsulatedFluidComponent {
     let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);

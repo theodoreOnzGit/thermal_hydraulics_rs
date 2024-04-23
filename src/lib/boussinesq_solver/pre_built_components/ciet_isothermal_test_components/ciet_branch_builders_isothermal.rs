@@ -3,6 +3,42 @@ use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections:
 
 use super::*;
 
+/// builds a dhx branch to simulate isothermal testing of ciet
+pub fn dhx_branch_builder_isothermal_test() -> FluidComponentCollection {
+
+
+    // from top to bottom, (no check valve)
+
+    let pipe_26 = new_pipe_26();
+    let static_mixer_21_label_25 = new_static_mixer_21();
+    let static_mixer_pipe_25a = new_pipe_25a();
+    let dhx_shell_side_24 = new_inactive_dhx_shell_side_heat_exchanger();
+    let static_mixer_20_label_23 = new_static_mixer_20();
+    let static_mixer_pipe_23a = new_pipe_23a();
+    let pipe_22 = new_pipe_22();
+    let flowmeter_20_21a = new_flowmeter_20_21a();
+    let pipe_21 = new_pipe_21();
+    let pipe_20 = new_pipe_20();
+    let pipe_19 = new_pipe_19();
+
+    let mut dhx_branch = FluidComponentCollection::new_series_component_collection();
+
+
+    dhx_branch.clone_and_add_component(&pipe_26);
+    dhx_branch.clone_and_add_component(&static_mixer_21_label_25);
+    dhx_branch.clone_and_add_component(&static_mixer_pipe_25a);
+    dhx_branch.clone_and_add_component(&dhx_shell_side_24);
+    dhx_branch.clone_and_add_component(&static_mixer_20_label_23);
+    dhx_branch.clone_and_add_component(&static_mixer_pipe_23a);
+    dhx_branch.clone_and_add_component(&pipe_22);
+    dhx_branch.clone_and_add_component(&flowmeter_20_21a);
+    dhx_branch.clone_and_add_component(&pipe_21);
+    dhx_branch.clone_and_add_component(&pipe_20);
+    dhx_branch.clone_and_add_component(&pipe_19);
+
+
+    dhx_branch
+}
 
 /// builds a heater branch to simulate isothermal testing of ciet
 pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
