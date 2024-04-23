@@ -327,7 +327,7 @@ pub trait FluidComponentCollectionSeriesAssociatedFunctions {
         // But having done so, I want to use the newton raphson method to
         // try and converge this result, hopefully within 30 iterations
 
-        let mut convergency = SimpleConvergency { eps:1e-15f64, max_iter:30 };
+        let mut convergency = SimpleConvergency { eps:1e-15f64, max_iter:70 };
 
         let mut mass_flowrate_result =
             if forward_flow_true != true {

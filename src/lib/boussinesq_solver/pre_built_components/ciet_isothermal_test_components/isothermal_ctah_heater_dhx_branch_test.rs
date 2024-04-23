@@ -32,7 +32,7 @@ pub fn isothermal_dhx_ctah_and_heater_branch_code_to_code_verification_test(){
         test_pressure: Pressure,
         expected_mass_flow: MassRate){
         let verification_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(21.7);
+            ThermodynamicTemperature::new::<degree_celsius>(20.0);
         let heater_branch = heater_branch_builder_isothermal_test(
             verification_temperature);
         let ctah_branch = ctah_branch_builder_isothermal_test(
@@ -104,26 +104,29 @@ pub fn isothermal_dhx_ctah_and_heater_branch_code_to_code_verification_test(){
             // experimental correlation is derived from data points read from 
             // a graph
             //
-            // give or take, 5% is reasonable
+            // give or take, 2% is reasonable
             //
             // according to the residual plots I plotted, anything below 
-            // mass flowrate of 0.05 would have error bars of about 80 Pa
+            // mass flowrate of 0.02 would have error bars of about 80 Pa
+            //
+            // but this agrees to within 0.5% which is reasonable for reproducing 
+            // test results
             //
 
             approx::assert_relative_eq!(
                 mass_flowrate_test.get::<kilogram_per_second>().abs(),
                 expected_mass_flow.get::<kilogram_per_second>().abs(),
-                max_relative=0.05);
+                max_relative=0.005);
 
         } else {
 
             // for flowrates less than 0.05 kg/s
-            // larger error allowance is given
+            // we agree to within 0.5%
 
             approx::assert_relative_eq!(
                 mass_flowrate_test.get::<kilogram_per_second>().abs(),
                 expected_mass_flow.get::<kilogram_per_second>().abs(),
-                max_relative=0.10);
+                max_relative=0.005);
 
         }
 
