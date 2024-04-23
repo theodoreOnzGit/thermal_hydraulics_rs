@@ -1,5 +1,7 @@
 
 
+
+
 #[test] 
 pub fn heater_branch_pressure_change_test(){
 
@@ -221,5 +223,195 @@ pub fn ctah_pump_should_give_zero_resistance(){
         pressure_change.get::<uom::si::pressure::pascal>(),
         0.0,
         )
+
+}
+
+
+/// this test checks the functionality of solving for mass flowrates 
+/// across each branch while automatically detemrmining bounds
+#[test]
+pub fn isothermal_ctah_and_heater_branch_parallel_associated_functions_regression_test(){
+
+    // let's construct the branches with test pressures and obtain 
+    // mass flowrates
+    use uom::si::f64::*;
+    use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::pressure::pascal;
+    use crate::boussinesq_solver::pre_built_components::
+        ciet_isothermal_test_components::ciet_branch_builders_isothermal
+        ::*;
+    use uom::ConstZero;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_super_collection::FluidComponentSuperCollection;
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_collection::FluidComponentCollectionMethods;
+
+    fn verify_mass_flowrate_given_pressure_change(
+        test_pressure: Pressure,
+        expected_mass_flow: MassRate){
+
+        let verification_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(20.0);
+        let heater_branch = heater_branch_builder_isothermal_test(verification_temperature);
+        let ctah_branch = ctah_branch_builder_isothermal_test(
+            test_pressure,
+            verification_temperature);
+
+        // expected flowrate 
+
+        // you'll now need to add this into a super collection
+        let mut ctah_and_heater_branches = 
+            FluidComponentSuperCollection::default();
+        ctah_and_heater_branches.set_oritentation_to_parallel();
+        ctah_and_heater_branches.fluid_component_super_vector
+            .push(heater_branch);
+            ctah_and_heater_branches.fluid_component_super_vector
+                .push(ctah_branch);
+
+            // obtain flowrate 
+            // the overall pressure change across each branch must be
+            // equal
+            //
+            // the total mass flowrate through the collection of parallel 
+            // branches is zero
+            //
+            // the get_pressure_change function is the main one 
+            // we are testing now
+            let pressure_change_across_each_branch = 
+                ctah_and_heater_branches
+                .get_pressure_change(MassRate::ZERO);
+
+
+
+
+
+            // once we have pressure change across each branch,
+            // then we can calculate mass flowrate.
+
+            let mass_flowrate_across_each_branch: Vec<MassRate> = 
+                ctah_and_heater_branches.
+                get_mass_flowrate_across_each_parallel_branch(
+                    pressure_change_across_each_branch
+                );
+
+
+            // let's obtain the mass flowrate, it should be zero 
+            // or close to it 
+
+            let mut mass_flowrate_test: MassRate = 
+                *mass_flowrate_across_each_branch
+                .first()
+                .unwrap();
+
+            // get absolute value
+            mass_flowrate_test = mass_flowrate_test.abs();
+
+            // if mass flowrate is zero, use abs diff
+            if mass_flowrate_test.get::<kilogram_per_second>() == 0.0 {
+                approx::assert_abs_diff_eq!(
+                    mass_flowrate_test.get::<kilogram_per_second>(),
+                    expected_mass_flow.get::<kilogram_per_second>(),
+                    epsilon=0.0);
+                return;
+            } else if mass_flowrate_test.get::<kilogram_per_second>() < 0.02 {
+                // for low flowrates
+                // 
+                // For verification, we have error bound 
+                // of 0.5% to reproduce previous results
+                // due to round off error of 3sf
+                // 
+                approx::assert_relative_eq!(
+                    mass_flowrate_test.get::<kilogram_per_second>().abs(),
+                    expected_mass_flow.get::<kilogram_per_second>().abs(),
+                    max_relative=0.005);
+            }
+            else {
+                // for large flowrate 
+                // verification tests, we have error bound 
+                // of 0.5% to reproduce previous results
+                // due to round off error
+                // of 3 sf
+                approx::assert_relative_eq!(
+                    mass_flowrate_test.get::<kilogram_per_second>().abs(),
+                    expected_mass_flow.get::<kilogram_per_second>().abs(),
+                    max_relative=0.005);
+
+            }
+
+
+
+    }
+
+    // now let's verify this across all flowrates 
+
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(0.0), 
+        MassRate::new::<kilogram_per_second>(0.0)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(100.0), 
+        MassRate::new::<kilogram_per_second>(0.00263)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(200.0), 
+        MassRate::new::<kilogram_per_second>(0.00527)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(500.0), 
+        MassRate::new::<kilogram_per_second>(0.0127)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(1000.0), 
+        MassRate::new::<kilogram_per_second>(0.0236)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(2000.0), 
+        MassRate::new::<kilogram_per_second>(0.0418)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(4000.0), 
+        MassRate::new::<kilogram_per_second>(0.0706)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(6000.0), 
+        MassRate::new::<kilogram_per_second>(0.0938)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(8000.0), 
+        MassRate::new::<kilogram_per_second>(0.114)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(10000.0), 
+        MassRate::new::<kilogram_per_second>(0.132)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(12000.0), 
+        MassRate::new::<kilogram_per_second>(0.148)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(15000.0), 
+        MassRate::new::<kilogram_per_second>(0.170)
+    );
+    verify_mass_flowrate_given_pressure_change(
+        Pressure::new::<pascal>(16000.0), 
+        MassRate::new::<kilogram_per_second>(0.177)
+    );
+
+    //// reverse flow tests (later)
+    //verify_mass_flowrate_given_pressure_change(
+    //    Pressure::new::<pascal>(-2000.0), 
+    //    MassRate::new::<kilogram_per_second>(-0.0418)
+    //    );
+    //verify_mass_flowrate_given_pressure_change(
+    //    Pressure::new::<pascal>(-10000.0), 
+    //    MassRate::new::<kilogram_per_second>(-0.132)
+    //    );
+
 
 }

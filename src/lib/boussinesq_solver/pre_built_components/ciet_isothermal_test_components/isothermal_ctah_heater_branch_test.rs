@@ -1,7 +1,6 @@
 use roots::SimpleConvergency;
 use roots::find_root_brent;
 use uom::si::f64::*;
-use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::ConstZero;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::pressure::pascal;
@@ -236,6 +235,7 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
     use super::ciet_branch_builders_isothermal::ctah_branch_builder_isothermal_test;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
+    use uom::si::thermodynamic_temperature::degree_celsius;
 
     fn validate_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,
@@ -414,6 +414,7 @@ pub fn isothermal_ctah_and_heater_branch_code_to_code_verification_test(){
     use super::ciet_branch_builders_isothermal::ctah_branch_builder_isothermal_test;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
+    use uom::si::thermodynamic_temperature::degree_celsius;
 
     fn verify_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,

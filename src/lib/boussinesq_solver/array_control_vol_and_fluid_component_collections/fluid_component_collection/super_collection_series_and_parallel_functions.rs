@@ -1173,38 +1173,59 @@ pub trait FluidComponentSuperCollectionParallelAssociatedFunctions {
     /// given a guessed flowrate through each branch
     /// and user specified flowrate
     ///
+    /// the guessed flowrate should provide an upper bound for the given 
+    /// flowrate
+    ///
     #[inline]
     fn calculate_pressure_change_using_guessed_branch_mass_flowrate(
-        individual_branch_guess_average_mass_flowrate: MassRate,
+        individual_branch_guess_upper_bound_mass_flowrate: MassRate,
         user_specified_mass_flowrate: MassRate,
         fluid_component_collection_vector: &Vec<FluidComponentCollection>) -> Pressure {
 
 
-        // first i am applying the average guessed flowrate through all branches
-        // this is the trivial solution
+        // first i am applying the guessed maximum 
+        // flowrate through all branches
         //
+        // I will do forward and reverse flow for all branches
 
-        let pressure_change_est_vector: Vec<Pressure> = 
+
+        let pressure_change_est_vector_forward_direction: Vec<Pressure> = 
             <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
             obtain_pressure_estimate_vector(
-                individual_branch_guess_average_mass_flowrate, 
+                individual_branch_guess_upper_bound_mass_flowrate, 
                 fluid_component_collection_vector);
+
+        let pressure_change_est_vector_backward_direction: Vec<Pressure> = 
+            <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
+            obtain_pressure_estimate_vector(
+                -individual_branch_guess_upper_bound_mass_flowrate, 
+                fluid_component_collection_vector);
+
+        // from these I should be able to get a vector of pressure 
+        // changes across all branches and get forward and reverse direction 
+        // flow
+
+        let pressure_change_forward_and_backward_est_vector: 
+            Vec<Pressure> = 
+            [pressure_change_est_vector_forward_direction,
+            pressure_change_est_vector_backward_direction].concat();
+
 
         let average_pressure_at_guessed_average_flow: Pressure = 
             <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
             obtain_average_pressure_from_vector(
-                &pressure_change_est_vector);
+                &pressure_change_forward_and_backward_est_vector);
 
 
         let max_pressure_change_at_guessed_average_flow = 
             <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
             obtain_maximum_pressure_from_vector(
-                &pressure_change_est_vector);
+                &pressure_change_forward_and_backward_est_vector);
 
         let min_pressure_change_at_guessed_average_flow = 
             <Self as FluidComponentSuperCollectionParallelAssociatedFunctions>::
             obtain_minimum_pressure_from_vector(
-                &pressure_change_est_vector);
+                &pressure_change_forward_and_backward_est_vector);
 
         let pressure_diff_at_guessed_average_flow = 
             max_pressure_change_at_guessed_average_flow -
