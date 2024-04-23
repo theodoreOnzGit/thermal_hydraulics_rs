@@ -1,6 +1,7 @@
 
 
 
+
 /// basically, for all smaller unit tests mean to debug the flow simulation
 pub mod debugging_tests;
 
@@ -25,14 +26,19 @@ pub fn isothermal_dhx_ctah_and_heater_branch_code_to_code_verification_test(){
     use crate::boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::
         ciet_branch_builders_isothermal::dhx_branch_builder_isothermal_test;
+    use uom::si::thermodynamic_temperature::degree_celsius;
 
     fn verify_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,
         expected_mass_flow: MassRate){
-        let heater_branch = heater_branch_builder_isothermal_test();
+        let verification_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(21.7);
+        let heater_branch = heater_branch_builder_isothermal_test(
+            verification_temperature);
         let ctah_branch = ctah_branch_builder_isothermal_test(
-            test_pressure);
-        let dhx_branch = dhx_branch_builder_isothermal_test();
+            test_pressure,
+            verification_temperature);
+        let dhx_branch = dhx_branch_builder_isothermal_test(verification_temperature);
 
         // expected flowrate 
 

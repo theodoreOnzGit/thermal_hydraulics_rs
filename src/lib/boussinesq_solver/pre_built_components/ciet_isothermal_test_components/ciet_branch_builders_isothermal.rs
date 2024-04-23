@@ -7,22 +7,23 @@ fluid_component_collection::fluid_component_collection::FluidComponentCollection
 use super::*;
 
 /// builds a dhx branch to simulate isothermal testing of ciet
-pub fn dhx_branch_builder_isothermal_test() -> FluidComponentCollection {
+pub fn dhx_branch_builder_isothermal_test(
+    initial_temperature: ThermodynamicTemperature) -> FluidComponentCollection {
 
 
     // from top to bottom, (no check valve)
 
-    let pipe_26 = new_pipe_26();
-    let static_mixer_21_label_25 = new_static_mixer_21();
-    let static_mixer_pipe_25a = new_pipe_25a();
-    let dhx_shell_side_24 = new_inactive_dhx_shell_side_heat_exchanger();
-    let static_mixer_20_label_23 = new_static_mixer_20();
-    let static_mixer_pipe_23a = new_pipe_23a();
-    let pipe_22 = new_pipe_22();
-    let flowmeter_20_21a = new_flowmeter_20_21a();
-    let pipe_21 = new_pipe_21();
-    let pipe_20 = new_pipe_20();
-    let pipe_19 = new_pipe_19();
+    let pipe_26 = new_pipe_26(initial_temperature);
+    let static_mixer_21_label_25 = new_static_mixer_21(initial_temperature);
+    let static_mixer_pipe_25a = new_pipe_25a(initial_temperature);
+    let dhx_shell_side_24 = new_inactive_dhx_shell_side_heat_exchanger(initial_temperature);
+    let static_mixer_20_label_23 = new_static_mixer_20(initial_temperature);
+    let static_mixer_pipe_23a = new_pipe_23a(initial_temperature);
+    let pipe_22 = new_pipe_22(initial_temperature);
+    let flowmeter_20_21a = new_flowmeter_20_21a(initial_temperature);
+    let pipe_21 = new_pipe_21(initial_temperature);
+    let pipe_20 = new_pipe_20(initial_temperature);
+    let pipe_19 = new_pipe_19(initial_temperature);
 
     let mut dhx_branch = FluidComponentCollection::new_series_component_collection();
 
@@ -44,16 +45,17 @@ pub fn dhx_branch_builder_isothermal_test() -> FluidComponentCollection {
 }
 
 /// builds a heater branch to simulate isothermal testing of ciet
-pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
+pub fn heater_branch_builder_isothermal_test(
+    initial_temperature: ThermodynamicTemperature) -> FluidComponentCollection {
 
-    let pipe_4 = new_pipe_4();
-    let pipe_3 = new_pipe_3();
-    let static_mixer_2 = new_static_mixer_10();
-    let static_mixer_pipe_2a = new_pipe_2a();
-    let heater_top_head_1a = new_heater_top_head_1a();
-    let heated_section_1 = new_heated_section_version_1_label_1();
-    let heater_bottom_head_1b = new_heater_bottom_head_1b();
-    let pipe_18 = new_pipe_18();
+    let pipe_4 = new_pipe_4(initial_temperature);
+    let pipe_3 = new_pipe_3(initial_temperature);
+    let static_mixer_2 = new_static_mixer_10(initial_temperature);
+    let static_mixer_pipe_2a = new_pipe_2a(initial_temperature);
+    let heater_top_head_1a = new_heater_top_head_1a(initial_temperature);
+    let heated_section_1 = new_heated_section_version_1_label_1(initial_temperature);
+    let heater_bottom_head_1b = new_heater_bottom_head_1b(initial_temperature);
+    let pipe_18 = new_pipe_18(initial_temperature);
 
     let mut heater_branch = FluidComponentCollection::new_series_component_collection();
 
@@ -72,27 +74,28 @@ pub fn heater_branch_builder_isothermal_test() -> FluidComponentCollection {
 /// builds the ctah branch to simulate isothermal testing of ciet 
 /// allows user to supply a pump pressure or loop pressure drop
 pub fn ctah_branch_builder_isothermal_test(
-    pump_pressure: Pressure) -> FluidComponentCollection {
+    pump_pressure: Pressure,
+    initial_temperature: ThermodynamicTemperature) -> FluidComponentCollection {
 
-    let branch_5 = new_branch_5();
-    let static_mixer_41_label_6 = new_static_mixer_41();
-    let pipe_6a = new_pipe_6a();
-    let ctah_vertical_label_7a = new_inactive_ctah_vertical();
-    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal();
-    let pipe_8a = new_pipe_8a();
-    let static_mixer_40_label_8 = new_static_mixer_40();
-    let pipe_9 = new_pipe_9();
-    let pipe_10 = new_pipe_10();
-    let pipe_11 = new_pipe_11();
-    let pipe_12 = new_pipe_12();
-    let mut ctah_pump = new_ctah_pump();
+    let branch_5 = new_branch_5(initial_temperature);
+    let static_mixer_41_label_6 = new_static_mixer_41(initial_temperature);
+    let pipe_6a = new_pipe_6a(initial_temperature);
+    let ctah_vertical_label_7a = new_inactive_ctah_vertical(initial_temperature);
+    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal(initial_temperature);
+    let pipe_8a = new_pipe_8a(initial_temperature);
+    let static_mixer_40_label_8 = new_static_mixer_40(initial_temperature);
+    let pipe_9 = new_pipe_9(initial_temperature);
+    let pipe_10 = new_pipe_10(initial_temperature);
+    let pipe_11 = new_pipe_11(initial_temperature);
+    let pipe_12 = new_pipe_12(initial_temperature);
+    let mut ctah_pump = new_ctah_pump(initial_temperature);
     ctah_pump.set_internal_pressure_source(pump_pressure);
-    let pipe_13 = new_pipe_13();
-    let pipe_14 = new_pipe_14();
-    let flowmeter_40_14a = new_flowmeter_40_14a();
-    let pipe_15 = new_pipe_15();
-    let pipe_16 = new_pipe_16();
-    let branch_17 = new_branch_17();
+    let pipe_13 = new_pipe_13(initial_temperature);
+    let pipe_14 = new_pipe_14(initial_temperature);
+    let flowmeter_40_14a = new_flowmeter_40_14a(initial_temperature);
+    let pipe_15 = new_pipe_15(initial_temperature);
+    let pipe_16 = new_pipe_16(initial_temperature);
+    let branch_17 = new_branch_17(initial_temperature);
 
 
     // now I want to add each of these to the fluid component 

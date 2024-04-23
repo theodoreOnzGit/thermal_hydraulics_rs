@@ -18,7 +18,9 @@ pub fn heater_branch_pressure_change_test(){
     use approx::assert_abs_diff_eq;
     use uom::si::pressure::pascal;
 
-    let heater_branch = heater_branch_builder_isothermal_test();
+    let test_temperature = ThermodynamicTemperature::
+        new::<uom::si::thermodynamic_temperature::degree_celsius>(21.7);
+    let heater_branch = heater_branch_builder_isothermal_test(test_temperature);
 
     // pressure change at 0 kg/s 
     let pressure_change_at_zero_kg_per_s = 
@@ -61,9 +63,11 @@ pub fn ctah_branch_pressure_change_test(){
     use approx::assert_abs_diff_eq;
     use uom::si::pressure::pascal;
 
+    let test_temperature = ThermodynamicTemperature::
+        new::<uom::si::thermodynamic_temperature::degree_celsius>(21.7);
     let pump_pressure = Pressure::ZERO;
     let ctah_branch = ctah_branch_builder_isothermal_test(
-        pump_pressure);
+        pump_pressure,test_temperature);
 
     // pressure change at 0 kg/s 
     let pressure_change_at_zero_kg_per_s = 
@@ -101,24 +105,26 @@ pub fn partial_ctah_branch_test(){
     use uom::si::pressure::pascal;
     // first let's construct the ctah branch
     // this is pipe 6 all the way to branch 17
+    let test_temperature = ThermodynamicTemperature::
+        new::<uom::si::thermodynamic_temperature::degree_celsius>(21.7);
 
-    let static_mixer_41_label_6 = new_static_mixer_41();
-    let pipe_6a = new_pipe_6a();
-    let ctah_vertical_label_7a = new_inactive_ctah_vertical();
-    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal();
-    let pipe_8a = new_pipe_8a();
-    let static_mixer_40_label_8 = new_static_mixer_40();
-    let pipe_9 = new_pipe_9();
-    let pipe_10 = new_pipe_10();
-    let pipe_11 = new_pipe_11();
-    let pipe_12 = new_pipe_12();
-    let ctah_pump = new_ctah_pump();
-    let pipe_13 = new_pipe_13();
-    let pipe_14 = new_pipe_14();
-    let flowmeter_40_14a = new_flowmeter_40_14a();
-    let pipe_15 = new_pipe_15();
-    let pipe_16 = new_pipe_16();
-    let branch_17 = new_branch_17();
+    let static_mixer_41_label_6 = new_static_mixer_41(test_temperature);
+    let pipe_6a = new_pipe_6a(test_temperature);
+    let ctah_vertical_label_7a = new_inactive_ctah_vertical(test_temperature);
+    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal(test_temperature);
+    let pipe_8a = new_pipe_8a(test_temperature);
+    let static_mixer_40_label_8 = new_static_mixer_40(test_temperature);
+    let pipe_9 = new_pipe_9(test_temperature);
+    let pipe_10 = new_pipe_10(test_temperature);
+    let pipe_11 = new_pipe_11(test_temperature);
+    let pipe_12 = new_pipe_12(test_temperature);
+    let ctah_pump = new_ctah_pump(test_temperature);
+    let pipe_13 = new_pipe_13(test_temperature);
+    let pipe_14 = new_pipe_14(test_temperature);
+    let flowmeter_40_14a = new_flowmeter_40_14a(test_temperature);
+    let pipe_15 = new_pipe_15(test_temperature);
+    let pipe_16 = new_pipe_16(test_temperature);
+    let branch_17 = new_branch_17(test_temperature);
 
 
     // now I want to add each of these to the fluid component 
@@ -195,7 +201,10 @@ pub fn ctah_pump_should_give_zero_resistance(){
     use uom::si::f64::*;
     use uom::si::mass_rate::kilogram_per_second;
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-    let ctah_pump = crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::new_ctah_pump();
+    let test_temperature = ThermodynamicTemperature::
+        new::<uom::si::thermodynamic_temperature::degree_celsius>(21.7);
+    let ctah_pump = crate::boussinesq_solver::pre_built_components::
+        ciet_isothermal_test_components::new_ctah_pump(test_temperature);
 
     let mass_rate = MassRate::new::<kilogram_per_second>(0.18);
 

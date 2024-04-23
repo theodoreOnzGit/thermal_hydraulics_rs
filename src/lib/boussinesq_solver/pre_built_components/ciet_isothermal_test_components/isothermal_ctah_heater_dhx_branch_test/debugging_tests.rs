@@ -1,3 +1,5 @@
+
+
 #[test] 
 pub fn dhx_branch_pressure_change_test(){
 
@@ -16,7 +18,11 @@ pub fn dhx_branch_pressure_change_test(){
     use approx::assert_abs_diff_eq;
     use uom::si::pressure::pascal;
 
-    let dhx_branch = dhx_branch_builder_isothermal_test();
+    use uom::si::thermodynamic_temperature::degree_celsius;
+
+    let test_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(21.7);
+    let dhx_branch = dhx_branch_builder_isothermal_test(test_temperature);
 
     // pressure change at 0 kg/s 
     let pressure_change_at_zero_kg_per_s = 

@@ -1,6 +1,7 @@
 use roots::SimpleConvergency;
 use roots::find_root_brent;
 use uom::si::f64::*;
+use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::ConstZero;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::pressure::pascal;
@@ -28,18 +29,19 @@ pub fn heater_branch_with_heater_v2_test(){
     use super::new_branch_5;
     // first let's construct the heater branch
     // probably need the heater top and bottom head later
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
     
-    let branch_5 = new_branch_5();
-    let pipe_4 = new_pipe_4();
-    let pipe_3 = new_pipe_3();
+    let branch_5 = new_branch_5(initial_temperature);
+    let pipe_4 = new_pipe_4(initial_temperature);
+    let pipe_3 = new_pipe_3(initial_temperature);
 
-    let static_mixer_2 = new_static_mixer_10();
-    let static_mixer_pipe_2a = new_pipe_2a();
-    let heater_top_head_1a = new_heater_top_head_1a();
-    let heated_section_1 = new_heated_section_version_1_label_1();
-    let heater_bottom_head_1b = new_heater_bottom_head_1b();
+    let static_mixer_2 = new_static_mixer_10(initial_temperature);
+    let static_mixer_pipe_2a = new_pipe_2a(initial_temperature);
+    let heater_top_head_1a = new_heater_top_head_1a(initial_temperature);
+    let heated_section_1 = new_heated_section_version_1_label_1(initial_temperature);
+    let heater_bottom_head_1b = new_heater_bottom_head_1b(initial_temperature);
 
-    let pipe_18 = new_pipe_18();
+    let pipe_18 = new_pipe_18(initial_temperature);
 
     // from top to bottom convention, that is branch 5 to 1b
     // but first, need to convert them into fluid components first 
@@ -154,24 +156,25 @@ pub fn ctah_branch_test(){
     use uom::si::pressure::pascal;
     // first let's construct the ctah branch
     // this is pipe 6 all the way to branch 17
+    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.7);
 
-    let static_mixer_41_label_6 = new_static_mixer_41();
-    let pipe_6a = new_pipe_6a();
-    let ctah_vertical_label_7a = new_inactive_ctah_vertical();
-    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal();
-    let pipe_8a = new_pipe_8a();
-    let static_mixer_40_label_8 = new_static_mixer_40();
-    let pipe_9 = new_pipe_9();
-    let pipe_10 = new_pipe_10();
-    let pipe_11 = new_pipe_11();
-    let pipe_12 = new_pipe_12();
-    let ctah_pump = new_ctah_pump();
-    let pipe_13 = new_pipe_13();
-    let pipe_14 = new_pipe_14();
-    let flowmeter_40_14a = new_flowmeter_40_14a();
-    let pipe_15 = new_pipe_15();
-    let pipe_16 = new_pipe_16();
-    let branch_17 = new_branch_17();
+    let static_mixer_41_label_6 = new_static_mixer_41(initial_temperature);
+    let pipe_6a = new_pipe_6a(initial_temperature);
+    let ctah_vertical_label_7a = new_inactive_ctah_vertical(initial_temperature);
+    let ctah_horizontal_label_7b = new_inactive_ctah_horizontal(initial_temperature);
+    let pipe_8a = new_pipe_8a(initial_temperature);
+    let static_mixer_40_label_8 = new_static_mixer_40(initial_temperature);
+    let pipe_9 = new_pipe_9(initial_temperature);
+    let pipe_10 = new_pipe_10(initial_temperature);
+    let pipe_11 = new_pipe_11(initial_temperature);
+    let pipe_12 = new_pipe_12(initial_temperature);
+    let ctah_pump = new_ctah_pump(initial_temperature);
+    let pipe_13 = new_pipe_13(initial_temperature);
+    let pipe_14 = new_pipe_14(initial_temperature);
+    let flowmeter_40_14a = new_flowmeter_40_14a(initial_temperature);
+    let pipe_15 = new_pipe_15(initial_temperature);
+    let pipe_16 = new_pipe_16(initial_temperature);
+    let branch_17 = new_branch_17(initial_temperature);
 
 
     // now I want to add each of these to the fluid component 
@@ -233,9 +236,13 @@ pub fn isothermal_ctah_and_heater_branch_validation_test(){
     fn validate_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,
         expected_mass_flow: MassRate){
-        let heater_branch = heater_branch_builder_isothermal_test();
+
+        let validation_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(21.7);
+        let heater_branch = heater_branch_builder_isothermal_test(validation_temperature);
         let ctah_branch = ctah_branch_builder_isothermal_test(
-            test_pressure);
+            test_pressure,
+            validation_temperature);
 
         // expected flowrate 
 
@@ -400,9 +407,12 @@ pub fn isothermal_ctah_and_heater_branch_code_to_code_verification_test(){
     fn verify_mass_flowrate_given_pressure_change(
         test_pressure: Pressure,
         expected_mass_flow: MassRate){
-        let heater_branch = heater_branch_builder_isothermal_test();
+        let verification_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(21.7);
+        let heater_branch = heater_branch_builder_isothermal_test(verification_temperature);
         let ctah_branch = ctah_branch_builder_isothermal_test(
-            test_pressure);
+            test_pressure,
+            verification_temperature);
 
         // expected flowrate 
 
