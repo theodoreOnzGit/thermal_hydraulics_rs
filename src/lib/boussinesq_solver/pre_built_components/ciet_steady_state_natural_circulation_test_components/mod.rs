@@ -45,7 +45,8 @@
 /// For this set of tests, we do not worry about real-time calculations 
 /// just yet
 ///
-/// 
+/// SAM max error threshold is about 1% 
+/// that is (m_SAM - m_analytical)/m_analytical
 pub mod zero_parasitic_heat_loss_isolated_dracs_loop_tests;
 
 
@@ -65,5 +66,9 @@ pub mod zero_parasitic_heat_loss_isolated_dracs_loop_tests;
 /// Case A has 7 tests and TCHX out temperature of 46 C
 /// Case B has 9 tests and TCHX out temperature of 35 C
 /// Case C has 9 tests and TCHX out temperature of 40 C
+///
+/// SAM max error threshold is about 6.76%
+/// that is (m_SAM - m_experimental)/m_experimental
+///
 pub mod coupled_dracs_loop_tests;
 
