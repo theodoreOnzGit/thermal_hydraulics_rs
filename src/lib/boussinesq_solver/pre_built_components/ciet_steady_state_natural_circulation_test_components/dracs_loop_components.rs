@@ -560,3 +560,142 @@ NonInsulatedFluidComponent {
 
     non_insulated_component
 }
+
+/// cold leg of DRACS (or what I consider the cold branch)
+///
+/// note that we will rotate these components by 180 degrees
+/// for only the hot leg, as the DRACS loop in RELAP is programmed 
+/// in a counter clockwise fashion (see Nico Zweibaum's thesis)
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+///
+///
+/// label 35a on RELAP model by Zweibaum
+/// horizontal part of the TCHX or NDHX, 
+/// has the same loss correlations as the CTAH (horizontal)
+///
+pub fn new_inactive_ndhx_tchx_horizontal(
+    initial_temperature: ThermodynamicTemperature) -> NonInsulatedFluidComponent {
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    let component_length = Length::new::<meter>(1.148475);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(0.0);
+    let form_loss = Ratio::new::<ratio>(400.0);
+    let reynolds_power = -1_f64;
+    let reynolds_coefficient = Ratio::new::<ratio>(52000_f64);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let shell_id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let shell_od = shell_id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 11 nodes only, 
+    // now because there are two outer nodes, 
+    // we subtract 2 
+    let user_specified_inner_nodes = 11-2; 
+
+    let non_insulated_component = NonInsulatedFluidComponent::
+        new_custom_component(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            reynolds_coefficient, 
+            reynolds_power, 
+            shell_id, 
+            shell_od, 
+            component_length, 
+            hydraulic_diameter, 
+            pipe_shell_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes);
+
+    non_insulated_component
+}
+
+/// cold leg of DRACS (or what I consider the cold branch)
+///
+/// note that we will rotate these components by 180 degrees
+/// for only the hot leg, as the DRACS loop in RELAP is programmed 
+/// in a counter clockwise fashion (see Nico Zweibaum's thesis)
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+///
+///
+/// label 35b on RELAP model by Zweibaum
+/// horizontal part of the TCHX or NDHX, 
+/// has the same loss correlations as the CTAH (horizontal)
+///
+pub fn new_ndhx_tchx_vertical(initial_temperature: ThermodynamicTemperature) -> 
+NonInsulatedFluidComponent {
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    let pipe_length = Length::new::<meter>(0.415925);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(-90.0);
+    let form_loss = Ratio::new::<ratio>(5.8);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 3 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is zero
+    let user_specified_inner_nodes = 3-2; 
+
+    let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        id, 
+        od, 
+        pipe_length, 
+        hydraulic_diameter, 
+        surface_roughness, 
+        pipe_shell_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes);
+
+    non_insulated_component
+}
+
+
