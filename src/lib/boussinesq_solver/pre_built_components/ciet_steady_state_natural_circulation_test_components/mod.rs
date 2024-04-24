@@ -72,3 +72,6 @@ pub mod zero_parasitic_heat_loss_isolated_dracs_loop_tests;
 ///
 pub mod coupled_dracs_loop_tests;
 
+/// components for the DRACS loop
+pub mod dracs_loop_components;
+
