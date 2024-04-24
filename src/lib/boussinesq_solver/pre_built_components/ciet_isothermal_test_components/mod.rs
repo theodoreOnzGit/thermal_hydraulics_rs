@@ -239,7 +239,8 @@ pub fn new_static_mixer_41(initial_temperature: ThermodynamicTemperature) -> Ins
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
 ///
-pub fn new_inactive_ctah_vertical(initial_temperature: ThermodynamicTemperature) -> NonInsulatedFluidComponent {
+pub fn new_inactive_ctah_vertical(initial_temperature: ThermodynamicTemperature) -> 
+NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
