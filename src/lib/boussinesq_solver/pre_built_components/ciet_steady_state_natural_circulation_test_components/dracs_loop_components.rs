@@ -53,11 +53,10 @@ pub fn new_pipe_34(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 5 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 5-2
+    let user_specified_inner_nodes = 5-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -122,11 +121,10 @@ pub fn new_pipe_33(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 32 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 32-2
+    let user_specified_inner_nodes = 32-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -195,7 +193,6 @@ pub fn new_pipe_32(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -265,7 +262,6 @@ pub fn new_static_mixer_61_label_31(initial_temperature: ThermodynamicTemperatur
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
 
     let insulated_component = InsulatedFluidComponent::new_custom_component(
         initial_temperature, 
@@ -334,7 +330,6 @@ pub fn new_pipe_31a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -398,11 +393,10 @@ NonInsulatedFluidComponent {
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 3 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
-    let user_specified_inner_nodes = 3-2; 
-    todo!("nodalisation from SAM");
+    let user_specified_inner_nodes = 2-2; 
 
     let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
@@ -468,11 +462,10 @@ NonInsulatedFluidComponent {
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 3 nodes only, 
+    // from SAM nodalisation, we have 11 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 3-2; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 11-2
+    let user_specified_inner_nodes = 11-2; 
 
     let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
@@ -533,11 +526,10 @@ NonInsulatedFluidComponent {
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 3 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
-    let user_specified_inner_nodes = 3-2; 
-    todo!("nodalisation from SAM");
+    let user_specified_inner_nodes = 2-2; 
 
     let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
@@ -606,7 +598,6 @@ pub fn new_inactive_ndhx_tchx_horizontal(
     // now because there are two outer nodes, 
     // we subtract 2 
     let user_specified_inner_nodes = 11-2; 
-    todo!("nodalisation from SAM");
 
     let non_insulated_component = NonInsulatedFluidComponent::
         new_custom_component(
@@ -672,11 +663,10 @@ NonInsulatedFluidComponent {
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 3 nodes only, 
+    // from SAM nodalisation, we have 4 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 3-2; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 4-2
+    let user_specified_inner_nodes = 4-2; 
 
     let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
@@ -744,7 +734,6 @@ pub fn new_pipe_36a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -813,7 +802,6 @@ pub fn new_static_mixer_60_label_36(initial_temperature: ThermodynamicTemperatur
     // now because there are two outer nodes, the 
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
 
     let insulated_component = InsulatedFluidComponent::new_custom_component(
         initial_temperature, 
