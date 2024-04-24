@@ -47,3 +47,23 @@
 ///
 /// 
 pub mod zero_parasitic_heat_loss_isolated_dracs_loop_tests;
+
+
+/// For validation, real tests were done for the dracs loop coupled 
+/// with the DHX and Heater branches in CIET
+///
+/// The relevant publications where the experimental data was pulled from 
+/// was:
+///
+/// Zou, L., Hu, G., O'Grady, D., & Hu, R. (2021). Code validation of 
+/// SAM using natural-circulation experimental data from the compact 
+/// integral effects test (CIET) facility. 
+/// Nuclear Engineering and Design, 377, 111144.
+///
+/// According to table 2,
+///
+/// Case A has 7 tests and TCHX out temperature of 46 C
+/// Case B has 9 tests and TCHX out temperature of 35 C
+/// Case C has 9 tests and TCHX out temperature of 40 C
+pub mod coupled_dracs_loop_tests;
+
