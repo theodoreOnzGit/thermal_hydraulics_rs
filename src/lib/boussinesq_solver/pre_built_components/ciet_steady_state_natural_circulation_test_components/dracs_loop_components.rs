@@ -879,11 +879,10 @@ pub fn new_pipe_37(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 16 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 16-2
+    let user_specified_inner_nodes = 16-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -951,7 +950,6 @@ NonInsulatedFluidComponent {
     // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, we subtract 2
     let user_specified_inner_nodes = 2-2; 
-    todo!("nodalisation from SAM");
 
 
     let non_insulated_component = NonInsulatedFluidComponent::
@@ -1018,11 +1016,10 @@ pub fn new_pipe_38(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 3 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 3-2
+    let user_specified_inner_nodes = 3-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -1087,11 +1084,10 @@ pub fn new_pipe_39(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 2 nodes only, 
+    // from SAM nodalisation, we have 18 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is zero
-    let user_specified_inner_nodes = 0; 
-    todo!("nodalisation from SAM");
+    // number of inner nodes is 18-2
+    let user_specified_inner_nodes = 18-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
