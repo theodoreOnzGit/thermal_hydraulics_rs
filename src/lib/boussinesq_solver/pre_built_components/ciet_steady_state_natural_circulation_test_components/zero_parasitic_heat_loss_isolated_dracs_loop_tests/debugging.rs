@@ -143,8 +143,6 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_1(){
         fluid_component_collection::FluidComponentCollectionMethods;
     use uom::si::f64::*;
     use uom::ConstZero;
-    use approx::assert_abs_diff_eq;
-    use uom::si::pressure::pascal;
     use uom::si::mass_rate::kilogram_per_second;
 
     use uom::si::thermodynamic_temperature::degree_celsius;
@@ -159,8 +157,8 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_1(){
         new::<degree_celsius>(80.0);
 
     // we have our hot and cold branches first
-    let mut dracs_hot_branch = dracs_hot_branch_builder(hot_temperature);
-    let mut dracs_cold_branch = dracs_cold_branch_builder(cold_temperature);
+    let dracs_hot_branch = dracs_hot_branch_builder(hot_temperature);
+    let dracs_cold_branch = dracs_cold_branch_builder(cold_temperature);
 
 
     // make our super component collection 
