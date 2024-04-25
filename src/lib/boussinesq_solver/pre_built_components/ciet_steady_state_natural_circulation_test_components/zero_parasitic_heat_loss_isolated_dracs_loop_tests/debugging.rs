@@ -196,4 +196,44 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
         mass_flowrate_initial.get::<kilogram_per_second>(),
         0.0679504,
         epsilon=0.000001);
+
+    // it would be good to code a function that just takes a clone 
+    // of the super collection and gets the flowrate
+    //
+    // you could just as well do an immutable reference and that would be 
+    // okay
+    fn get_dracs_flowrate(dracs_branches: &FluidComponentSuperCollection) -> 
+        MassRate {
+            let pressure_change_across_each_branch = 
+                dracs_branches.get_pressure_change(MassRate::ZERO);
+
+            let mass_flowrate_across_each_branch: Vec<MassRate> = 
+                dracs_branches.
+                get_mass_flowrate_across_each_parallel_branch(
+                    pressure_change_across_each_branch
+                    );
+
+            let mut mass_flowrate: MassRate = 
+                mass_flowrate_across_each_branch[0];
+
+
+            // get absolute value
+            mass_flowrate = mass_flowrate.abs();
+
+            mass_flowrate
+
+        }
+
+
+    // let's try this function, it should make it very succinct to get 
+    // the flowrate now
+
+    mass_flowrate_initial = get_dracs_flowrate(&dracs_branches);
+
+    // initial mass flowrate is 0.0679504 kg/s
+    approx::assert_abs_diff_eq!(
+        mass_flowrate_initial.get::<kilogram_per_second>(),
+        0.0679504,
+        epsilon=0.000001);
+    
 }
