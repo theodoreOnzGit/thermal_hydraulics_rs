@@ -69,11 +69,15 @@ FluidComponentCollection {
 }
 
 
+/// the most basic of tests is to check that at 0 kg/s and constant 
+/// temperature, the branch pressure changes are the same 
+///
+/// The second is to increase the hot leg temperature uniformly,
+/// then check if the pressure change is less (at 0 kg/s)
 #[test] 
 pub fn dracs_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
-    // mass flowrates
     use crate::boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
@@ -121,4 +125,46 @@ pub fn dracs_branch_pressure_change_test(){
     // in this case 51119 Pa
     assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s_hot_branch.get::<pascal>(), 
         51119.0, epsilon=1.0,);
+}
+
+/// This next set of tests shows explicitly what we need to do in 
+/// the fluid component collection in order to get natural circulation
+///
+///
+#[test]
+pub fn dracs_natural_circ_thermal_hydraulics_test(){
+
+    // let's construct the branches with test pressures and obtain 
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_collection::FluidComponentCollectionMethods;
+    use uom::si::f64::*;
+    use uom::ConstZero;
+    use approx::assert_abs_diff_eq;
+    use uom::si::pressure::pascal;
+
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_super_collection::FluidComponentSuperCollection;
+
+    let test_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(21.7);
+
+    // we have our hot and cold branches first
+    let mut dracs_hot_branch = dracs_hot_branch_builder(test_temperature);
+    let mut dracs_cold_branch = dracs_cold_branch_builder(test_temperature);
+
+
+    // make our super component collection 
+    
+    let mut dracs_branches = 
+        FluidComponentSuperCollection::default();
+
+    dracs_branches.set_orientation_to_parallel();
+
+
+
 }

@@ -184,12 +184,12 @@ impl FluidComponentSuperCollection {
     }
 
     /// sets the orientation to series 
-    pub fn set_oritentation_to_series(&mut self){
+    pub fn set_orientation_to_series(&mut self){
         self.orientation = FluidComponentCollectionOreintation::Series
     }
 
     /// sets the orientation to parallel 
-    pub fn set_oritentation_to_parallel(&mut self){
+    pub fn set_orientation_to_parallel(&mut self){
         self.orientation = FluidComponentCollectionOreintation::Parallel
     }
 

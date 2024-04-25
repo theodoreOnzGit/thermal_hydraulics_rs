@@ -188,7 +188,7 @@ pub fn super_fluid_collection_example_7 () {
     // you can initiate a super collection using a struct as per normal
     let mut super_collection = FluidComponentSuperCollection::default();
     super_collection.set_vector(collection_vector);
-    super_collection.set_oritentation_to_parallel();
+    super_collection.set_orientation_to_parallel();
 
     // forward tests 
 

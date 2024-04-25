@@ -45,7 +45,7 @@ pub fn isothermal_dhx_ctah_and_heater_branch_code_to_code_verification_test(){
         // you'll now need to add this into a super collection
         let mut dhx_ctah_and_heater_branches = 
             FluidComponentSuperCollection::default();
-        dhx_ctah_and_heater_branches.set_oritentation_to_parallel();
+        dhx_ctah_and_heater_branches.set_orientation_to_parallel();
         dhx_ctah_and_heater_branches.fluid_component_super_vector
             .push(heater_branch);
         dhx_ctah_and_heater_branches.fluid_component_super_vector
