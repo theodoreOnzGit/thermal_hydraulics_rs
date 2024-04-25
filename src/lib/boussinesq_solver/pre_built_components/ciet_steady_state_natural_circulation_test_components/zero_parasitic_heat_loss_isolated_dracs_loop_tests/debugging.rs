@@ -235,5 +235,53 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
         mass_flowrate_initial.get::<kilogram_per_second>(),
         0.0679504,
         epsilon=0.000001);
+
+    // now we just have to obtain the temperatures given this 
+    // mass flowrate
+    // basically, we need to attach advection interactions all 
+    // across the loop, and ensure that the DHX receives a constant 
+    // heat input boundary condition
+    //
+    // Each component then experiences either an adiabatic BC to ambient 
+    // or an ambient temperature BC with some ambient temperature
+    //
+    // it is kind of cumbersome to connect the pipes one at a time
+    // to each boundary condition so we should automate it
+    //
+    // one way is to add a method to the fluid component collection
+    // as a trait at least for advection
+    //
+    // this supposes they are in series though!
+    //
+    // I can prototype a function here, and then move it over to a 
+    // trait implementation
+
+    pub fn dracs_thermal_hydraulics_calcs_hot_branch(
+        hot_branch_ref: &mut FluidComponentCollection,
+        top_to_bottom_flowrate: MassRate){
+
+        // now the manual work starts, 
+        // the first prototype is quite naive, I'll just clone the 
+        // components out one by one
+
+        let mut pipe_34 = hot_branch_ref.components[0].clone();
+        let mut pipe_33 = hot_branch_ref.components[1].clone();
+        let mut pipe_32 = hot_branch_ref.components[2].clone();
+        let mut pipe_31a = hot_branch_ref.components[3].clone();
+        let mut static_mixer_61_label_31 = hot_branch_ref.components[4].clone();
+        let mut dhx_tube_side_30b = hot_branch_ref.components[5].clone();
+        let mut dhx_tube_side_heat_exchanger_30 = hot_branch_ref.components[6].clone();
+        let mut dhx_tube_side_30a = hot_branch_ref.components[7].clone();
+
+        // for the hot leg, all pipes experience advection given a mass 
+        // flowrate
+        // my convention is a top to bottom flowrate 
+        // ie. from pipe_34 all the way to 30a
+        //
+        // Now, there should of course be advection between pipe 34 
+        // and the cold leg as well. so that will be an issue to solve 
+        // later for multiple parallel branches. But that's for later..
+
+    }
     
 }
