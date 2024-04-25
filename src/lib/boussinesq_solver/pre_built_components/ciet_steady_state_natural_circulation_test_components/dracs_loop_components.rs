@@ -574,7 +574,7 @@ NonInsulatedFluidComponent {
 /// horizontal part of the TCHX or NDHX, 
 /// has the same loss correlations as the CTAH (horizontal)
 ///
-pub fn new_inactive_ndhx_tchx_horizontal(
+pub fn new_inactive_ndhx_tchx_horizontal_35a(
     initial_temperature: ThermodynamicTemperature) -> NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -644,7 +644,7 @@ pub fn new_inactive_ndhx_tchx_horizontal(
 /// horizontal part of the TCHX or NDHX, 
 /// has the same loss correlations as the CTAH (horizontal)
 ///
-pub fn new_ndhx_tchx_vertical(initial_temperature: ThermodynamicTemperature) -> 
+pub fn new_ndhx_tchx_vertical_35b(initial_temperature: ThermodynamicTemperature) -> 
 NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
