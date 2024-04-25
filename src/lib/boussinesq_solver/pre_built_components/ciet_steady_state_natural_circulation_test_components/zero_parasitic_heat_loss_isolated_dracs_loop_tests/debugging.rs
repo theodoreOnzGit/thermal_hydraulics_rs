@@ -67,3 +67,58 @@ FluidComponentCollection {
     dracs_cold_branch
 
 }
+
+
+#[test] 
+pub fn dracs_branch_pressure_change_test(){
+
+    // let's construct the branches with test pressures and obtain 
+    // mass flowrates
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_collection::FluidComponentCollectionMethods;
+    use uom::si::f64::*;
+    use uom::ConstZero;
+    use approx::assert_abs_diff_eq;
+    use uom::si::pressure::pascal;
+
+    use uom::si::thermodynamic_temperature::degree_celsius;
+
+    let test_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(21.7);
+    let mut dracs_hot_branch = dracs_hot_branch_builder(test_temperature);
+
+    // pressure change at 0 kg/s 
+    let pressure_change_at_zero_kg_per_s_hot_branch = 
+        dracs_hot_branch.get_pressure_change(MassRate::ZERO);
+
+    // pressure change should be 53627 +/- 1 Pa
+    assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s_hot_branch.get::<pascal>(), 
+        53627.0, epsilon=1.0,);
+
+    let dracs_cold_branch = dracs_cold_branch_builder(test_temperature);
+
+    let pressure_change_at_zero_kg_per_s_cold_branch = 
+        dracs_cold_branch.get_pressure_change(MassRate::ZERO);
+
+    // pressure change should be same for both branches at equal flow
+    assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s_cold_branch.get::<pascal>(), 
+        pressure_change_at_zero_kg_per_s_hot_branch.get::<pascal>(), 
+        epsilon=1.0,);
+
+    // now suppose I set the hot branch to 80 degrees C, there should 
+    // be some buoyancy force thus, pressure change is less than 53627 Pa
+
+    dracs_hot_branch = dracs_hot_branch_builder(
+        ThermodynamicTemperature::new::<degree_celsius>(80.0));
+
+    // pressure change at 0 kg/s 
+    let pressure_change_at_zero_kg_per_s_hot_branch = 
+        dracs_hot_branch.get_pressure_change(MassRate::ZERO);
+
+    // pressure change should be less than 53627 +/- 1 Pa
+    // in this case 51119 Pa
+    assert_abs_diff_eq!(pressure_change_at_zero_kg_per_s_hot_branch.get::<pascal>(), 
+        51119.0, epsilon=1.0,);
+}
