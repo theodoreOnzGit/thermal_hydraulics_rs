@@ -143,6 +143,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
     use uom::ConstZero;
     use approx::assert_abs_diff_eq;
     use uom::si::pressure::pascal;
+    use uom::si::mass_rate::kilogram_per_second;
 
     use uom::si::thermodynamic_temperature::degree_celsius;
     use crate::boussinesq_solver::
@@ -150,12 +151,14 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
         fluid_component_collection::
         fluid_component_super_collection::FluidComponentSuperCollection;
 
-    let test_temperature = ThermodynamicTemperature::
-        new::<degree_celsius>(21.7);
+    let cold_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(46.0);
+    let hot_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(80.0);
 
     // we have our hot and cold branches first
-    let mut dracs_hot_branch = dracs_hot_branch_builder(test_temperature);
-    let mut dracs_cold_branch = dracs_cold_branch_builder(test_temperature);
+    let mut dracs_hot_branch = dracs_hot_branch_builder(hot_temperature);
+    let mut dracs_cold_branch = dracs_cold_branch_builder(cold_temperature);
 
 
     // make our super component collection 
@@ -164,7 +167,33 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
         FluidComponentSuperCollection::default();
 
     dracs_branches.set_orientation_to_parallel();
+    dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
+    dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
+
+    // let's get an initial flowrate
+    //
+    // the mass flowrate through both branches nets to zero
+
+    let pressure_change_across_each_branch = 
+        dracs_branches.get_pressure_change(MassRate::ZERO);
+
+    let mass_flowrate_across_each_branch: Vec<MassRate> = 
+        dracs_branches.
+        get_mass_flowrate_across_each_parallel_branch(
+            pressure_change_across_each_branch
+            );
+
+    let mut mass_flowrate_initial: MassRate = 
+        mass_flowrate_across_each_branch[0];
 
 
+    // get absolute value
+    mass_flowrate_initial = mass_flowrate_initial.abs();
 
+
+    // initial mass flowrate is 0.0679504 kg/s
+    approx::assert_abs_diff_eq!(
+        mass_flowrate_initial.get::<kilogram_per_second>(),
+        0.0679504,
+        epsilon=0.000001);
 }
