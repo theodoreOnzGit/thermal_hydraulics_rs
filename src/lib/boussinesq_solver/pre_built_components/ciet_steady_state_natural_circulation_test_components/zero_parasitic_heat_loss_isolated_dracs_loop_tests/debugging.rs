@@ -130,9 +130,11 @@ pub fn dracs_branch_pressure_change_test(){
 /// This next set of tests shows explicitly what we need to do in 
 /// the fluid component collection in order to get natural circulation
 ///
-///
+/// debug test one, I tried using the branch builders and 
+/// mutating the FluidComponents within them 
+/// but this proved to be futile
 #[test]
-pub fn dracs_natural_circ_thermal_hydraulics_test(){
+pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_1(){
 
     // let's construct the branches with test pressures and obtain 
     use crate::boussinesq_solver::
@@ -256,22 +258,22 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
     // I can prototype a function here, and then move it over to a 
     // trait implementation
 
-    pub fn dracs_thermal_hydraulics_calcs_hot_branch(
+    pub fn _dracs_thermal_hydraulics_calcs_hot_branch(
         hot_branch_ref: &mut FluidComponentCollection,
-        top_to_bottom_flowrate: MassRate){
+        _top_to_bottom_flowrate: MassRate){
 
         // now the manual work starts, 
         // the first prototype is quite naive, I'll just clone the 
         // components out one by one
 
-        let mut pipe_34 = hot_branch_ref.components[0].clone();
-        let mut pipe_33 = hot_branch_ref.components[1].clone();
-        let mut pipe_32 = hot_branch_ref.components[2].clone();
-        let mut pipe_31a = hot_branch_ref.components[3].clone();
-        let mut static_mixer_61_label_31 = hot_branch_ref.components[4].clone();
-        let mut dhx_tube_side_30b = hot_branch_ref.components[5].clone();
-        let mut dhx_tube_side_heat_exchanger_30 = hot_branch_ref.components[6].clone();
-        let mut dhx_tube_side_30a = hot_branch_ref.components[7].clone();
+        let _pipe_34 = hot_branch_ref.components[0].clone();
+        let _pipe_33 = hot_branch_ref.components[1].clone();
+        let _pipe_32 = hot_branch_ref.components[2].clone();
+        let _pipe_31a = hot_branch_ref.components[3].clone();
+        let _static_mixer_61_label_31 = hot_branch_ref.components[4].clone();
+        let _dhx_tube_side_30b = hot_branch_ref.components[5].clone();
+        let _dhx_tube_side_heat_exchanger_30 = hot_branch_ref.components[6].clone();
+        let _dhx_tube_side_30a = hot_branch_ref.components[7].clone();
 
         // for the hot leg, all pipes experience advection given a mass 
         // flowrate
@@ -281,6 +283,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_test(){
         // Now, there should of course be advection between pipe 34 
         // and the cold leg as well. so that will be an issue to solve 
         // later for multiple parallel branches. But that's for later..
+        //
+        // oops, there is a problem,
+        // the FluidComponentCollection does not contain any data about 
+        // heat transfer entities. But only the fluid arrays
+        //
+        // So I cannot really clone from this component collection
 
     }
     
