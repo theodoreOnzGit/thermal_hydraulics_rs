@@ -131,6 +131,8 @@ pub fn dracs_branch_pressure_change_test(){
 /// the fluid component collection in order to get natural circulation
 ///
 /// prototype test two, 
+///
+/// found that I can't use closures woops
 #[test]
 pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
 
@@ -156,9 +158,21 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
 
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
     use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::power::watt;
+    use uom::si::time::second;
+    // setup 
     let initial_temperature = ThermodynamicTemperature::
         new::<degree_celsius>(50.0);
+    let timestep = Time::new::<second>(0.5);
+    let heat_rate_through_dhx = Power::new::<watt>(460.0);
+    let tchx_heat_transfer_coeff = 
+        HeatTransfer::new
+        ::<watt_per_square_meter_kelvin>(300.0);
+    let average_temperature_for_density_calcs = 
+        ThermodynamicTemperature::
+        new::<degree_celsius>(80.0);
+
 
     // hot branch or (mostly) hot leg
     let mut pipe_34 = new_pipe_34(initial_temperature);
@@ -204,7 +218,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
         }
     // fluid mechanics calcs
     // now in a closure
-    let fluid_mechanics_calc = || -> MassRate {
+    let dracs_fluid_mechanics_calc = || -> MassRate {
 
         let mut dracs_hot_branch = 
             FluidComponentCollection::new_series_component_collection();
@@ -250,6 +264,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
         heat_rate_through_dhx: Power,
         tchx_heat_transfer_coeff: HeatTransfer,
         average_temperature_for_density_calcs: ThermodynamicTemperature,
+        timestep: Time,
         pipe_34: &mut InsulatedFluidComponent,
         pipe_33: &mut InsulatedFluidComponent,
         pipe_32: &mut InsulatedFluidComponent,
@@ -374,10 +389,278 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
 
         }
         // set the relevant heat transfer coefficients 
+        // all zero except for tchx
         {
+            // hot branch
+            dhx_tube_side_30a.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            dhx_tube_side_heat_exchanger_30.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            dhx_tube_side_30b.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+
+            static_mixer_61_label_31.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_31a.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+
+            pipe_32.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_33.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_34.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+
+            // cold branch 
+            tchx_35a.heat_transfer_to_ambient = 
+                tchx_heat_transfer_coeff;
+            tchx_35b.heat_transfer_to_ambient = 
+                tchx_heat_transfer_coeff;
+
+            static_mixer_60_label_36.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_36a.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+
+            pipe_37.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_38.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            pipe_39.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
 
         }
-        // perform calculations with counter clockwise mass flowrate
+        // add lateral heat losses and power through dhx
+        {
+            let zero_power: Power = Power::ZERO;
+
+            // hot branch
+            //
+            // we add heat in through dhx 30 
+            // everywhere else is zero heater power
+            dhx_tube_side_30a
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            dhx_tube_side_heat_exchanger_30
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                heat_rate_through_dhx)
+                .unwrap();
+            dhx_tube_side_30b
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+            static_mixer_61_label_31
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_31a
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+            pipe_32
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_33
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_34
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+            // cold branch 
+            tchx_35a
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            tchx_35b
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+            static_mixer_60_label_36
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_36a
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+            pipe_37
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_38
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+            pipe_39
+                .lateral_and_miscellaneous_connections(
+                mass_flowrate_counter_clockwise, 
+                zero_power)
+                .unwrap();
+
+        }
+        
+        // now we should be ready to advance timestep
+        {
+            dhx_tube_side_30a
+                .advance_timestep(timestep)
+                .unwrap();
+            dhx_tube_side_heat_exchanger_30
+                .advance_timestep(timestep)
+                .unwrap();
+            dhx_tube_side_30b
+                .advance_timestep(timestep)
+                .unwrap();
+
+            static_mixer_61_label_31
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_31a
+                .advance_timestep(timestep)
+                .unwrap();
+
+            pipe_32
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_33
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_34
+                .advance_timestep(timestep)
+                .unwrap();
+
+            // cold branch 
+            tchx_35a
+                .advance_timestep(timestep)
+                .unwrap();
+            tchx_35b
+                .advance_timestep(timestep)
+                .unwrap();
+
+            static_mixer_60_label_36
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_36a
+                .advance_timestep(timestep)
+                .unwrap();
+
+            pipe_37
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_38
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_39
+                .advance_timestep(timestep)
+                .unwrap();
+        }
+
+        // we do it in serial, so it keeps things simple 
+        // now we are done
+
+    }
+    
+    // let's calculate for 100 timesteps of 
+
+    for _ in 0..100 {
+        // fluid first 
+        // 
+        let mass_flowrate_absolute: MassRate = {
+            let mut dracs_hot_branch = 
+                FluidComponentCollection::new_series_component_collection();
+
+            dracs_hot_branch.clone_and_add_component(&pipe_34);
+            dracs_hot_branch.clone_and_add_component(&pipe_33);
+            dracs_hot_branch.clone_and_add_component(&pipe_32);
+            dracs_hot_branch.clone_and_add_component(&pipe_31a);
+            dracs_hot_branch.clone_and_add_component(&static_mixer_61_label_31);
+            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30b);
+            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_heat_exchanger_30);
+            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30a);
+
+
+            let mut dracs_cold_branch = 
+                FluidComponentCollection::new_series_component_collection();
+
+            dracs_cold_branch.clone_and_add_component(&tchx_35a);
+            dracs_cold_branch.clone_and_add_component(&tchx_35b);
+            dracs_cold_branch.clone_and_add_component(&static_mixer_60_label_36);
+            dracs_cold_branch.clone_and_add_component(&pipe_36a);
+            dracs_cold_branch.clone_and_add_component(&pipe_37);
+            dracs_cold_branch.clone_and_add_component(&flowmeter_60_37a);
+            dracs_cold_branch.clone_and_add_component(&pipe_38);
+            dracs_cold_branch.clone_and_add_component(&pipe_39);
+
+            let mut dracs_branches = 
+                FluidComponentSuperCollection::default();
+
+            dracs_branches.set_orientation_to_parallel();
+            dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
+            dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
+
+            let mass_rate = get_dracs_flowrate(&dracs_branches);
+
+            mass_rate
+        };
+
+
+        // I assume the mass_flowrate_counter_clockwise 
+        // is the same as absolute flowrate
+        let mass_flowrate_counter_clockwise = 
+            mass_flowrate_absolute;
+
+        // next, thermal hydraulics calcs 
+
+        calculate_dracs_thermal_hydraulics(
+            mass_flowrate_counter_clockwise, 
+            heat_rate_through_dhx, 
+            tchx_heat_transfer_coeff, 
+            average_temperature_for_density_calcs, 
+            timestep, 
+            &mut pipe_34, 
+            &mut pipe_33, 
+            &mut pipe_32, 
+            &mut pipe_31a, 
+            &mut static_mixer_61_label_31, 
+            &mut dhx_tube_side_30b, 
+            &mut dhx_tube_side_heat_exchanger_30, 
+            &mut dhx_tube_side_30a, 
+            &mut tchx_35a, 
+            &mut tchx_35b, 
+            &mut static_mixer_60_label_36, 
+            &mut pipe_36a, 
+            &mut pipe_37, 
+            &mut flowmeter_60_37a, 
+            &mut pipe_38, 
+            &mut pipe_39);
+
+
+        // debugging
+
+        dbg!(&mass_flowrate_absolute);
+
 
     }
 

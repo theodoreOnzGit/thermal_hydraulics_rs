@@ -187,7 +187,7 @@ impl InsulatedFluidComponent {
         // axial connections (insulation by default)
         // you can of course add new ones
 
-        self.zero_power_bc_connection()?;
+        self.zero_power_bc_axial_connection()?;
 
         Ok(())
 
@@ -204,7 +204,7 @@ impl InsulatedFluidComponent {
     /// use the link to front or back methods within the 
     /// FluidArray or SolidColumn
     #[inline]
-    fn zero_power_bc_connection(&mut self) -> Result<(),ThermalHydraulicsLibError>{
+    fn zero_power_bc_axial_connection(&mut self) -> Result<(),ThermalHydraulicsLibError>{
 
         let zero_power: Power = Power::ZERO;
 
