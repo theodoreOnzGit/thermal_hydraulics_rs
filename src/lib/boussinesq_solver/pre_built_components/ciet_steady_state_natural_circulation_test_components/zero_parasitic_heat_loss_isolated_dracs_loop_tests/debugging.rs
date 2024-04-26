@@ -218,6 +218,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
         }
     // fluid mechanics calcs
     // now in a closure
+    // I should probably code this as a function instead
     let dracs_fluid_mechanics_calc = || -> MassRate {
 
         let mut dracs_hot_branch = 
