@@ -24,6 +24,9 @@ impl NonInsulatedFluidComponent {
     /// used to connect the arrays laterally 
     /// you'll need to set the mass flowrate and heater power
     ///
+    /// heater power is the heat input into the solid part of the 
+    /// pipe. Set to zero if the pipe is unheated
+    ///
     /// executes serially, and uses lots of cloning, so it's 
     /// heavier in resource usage,
     ///

@@ -130,7 +130,265 @@ pub fn dracs_branch_pressure_change_test(){
 /// This next set of tests shows explicitly what we need to do in 
 /// the fluid component collection in order to get natural circulation
 ///
-/// debug test one, I tried using the branch builders and 
+/// prototype test two, 
+#[test]
+pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
+
+    // let's construct the branches with test pressures and obtain 
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_collection::FluidComponentCollectionMethods;
+    use uom::si::f64::*;
+    use uom::ConstZero;
+    use uom::si::mass_rate::kilogram_per_second;
+
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        fluid_component_collection::
+        fluid_component_super_collection::FluidComponentSuperCollection;
+
+    use crate::boussinesq_solver::pre_built_components::
+        insulated_pipes_and_fluid_components::InsulatedFluidComponent;
+    use crate::boussinesq_solver::pre_built_components::
+        non_insulated_fluid_components::NonInsulatedFluidComponent;
+
+    use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+
+    let initial_temperature = ThermodynamicTemperature::
+        new::<degree_celsius>(50.0);
+
+    // hot branch or (mostly) hot leg
+    let mut pipe_34 = new_pipe_34(initial_temperature);
+    let mut pipe_33 = new_pipe_33(initial_temperature);
+    let mut pipe_32 = new_pipe_32(initial_temperature);
+    let mut pipe_31a = new_pipe_31a(initial_temperature);
+    let mut static_mixer_61_label_31 = new_static_mixer_61_label_31(initial_temperature);
+    let mut dhx_tube_side_30b = new_dhx_tube_side_30b(initial_temperature);
+    let mut dhx_tube_side_heat_exchanger_30 = new_isolated_dhx_tube_side_30(initial_temperature);
+    let mut dhx_tube_side_30a = new_dhx_tube_side_30a(initial_temperature);
+
+    // cold branch or (mostly) cold leg
+    let mut tchx_35a = new_inactive_ndhx_tchx_horizontal_35a(initial_temperature);
+    let mut tchx_35b = new_ndhx_tchx_vertical_35b(initial_temperature);
+    let mut static_mixer_60_label_36 = new_static_mixer_60_label_36(initial_temperature);
+    let mut pipe_36a = new_pipe_36a(initial_temperature);
+    let mut pipe_37 = new_pipe_37(initial_temperature);
+    let mut flowmeter_60_37a = new_flowmeter_60_37a(initial_temperature);
+    let mut pipe_38 = new_pipe_38(initial_temperature);
+    let mut pipe_39 = new_pipe_39(initial_temperature);
+
+    // fluid mechanics bit 
+    fn get_dracs_flowrate(dracs_branches: &FluidComponentSuperCollection) -> 
+        MassRate {
+            let pressure_change_across_each_branch = 
+                dracs_branches.get_pressure_change(MassRate::ZERO);
+
+            let mass_flowrate_across_each_branch: Vec<MassRate> = 
+                dracs_branches.
+                get_mass_flowrate_across_each_parallel_branch(
+                    pressure_change_across_each_branch
+                    );
+
+            let mut mass_flowrate: MassRate = 
+                mass_flowrate_across_each_branch[0];
+
+
+            // get absolute value
+            mass_flowrate = mass_flowrate.abs();
+
+            mass_flowrate
+
+        }
+    // fluid mechanics calcs
+    // now in a closure
+    let fluid_mechanics_calc = || -> MassRate {
+
+        let mut dracs_hot_branch = 
+            FluidComponentCollection::new_series_component_collection();
+
+        dracs_hot_branch.clone_and_add_component(&pipe_34);
+        dracs_hot_branch.clone_and_add_component(&pipe_33);
+        dracs_hot_branch.clone_and_add_component(&pipe_32);
+        dracs_hot_branch.clone_and_add_component(&pipe_31a);
+        dracs_hot_branch.clone_and_add_component(&static_mixer_61_label_31);
+        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30b);
+        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_heat_exchanger_30);
+        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30a);
+
+
+        let mut dracs_cold_branch = 
+            FluidComponentCollection::new_series_component_collection();
+
+        dracs_cold_branch.clone_and_add_component(&tchx_35a);
+        dracs_cold_branch.clone_and_add_component(&tchx_35b);
+        dracs_cold_branch.clone_and_add_component(&static_mixer_60_label_36);
+        dracs_cold_branch.clone_and_add_component(&pipe_36a);
+        dracs_cold_branch.clone_and_add_component(&pipe_37);
+        dracs_cold_branch.clone_and_add_component(&flowmeter_60_37a);
+        dracs_cold_branch.clone_and_add_component(&pipe_38);
+        dracs_cold_branch.clone_and_add_component(&pipe_39);
+
+        let mut dracs_branches = 
+            FluidComponentSuperCollection::default();
+
+        dracs_branches.set_orientation_to_parallel();
+        dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
+        dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
+
+        let mass_rate = get_dracs_flowrate(&dracs_branches);
+
+        mass_rate
+
+    };
+
+    // now the thermal hydraulics bit 
+    fn calculate_dracs_thermal_hydraulics(
+        mass_flowrate_counter_clockwise: MassRate,
+        heat_rate_through_dhx: Power,
+        tchx_heat_transfer_coeff: HeatTransfer,
+        average_temperature_for_density_calcs: ThermodynamicTemperature,
+        pipe_34: &mut InsulatedFluidComponent,
+        pipe_33: &mut InsulatedFluidComponent,
+        pipe_32: &mut InsulatedFluidComponent,
+        pipe_31a: &mut InsulatedFluidComponent,
+        static_mixer_61_label_31: &mut InsulatedFluidComponent,
+        dhx_tube_side_30b: &mut NonInsulatedFluidComponent,
+        dhx_tube_side_heat_exchanger_30: &mut NonInsulatedFluidComponent,
+        dhx_tube_side_30a: &mut NonInsulatedFluidComponent,
+        tchx_35a: &mut NonInsulatedFluidComponent,
+        tchx_35b: &mut NonInsulatedFluidComponent,
+        static_mixer_60_label_36: &mut InsulatedFluidComponent,
+        pipe_36a: &mut InsulatedFluidComponent,
+        pipe_37: &mut InsulatedFluidComponent,
+        flowmeter_60_37a: &mut NonInsulatedFluidComponent,
+        pipe_38: &mut InsulatedFluidComponent,
+        pipe_39: &mut InsulatedFluidComponent,
+        ){
+
+        // for an ideal situation, we have zero parasitic heat losses
+        // therefore, for each component, except tchx, heat transfer 
+        // coeff is zero
+
+        let adiabatic_heat_transfer_coeff = HeatTransfer::ZERO;
+
+        // create the heat transfer interaction 
+        let advection_heat_transfer_interaction: HeatTransferInteractionType;
+
+        // I'm going to create the advection interaction
+
+        let average_therminol_density = 
+            LiquidMaterial::TherminolVP1.density(
+                average_temperature_for_density_calcs).unwrap();
+
+        advection_heat_transfer_interaction = 
+            HeatTransferInteractionType::
+            new_advection_interaction(mass_flowrate_counter_clockwise, 
+                                      average_therminol_density, 
+                                      average_therminol_density);
+
+        // now, let's link the fluid arrays using advection 
+        // (no conduction here axially between arrays)
+        {
+            dhx_tube_side_30a.pipe_fluid_array.link_to_front(
+                &mut dhx_tube_side_heat_exchanger_30.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            dhx_tube_side_heat_exchanger_30.pipe_fluid_array.link_to_front(
+                &mut dhx_tube_side_30b.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            dhx_tube_side_30b.pipe_fluid_array.link_to_front(
+                &mut static_mixer_61_label_31.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            static_mixer_61_label_31.pipe_fluid_array.link_to_front(
+                &mut pipe_31a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_31a.pipe_fluid_array.link_to_front(
+                &mut pipe_32.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_32.pipe_fluid_array.link_to_front(
+                &mut pipe_33.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_33.pipe_fluid_array.link_to_front(
+                &mut pipe_34.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_34.pipe_fluid_array.link_to_front(
+                &mut tchx_35a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            tchx_35a.pipe_fluid_array.link_to_front(
+                &mut tchx_35b.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            tchx_35b.pipe_fluid_array.link_to_front(
+                &mut static_mixer_60_label_36.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            static_mixer_60_label_36.pipe_fluid_array.link_to_front(
+                &mut pipe_36a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_36a.pipe_fluid_array.link_to_front(
+                &mut pipe_37.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_37.pipe_fluid_array.link_to_front(
+                &mut flowmeter_60_37a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            flowmeter_60_37a.pipe_fluid_array.link_to_front(
+                &mut pipe_38.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_38.pipe_fluid_array.link_to_front(
+                &mut pipe_39.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_39.pipe_fluid_array.link_to_front(
+                &mut dhx_tube_side_30a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+        }
+        // set the relevant heat transfer coefficients 
+        {
+
+        }
+        // perform calculations with counter clockwise mass flowrate
+
+    }
+
+
+
+}
+
+/// This next set of tests shows explicitly what we need to do in 
+/// the fluid component collection in order to get natural circulation
+///
+/// prototype test one, I tried using the branch builders and 
 /// mutating the FluidComponents within them 
 /// but this proved to be futile
 #[test]
