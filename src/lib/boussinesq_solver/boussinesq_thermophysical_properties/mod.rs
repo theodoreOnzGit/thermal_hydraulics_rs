@@ -182,4 +182,7 @@ pub mod solid_material_surface_roughness;
 /// database for liquids 
 pub mod liquid_database;
 
+/// database for solids 
+pub mod solid_database;
+
 

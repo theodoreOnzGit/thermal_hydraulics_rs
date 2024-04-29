@@ -4,6 +4,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::range_check;
+use super::solid_database::ss_304_l::steel_304_l_spline_specific_heat_capacity_ciet_zweibaum;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -116,33 +117,6 @@ fn fiberglass_specific_heat_capacity(
         844.0);
 }
 
-///
-/// Graves, R. S., Kollie, T. G., 
-/// McElroy, D. L., & Gilchrist, K. E. (1991). The 
-/// thermal conductivity of AISI 304L stainless steel. 
-/// International journal of thermophysics, 12, 409-415. 
-///
-/// data taken from ORNL
-///
-/// It's only good for range of 300K to 700K
-#[inline]
-pub fn steel_ss_304_l_ornl_specific_heat_capacity(
-    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::SteelSS304L),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(700.0), 
-        ThermodynamicTemperature::new::<kelvin>(300.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    let specific_heat_capacity_val = 1000.0 * (0.4267
-    + 1.700 * f64::powf(10.0,-4.0) * temperature_value_kelvin
-    - 5.200 * f64::powf(10.0, -8.0));
-
-    Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        specific_heat_capacity_val))
-}
 
 /// returns thermal conductivity of copper
 /// cited from:
@@ -185,40 +159,6 @@ fn copper_specific_heat_capacity(
 
 }
 
-/// returns thermal conductivity of stainless steel 304L
-/// cited from:
-/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
-/// validation using the compact integral effects test (CIET) experimental 
-/// data (No. ANL/NSE-19/11). Argonne National 
-/// Lab.(ANL), Argonne, IL (United States).
-#[inline]
-pub fn steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
-    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::SteelSS304L),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(1000.0), 
-        ThermodynamicTemperature::new::<kelvin>(250.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    // here we use a cubic spline to interpolate the values
-    // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
-        400.0, 450.0, 500.0, 700.0, 1000.0);
-    let specific_heat_capacity_values_joule_per_kilogram_kelvin = c!(443.3375,
-        457.0361, 469.4894, 480.6974, 490.66, 500.6227, 526.7746,
-        551.6812);
-
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
-        &specific_heat_capacity_values_joule_per_kilogram_kelvin);
-
-    let steel_specific_heat_capacity_value = s.eval(
-        temperature_value_kelvin);
-
-    return Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
-        steel_specific_heat_capacity_value));
-}
 
 #[inline]
 fn dowtherm_a_specific_heat_capacity(
@@ -227,48 +167,3 @@ fn dowtherm_a_specific_heat_capacity(
     get_dowtherm_a_constant_pressure_specific_heat_capacity(fluid_temp)
 }
 
-#[test]
-pub fn specific_heat_capacity_test_steel(){
-
-    // we're going to test thermal conductivity for steel,
-    // first at 500K for both the spline and the correlation 
-    // cp, we expect at 350K 
-    // 469.4894 J/(kg K)
-
-    let thermal_cond_spline = steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
-        ThermodynamicTemperature::new::<kelvin>(350.0));
-
-    approx::assert_relative_eq!(
-        469.4894,
-        thermal_cond_spline.unwrap().value,
-        max_relative=0.001);
-
-    // now for the Graves et al. 1991 version, from ORNL
-    //
-
-    let thermal_cond_graves_et_al_1991 = 
-    steel_ss_304_l_ornl_specific_heat_capacity(
-        ThermodynamicTemperature::new::<kelvin>(350.0));
-
-    // between graves and the Zou/Zweibaum version,
-    // there is abut 3.5\% difference
-    //
-    approx::assert_relative_eq!(
-        469.4894,
-        thermal_cond_graves_et_al_1991.unwrap().value,
-        max_relative=0.035);
-
-    // let's try now at 1000K 
-    // we expect thermal specific_heat_capacity to be at 23.83
-
-    let thermal_cond_spline = 
-    steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
-        ThermodynamicTemperature::new::<kelvin>(1000.0));
-
-    approx::assert_relative_eq!(
-        551.6812,
-        thermal_cond_spline.unwrap().value,
-        max_relative=0.0001);
-
-
-}

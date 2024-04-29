@@ -4,6 +4,8 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::range_check;
+use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
+use super::solid_database::ss_304_l::steel_ss_304_l_ornl_thermal_conductivity;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -187,33 +189,6 @@ fn fiberglass_thermal_conductivity(
         fiberglass_thermal_conductivity_value));
 }
 
-///
-/// Graves, R. S., Kollie, T. G., 
-/// McElroy, D. L., & Gilchrist, K. E. (1991). The 
-/// thermal conductivity of AISI 304L stainless steel. 
-/// International journal of thermophysics, 12, 409-415. 
-///
-/// data taken from ORNL
-///
-/// It's only good for range of 300K to 700K
-#[inline]
-fn steel_ss_304_l_ornl_thermal_conductivity(
-    temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::SteelSS304L),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(700.0), 
-        ThermodynamicTemperature::new::<kelvin>(300.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    let thermal_conductivity_val = 7.9318 
-    + 0.023051 * temperature_value_kelvin
-    - 6.4166 * f64::powf(10.0, -6.0);
-
-    Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
-        thermal_conductivity_val))
-}
 
 /// returns thermal conductivity of copper
 /// cited from:
@@ -250,42 +225,6 @@ fn copper_thermal_conductivity(
 
 }
 
-/// returns thermal conductivity of stainless steel 304L
-/// cited from:
-/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
-/// validation using the compact integral effects test (CIET) experimental 
-/// data (No. ANL/NSE-19/11). Argonne National 
-/// Lab.(ANL), Argonne, IL (United States).
-#[inline]
-fn steel_304_l_spline_thermal_conductivity(
-    temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::SteelSS304L),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(1000.0), 
-        ThermodynamicTemperature::new::<kelvin>(250.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    // here we use a cubic spline to interpolate the values
-    // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
-        400.0, 450.0, 500.0, 700.0, 1000.0);
-    let thermal_conductivity_values_watt_per_meter_kelin = c!(14.31,
-        14.94, 15.58, 16.21, 16.85, 17.48, 20.02, 23.83);
-    //let cp_values_watt_per_meter_kelin = c!(443.3375,
-    //    457.0361, 469.4894, 480.6974, 490.66, 500.6227, 526.7746,
-    //    551.6812);
-
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
-        &thermal_conductivity_values_watt_per_meter_kelin);
-
-    let steel_thermal_conductivity_value = s.eval(
-        temperature_value_kelvin);
-
-    return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
-        steel_thermal_conductivity_value));
-}
 
 #[inline]
 fn dowtherm_a_thermal_conductivity(
