@@ -133,8 +133,10 @@ pub fn dracs_branch_pressure_change_test(){
 /// prototype test two, 
 ///
 /// found that I can't use closures woops
+/// I'll just use simple functions instead 
+/// quite lehcheh (troublesome) to type, but ok lah
 #[test]
-pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
+pub fn dracs_natural_circ_thermal_hydraulics_regression_test_prototype_2(){
 
     // let's construct the branches with test pressures and obtain 
     use crate::boussinesq_solver::
