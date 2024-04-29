@@ -11,6 +11,14 @@
 /// found that I can't use closures woops
 /// I'll just use simple functions instead 
 /// quite lehcheh (troublesome) to type, but ok lah
+///
+/// probably need to check thermal resistance at the CTAH or NDHX 
+/// I think the nusselt number correlation is a bottleneck because 
+/// it is meant for a pipe, rather than a NDHX
+///
+/// In De Wet's work, I believe there was no fluid thermal resistance 
+/// assumed in the heat exchanger (high nusselt number in other words)
+///
 #[test]
 pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
