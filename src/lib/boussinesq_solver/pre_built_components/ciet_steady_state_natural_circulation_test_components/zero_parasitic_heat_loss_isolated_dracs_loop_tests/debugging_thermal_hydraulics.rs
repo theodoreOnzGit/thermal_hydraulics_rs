@@ -657,8 +657,8 @@ pub fn dracs_natural_circ_thermal_hydraulics_regression_test_prototype_2(){
 
 
 
-        // show the mass flowrate
-        dbg!(&mass_flowrate_absolute);
+        //// show the mass flowrate
+        //dbg!(&mass_flowrate_absolute);
 
         // if this is the last loop, 
         // assert that mass flowrate is equal some value 

@@ -55,12 +55,10 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
     // setup 
     let initial_temperature = ThermodynamicTemperature::
-        new::<degree_celsius>(50.0);
+        new::<degree_celsius>(25.0);
     let timestep = Time::new::<second>(0.5);
     let heat_rate_through_dhx = Power::new::<watt>(460.0);
-    let mut tchx_heat_transfer_coeff = 
-        HeatTransfer::new
-        ::<watt_per_square_meter_kelvin>(300.0);
+    let mut tchx_heat_transfer_coeff: HeatTransfer;
 
     let reference_tchx_htc = 
         HeatTransfer::new::<watt_per_square_meter_kelvin>(250.0);
@@ -424,9 +422,10 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
             // cold branch 
             // ambient temperature of tchx is 21C 
             tchx_35a.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(21.0);
+                ThermodynamicTemperature::new::<degree_celsius>(0.0);
             tchx_35b.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(21.0);
+                ThermodynamicTemperature::new::<degree_celsius>(0.0);
+
             tchx_35a
                 .lateral_and_miscellaneous_connections(
                 mass_flowrate_counter_clockwise, 
