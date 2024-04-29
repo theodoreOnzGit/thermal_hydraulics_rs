@@ -45,4 +45,4 @@ path = "src/lib/lib.rs"
 
 [dev-dependencies]
 # the natural circulation loop requires a PID controller
-chem-eng-real-time-process-control-simulator = "0.0.4"
+chem-eng-real-time-process-control-simulator = "0.0.5"

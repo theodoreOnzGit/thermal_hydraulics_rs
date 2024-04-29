@@ -1,3 +1,6 @@
+use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
+use uom::si::thermodynamic_temperature::kelvin;
+
 
 
 
@@ -44,17 +47,23 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::power::watt;
     use uom::si::time::second;
-
-
     use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+
+
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::transfer_fn_wrapper_and_enums::TransferFnTraits;
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
     // setup 
     let initial_temperature = ThermodynamicTemperature::
         new::<degree_celsius>(50.0);
     let timestep = Time::new::<second>(0.5);
     let heat_rate_through_dhx = Power::new::<watt>(460.0);
-    let tchx_heat_transfer_coeff = 
+    let mut tchx_heat_transfer_coeff = 
         HeatTransfer::new
         ::<watt_per_square_meter_kelvin>(300.0);
+
+    let reference_tchx_htc = 
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(250.0);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
     // let's calculate 2000 seconds of simulated time 
@@ -63,6 +72,30 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     let mut current_simulation_time = Time::ZERO;
     let max_simulation_time = Time::new::<second>(2000.0);
 
+    // PID controller settings
+    let controller_gain = Ratio::new::<ratio>(50.0);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5.0);
+    let derivative_time: Time = Time::new::<second>(100000.0);
+    // derivative time ratio
+    let alpha: Ratio = Ratio::new::<ratio>(1.0);
+
+    let mut pid_controller: AnalogController = 
+    AnalogController::new_filtered_pid_controller(controller_gain,
+        integral_time,
+        derivative_time,
+        alpha).unwrap();
+
+    // we also have a measurement delay of 0.0001 s 
+    // or 0.1 ms
+    let measurement_delay = Time::new::<millisecond>(0.1);
+
+    let mut measurement_delay_block: AnalogController = 
+    ProportionalController::new(Ratio::new::<ratio>(1.0)).unwrap().into();
+
+    measurement_delay_block.set_dead_time(measurement_delay);
+
+    let tchx_outlet_temperature_set_point = 
+        ThermodynamicTemperature::new::<degree_celsius>(46.0);
 
     // hot branch or (mostly) hot leg
     let mut pipe_34 = new_pipe_34(initial_temperature);
@@ -389,6 +422,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 .unwrap();
 
             // cold branch 
+            // ambient temperature of tchx is 21C 
+            tchx_35a.ambient_temperature = 
+                ThermodynamicTemperature::new::<degree_celsius>(21.0);
+            tchx_35b.ambient_temperature = 
+                ThermodynamicTemperature::new::<degree_celsius>(21.0);
             tchx_35a
                 .lateral_and_miscellaneous_connections(
                 mass_flowrate_counter_clockwise, 
@@ -399,6 +437,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
+
 
             static_mixer_60_label_36
                 .lateral_and_miscellaneous_connections(
@@ -491,6 +530,91 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     
 
     while current_simulation_time < max_simulation_time {
+        // show the outlet temperature of tchx 
+
+        let tchx_outlet_temperature: ThermodynamicTemperature = {
+
+            // the front of the tchx is connected to static mixer 
+            // 60 label 36
+            let tchx35b_pipe_fluid_array_clone: FluidArray = 
+                tchx_35b.pipe_fluid_array
+                .clone()
+                .try_into()
+                .unwrap();
+
+            // take the front single cv temperature 
+            //
+            // front single cv temperature is defunct
+            // probably need to debug this
+
+            let tchx_35b_front_single_cv_temperature: ThermodynamicTemperature 
+                = tchx35b_pipe_fluid_array_clone
+                .front_single_cv
+                .temperature;
+
+
+
+            let _tchx_35b_array_temperature: Vec<ThermodynamicTemperature>
+                = tchx_35b
+                .pipe_fluid_array_temperature()
+                .unwrap();
+
+            //dbg!(&tchx_35b_array_temperature);
+
+            tchx_35b_front_single_cv_temperature
+
+        };
+
+        dbg!(&tchx_outlet_temperature);
+        // we will need to change the tchx heat transfer coefficient 
+        // using the PID controller
+        
+        tchx_heat_transfer_coeff = {
+            // first, calculate the set point error 
+
+            let reference_temperature_interval_deg_celsius = 80.0;
+
+            // error = y_sp - y_measured
+            let set_point_abs_error_deg_celsius = 
+                - tchx_outlet_temperature_set_point.get::<kelvin>()
+                + tchx_outlet_temperature.get::<kelvin>();
+
+            let nondimensional_error: Ratio = 
+                (set_point_abs_error_deg_celsius/
+                reference_temperature_interval_deg_celsius).into();
+
+            // let's get the output 
+
+            let dimensionless_heat_trf_input: Ratio
+                = pid_controller.set_user_input_and_calc(
+                nondimensional_error, 
+                current_simulation_time).unwrap();
+
+            // the dimensionless output is:
+            //
+            // (desired output - ref_val)/ref_val = dimensionless_input
+            // 
+            //
+            // the reference value is decided by the user 
+            // in this case 250 W/(m^2 K)
+            
+            let mut tchx_heat_trf_output = 
+                dimensionless_heat_trf_input * reference_tchx_htc
+                + reference_tchx_htc;
+
+            // make sure it cannot be less than a certain amount 
+            let tchx_minimum_heat_transfer = 
+                HeatTransfer::new::<watt_per_square_meter_kelvin>(
+                    20.0);
+
+            // this makes it physically realistic
+            if tchx_heat_trf_output < tchx_minimum_heat_transfer {
+                tchx_heat_trf_output = tchx_minimum_heat_transfer;
+            }
+
+            tchx_heat_trf_output
+
+        };
         // fluid first 
         // 
         let mass_flowrate_absolute: MassRate = 
@@ -548,47 +672,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
         // show the mass flowrate
         dbg!(&mass_flowrate_absolute);
 
-        // show the outlet temperature of tchx 
-
-        let tchx_outlet_temperature: ThermodynamicTemperature = {
-
-            // the front of the tchx is connected to static mixer 
-            // 60 label 36
-            let tchx35b_pipe_fluid_array_clone: FluidArray = 
-                tchx_35b.pipe_fluid_array
-                .clone()
-                .try_into()
-                .unwrap();
-
-            // take the front single cv temperature 
-            //
-            // front single cv temperature is defunct
-            // probably need to debug this
-
-            let tchx_35b_front_single_cv_temperature: ThermodynamicTemperature 
-                = tchx35b_pipe_fluid_array_clone
-                .front_single_cv
-                .temperature;
-
-
-
-            let _tchx_35b_array_temperature: Vec<ThermodynamicTemperature>
-                = tchx_35b
-                .pipe_fluid_array_temperature()
-                .unwrap();
-
-            //dbg!(&tchx_35b_array_temperature);
-
-            tchx_35b_front_single_cv_temperature
-
-        };
-
-        dbg!(&tchx_outlet_temperature);
-
 
 
         current_simulation_time += timestep;
         dbg!(&current_simulation_time);
+        dbg!(&tchx_heat_transfer_coeff);
 
     }
 
