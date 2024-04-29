@@ -57,6 +57,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
         ::<watt_per_square_meter_kelvin>(300.0);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
+    // let's calculate 2000 seconds of simulated time 
+    // it takes about that long for the temperature to settle down
+
+    let mut current_simulation_time = Time::ZERO;
+    let max_simulation_time = Time::new::<second>(2000.0);
 
 
     // hot branch or (mostly) hot leg
@@ -484,10 +489,6 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
     }
     
-    // let's calculate 60 seconds of simulated time 
-
-    let mut current_simulation_time = Time::ZERO;
-    let max_simulation_time = Time::new::<second>(10000.0);
 
     while current_simulation_time < max_simulation_time {
         // fluid first 
@@ -571,12 +572,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
 
 
-            let tchx_35b_array_temperature: Vec<ThermodynamicTemperature>
+            let _tchx_35b_array_temperature: Vec<ThermodynamicTemperature>
                 = tchx_35b
                 .pipe_fluid_array_temperature()
                 .unwrap();
 
-            dbg!(&tchx_35b_array_temperature);
+            //dbg!(&tchx_35b_array_temperature);
 
             tchx_35b_front_single_cv_temperature
 
@@ -587,6 +588,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
 
         current_simulation_time += timestep;
+        dbg!(&current_simulation_time);
 
     }
 
