@@ -60,11 +60,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
         new::<degree_celsius>(40.0);
     
     let timestep = Time::new::<second>(0.5);
-    let heat_rate_through_dhx = Power::new::<watt>(460.0);
+    let heat_rate_through_dhx = Power::new::<watt>(931.8);
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
     let reference_tchx_htc = 
-        HeatTransfer::new::<watt_per_square_meter_kelvin>(250.0);
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(250.0e4);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
     // let's calculate 2000 seconds of simulated time 
@@ -75,7 +75,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
     // PID controller settings
     let controller_gain = Ratio::new::<ratio>(5e14_f64);
-    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5e10_f64);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5e12_f64);
     let derivative_time: Time = Time::new::<second>(1.0);
     // derivative time ratio
     let alpha: Ratio = Ratio::new::<ratio>(1.0);
