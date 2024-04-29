@@ -699,7 +699,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
 
         current_simulation_time += timestep;
-        let debug: bool = true;
+        let debug: bool = false;
         if debug {
             // show the mass flowrate
             // tchx outlet temperature 

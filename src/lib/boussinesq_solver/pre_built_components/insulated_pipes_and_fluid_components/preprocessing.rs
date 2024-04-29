@@ -398,26 +398,8 @@ impl InsulatedFluidComponent {
             self.get_component_length_immutable()/
             self.get_hydraulic_diameter_immutable();
 
-        // need to set darcy friction factor!
-        // first let's get the fluid array out 
 
-
-        let pipe_correlation = fluid_array_clone.fluid_component_loss_properties;
-
-        // For this, the friction factor is the sum of pipe friction 
-        // factor and form losses 
-        // that's the convention
-        let darcy_friction_factor: Ratio = pipe_correlation.darcy_friction_factor_fldk(
-            reynolds_number)?;
-
-        pipe_prandtl_reynolds_data.darcy_friction_factor = 
-            darcy_friction_factor;
-
-        let _nusselt_estimate: Ratio = 
-        pipe_prandtl_reynolds_data.get_nusselt_for_developing_flow()?;
-
-        // but in case there are other correlations, I need to also 
-        // use the ones present in this struct 
+        // I need to use Nusselt correlations present in this struct 
         //
         // no wall correction is done here
         let mut fluid_array: FluidArray 
