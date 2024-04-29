@@ -143,7 +143,6 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
         fluid_component_collection::FluidComponentCollectionMethods;
     use uom::si::f64::*;
     use uom::ConstZero;
-    use uom::si::mass_rate::kilogram_per_second;
 
     use uom::si::thermodynamic_temperature::degree_celsius;
     use crate::boussinesq_solver::
@@ -219,32 +218,49 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
     // fluid mechanics calcs
     // now in a closure
     // I should probably code this as a function instead
-    let dracs_fluid_mechanics_calc = || -> MassRate {
+    fn dracs_fluid_mechanics_calc_mass_rate(
+        pipe_34: &InsulatedFluidComponent,
+        pipe_33: &InsulatedFluidComponent,
+        pipe_32: &InsulatedFluidComponent,
+        pipe_31a: &InsulatedFluidComponent,
+        static_mixer_61_label_31: &InsulatedFluidComponent,
+        dhx_tube_side_30b: &NonInsulatedFluidComponent,
+        dhx_tube_side_heat_exchanger_30: &NonInsulatedFluidComponent,
+        dhx_tube_side_30a: &NonInsulatedFluidComponent,
+        tchx_35a: &NonInsulatedFluidComponent,
+        tchx_35b: &NonInsulatedFluidComponent,
+        static_mixer_60_label_36: &InsulatedFluidComponent,
+        pipe_36a: &InsulatedFluidComponent,
+        pipe_37: &InsulatedFluidComponent,
+        flowmeter_60_37a: &NonInsulatedFluidComponent,
+        pipe_38: &InsulatedFluidComponent,
+        pipe_39: &InsulatedFluidComponent,
+    )-> MassRate {
 
         let mut dracs_hot_branch = 
             FluidComponentCollection::new_series_component_collection();
 
-        dracs_hot_branch.clone_and_add_component(&pipe_34);
-        dracs_hot_branch.clone_and_add_component(&pipe_33);
-        dracs_hot_branch.clone_and_add_component(&pipe_32);
-        dracs_hot_branch.clone_and_add_component(&pipe_31a);
-        dracs_hot_branch.clone_and_add_component(&static_mixer_61_label_31);
-        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30b);
-        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_heat_exchanger_30);
-        dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30a);
+        dracs_hot_branch.clone_and_add_component(pipe_34);
+        dracs_hot_branch.clone_and_add_component(pipe_33);
+        dracs_hot_branch.clone_and_add_component(pipe_32);
+        dracs_hot_branch.clone_and_add_component(pipe_31a);
+        dracs_hot_branch.clone_and_add_component(static_mixer_61_label_31);
+        dracs_hot_branch.clone_and_add_component(dhx_tube_side_30b);
+        dracs_hot_branch.clone_and_add_component(dhx_tube_side_heat_exchanger_30);
+        dracs_hot_branch.clone_and_add_component(dhx_tube_side_30a);
 
 
         let mut dracs_cold_branch = 
             FluidComponentCollection::new_series_component_collection();
 
-        dracs_cold_branch.clone_and_add_component(&tchx_35a);
-        dracs_cold_branch.clone_and_add_component(&tchx_35b);
-        dracs_cold_branch.clone_and_add_component(&static_mixer_60_label_36);
-        dracs_cold_branch.clone_and_add_component(&pipe_36a);
-        dracs_cold_branch.clone_and_add_component(&pipe_37);
-        dracs_cold_branch.clone_and_add_component(&flowmeter_60_37a);
-        dracs_cold_branch.clone_and_add_component(&pipe_38);
-        dracs_cold_branch.clone_and_add_component(&pipe_39);
+        dracs_cold_branch.clone_and_add_component(tchx_35a);
+        dracs_cold_branch.clone_and_add_component(tchx_35b);
+        dracs_cold_branch.clone_and_add_component(static_mixer_60_label_36);
+        dracs_cold_branch.clone_and_add_component(pipe_36a);
+        dracs_cold_branch.clone_and_add_component(pipe_37);
+        dracs_cold_branch.clone_and_add_component(flowmeter_60_37a);
+        dracs_cold_branch.clone_and_add_component(pipe_38);
+        dracs_cold_branch.clone_and_add_component(pipe_39);
 
         let mut dracs_branches = 
             FluidComponentSuperCollection::default();
@@ -257,7 +273,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
 
         mass_rate
 
-    };
+    }
 
     // now the thermal hydraulics bit 
     fn calculate_dracs_thermal_hydraulics(
@@ -584,46 +600,27 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
     
     // let's calculate for 100 timesteps of 
 
-    for _ in 0..100 {
+    for iteration_idx_i in 0..100 {
         // fluid first 
         // 
-        let mass_flowrate_absolute: MassRate = {
-            let mut dracs_hot_branch = 
-                FluidComponentCollection::new_series_component_collection();
-
-            dracs_hot_branch.clone_and_add_component(&pipe_34);
-            dracs_hot_branch.clone_and_add_component(&pipe_33);
-            dracs_hot_branch.clone_and_add_component(&pipe_32);
-            dracs_hot_branch.clone_and_add_component(&pipe_31a);
-            dracs_hot_branch.clone_and_add_component(&static_mixer_61_label_31);
-            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30b);
-            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_heat_exchanger_30);
-            dracs_hot_branch.clone_and_add_component(&dhx_tube_side_30a);
-
-
-            let mut dracs_cold_branch = 
-                FluidComponentCollection::new_series_component_collection();
-
-            dracs_cold_branch.clone_and_add_component(&tchx_35a);
-            dracs_cold_branch.clone_and_add_component(&tchx_35b);
-            dracs_cold_branch.clone_and_add_component(&static_mixer_60_label_36);
-            dracs_cold_branch.clone_and_add_component(&pipe_36a);
-            dracs_cold_branch.clone_and_add_component(&pipe_37);
-            dracs_cold_branch.clone_and_add_component(&flowmeter_60_37a);
-            dracs_cold_branch.clone_and_add_component(&pipe_38);
-            dracs_cold_branch.clone_and_add_component(&pipe_39);
-
-            let mut dracs_branches = 
-                FluidComponentSuperCollection::default();
-
-            dracs_branches.set_orientation_to_parallel();
-            dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
-            dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
-
-            let mass_rate = get_dracs_flowrate(&dracs_branches);
-
-            mass_rate
-        };
+        let mass_flowrate_absolute: MassRate = 
+            dracs_fluid_mechanics_calc_mass_rate(
+                &pipe_34, 
+                &pipe_33, 
+                &pipe_32, 
+                &pipe_31a, 
+                &static_mixer_61_label_31, 
+                &dhx_tube_side_30b, 
+                &dhx_tube_side_heat_exchanger_30, 
+                &dhx_tube_side_30a, 
+                &tchx_35a, 
+                &tchx_35b, 
+                &static_mixer_60_label_36, 
+                &pipe_36a, 
+                &pipe_37, 
+                &flowmeter_60_37a, 
+                &pipe_38, 
+                &pipe_39);
 
 
         // I assume the mass_flowrate_counter_clockwise 
@@ -660,6 +657,18 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
 
         // show the mass flowrate
         dbg!(&mass_flowrate_absolute);
+
+        // if this is the last loop, 
+        // assert that mass flowrate is equal some value 
+        // 0.0087869613 kg/s
+        if iteration_idx_i == 99 {
+
+            use approx::assert_abs_diff_eq;
+            assert_abs_diff_eq!(
+                mass_flowrate_absolute.get::<uom::si::mass_rate::kilogram_per_second>(),
+                0.0087869613,
+                epsilon = 1e-7);
+        }
 
     }
 
