@@ -4,7 +4,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::range_check;
-use super::solid_database::ss_304_l::steel_304_l_spline_specific_heat_capacity_ciet_zweibaum;
+use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -74,7 +74,7 @@ fn solid_specific_heat_capacity(material: Material,
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
         Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(temperature)?,
+        SteelSS304L => steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum(temperature)?,
         Copper => copper_specific_heat_capacity(temperature)?,
     };
 

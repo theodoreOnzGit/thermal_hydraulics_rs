@@ -4,6 +4,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::range_check;
+use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum;
 use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
 use super::solid_database::ss_304_l::steel_ss_304_l_ornl_thermal_conductivity;
 use super::LiquidMaterial;
@@ -80,9 +81,10 @@ fn solid_thermal_conductivity(material: Material,
     let thermal_conductivity: ThermalConductivity = match solid_material {
         Fiberglass => fiberglass_thermal_conductivity(temperature)?,
         SteelSS304L => {
-            // for 300K to 700K, use ornl
-            // if out of range, use the slow method (spline)
-            let conductivity_result = steel_ss_304_l_ornl_thermal_conductivity(temperature);
+
+            let conductivity_result = 
+                steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum(
+                    temperature);
 
             match conductivity_result {
                 Ok(conductivity) => {
