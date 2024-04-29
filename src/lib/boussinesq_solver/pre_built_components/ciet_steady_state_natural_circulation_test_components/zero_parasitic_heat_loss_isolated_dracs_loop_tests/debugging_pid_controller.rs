@@ -74,8 +74,8 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     let max_simulation_time = Time::new::<second>(2000.0);
 
     // PID controller settings
-    let controller_gain = Ratio::new::<ratio>(50000000.0);
-    let integral_time: Time = controller_gain / Frequency::new::<hertz>(50000000.0);
+    let controller_gain = Ratio::new::<ratio>(5e14_f64);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5e10_f64);
     let derivative_time: Time = Time::new::<second>(1.0);
     // derivative time ratio
     let alpha: Ratio = Ratio::new::<ratio>(1.0);
@@ -424,12 +424,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 .unwrap();
 
             // cold branch 
-            // ambient temperature of tchx is 10C 
+            // ambient temperature of tchx is 2C 
             // to facilitate heat transfer
             tchx_35a.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(10.0);
+                ThermodynamicTemperature::new::<degree_celsius>(2.0);
             tchx_35b.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(10.0);
+                ThermodynamicTemperature::new::<degree_celsius>(2.0);
 
             tchx_35a
                 .lateral_and_miscellaneous_connections(
