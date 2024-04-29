@@ -712,7 +712,23 @@ impl SolidColumn {
             = front_node_enthalpy_next_timestep;
         // let's also update the previous temperature vector 
 
-        self.set_temperature_array(new_temperature_array)?;
+        self.set_temperature_array(new_temperature_array.clone())?;
+        // need to also set the front and back single cv temperature 
+        // [back ------ front]
+        //
+        // [T0, T1, T2, ... Tn]
+        //
+        // the back is the first temperature in the array, 
+        // and the front is the last
+        //
+        let back_cv_temperature: ThermodynamicTemperature 
+            = *new_temperature_array.first().unwrap();
+
+        let front_cv_temperature: ThermodynamicTemperature 
+            = *new_temperature_array.last().unwrap();
+
+        self.back_single_cv.temperature = back_cv_temperature;
+        self.front_single_cv.temperature = front_cv_temperature;
 
         // set liquid cv mass 
         // probably also need to update error types in future

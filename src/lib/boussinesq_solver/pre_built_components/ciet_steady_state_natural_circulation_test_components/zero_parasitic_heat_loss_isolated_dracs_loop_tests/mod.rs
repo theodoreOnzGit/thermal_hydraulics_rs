@@ -217,6 +217,13 @@ Result<(),ThermalHydraulicsLibError>{
 
 }
 
-/// debugging tests for functions to make natural circulation 
+/// debugging tests for thermal hydraulics and fluid mechanics 
+/// functions to make natural circulation 
 /// testing easier 
-pub mod debugging;
+pub mod debugging_thermal_hydraulics;
+
+
+/// debugging tests for PID controller
+/// functions to make natural circulation 
+/// testing easier 
+pub mod debugging_pid_controller;
