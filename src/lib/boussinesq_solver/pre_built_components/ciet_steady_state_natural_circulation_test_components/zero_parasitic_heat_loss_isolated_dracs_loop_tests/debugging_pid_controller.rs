@@ -54,8 +54,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
     // setup 
+    // might want to check with an initial temperature of 25C
+    // there is some unwanted error
     let initial_temperature = ThermodynamicTemperature::
-        new::<degree_celsius>(25.0);
+        new::<degree_celsius>(40.0);
+    
     let timestep = Time::new::<second>(0.5);
     let heat_rate_through_dhx = Power::new::<watt>(460.0);
     let mut tchx_heat_transfer_coeff: HeatTransfer;
@@ -71,9 +74,9 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     let max_simulation_time = Time::new::<second>(2000.0);
 
     // PID controller settings
-    let controller_gain = Ratio::new::<ratio>(50.0);
-    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5.0);
-    let derivative_time: Time = Time::new::<second>(100000.0);
+    let controller_gain = Ratio::new::<ratio>(50000000.0);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(50000000.0);
+    let derivative_time: Time = Time::new::<second>(1.0);
     // derivative time ratio
     let alpha: Ratio = Ratio::new::<ratio>(1.0);
 
@@ -92,6 +95,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
     measurement_delay_block.set_dead_time(measurement_delay);
 
+    // set point is 319 kelvin
     let tchx_outlet_temperature_set_point = 
         ThermodynamicTemperature::new::<degree_celsius>(46.0);
 
@@ -420,11 +424,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 .unwrap();
 
             // cold branch 
-            // ambient temperature of tchx is 21C 
+            // ambient temperature of tchx is 10C 
+            // to facilitate heat transfer
             tchx_35a.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(0.0);
+                ThermodynamicTemperature::new::<degree_celsius>(10.0);
             tchx_35b.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(0.0);
+                ThermodynamicTemperature::new::<degree_celsius>(10.0);
 
             tchx_35a
                 .lateral_and_miscellaneous_connections(

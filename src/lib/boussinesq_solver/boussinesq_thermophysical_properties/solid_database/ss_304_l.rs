@@ -124,7 +124,7 @@ pub fn specific_heat_capacity_test_steel(){
     // now for the Graves et al. 1991 version, from ORNL
     //
 
-    let thermal_cond_graves_et_al_1991 = 
+    let specific_heat_graves_et_al_1991 = 
     steel_ss_304_l_ornl_specific_heat_capacity(
         ThermodynamicTemperature::new::<kelvin>(350.0));
 
@@ -133,7 +133,7 @@ pub fn specific_heat_capacity_test_steel(){
     //
     approx::assert_relative_eq!(
         469.4894,
-        thermal_cond_graves_et_al_1991.unwrap().value,
+        specific_heat_graves_et_al_1991.unwrap().value,
         max_relative=0.035);
 
     // let's try now at 1000K 

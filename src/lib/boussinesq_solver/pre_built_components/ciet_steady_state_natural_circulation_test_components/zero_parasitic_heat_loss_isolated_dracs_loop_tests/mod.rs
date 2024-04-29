@@ -2,7 +2,6 @@ use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
 use crate::prelude::beta_testing::ThermalHydraulicsLibError;
 #[test]
-
 /// In the original SAM publication
 ///
 /// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
