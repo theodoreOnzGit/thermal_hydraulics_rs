@@ -465,7 +465,6 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
-
             pipe_32
                 .lateral_and_miscellaneous_connections(
                 mass_flowrate_counter_clockwise, 
@@ -658,13 +657,15 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_2(){
             &mut pipe_39);
 
 
-        // debugging
 
+        // show the mass flowrate
         dbg!(&mass_flowrate_absolute);
-
 
     }
 
+    // panic to see debug messages
+
+    //panic!();
 
 
 }
