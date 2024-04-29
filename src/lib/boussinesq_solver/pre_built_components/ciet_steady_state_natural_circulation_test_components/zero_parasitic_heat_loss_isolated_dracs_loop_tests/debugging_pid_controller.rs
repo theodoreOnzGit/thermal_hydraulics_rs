@@ -1,5 +1,3 @@
-use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
-use uom::si::thermodynamic_temperature::kelvin;
 
 
 
@@ -16,6 +14,8 @@ use uom::si::thermodynamic_temperature::kelvin;
 #[test]
 pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
+    use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
+    use uom::si::thermodynamic_temperature::kelvin;
     use uom::si::f64::*;
 
     use crate::boussinesq_solver::pre_built_components::
@@ -424,12 +424,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 .unwrap();
 
             // cold branch 
-            // ambient temperature of tchx is 2C 
-            // to facilitate heat transfer
+            // ambient temperature of tchx is -20C  
+            // artificially low to facilitate heat transfer
             tchx_35a.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(2.0);
+                ThermodynamicTemperature::new::<degree_celsius>(-20.0);
             tchx_35b.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(2.0);
+                ThermodynamicTemperature::new::<degree_celsius>(-20.0);
 
             tchx_35a
                 .lateral_and_miscellaneous_connections(
