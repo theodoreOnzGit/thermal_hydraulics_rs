@@ -61,6 +61,11 @@ pub enum NusseltCorrelation {
     /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
     /// * (Pr_wall/Pr_bulk)^0.11
     CIETHeaterVersion2(NusseltPrandtlReynoldsData),
+
+    /// Ideal 1e9 
+    /// Just returns a Nusselt number of 10^9 
+    /// which may be suitable as an approximation for heat exchangers 
+    IdealNusseltOneBillion,
 }
 
 impl NusseltCorrelation {
@@ -90,6 +95,9 @@ impl NusseltCorrelation {
             },
             NusseltCorrelation::CIETHeaterVersion2(data) => {
                 return data.ciet_version_2_heater_prandtl_corrected();
+            },
+            NusseltCorrelation::IdealNusseltOneBillion => {
+                Ratio::new::<ratio>(1e9_f64)
             },
         };
 
@@ -147,6 +155,9 @@ impl NusseltCorrelation {
 
                 return modified_data.ciet_version_2_heater_prandtl_corrected();
             },
+            NusseltCorrelation::IdealNusseltOneBillion => {
+                Ratio::new::<ratio>(1e9_f64)
+            },
         };
 
         return Ok(nusselt_number);
@@ -203,6 +214,9 @@ impl NusseltCorrelation {
                 modified_data.reynolds = reynolds_number_input;
 
                 return modified_data.ciet_version_2_heater_prandtl_corrected();
+            },
+            NusseltCorrelation::IdealNusseltOneBillion => {
+                Ratio::new::<ratio>(1e9_f64)
             },
         };
 

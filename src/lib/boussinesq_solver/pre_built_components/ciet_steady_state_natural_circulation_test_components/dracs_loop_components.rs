@@ -7,8 +7,10 @@ use uom::si::ratio::ratio;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::pressure::atmosphere;
 
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::pre_built_components::insulated_pipes_and_fluid_components::InsulatedFluidComponent;
 use crate::boussinesq_solver::pre_built_components::non_insulated_fluid_components::NonInsulatedFluidComponent;
 
@@ -599,7 +601,7 @@ pub fn new_inactive_ndhx_tchx_horizontal_35a(
     // we subtract 2 
     let user_specified_inner_nodes = 11-2; 
 
-    let non_insulated_component = NonInsulatedFluidComponent::
+    let mut non_insulated_component = NonInsulatedFluidComponent::
         new_custom_component(
             initial_temperature, 
             ambient_temperature, 
@@ -618,6 +620,21 @@ pub fn new_inactive_ndhx_tchx_horizontal_35a(
             pipe_fluid, 
             htc_to_ambient, 
             user_specified_inner_nodes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        non_insulated_component.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    non_insulated_component.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
+
 
     non_insulated_component
 }
@@ -668,7 +685,7 @@ NonInsulatedFluidComponent {
     // number of inner nodes is 4-2
     let user_specified_inner_nodes = 4-2; 
 
-    let non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
+    let mut non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
         initial_temperature, 
         ambient_temperature, 
         fluid_pressure, 
@@ -685,6 +702,20 @@ NonInsulatedFluidComponent {
         pipe_fluid, 
         htc_to_ambient, 
         user_specified_inner_nodes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        non_insulated_component.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    non_insulated_component.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
 
     non_insulated_component
 }

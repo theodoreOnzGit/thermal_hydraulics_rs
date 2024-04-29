@@ -413,9 +413,22 @@ impl InsulatedFluidComponent {
         pipe_prandtl_reynolds_data.darcy_friction_factor = 
             darcy_friction_factor;
 
-        let nusselt_estimate: Ratio = 
+        let _nusselt_estimate: Ratio = 
         pipe_prandtl_reynolds_data.get_nusselt_for_developing_flow()?;
 
+        // but in case there are other correlations, I need to also 
+        // use the ones present in this struct 
+        //
+        // no wall correction is done here
+        let mut fluid_array: FluidArray 
+            = self.pipe_fluid_array.clone().try_into()?;
+
+        let nusselt_estimate = 
+            fluid_array
+            .get_nusselt(
+                reynolds_number, 
+                bulk_prandtl_number, 
+                bulk_prandtl_number)?;
 
 
         // now we can get the heat transfer coeff, 

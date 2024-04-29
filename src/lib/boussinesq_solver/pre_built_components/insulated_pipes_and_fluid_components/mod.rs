@@ -121,6 +121,7 @@ impl InsulatedFluidComponent {
         surface_roughness: Length) -> InsulatedFluidComponent {
 
         // inner fluid_array
+        // the nusselt correlation here is a standard pipe correlation 
         let mut fluid_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             pipe_length,
@@ -134,6 +135,9 @@ impl InsulatedFluidComponent {
             user_specified_inner_nodes,
             incline_angle
         );
+
+
+
 
         // now the outer pipe array
         let pipe_shell = 
@@ -223,6 +227,7 @@ impl InsulatedFluidComponent {
         let b = reynolds_coefficient;
         let c = reynolds_power;
 
+        // the nusselt correlation here is a standard pipe correlation 
         let mut fluid_array: FluidArray = 
             FluidArray::new_custom_component(
                 component_length, 

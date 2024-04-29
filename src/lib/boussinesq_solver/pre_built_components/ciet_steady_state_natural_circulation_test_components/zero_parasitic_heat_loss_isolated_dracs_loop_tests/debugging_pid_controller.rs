@@ -72,7 +72,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
     let reference_tchx_htc = 
-        HeatTransfer::new::<watt_per_square_meter_kelvin>(250.0e4);
+        HeatTransfer::new::<watt_per_square_meter_kelvin>(25.0);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
     // let's calculate 2000 seconds of simulated time 
@@ -82,8 +82,8 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
     let max_simulation_time = Time::new::<second>(2000.0);
 
     // PID controller settings
-    let controller_gain = Ratio::new::<ratio>(5e14_f64);
-    let integral_time: Time = controller_gain / Frequency::new::<hertz>(5e12_f64);
+    let controller_gain = Ratio::new::<ratio>(1.75);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
     let derivative_time: Time = Time::new::<second>(1.0);
     // derivative time ratio
     let alpha: Ratio = Ratio::new::<ratio>(1.0);
@@ -432,12 +432,11 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
                 .unwrap();
 
             // cold branch 
-            // ambient temperature of tchx is -20C  
-            // artificially low to facilitate heat transfer
+            // ambient temperature of tchx is 20C  
             tchx_35a.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(-20.0);
+                ThermodynamicTemperature::new::<degree_celsius>(20.0);
             tchx_35b.ambient_temperature = 
-                ThermodynamicTemperature::new::<degree_celsius>(-20.0);
+                ThermodynamicTemperature::new::<degree_celsius>(20.0);
 
             tchx_35a
                 .lateral_and_miscellaneous_connections(
@@ -540,7 +539,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
     }
     
+    // I also want to find the final temperature, which should be 
+    // around the set point within thermocouple error (+/- 0.5 K)
+    let mut final_tchx_outlet_temperature: ThermodynamicTemperature 
+        = ThermodynamicTemperature::ZERO;
 
+    // main simulation loop
     while current_simulation_time < max_simulation_time {
         // show the outlet temperature of tchx 
 
@@ -577,9 +581,19 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
         };
 
-        dbg!(&tchx_outlet_temperature);
         // we will need to change the tchx heat transfer coefficient 
         // using the PID controller
+        //
+        // record tchx outlet temperature if it is last 5s of time 
+        
+        let tchx_temperature_record_time_threshold = max_simulation_time - 
+            Time::new::<second>(5.0);
+
+        if current_simulation_time > tchx_temperature_record_time_threshold {
+            final_tchx_outlet_temperature = tchx_outlet_temperature;
+        }
+
+
         
         tchx_heat_transfer_coeff = {
             // first, calculate the set point error 
@@ -617,7 +631,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
             // make sure it cannot be less than a certain amount 
             let tchx_minimum_heat_transfer = 
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(
-                    20.0);
+                    10.0);
 
             // this makes it physically realistic
             if tchx_heat_trf_output < tchx_minimum_heat_transfer {
@@ -681,20 +695,39 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_1(){
 
 
 
-        // show the mass flowrate
-        dbg!(&mass_flowrate_absolute);
 
 
 
         current_simulation_time += timestep;
-        dbg!(&current_simulation_time);
-        dbg!(&tchx_heat_transfer_coeff);
+        let debug: bool = true;
+        if debug {
+            // show the mass flowrate
+            // tchx outlet temperature 
+            // current sim time 
+            // and tchx heat trf coeff
+            dbg!(&mass_flowrate_absolute);
+            dbg!(&tchx_outlet_temperature);
+            dbg!(&current_simulation_time);
+            dbg!(&tchx_heat_transfer_coeff);
+        }
 
     }
 
     // panic to see debug messages
 
     //panic!();
+    
+    // final assertion 
+    // that tchx outlet temperature is equal to set point within 
+    // thermocouple error 
+
+    let thermocouple_error_kelvin: f64 = 0.5;
+
+    approx::assert_abs_diff_eq!(
+        tchx_outlet_temperature_set_point.get::<degree_celsius>(),
+        final_tchx_outlet_temperature.get::<degree_celsius>(),
+        epsilon=thermocouple_error_kelvin
+        );
 
 
 }
