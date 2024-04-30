@@ -75,26 +75,27 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
     fn verify_isolated_dhx_analytical_solution(
         input_power_watts: f64,
-        analytical_solution_mass_flowrate_kg_per_s: f64) -> 
+        analytical_solution_mass_flowrate_kg_per_s: f64,
+        max_error_tolerance_fraction: f64) -> 
         Result<(),ThermalHydraulicsLibError>{
 
             let input_power = Power::new::<watt>(input_power_watts);
-            let analytical_solution_mass_flowrate = 
-                MassRate::new::<kilogram_per_second>(
-                    analytical_solution_mass_flowrate_kg_per_s);
+            let max_error_tolerance = max_error_tolerance_fraction;
 
             // max error is 0.5% according to SAM 
             // is okay, because typical flowmeter measurement error is 2% anyway
             // setup 
-            let initial_temperature = ThermodynamicTemperature::
-                new::<degree_celsius>(40.0);
+            // set point is 313 kelvin
+            let tchx_outlet_temperature_set_point = 
+                ThermodynamicTemperature::new::<degree_celsius>(40.0);
+            let initial_temperature = tchx_outlet_temperature_set_point;
 
             let timestep = Time::new::<second>(0.5);
             let heat_rate_through_dhx = input_power;
             let mut tchx_heat_transfer_coeff: HeatTransfer;
 
             let reference_tchx_htc = 
-                HeatTransfer::new::<watt_per_square_meter_kelvin>(25.0);
+                HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
             // let's calculate 2000 seconds of simulated time 
@@ -125,9 +126,6 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
             measurement_delay_block.set_dead_time(measurement_delay);
 
-            // set point is 319 kelvin
-            let tchx_outlet_temperature_set_point = 
-                ThermodynamicTemperature::new::<degree_celsius>(46.0);
 
             // hot branch or (mostly) hot leg
             let mut pipe_34 = new_pipe_34(initial_temperature);
@@ -563,8 +561,10 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
             // I also want to find the final temperature, which should be 
             // around the set point within thermocouple error (+/- 0.5 K)
-            let mut final_tchx_outlet_temperature: ThermodynamicTemperature 
+            let mut _final_tchx_outlet_temperature: ThermodynamicTemperature 
                 = ThermodynamicTemperature::ZERO;
+            let mut final_mass_flowrate: MassRate 
+                = MassRate::ZERO;
 
             // main simulation loop
             while current_simulation_time < max_simulation_time {
@@ -612,7 +612,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
                     Time::new::<second>(5.0);
 
                 if current_simulation_time > tchx_temperature_record_time_threshold {
-                    final_tchx_outlet_temperature = tchx_outlet_temperature;
+                    _final_tchx_outlet_temperature = tchx_outlet_temperature;
                 }
 
 
@@ -653,7 +653,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
                     // make sure it cannot be less than a certain amount 
                     let tchx_minimum_heat_transfer = 
                         HeatTransfer::new::<watt_per_square_meter_kelvin>(
-                            10.0);
+                            5.0);
 
                     // this makes it physically realistic
                     if tchx_heat_trf_output < tchx_minimum_heat_transfer {
@@ -690,6 +690,10 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
                 let mass_flowrate_counter_clockwise = 
                     mass_flowrate_absolute;
 
+                if current_simulation_time > tchx_temperature_record_time_threshold {
+                    final_mass_flowrate = mass_flowrate_absolute;
+                }
+
                 // next, thermal hydraulics calcs 
 
                 calculate_dracs_thermal_hydraulics(
@@ -721,12 +725,13 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
 
                 current_simulation_time += timestep;
-                let debug: bool = false;
+                let debug: bool = true;
                 if debug {
                     // show the mass flowrate
                     // tchx outlet temperature 
                     // current sim time 
                     // and tchx heat trf coeff
+                    dbg!(&input_power);
                     dbg!(&mass_flowrate_absolute);
                     dbg!(&tchx_outlet_temperature);
                     dbg!(&current_simulation_time);
@@ -741,44 +746,59 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
             // final assertion 
 
+            approx::assert_relative_eq!(
+                analytical_solution_mass_flowrate_kg_per_s,
+                final_mass_flowrate.get::<kilogram_per_second>(),
+                max_relative = max_error_tolerance
+                );
+
             Ok(())
 
         }
 
     verify_isolated_dhx_analytical_solution(
-        582.6, 
-        2.7989e-2
+        582.6, // dhx power (watts)
+        2.7989e-2, // SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        785.9, 
-        3.1748e-2
+        785.9, // dhx power (watts)
+        3.1748e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        971.4, 
-        3.4616e-2
+        971.4, // dhx power (watts)
+        3.4616e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        1185.2, 
-        3.7682e-2
+        1185.2, // dhx power (watts)
+        3.7682e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        1369.1, 
-        4.0000e-2
+        1369.1, // dhx power (watts)
+        4.0000e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        1584.1, 
-        4.2382e-2
+        1584.1, // dhx power (watts)
+        4.2382e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        1763.7, 
-        4.4318e-2
+        1763.7, // dhx power (watts)
+        4.4318e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        1970.0, 
-        4.6319e-2
+        1970.0, // dhx power (watts)
+        4.6319e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
-        2177.0, 
-        4.8155e-2
+        2177.0, // dhx power (watts)
+        4.8155e-2,// SAM/analytical mass flowrate kg/s
+        0.10, // max error tolerance
     ).unwrap();
 }

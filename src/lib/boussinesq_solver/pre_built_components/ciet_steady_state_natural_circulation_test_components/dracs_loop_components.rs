@@ -333,7 +333,7 @@ pub fn new_pipe_31a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
     // number of inner nodes is zero
     let user_specified_inner_nodes = 0; 
 
-    let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
+    let mut insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
         ambient_temperature, 
         fluid_pressure, 
@@ -352,6 +352,21 @@ pub fn new_pipe_31a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
         htc_to_ambient, 
         user_specified_inner_nodes, 
         surface_roughness);
+
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        insulated_component.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    insulated_component.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
 
     insulated_component
 }
