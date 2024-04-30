@@ -758,36 +758,36 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     verify_isolated_dhx_analytical_solution(
         931.8, // dhx input power in watts
         3.4967e-2, // analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1088.3, // dhx input power in watts
         3.7214e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1338.4, // dhx input power in watts
         4.0525e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1470.6, // dhx input power in watts
         4.2045e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1699.9, // dhx input power in watts
         4.4583e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1876.5, // dhx input power in watts
         4.6309e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         2137.0, // dhx input power in watts
         4.8754e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.02, // max error tolerance fraction
         ).unwrap();
 }

@@ -757,46 +757,46 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     verify_isolated_dhx_analytical_solution(
         454.4, // dhx input power in watts
         2.4297e-2, // analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         766.2, // dhx input power in watts
         3.0478e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1004.4, // dhx input power in watts
         3.4263e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1211.2, // dhx input power in watts
         3.6997e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1409.0, // dhx input power in watts
         3.9461e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1607.4, // dhx input power in watts
         4.1702e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1804.6, // dhx input power in watts
         4.3738e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         2004.9, // dhx input power in watts
         4.5643e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
     verify_isolated_dhx_analytical_solution(
         2211.0, // dhx input power in watts
         4.7497e-2,// analytical / SAM mass flowrate kg/s
-        0.069, // max error tolerance fraction
+        0.032, // max error tolerance fraction
         ).unwrap();
 }

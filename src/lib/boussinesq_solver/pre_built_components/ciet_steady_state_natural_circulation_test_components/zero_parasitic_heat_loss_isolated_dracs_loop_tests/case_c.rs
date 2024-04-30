@@ -759,52 +759,52 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
         }
 
-    // max error tolerance is about 6.9%, 
+    // max error tolerance is about 3.0%
     // for this, it's usually an overprediction of mass flowrate 
     // similar to SAM
     verify_isolated_dhx_analytical_solution(
         582.6, // dhx power (watts)
         2.7989e-2, // SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         785.9, // dhx power (watts)
         3.1748e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         971.4, // dhx power (watts)
         3.4616e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1185.2, // dhx power (watts)
         3.7682e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1369.1, // dhx power (watts)
         4.0000e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1584.1, // dhx power (watts)
         4.2382e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1763.7, // dhx power (watts)
         4.4318e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         1970.0, // dhx power (watts)
         4.6319e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
     verify_isolated_dhx_analytical_solution(
         2177.0, // dhx power (watts)
         4.8155e-2,// SAM/analytical mass flowrate kg/s
-        0.069, // max error tolerance
+        0.026, // max error tolerance
     ).unwrap();
 }
