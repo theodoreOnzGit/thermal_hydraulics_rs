@@ -84,6 +84,9 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
             // max error is 0.5% according to SAM 
             // is okay, because typical flowmeter measurement error is 2% anyway
+            //
+            // but without calibration, usually, we'll have overestimation
+            //
             // setup 
             // set point is 313 kelvin
             let tchx_outlet_temperature_set_point = 
