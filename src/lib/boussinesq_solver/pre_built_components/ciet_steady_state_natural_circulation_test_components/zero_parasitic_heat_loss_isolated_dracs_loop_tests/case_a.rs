@@ -137,7 +137,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             let mut dhx_tube_side_30a = new_dhx_tube_side_30a(initial_temperature);
 
             // cold branch or (mostly) cold leg
-            let mut tchx_35a = new_inactive_ndhx_tchx_horizontal_35a(initial_temperature);
+            let mut tchx_35a = new_ndhx_tchx_horizontal_35a(initial_temperature);
             let mut tchx_35b = new_ndhx_tchx_vertical_35b(initial_temperature);
             let mut static_mixer_60_label_36 = new_static_mixer_60_label_36(initial_temperature);
             let mut pipe_36a = new_pipe_36a(initial_temperature);
