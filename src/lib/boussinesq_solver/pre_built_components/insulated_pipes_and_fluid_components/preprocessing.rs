@@ -51,6 +51,7 @@ impl InsulatedFluidComponent {
         // 1. we'll need the ambient to insulation midpoint (nodal) thermal conductance
         let heat_transfer_to_ambient: HeatTransfer = self.heat_transfer_to_ambient;
 
+
         let insulation_to_air_nodal_conductance: ThermalConductance 
         = self.get_ambient_surroundings_to_insulation_thermal_conductance(
             heat_transfer_to_ambient
@@ -62,6 +63,7 @@ impl InsulatedFluidComponent {
 
         let pipe_shell_node_to_fluid_array_conductance: ThermalConductance 
         = self.get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction()?;
+
 
         // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
 
@@ -716,6 +718,7 @@ impl InsulatedFluidComponent {
         = solid_pipe_material.try_get_thermal_conductivity(
             solid_pipe_material_shell_temperature
         )?;
+
 
         let insulation_material_shell_temperature = insulation_array_clone.try_get_bulk_temperature() 
             ?;

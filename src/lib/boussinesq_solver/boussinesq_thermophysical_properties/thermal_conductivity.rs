@@ -134,7 +134,8 @@ impl SolidMaterial {
 
         let thermal_conductivity: ThermalConductivity = match self {
         Fiberglass => fiberglass_thermal_conductivity(solid_temp)?,
-        SteelSS304L => steel_ss_304_l_ornl_thermal_conductivity(solid_temp)?,
+        SteelSS304L => steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum(
+            solid_temp)?,
         Copper => copper_thermal_conductivity(solid_temp)?,
         };
 

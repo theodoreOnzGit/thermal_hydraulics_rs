@@ -226,3 +226,7 @@ pub mod debugging_thermal_hydraulics;
 /// functions to make natural circulation 
 /// testing easier 
 pub mod debugging_pid_controller;
+
+/// miscellaneous debugging tests 
+/// for other bugs I happened to find
+pub mod misc_debugging;
