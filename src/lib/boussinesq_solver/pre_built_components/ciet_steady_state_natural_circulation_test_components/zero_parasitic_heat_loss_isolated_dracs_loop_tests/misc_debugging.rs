@@ -13,26 +13,14 @@
 #[test]
 pub fn steel_properties_debugging(){
 
-    use crate::boussinesq_solver::
-        array_control_vol_and_fluid_component_collections::
-        fluid_component_collection::
-        fluid_component_collection::FluidComponentCollection;
     use crate::boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
     // let's construct the branches with test pressures and obtain 
-    use crate::boussinesq_solver::
-        array_control_vol_and_fluid_component_collections::
-        fluid_component_collection::
-        fluid_component_collection::FluidComponentCollectionMethods;
     use uom::si::f64::*;
     use uom::ConstZero;
 
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::thermodynamic_temperature::degree_celsius;
-    use crate::boussinesq_solver::
-        array_control_vol_and_fluid_component_collections::
-        fluid_component_collection::
-        fluid_component_super_collection::FluidComponentSuperCollection;
 
     use crate::boussinesq_solver::pre_built_components::
         insulated_pipes_and_fluid_components::InsulatedFluidComponent;
@@ -41,7 +29,9 @@ pub fn steel_properties_debugging(){
 
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::
         LiquidMaterial;
-    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+    use crate::boussinesq_solver::heat_transfer_correlations::
+        heat_transfer_interactions::
+        heat_transfer_interaction_enums::HeatTransferInteractionType;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::power::watt;
     use uom::si::time::second;
@@ -105,7 +95,7 @@ pub fn steel_properties_debugging(){
         static_mixer_60_label_36: &mut InsulatedFluidComponent,
         pipe_36a: &mut InsulatedFluidComponent,
         pipe_37: &mut InsulatedFluidComponent,
-        flowmeter_60_37a: &mut NonInsulatedFluidComponent,
+        _flowmeter_60_37a: &mut NonInsulatedFluidComponent,
         pipe_38: &mut InsulatedFluidComponent,
         pipe_39: &mut InsulatedFluidComponent,
         ){
