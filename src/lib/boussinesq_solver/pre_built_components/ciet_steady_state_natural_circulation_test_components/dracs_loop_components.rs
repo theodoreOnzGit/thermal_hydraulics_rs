@@ -902,7 +902,9 @@ pub fn new_pipe_37(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let pipe_length = Length::new::<meter>(1.7736);
     let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-90.0);
-    let form_loss = Ratio::new::<ratio>(0.0);
+    // pipe 37 has no form losses in Zweibaum's dissertation (probably 
+    // a misprint) but it shows up as 14.0 on Zou's paper
+    let form_loss = Ratio::new::<ratio>(14.0);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)
     let surface_roughness = Length::new::<millimeter>(0.015);
@@ -971,9 +973,9 @@ NonInsulatedFluidComponent {
     let component_length = Length::new::<meter>(0.36);
     let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(-90.0);
-    let form_loss = Ratio::new::<ratio>(18.0);
-    let reynolds_power = -1.35_f64;
-    let reynolds_coefficient = Ratio::new::<ratio>(93000_f64);
+    let form_loss = Ratio::new::<ratio>(18.1);
+    let reynolds_power = -1.3476_f64;
+    let reynolds_coefficient = Ratio::new::<ratio>(93006.9_f64);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)
     let shell_id = hydraulic_diameter;

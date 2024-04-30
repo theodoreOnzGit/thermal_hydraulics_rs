@@ -665,13 +665,13 @@ pub fn dracs_natural_circ_thermal_hydraulics_regression_test_prototype_2(){
 
         // if this is the last loop, 
         // assert that mass flowrate is equal some value 
-        // 0.0080210329 kg/s
+        // 0.007911287 kg/s
         if iteration_idx_i == 99 {
 
             use approx::assert_abs_diff_eq;
             assert_abs_diff_eq!(
                 mass_flowrate_absolute.get::<uom::si::mass_rate::kilogram_per_second>(),
-                0.0080210329,
+                0.007911287,
                 epsilon = 1e-7);
         }
 
@@ -751,7 +751,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_1(){
     // initial mass flowrate is 0.0679504 kg/s
     approx::assert_abs_diff_eq!(
         mass_flowrate_initial.get::<kilogram_per_second>(),
-        0.0679504,
+        0.06581504,
         epsilon=0.000001);
 
     // it would be good to code a function that just takes a clone 
@@ -787,10 +787,10 @@ pub fn dracs_natural_circ_thermal_hydraulics_test_prototype_1(){
 
     mass_flowrate_initial = get_dracs_flowrate(&dracs_branches);
 
-    // initial mass flowrate is 0.0679504 kg/s
+    // initial mass flowrate is 0.06581504 kg/s
     approx::assert_abs_diff_eq!(
         mass_flowrate_initial.get::<kilogram_per_second>(),
-        0.0679504,
+        0.06581504,
         epsilon=0.000001);
 
     // now we just have to obtain the temperatures given this 

@@ -728,7 +728,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
 
                 current_simulation_time += timestep;
-                let debug: bool = false;
+                let debug: bool = true;
                 if debug {
                     // show the mass flowrate
                     // tchx outlet temperature 
