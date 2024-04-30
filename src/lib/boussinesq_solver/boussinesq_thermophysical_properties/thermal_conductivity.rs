@@ -78,30 +78,8 @@ fn solid_thermal_conductivity(material: Material,
         Material::Liquid(_) => panic!("solid_thermal_conductivity, use SolidMaterial enums only")
     };
 
-    let thermal_conductivity: ThermalConductivity = match solid_material {
-        Fiberglass => fiberglass_thermal_conductivity(temperature)?,
-        SteelSS304L => {
-
-            let conductivity_result = 
-                steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum(
-                    temperature);
-
-            match conductivity_result {
-                Ok(conductivity) => {
-                    return Ok(conductivity);
-                },
-                Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError) => {
-                    return steel_304_l_spline_thermal_conductivity(temperature);
-                },
-                Err(_) => {
-                    todo!()
-                }
-            }
-
-
-        },
-        Copper => copper_thermal_conductivity(temperature)?,
-    };
+    let thermal_conductivity: ThermalConductivity 
+        = solid_material.try_get_thermal_conductivity(temperature)?;
 
     return Ok(thermal_conductivity);
 
@@ -132,15 +110,33 @@ impl SolidMaterial {
         solid_temp: ThermodynamicTemperature,) 
         -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
 
-        let thermal_conductivity: ThermalConductivity = match self {
-        Fiberglass => fiberglass_thermal_conductivity(solid_temp)?,
-        SteelSS304L => steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum(
-            solid_temp)?,
-        Copper => copper_thermal_conductivity(solid_temp)?,
-        };
+            let thermal_conductivity: ThermalConductivity = match self {
+                Fiberglass => fiberglass_thermal_conductivity(solid_temp)?,
+                SteelSS304L => {
 
-        Ok(thermal_conductivity)
-    }
+                    let conductivity_result = 
+                        steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum(
+                            solid_temp);
+
+                    match conductivity_result {
+                        Ok(conductivity) => {
+                            return Ok(conductivity);
+                        },
+                        Err(ThermalHydraulicsLibError::ThermophysicalPropertyTemperatureRangeError) => {
+                            return steel_304_l_spline_thermal_conductivity(solid_temp);
+                        },
+                        Err(_) => {
+                            todo!()
+                        }
+                    }
+
+
+                },
+                Copper => copper_thermal_conductivity(solid_temp)?,
+            };
+
+            Ok(thermal_conductivity)
+        }
 
 }
 
