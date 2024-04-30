@@ -39,6 +39,20 @@ pub fn new_pipe_34(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    // note that for zweibaum's model,
+    // the hydraulic diameter is 2.79e-2 m
+    // whereas for SAM, the hydraulic diameter 
+    // is 2.78638e-2 m
+    // this is slightly smaller in SAM
+    //
+    // in Zweibaum's relap model, flow area is 6.11e-4 m^2
+    // whereas for SAM
+    // flow area is 6.099776e-4 m^2
+    //
+    // again, slightly smaller
+    //
+    // I tested if this impacts, 
+    // it's quite insensitive
     let hydraulic_diameter = Length::new::<meter>(2.79e-2);
     let pipe_length = Length::new::<meter>(0.55245);
     let flow_area = Area::new::<square_meter>(6.11e-4);
@@ -383,9 +397,16 @@ NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
-    let hydraulic_diameter = Length::new::<meter>(6.93e-3);
+    // dhx tubes are modelled in SAM as 19 tubes of diameter 
+    // 0.00635 m 
+    // and flow area of 6.1072e-4 m^2
+    //
+    // in Zweibaum's RELAP model,
+    // it is quite different from the SAM model 
+    // which follows Bickel's data
+    let hydraulic_diameter = Length::new::<meter>(6.35e-3);
     let pipe_length = Length::new::<meter>(0.18415);
-    let flow_area = Area::new::<square_meter>(7.18e-4);
+    let flow_area = Area::new::<square_meter>(6.0172e-4);
     let incline_angle = Angle::new::<degree>(90.0-180.0);
     let form_loss = Ratio::new::<ratio>(0.0);
     //estimated component wall roughness (doesn't matter here,
@@ -452,9 +473,18 @@ NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
-    let hydraulic_diameter = Length::new::<meter>(6.93e-3);
+    // for dhx modelling,
+    //
+    // dhx tubes are modelled in SAM as 19 tubes of diameter 
+    // 0.00635 m 
+    // and flow area of 6.1072e-4 m^2
+    //
+    // in Zweibaum's RELAP model,
+    // it is quite different from the SAM model 
+    // which follows Bickel's data
+    let hydraulic_diameter = Length::new::<meter>(6.35e-3);
     let pipe_length = Length::new::<meter>(1.18745);
-    let flow_area = Area::new::<square_meter>(7.18e-4);
+    let flow_area = Area::new::<square_meter>(6.0172e-4);
     let incline_angle = Angle::new::<degree>(90.0-180.0);
     let form_loss = Ratio::new::<ratio>(3.3);
     //estimated component wall roughness (doesn't matter here,
@@ -530,9 +560,16 @@ NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
-    let hydraulic_diameter = Length::new::<meter>(6.93e-3);
+    // dhx tubes are modelled in SAM as 19 tubes of diameter 
+    // 0.00635 m 
+    // and flow area of 6.1072e-4 m^2
+    //
+    // in Zweibaum's RELAP model,
+    // it is quite different from the SAM model 
+    // which follows Bickel's data
+    let hydraulic_diameter = Length::new::<meter>(6.35e-3);
+    let flow_area = Area::new::<square_meter>(6.0172e-4);
     let pipe_length = Length::new::<meter>(0.111125);
-    let flow_area = Area::new::<square_meter>(7.18e-4);
     let incline_angle = Angle::new::<degree>(90.0-180.0);
     let form_loss = Ratio::new::<ratio>(0.0);
     //estimated component wall roughness (doesn't matter here,
