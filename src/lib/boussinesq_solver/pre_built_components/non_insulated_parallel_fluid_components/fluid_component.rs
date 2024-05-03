@@ -6,11 +6,18 @@ use uom::si::f64::*;
 
 
 impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
+    /// for getting and setting mass flowrate, we multiply or divide by 
+    /// the number of tubes
+    ///
+    /// we return on a basis of total number of tubes
     fn get_mass_flowrate(&mut self) -> MassRate  {
         let mut pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.get_mass_flowrate()
+        let single_tube_mass_rate = 
+            pipe_fluid_array.get_mass_flowrate();
+
+        single_tube_mass_rate * (self.number_of_tubes as f64)
     }
 
     fn set_mass_flowrate(&mut self, mass_flowrate: MassRate) {
@@ -21,7 +28,10 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let mut pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.set_mass_flowrate(mass_flowrate);
+        let single_tube_mass_rate = 
+            mass_flowrate / (self.number_of_tubes as f64);
+
+        pipe_fluid_array.set_mass_flowrate(single_tube_mass_rate);
 
         // unfortunately, this makes setting mass flowrate quite 
         // expensive as we need to clone it everytime
@@ -34,8 +44,12 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.get_mass_flowrate_from_pressure_loss_immutable(
-            pressure_loss)
+        let single_pipe_flowrate = 
+            pipe_fluid_array
+            .get_mass_flowrate_from_pressure_loss_immutable(
+                pressure_loss);
+
+        single_pipe_flowrate * (self.number_of_tubes as f64)
     }
 
     fn get_pressure_loss(&mut self) -> Pressure {
@@ -64,20 +78,29 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.get_cross_sectional_area_immutable()
+        let single_pipe_xs_area = 
+            pipe_fluid_array.get_cross_sectional_area_immutable();
+
+        single_pipe_xs_area * (self.number_of_tubes as f64)
     }
 
     fn get_cross_sectional_area_immutable(&self) -> Area {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.get_cross_sectional_area_immutable()
+        let single_pipe_xs_area = 
+            pipe_fluid_array.get_cross_sectional_area_immutable();
+
+        single_pipe_xs_area * (self.number_of_tubes as f64)
     }
 
     fn get_hydraulic_diameter(&mut self) -> Length {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // we proved before in the fluid array that hydraulic diameter 
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_hydraulic_diameter_immutable()
     }
 
@@ -85,6 +108,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // we proved before in the fluid array that hydraulic diameter 
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_hydraulic_diameter_immutable()
     }
 
@@ -128,6 +154,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // component length
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_component_length_immutable()
     }
 
@@ -135,6 +164,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // component length
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_component_length_immutable()
     }
 
@@ -142,6 +174,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // incline_angle
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_incline_angle_immutable()
     }
 
@@ -149,6 +184,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // incline_angle
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_incline_angle_immutable()
     }
 
@@ -156,6 +194,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // internal pressure
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_internal_pressure_source_immutable()
     }
 
@@ -163,6 +204,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
+        // internal pressure
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         pipe_fluid_array.get_internal_pressure_source_immutable()
     }
 
@@ -174,6 +218,9 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
 
         pipe_fluid_array.set_internal_pressure_source(internal_pressure);
 
+        // internal pressure
+        // for one tube is the same as the hydraulic diameter for a parallel 
+        // set of tubes
         self.pipe_fluid_array = pipe_fluid_array.into();
 
 
