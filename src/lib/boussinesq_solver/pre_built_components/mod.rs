@@ -24,6 +24,14 @@ pub mod non_insulated_fluid_components;
 /// another. 
 pub mod insulated_pipes_and_fluid_components;
 
+/// for fluid through through a series of parallel pipes 
+/// each with a uniform hydraulic diameter and length 
+/// usually used for heat exchangers
+/// these are non insulated by default to maximise heat transfer rates
+///
+pub mod non_insulated_parallel_fluid_components;
+
+
 /// represents one dimensional solid structure
 pub mod one_d_solid_structure;
 

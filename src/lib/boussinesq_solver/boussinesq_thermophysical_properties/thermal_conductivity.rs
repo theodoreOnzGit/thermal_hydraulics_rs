@@ -6,7 +6,6 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::range_check;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum;
 use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
-use super::solid_database::ss_304_l::steel_ss_304_l_ornl_thermal_conductivity;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -234,6 +233,7 @@ fn dowtherm_a_thermal_conductivity(
 #[test]
 pub fn thermal_conductivity_test_steel(){
 
+    use super::solid_database::ss_304_l::steel_ss_304_l_ornl_thermal_conductivity;
     // we're going to test thermal conductivity for steel,
     // first at 500K for both the spline and the correlation 
     // thermal conductivity, we expect at 350K 
