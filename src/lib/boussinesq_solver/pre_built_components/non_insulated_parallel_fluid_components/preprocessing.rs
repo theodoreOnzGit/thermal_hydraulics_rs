@@ -5,7 +5,7 @@ use uom::ConstZero;
 use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
 use ndarray::*;
-use super::NonInsulatedFluidComponent;
+use super::NonInsulatedParallelFluidComponent;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -18,7 +18,7 @@ use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections:
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-impl NonInsulatedFluidComponent {
+impl NonInsulatedParallelFluidComponent {
 
 
     /// used to connect the arrays laterally 
