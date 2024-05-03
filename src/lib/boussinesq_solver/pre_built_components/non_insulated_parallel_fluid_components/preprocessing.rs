@@ -38,19 +38,20 @@ impl NonInsulatedParallelFluidComponent {
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
-        mass_flowrate: MassRate,
-        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+        mass_flowrate_through_all_tubes: MassRate,
+        heat_rate_to_all_tubes: Power) -> Result<(), ThermalHydraulicsLibError>{
 
 
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
 
-        let pipe_shell_to_air_nodal_conductance: ThermalConductance 
-        = self.get_air_shell_nodal_shell_conductance(
+        let pipe_shell_to_air_nodal_conductance_per_tube: ThermalConductance 
+        = self.get_air_shell_nodal_shell_conductance_per_tube(
             heat_transfer_to_ambient
         )?;
 
-        self.set_mass_flowrate(mass_flowrate);
+        // each tube then has a set mass flowrate
+        self.set_mass_flowrate(mass_flowrate_through_all_tubes);
 
         let pipe_shell_surf_to_fluid_conductance: ThermalConductance 
         = self.get_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction()?;
@@ -93,8 +94,11 @@ impl NonInsulatedParallelFluidComponent {
             // otherwise there is by default zero flow through 
             // the array
 
+            let mass_flowrate_through_one_tube: MassRate = 
+                mass_flowrate_through_all_tubes / (self.number_of_tubes as f64);
+
             fluid_array_clone.set_mass_flowrate(
-                mass_flowrate);
+                mass_flowrate_through_one_tube);
 
             // temperature vectors
 
@@ -109,7 +113,7 @@ impl NonInsulatedParallelFluidComponent {
             // pipe to air interaction
 
             pipe_shell_clone.lateral_link_new_temperature_vector_avg_conductance(
-                pipe_shell_to_air_nodal_conductance,
+                pipe_shell_to_air_nodal_conductance_per_tube,
                 ambient_temperature_vector
             )?;
 
@@ -127,8 +131,12 @@ impl NonInsulatedParallelFluidComponent {
 
             // we also want to add a heat source to steel shell
 
+            let heat_rate_to_single_tube: Power = 
+                heat_rate_to_all_tubes / 
+                (self.number_of_tubes as f64);
+
             pipe_shell_clone.lateral_link_new_power_vector(
-                heater_power,
+                heat_rate_to_single_tube,
                 q_frac_arr
             )?;
 
@@ -200,8 +208,9 @@ impl NonInsulatedParallelFluidComponent {
 
 
     /// obtains air to pipe shell conductance
+    /// on a per tube basis
     #[inline]
-    pub fn get_air_shell_nodal_shell_conductance(&mut self,
+    pub fn get_air_shell_nodal_shell_conductance_per_tube(&mut self,
     h_air_to_pipe_surf: HeatTransfer) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
         // first, let's get a clone of the pipe shell surface
@@ -269,7 +278,7 @@ impl NonInsulatedParallelFluidComponent {
         // only do this once because some of these methods involve 
         // cloning, which is computationally expensive
 
-        let mass_flowrate: MassRate = 
+        let mass_flowrate_through_one_tube: MassRate = 
         fluid_array_clone.get_mass_flowrate();
 
         let fluid_temperature: ThermodynamicTemperature 
@@ -280,10 +289,10 @@ impl NonInsulatedParallelFluidComponent {
         let pipe_shell_surf_temperature: ThermodynamicTemperature 
         = pipe_shell_clone.try_get_bulk_temperature()?;
 
-        let hydraulic_diameter = self.get_hydraulic_diameter();
-        let flow_area: Area = self.get_cross_sectional_area_immutable();
-
-        // firstly, reynolds 
+        let hydraulic_diameter_single_tube: Length = fluid_array_clone
+            .get_hydraulic_diameter();
+        let flow_area_single_tube: Area = fluid_array_clone
+            .get_cross_sectional_area_immutable();
 
 
         // flow area and hydraulic diameter are ok
@@ -304,7 +313,7 @@ impl NonInsulatedParallelFluidComponent {
         // and live with it for the time being
         //
         let reynolds_number: Ratio = 
-            mass_flowrate/flow_area*hydraulic_diameter / viscosity;
+            mass_flowrate_through_one_tube/flow_area_single_tube*hydraulic_diameter_single_tube / viscosity;
 
         // next, bulk prandtl number 
 
@@ -350,7 +359,7 @@ impl NonInsulatedParallelFluidComponent {
         fluid_material.try_get_thermal_conductivity(
             fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / hydraulic_diameter;
+        h_to_fluid = nusselt_estimate * k_fluid_average / hydraulic_diameter_single_tube;
 
 
         // and then get the convective resistance
@@ -408,12 +417,12 @@ impl NonInsulatedParallelFluidComponent {
     #[inline]
     pub fn get_reynolds_based_on_hydraulic_diameter_and_flow_area(
         &self,
-        mass_flowrate: MassRate,
+        mass_flowrate_through_all_tubes: MassRate,
         temperature: ThermodynamicTemperature) -> Result<Ratio,ThermalHydraulicsLibError> {
 
         // flow area and hydraulic diameter are ok
-        let flow_area: Area = self.get_cross_sectional_area_immutable();
-        let hydraulic_diameter = self.get_hydraulic_diameter_immutable();
+        let flow_area_through_all_tubes: Area = self.get_cross_sectional_area_immutable();
+        let hydraulic_diameter_through_all_tubes = self.get_hydraulic_diameter_immutable();
 
         let fluid_array_clone: FluidArray = 
             self.pipe_fluid_array.clone().try_into()?;
@@ -431,7 +440,7 @@ impl NonInsulatedParallelFluidComponent {
         // and live with it for the time being
         //
         let reynolds: Ratio = 
-        mass_flowrate/flow_area*hydraulic_diameter / viscosity;
+        mass_flowrate_through_all_tubes/flow_area_through_all_tubes*hydraulic_diameter_through_all_tubes / viscosity;
 
         Ok(reynolds)
 
