@@ -13,6 +13,7 @@ use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMateri
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::pre_built_components::insulated_pipes_and_fluid_components::InsulatedFluidComponent;
 use crate::boussinesq_solver::pre_built_components::non_insulated_fluid_components::NonInsulatedFluidComponent;
+use crate::boussinesq_solver::pre_built_components::non_insulated_parallel_fluid_components::NonInsulatedParallelFluidComponent;
 
 
 /// hot leg of DRACS
@@ -534,6 +535,101 @@ NonInsulatedFluidComponent {
         fluid_array_ideal_nusslet.into();
 
     non_insulated_component
+}
+
+/// hot leg of DRACS
+///
+/// note that we will rotate these components by 180 degrees
+/// for only the hot leg, as the DRACS loop in RELAP is programmed 
+/// in a counter clockwise fashion (see Nico Zweibaum's thesis)
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+///
+/// Zweibaum, Nicolas. Experimental validation of passive safety 
+/// system models: Application to design and optimization of 
+/// fluoride-salt-cooled, high-temperature reactors. University of 
+/// California, Berkeley, 2015.
+/// Argonne, IL (United States), 2019.
+///
+/// DHX tube side 30 with parallel tube modelling
+///
+/// Here is where the main heat exchange happens. 
+/// This one is for an isolated DHX.
+///
+/// Alternate code is needed for a coupled DHX
+///
+pub fn new_isolated_dhx_tube_side_30_parallel_tubes(
+    initial_temperature: ThermodynamicTemperature) -> 
+NonInsulatedParallelFluidComponent {
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    // for dhx modelling,
+    //
+    // dhx tubes are modelled in SAM as 19 tubes of diameter 
+    // 0.00635 m 
+    // and flow area of 6.1072e-4 m^2
+    //
+    // in Zweibaum's RELAP model,
+    // it is quite different from the SAM model 
+    // which follows Bickel's data
+    let hydraulic_diameter = Length::new::<meter>(6.35e-3);
+    let pipe_length = Length::new::<meter>(1.18745);
+    let flow_area = Area::new::<square_meter>(6.0172e-4);
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(3.3);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.00079375);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 11 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is 11-2
+    let user_specified_inner_nodes = 11-2; 
+    let number_of_tubes: u32 = 19;
+
+    let mut non_insulated_component_parallel = NonInsulatedParallelFluidComponent::new_bare_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        id, 
+        od, 
+        pipe_length, 
+        hydraulic_diameter, 
+        surface_roughness, 
+        pipe_shell_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes,
+        number_of_tubes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        non_insulated_component_parallel.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    non_insulated_component_parallel.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
+
+    non_insulated_component_parallel
 }
 
 /// hot leg of DRACS
