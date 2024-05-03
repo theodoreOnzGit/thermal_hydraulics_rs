@@ -829,7 +829,6 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 /// 
 ///
 #[test]
-#[ignore = "debugging"]
 pub fn parallel_tubes_case_a_tchx_out_319_kelvin_46_celsius(){
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
@@ -1529,7 +1528,7 @@ pub fn parallel_tubes_case_a_tchx_out_319_kelvin_46_celsius(){
 
 
                 current_simulation_time += timestep;
-                let debug: bool = false;
+                let debug: bool = true;
                 if debug {
                     // show the mass flowrate
                     // tchx outlet temperature 
