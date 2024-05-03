@@ -71,7 +71,11 @@ impl FluidComponentTrait for NonInsulatedParallelFluidComponent {
         let pipe_fluid_array: FluidArray = 
         self.pipe_fluid_array.clone().try_into().unwrap();
 
-        pipe_fluid_array.get_pressure_loss_immutable(mass_flowrate)
+        let single_pipe_mass_flowrate: MassRate = 
+            mass_flowrate / (self.number_of_tubes as f64);
+
+        pipe_fluid_array
+            .get_pressure_loss_immutable(single_pipe_mass_flowrate)
     }
 
     fn get_cross_sectional_area(&mut self) -> Area {
