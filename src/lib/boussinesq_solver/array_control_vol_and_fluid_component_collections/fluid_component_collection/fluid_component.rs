@@ -28,6 +28,26 @@ impl FluidComponentTrait for FluidComponent {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_mass_flowrate()
             },
+            // get mass flowrate on a total basis 
+            //
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
                 // get the mass flowrate through one tube first 
@@ -47,6 +67,26 @@ impl FluidComponentTrait for FluidComponent {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.set_mass_flowrate(mass_flowrate);
             },
+            // set mass flowrate on a total basis 
+            //
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
 
@@ -67,6 +107,26 @@ impl FluidComponentTrait for FluidComponent {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_mass_flowrate_from_pressure_loss_immutable(pressure_loss)
             },
+            // get mass flowrate on a total basis based on a fixed pressure 
+            // loss
+            //
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
 
@@ -91,6 +151,8 @@ impl FluidComponentTrait for FluidComponent {
             FluidComponent::FluidArray(fluid_array) => {
                 fluid_array.get_pressure_loss()
             },
+            // get pressure loss based on a set mass flowrate
+            //
             FluidComponent::ParallelUniformFluidArray(fluid_array, _) => {
                 // since components are in parallel, pressure loss is the 
                 // same for each tube
@@ -135,6 +197,24 @@ impl FluidComponentTrait for FluidComponent {
                 fluid_array.get_cross_sectional_area()
             },
             // cross sectional area is on a total basis
+            //
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
                 let xs_area_one_tube = 
@@ -167,6 +247,23 @@ impl FluidComponentTrait for FluidComponent {
                 fluid_array.get_hydraulic_diameter()
             },
             // hydraulic diameter is on a total basis
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
                 let hydraulic_diameter_one_tube 
@@ -204,6 +301,23 @@ impl FluidComponentTrait for FluidComponent {
                 fluid_array.get_hydraulic_diameter_immutable()
             },
             // hydraulic diameter is on a total basis
+            // this is important because we use 
+            //
+            // Re = (mass flowrate)/(cross sectional area) * DH/mu
+            //
+            // we have (mass flowrate)/(cross sectional area)
+            // being the same whether for one tube or for 12 tubes (or any 
+            // number of tubes)
+            //
+            // mu is the same whether for the tube bundle or individual 
+            // tubes (assumed)
+            //
+            // DH (hydraulic diameter) is the 
+            // same whether for one tube or 12 tubes (see calculation)
+            //
+            // Therefore Re is the same for one tube or 12 tubes (or  
+            // any n number of tubes)
+            //
             FluidComponent::ParallelUniformFluidArray(
                 fluid_array, number_of_tubes) => {
                 let hydraulic_diameter_one_tube 

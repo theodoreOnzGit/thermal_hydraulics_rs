@@ -8,7 +8,10 @@ impl Into<FluidComponent> for NonInsulatedParallelFluidComponent {
         let fluid_array_heat_transfer_entity = self.pipe_fluid_array;
         let fluid_array: FluidArray = fluid_array_heat_transfer_entity.try_into().unwrap();
 
-        FluidComponent::FluidArray(fluid_array)
+        let number_of_parallel_tubes: u32 = self.number_of_tubes;
+
+        FluidComponent::ParallelUniformFluidArray(
+            fluid_array,number_of_parallel_tubes)
     }
 }
 

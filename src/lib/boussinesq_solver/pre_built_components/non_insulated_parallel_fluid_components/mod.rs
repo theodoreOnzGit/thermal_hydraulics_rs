@@ -17,6 +17,7 @@ use uom::si::f64::*;
 #[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedParallelFluidComponent {
 
+    
     inner_nodes: usize,
 
     /// this HeatTransferEntity represents the pipe shell which is 
@@ -39,17 +40,23 @@ pub struct NonInsulatedParallelFluidComponent {
     /// pipe heat transfer coefficient to ambient
     pub heat_transfer_to_ambient: HeatTransfer,
 
-    /// pipe  outer diameter 
-    pub od: Length,
+    /// pipe outer diameter on a per tube bases
+    pub single_tube_od: Length,
 
-    /// pipe inner diameter 
-    pub id: Length,
+    /// pipe inner diameter one a per tube basis
+    pub single_tube_id: Length,
 
-    /// flow area 
-    pub flow_area: Area,
+    /// flow area on a per tube basis
+    pub single_tube_flow_area: Area,
 
-    /// loss correlation 
-    pub custom_component_loss_correlation: DimensionlessDarcyLossCorrelations
+    /// loss correlation on a per tube basis
+    pub custom_component_loss_correlation: DimensionlessDarcyLossCorrelations,
+
+    /// number of tubes in parallel 
+    /// each pipe fluid array represents one tube only
+    pub number_of_tubes: u32,
+
+
 
 }
 
@@ -99,7 +106,8 @@ impl NonInsulatedParallelFluidComponent {
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize) -> NonInsulatedParallelFluidComponent {
+        user_specified_inner_nodes: usize,
+        number_of_parallel_tubes: u32) -> NonInsulatedParallelFluidComponent {
 
         // inner fluid_array
         let mut fluid_array: FluidArray = 
@@ -140,10 +148,11 @@ impl NonInsulatedParallelFluidComponent {
             pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,
-            od,
-            id,
-            flow_area,
+            single_tube_od: od,
+            single_tube_id: id,
+            single_tube_flow_area: flow_area,
             custom_component_loss_correlation,
+            number_of_tubes: number_of_parallel_tubes,
         };
     }
     /// constructs a new insulated pipe
@@ -173,7 +182,8 @@ impl NonInsulatedParallelFluidComponent {
         pipe_shell_material: SolidMaterial,
         pipe_fluid: LiquidMaterial,
         htc_to_ambient: HeatTransfer,
-        user_specified_inner_nodes: usize,) -> NonInsulatedParallelFluidComponent {
+        user_specified_inner_nodes: usize,
+        number_of_parallel_tubes: u32) -> NonInsulatedParallelFluidComponent {
 
         // inner fluid_array
 
@@ -220,10 +230,11 @@ impl NonInsulatedParallelFluidComponent {
             pipe_fluid_array: CVType::FluidArrayCV(fluid_array).into(),
             ambient_temperature,
             heat_transfer_to_ambient: htc_to_ambient,
-            od: shell_od,
-            id: shell_id,
-            flow_area,
+            single_tube_od: shell_od,
+            single_tube_id: shell_id,
+            single_tube_flow_area: flow_area,
             custom_component_loss_correlation,
+            number_of_tubes: number_of_parallel_tubes,
         };
     }
 }

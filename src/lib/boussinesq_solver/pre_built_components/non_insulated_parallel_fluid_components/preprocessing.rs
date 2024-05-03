@@ -210,8 +210,8 @@ impl NonInsulatedParallelFluidComponent {
 
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = self.get_component_length();
-        let id = self.id;
-        let od = self.od;
+        let id = self.single_tube_id;
+        let od = self.single_tube_od;
 
         // next is to have pipe shell inner conductance
 
@@ -356,8 +356,8 @@ impl NonInsulatedParallelFluidComponent {
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = fluid_array_clone.get_component_length();
-        let id = self.id;
-        let od = self.od;
+        let id = self.single_tube_id;
+        let od = self.single_tube_od;
 
 
         let node_length = heated_length / 
