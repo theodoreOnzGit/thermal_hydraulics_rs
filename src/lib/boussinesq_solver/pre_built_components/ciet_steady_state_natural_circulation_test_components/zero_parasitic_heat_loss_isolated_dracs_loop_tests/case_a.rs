@@ -28,7 +28,6 @@ use crate::boussinesq_solver::pre_built_components::non_insulated_parallel_fluid
 /// 
 ///
 #[test]
-#[ignore = "fluid mechanics ok, should debug heat trf entity"]
 pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
@@ -830,6 +829,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 /// 
 ///
 #[test]
+#[ignore = "fluid mechanics ok, should debug heat trf entity"]
 pub fn parallel_tubes_case_a_tchx_out_319_kelvin_46_celsius(){
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 

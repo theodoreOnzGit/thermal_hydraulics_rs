@@ -146,6 +146,9 @@ impl NonInsulatedParallelFluidComponent {
             // now that lateral connections are done, 
             // modify the heat transfer entity 
 
+            // there is advection issue here
+            // might need to make another heat transfer entity type 
+            // as parallel pipe fluid array
             self.pipe_fluid_array.set(fluid_array_clone.into())?;
 
             self.pipe_shell.set(pipe_shell_clone.into())?;
