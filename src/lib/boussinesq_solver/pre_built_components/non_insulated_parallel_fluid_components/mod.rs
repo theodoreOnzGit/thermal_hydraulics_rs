@@ -8,12 +8,13 @@ use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;
 
-/// The simplest component is a non insulated pipe
+/// This is meant to simulate a parallel collection of non-insulated 
+/// pipes, exposed to some ambient temperature
 ///
-/// This is a simple pipe with a set hydraulic diameter and length
+/// this code is marked for change as we may use a separate 
+/// HeatTransferEntity struct to represent the parallel fluid arrays
 ///
-/// the standard assumption is that at each boundary of this pipe,
-/// there is no conduction heat transfer in the axial direction
+///
 #[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedParallelFluidComponent {
 

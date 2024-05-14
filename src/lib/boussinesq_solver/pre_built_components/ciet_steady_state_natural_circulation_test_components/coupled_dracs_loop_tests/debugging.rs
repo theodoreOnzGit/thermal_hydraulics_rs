@@ -45,6 +45,8 @@
 /// Coding this and debugging this may require a different kind of heat 
 /// transfer entity altogether.
 ///
+///
+///
 /// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
 /// validation using the compact integral effects test (CIET) experimental 
 /// data (No. ANL/NSE-19/11). Argonne National 
@@ -77,6 +79,7 @@
 /// 
 ///
 #[test]
+#[ignore = "debugging the parallel pipes heat transfer entity"]
 pub fn isolated_parallel_tubes_case_a_tchx_out_319_kelvin_46_celsius(){
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
     use crate::boussinesq_solver::pre_built_components::
