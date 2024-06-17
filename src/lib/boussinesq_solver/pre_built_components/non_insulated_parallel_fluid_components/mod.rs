@@ -259,5 +259,3 @@ pub mod postprocessing;
 /// type conversion, such as into fluid component and such
 pub mod type_conversion;
 
-/// tests 
-pub mod tests;
