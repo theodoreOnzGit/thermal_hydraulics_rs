@@ -29,6 +29,11 @@ pub mod insulated_pipes_and_fluid_components;
 /// usually used for heat exchangers
 /// these are non insulated by default to maximise heat transfer rates
 ///
+/// They are used to model the tube side of a heat exchanger (without 
+/// calculations for the shell side) 
+///
+/// These are used in isolated DRACS loop calculations where the parallel 
+/// pipes are exposed to a boundary condition rather than a modelled tube
 pub mod non_insulated_parallel_fluid_components;
 
 
