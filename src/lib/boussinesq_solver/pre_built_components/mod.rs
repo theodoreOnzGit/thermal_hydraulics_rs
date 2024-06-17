@@ -34,6 +34,9 @@ pub mod insulated_pipes_and_fluid_components;
 ///
 /// These are used in isolated DRACS loop calculations where the parallel 
 /// pipes are exposed to a boundary condition rather than a modelled tube
+/// They can also be used to model coolers where parallel tubes are exposed 
+/// to a stream of colder air.
+///
 pub mod non_insulated_parallel_fluid_components;
 
 
