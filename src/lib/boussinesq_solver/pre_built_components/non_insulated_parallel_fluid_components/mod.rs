@@ -14,6 +14,9 @@ use uom::si::f64::*;
 /// this code is marked for change as we may use a separate 
 /// HeatTransferEntity struct to represent the parallel fluid arrays
 ///
+/// This is good for the tube side of heat exchangers, or for air cooled 
+/// pipes modelled as bundled arrays
+///
 ///
 #[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedParallelFluidComponent {
