@@ -3,6 +3,7 @@
 
 
 
+
 // for coupled dracs loop, first thing first is to 
 // debug parallel bare pipes 
 //
@@ -42,6 +43,9 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
     use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
     use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
+    use crate::boussinesq_solver::pre_built_components::
+        non_insulated_parallel_fluid_components::
+        NonInsulatedParallelFluidComponent;
     // conditions 
     let initial_temperature = 
         ThermodynamicTemperature::new::<degree_celsius>(25.0);
@@ -136,7 +140,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
     let mut adiabatic_dhx_tube_side_30_outlet_temp = 
         ThermodynamicTemperature::ZERO;
 
-    // main loop
+    // main loop for single tube
     
     while max_time > simulation_time {
 
@@ -214,7 +218,139 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
         simulation_time += timestep;
 
     }
+    // reset simulation time
+    simulation_time = Time::ZERO;
+
+    // suppose there is a parallel tube bundle of 20 equivalent 
+    // dhx tube side 30
+    let number_of_tubes = 20;
+    let mass_flowrate_through_tube_bundle = 
+        number_of_tubes as f64 * mass_flowrate;
+
+    let heater_power_for_tube_bundle = 
+        number_of_tubes as f64 * heater_power;
+
+    let mut parallel_adiabatic_dhx_tube_side_30_outlet_temp = 
+        ThermodynamicTemperature::ZERO;
+
+    let mut parallel_adiabatic_dhx_tube_side_30 = 
+        NonInsulatedParallelFluidComponent::new_bare_pipe_parallel_array(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            id, 
+            od, 
+            pipe_length, 
+            hydraulic_diameter, 
+            surface_roughness, 
+            pipe_shell_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes,
+            number_of_tubes);
+
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        adiabatic_dhx_tube_side_30.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
+
+    parallel_adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
+        htc_to_ambient_zero;
+
+
+    // main loop for parallel tube
+    
+    while max_time > simulation_time {
+
+        // get average temperature and advection first 
+        // we use boussinesq approximation, so the average temperature 
+        // for density doesn't change
+        // i'll just arbitrarily do 50 C
+        let average_temperature_for_density_calcs = 
+            ThermodynamicTemperature::
+            new::<degree_celsius>(50.0);
+
+        let average_therminol_density = 
+            LiquidMaterial::TherminolVP1.density(
+                average_temperature_for_density_calcs).unwrap();
+
+        let advection_heat_transfer_interaction = 
+            HeatTransferInteractionType::
+            new_advection_interaction(mass_flowrate_through_tube_bundle, 
+                                      average_therminol_density, 
+                                      average_therminol_density);
+
+        // now let's link the fluid array part first 
+
+        {
+            parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array.link_to_back(
+                &mut inlet_bc, 
+                advection_heat_transfer_interaction
+                ).unwrap();
+
+            parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array.link_to_front(
+                &mut outlet_bc, 
+                advection_heat_transfer_interaction
+                ).unwrap();
+        }
+
+        // set htc to zero (again, just kiasu)
+        {
+            parallel_adiabatic_dhx_tube_side_30.heat_transfer_to_ambient 
+                = htc_to_ambient_zero;
+        }
+        // add 9 kW as a heater power for reference 
+        // times 20 for the bundle
+        {
+            parallel_adiabatic_dhx_tube_side_30
+                .lateral_and_miscellaneous_connections(
+                    mass_flowrate_through_tube_bundle, 
+                    heater_power_for_tube_bundle).unwrap();
+        }
+
+        // now advance timestep 
+        {
+            parallel_adiabatic_dhx_tube_side_30.
+                advance_timestep(timestep).unwrap();
+        }
+
+        // let's obtain temperature 
+
+        // first i get the array, then take the last element of the array
+        // this is the "front_cv"
+        let outlet_temperature: ThermodynamicTemperature 
+            = *parallel_adiabatic_dhx_tube_side_30
+            .pipe_fluid_array_temperature()
+            .unwrap()
+            .clone()
+            .last()
+            .unwrap();
+
+
+        parallel_adiabatic_dhx_tube_side_30_outlet_temp = 
+            outlet_temperature;
+
+
+
+        
+        // moving on timestep
+        simulation_time += timestep;
+
+    }
+
     dbg!(&adiabatic_dhx_tube_side_30_outlet_temp);
+    dbg!(&parallel_adiabatic_dhx_tube_side_30_outlet_temp);
     todo!()
 
 }
