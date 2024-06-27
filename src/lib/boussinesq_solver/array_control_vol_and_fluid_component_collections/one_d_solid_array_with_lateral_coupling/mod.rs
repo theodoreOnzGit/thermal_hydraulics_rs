@@ -63,7 +63,7 @@ pub struct SolidColumn {
 
     /// temperature array current timestep 
     /// only accessible via get and set methods
-    temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
+    pub(crate) temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
 
     /// control volume material 
     pub material_control_volume: Material,
@@ -72,7 +72,7 @@ pub struct SolidColumn {
     pub pressure_control_volume: Pressure,
 
     // volume fraction array 
-    volume_fraction_array: Array1<f64>,
+    pub(crate) volume_fraction_array: Array1<f64>,
 
 
     /// now solid arrays (columns) can be connected to solid arrays 
