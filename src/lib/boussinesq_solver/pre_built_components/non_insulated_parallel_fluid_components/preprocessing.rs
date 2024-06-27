@@ -34,9 +34,32 @@ impl NonInsulatedParallelFluidComponent {
 
     
     /// connects a heat transfer entity to the back of the parallel 
-    /// fluid array 
+    /// fluid array given a heat transfer interaction
     pub fn connect_axially_to_back_of_parallel_fluid_array(
-        &mut self,) -> Result<(), ThermalHydraulicsLibError>{
+        &mut self,
+        interaction: HeatTransferInteractionType,
+        other_hte: HeatTransferEntity) -> Result<(), ThermalHydraulicsLibError>{
+
+        // now, linking two heat transfer entities is fine, 
+        // already coded that in. However, accounting for parallel tubes 
+        // has not been done yet. This has to be hard coded
+        //
+        // unfortunately, hard coding it is also problematic because 
+        // there are many many heat transfer interaction types
+        //
+        // so if there are n tubes, the power transferred to each tube (P) 
+        // is now (P/n)
+        //
+        // this applies both for advection and conductance type interactions
+        //
+        // We could use the normal heat transfer interaction linking
+        // for the other component, given the same total flowrate, the 
+        // advection interaction does not really change 
+        //
+        // However, once the timestep advances, the heat transfer interaction 
+        // for each single cv has to be a factor of 1/n
+
+
 
 
         todo!()
