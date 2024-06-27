@@ -62,7 +62,7 @@ pub struct FluidArray {
     total_length: Length,
 
     // cross sectional area for the 1D array, assumed to be uniform 
-    xs_area: Area,
+    pub (crate) xs_area: Area,
 
     /// temperature array current timestep 
     /// only accessible via get and set methods

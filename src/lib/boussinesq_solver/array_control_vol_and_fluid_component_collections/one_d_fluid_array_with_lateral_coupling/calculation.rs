@@ -312,7 +312,7 @@ impl FluidArray{
 
             }
 
-            // this part construts
+            // this part constructs
             // the sum_of_lateral_power_sources
             // vector
             //
@@ -345,12 +345,12 @@ impl FluidArray{
                         // node
 
                         let node_power_contribution = 
-                        power_vector[node_idx];
+                            power_vector[node_idx];
 
                         // then I add it to the power source
 
                         *node_power_source 
-                        += node_power_contribution;
+                            += node_power_contribution;
 
 
                     }
