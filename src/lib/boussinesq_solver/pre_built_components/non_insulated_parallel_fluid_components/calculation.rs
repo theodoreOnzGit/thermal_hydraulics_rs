@@ -145,10 +145,8 @@ impl NonInsulatedParallelFluidComponent {
         let material = fluid_array_clone.material_control_volume;
         let pressure = fluid_array_clone.pressure_control_volume;
         let bulk_temperature = fluid_array_clone.try_get_bulk_temperature()?;
-        let total_volume_for_bundle = fluid_array_clone.get_component_length() *  
+        let total_volume_for_single_tube = fluid_array_clone.get_component_length() *  
             fluid_array_clone.get_cross_sectional_area_immutable();
-        let total_volume_for_single_tube = 
-            total_volume_for_bundle * one_over_number_of_tubes;
         let dt = timestep;
         let node_length = fluid_array_clone.get_component_length() 
             / number_of_nodes as f64;
@@ -647,7 +645,6 @@ impl NonInsulatedParallelFluidComponent {
             average_axial_conductance_for_single_tube = 
                 average_fluid_conductivity * 
                 fluid_array_clone.xs_area 
-                * one_over_number_of_tubes
                 / node_length;
 
             for node_idx in 0..number_of_nodes {
@@ -893,10 +890,9 @@ impl NonInsulatedParallelFluidComponent {
         let material = pipe_shell_clone.material_control_volume;
         let pressure = pipe_shell_clone.pressure_control_volume;
         let bulk_temperature = pipe_shell_clone.try_get_bulk_temperature()?;
-        let total_volume = pipe_shell_clone.total_length *  
+        let single_shell_volume = pipe_shell_clone.total_length *  
             pipe_shell_clone.get_component_xs_area();
 
-        let single_shell_volume = total_volume * one_over_number_of_tubes;
         let dt = timestep;
         let node_length = pipe_shell_clone.total_length / number_of_nodes as f64;
 
@@ -1284,7 +1280,6 @@ impl NonInsulatedParallelFluidComponent {
         let average_axial_conductance: ThermalConductance 
         = average_thermal_conductivity 
         * pipe_shell_clone.get_component_xs_area()
-        * one_over_number_of_tubes
         / node_length;
 
         // neglecting axial conduction may be good,
