@@ -596,7 +596,7 @@ NonInsulatedParallelFluidComponent {
     let user_specified_inner_nodes = 11-2; 
     let number_of_tubes: u32 = 19;
 
-    let mut non_insulated_component_parallel = NonInsulatedParallelFluidComponent::new_bare_pipe(
+    let mut non_insulated_component_parallel = NonInsulatedParallelFluidComponent::new_bare_pipe_parallel_array(
         initial_temperature, 
         ambient_temperature, 
         fluid_pressure, 

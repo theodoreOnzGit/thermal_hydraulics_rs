@@ -95,7 +95,7 @@ impl NonInsulatedParallelFluidComponent {
     /// heat is dumped into the heated tube surrounding the pipe
     ///
     /// so the pipe shell becomes the heating element so to speak
-    pub fn new_bare_pipe(initial_temperature: ThermodynamicTemperature,
+    pub fn new_bare_pipe_parallel_array(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,
         solid_pressure: Pressure,
@@ -170,7 +170,7 @@ impl NonInsulatedParallelFluidComponent {
     ///
     /// b is the reynolds_coefficient
     /// c is reynolds power
-    pub fn new_custom_component(initial_temperature: ThermodynamicTemperature,
+    pub fn new_custom_component_parallel_array(initial_temperature: ThermodynamicTemperature,
         ambient_temperature: ThermodynamicTemperature,
         fluid_pressure: Pressure,
         solid_pressure: Pressure,
