@@ -1,6 +1,8 @@
 
 
 
+
+
 // for coupled dracs loop, first thing first is to 
 // debug parallel bare pipes 
 //
@@ -20,31 +22,101 @@
 pub fn parallel_bare_pipes_debugging_heat_addition(){
 
     use uom::si::f64::*;
-    use crate::boussinesq_solver::pre_built_components::
-        ciet_steady_state_natural_circulation_test_components::
-        dracs_loop_components::new_isolated_dhx_tube_side_30;
+    use uom::si::ratio::ratio;
+    use uom::si::length::{meter, millimeter};
+    use uom::si::area::square_meter;
+    use uom::si::angle::degree;
+
+    use crate::boussinesq_solver::{array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray, boussinesq_thermophysical_properties::SolidMaterial, heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation, pre_built_components::non_insulated_fluid_components::NonInsulatedFluidComponent};
     use uom::si::thermodynamic_temperature::degree_celsius;
-    use std::time::SystemTime;
 
     use uom::si::power::kilowatt;
     use uom::ConstZero;
     use uom::si::time::second;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::pressure::atmosphere;
 
     use crate::boussinesq_solver::boundary_conditions::BCType;
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
     use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
     use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
+    // conditions 
     let initial_temperature = 
         ThermodynamicTemperature::new::<degree_celsius>(25.0);
 
-    let mut adiabatic_dhx_tube_side_30 = 
-        new_isolated_dhx_tube_side_30(initial_temperature);
 
     let htc_to_ambient_zero = 
         HeatTransfer::new::<watt_per_square_meter_kelvin>(0.0);
+
+
+    // parameters for new_isolated_dhx_tube_side_30
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    // for dhx modelling,
+    //
+    // dhx tubes are modelled in SAM as 19 tubes of diameter 
+    // 0.00635 m 
+    // and flow area of 6.1072e-4 m^2
+    //
+    // in Zweibaum's RELAP model,
+    // it is quite different from the SAM model 
+    // which follows Bickel's data
+    let hydraulic_diameter = Length::new::<meter>(6.35e-3);
+    let pipe_length = Length::new::<meter>(1.18745);
+    let flow_area = Area::new::<square_meter>(6.0172e-4);
+    let incline_angle = Angle::new::<degree>(90.0-180.0);
+    let form_loss = Ratio::new::<ratio>(3.3);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.00079375);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 11 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is 11-2
+    let user_specified_inner_nodes = 11-2; 
+
+
+
+    let mut adiabatic_dhx_tube_side_30 = 
+        NonInsulatedFluidComponent::new_bare_pipe(
+            initial_temperature, 
+            ambient_temperature, 
+            fluid_pressure, 
+            solid_pressure, 
+            flow_area, 
+            incline_angle, 
+            form_loss, 
+            id, 
+            od, 
+            pipe_length, 
+            hydraulic_diameter, 
+            surface_roughness, 
+            pipe_shell_material, 
+            pipe_fluid, 
+            htc_to_ambient, 
+            user_specified_inner_nodes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        adiabatic_dhx_tube_side_30.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    adiabatic_dhx_tube_side_30.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
 
     adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
         htc_to_ambient_zero;
