@@ -66,7 +66,7 @@ pub struct FluidArray {
 
     /// temperature array current timestep 
     /// only accessible via get and set methods
-    temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
+    pub (crate) temperature_array_current_timestep: Array1<ThermodynamicTemperature>,
 
     /// control volume material 
     pub material_control_volume: Material,
@@ -75,7 +75,7 @@ pub struct FluidArray {
     pub pressure_control_volume: Pressure,
 
     // volume fraction array 
-    volume_fraction_array: Array1<f64>,
+    pub (crate) volume_fraction_array: Array1<f64>,
 
     /// mass flowrate through the fluid array, 
     mass_flowrate: MassRate,

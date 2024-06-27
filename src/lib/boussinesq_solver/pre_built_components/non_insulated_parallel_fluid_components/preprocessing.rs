@@ -58,6 +58,11 @@ impl NonInsulatedParallelFluidComponent {
         //
         // However, once the timestep advances, the heat transfer interaction 
         // for each single cv has to be a factor of 1/n
+        //
+        // so in fact, the simplest way to do parallel tubes is to alter the 
+        // timestep advance step. At least for the axial parts
+        //
+        // Hard code it from here
 
 
 
