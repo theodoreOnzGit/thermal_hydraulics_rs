@@ -38,7 +38,7 @@ impl NonInsulatedParallelFluidComponent {
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {
         self.advance_timestep_for_parallel_fluid_array_bundle(timestep)?;
-        //self.pipe_shell.advance_timestep_mut_self(timestep)?;
+        self.advance_timestep_for_parallel_solid_column_bundle(timestep)?;
         Ok(())
         
     }
