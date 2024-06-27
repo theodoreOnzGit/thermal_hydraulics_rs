@@ -24,8 +24,42 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 // it is important to pay attention to the code here because it contains 
 // logic of how heat transfer entites interact with the arrayCVs within 
 // this parallel fluid component 
+//
+// first, we want a function to connect the components via heat transfer 
+// interactions axially
+//
+// then we need to connect the parallel fluid arrays laterally to some 
+// boundary condition
 impl NonInsulatedParallelFluidComponent {
 
+    
+    /// connects a heat transfer entity to the back of the parallel 
+    /// fluid array 
+    pub fn connect_axially_to_back_of_parallel_fluid_array(
+        &mut self,) -> Result<(), ThermalHydraulicsLibError>{
 
+
+        todo!()
+    }
+
+    /// connects a heat transfer entity to the front of the parallel 
+    /// fluid array 
+    pub fn connect_axially_to_front_of_parallel_fluid_array(
+        &mut self,){
+
+    }
+
+    /// connects a boundary condition laterally to the shell 
+    /// of the fluid array 
+    pub fn connect_laterally_to_front_of_parallel_fluid_array(
+        &mut self,){
+
+    }
+
+    /// lateral connections between shell and fluid arrays
+    pub fn lateral_connection_shell_and_fluid_arrays(
+        &mut self,){
+
+    }
 
 }
