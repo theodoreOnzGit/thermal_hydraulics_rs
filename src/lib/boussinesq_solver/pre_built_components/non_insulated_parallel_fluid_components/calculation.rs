@@ -63,11 +63,9 @@ impl NonInsulatedParallelFluidComponent {
 
         // for mass flowrate, getting the mass flow property from the 
         // fluid array clone is the single tube mass flowrate
-        let mass_flowrate_over_single_tube = 
+        let mass_flowrate_for_single_tube = 
             fluid_array_clone.get_mass_flowrate();
 
-        let mass_flowrate_for_single_tube = 
-            mass_flowrate_over_single_tube;
 
         // once the fluid array clone is done, we can advance timestep
         // I'll first copy code for advancing fluid array timesteps
@@ -141,7 +139,7 @@ impl NonInsulatedParallelFluidComponent {
         // ascertain if we have forward flow (doesn't change if we divide 
         // by the number of tubes
 
-        let forward_flow: bool = mass_flowrate_over_single_tube.ge(
+        let forward_flow: bool = mass_flowrate_for_single_tube.ge(
             &MassRate::zero());
 
         // obtain some important parameters for calculation
@@ -837,7 +835,7 @@ impl NonInsulatedParallelFluidComponent {
             }
             // done for loop
         }
-        // done peclet number check
+        // done peclet number check (fluid array)
 
 
         new_temperature_array = 
@@ -1486,7 +1484,6 @@ impl NonInsulatedParallelFluidComponent {
 
         }
         // done axial conduction code and ready to solve matrix
-        dbg!(&power_source_vector);
 
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
