@@ -364,7 +364,6 @@ impl FluidArray{
 
         }
 
-        dbg!(&sum_of_lateral_power_sources);
 
 
         // back node calculation (first node)

@@ -219,8 +219,6 @@ impl SolidColumn {
 
 
         }
-        dbg!(&sum_of_lateral_conductance_times_lateral_temperatures);
-        dbg!(&sum_of_lateral_conductances);
 
         // we need to do the same for the q and q fractions
         let mut sum_of_lateral_power_sources: Array1<Power>
@@ -320,7 +318,6 @@ impl SolidColumn {
                 }
 
         }
-        dbg!(&sum_of_lateral_power_sources);
         // end if for lateral_power_sources_connected
 
 
@@ -354,6 +351,7 @@ impl SolidColumn {
                 volume_fraction_array[0] * rho_cp[0] 
                 * total_volume / dt + sum_of_lateral_conductances[0];
 
+            //dbg!(&coefficient_matrix[[0,0]]);
 
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
@@ -365,6 +363,7 @@ impl SolidColumn {
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
+            dbg!(&power_source_vector[0]);
 
 
         }
