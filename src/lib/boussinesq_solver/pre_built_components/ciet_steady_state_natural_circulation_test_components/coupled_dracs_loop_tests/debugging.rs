@@ -28,7 +28,14 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
     use uom::si::area::square_meter;
     use uom::si::angle::degree;
 
-    use crate::boussinesq_solver::{array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray, boussinesq_thermophysical_properties::SolidMaterial, heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation, pre_built_components::non_insulated_fluid_components::NonInsulatedFluidComponent};
+    use crate::boussinesq_solver::pre_built_components::
+        non_insulated_fluid_components::NonInsulatedFluidComponent;
+    use crate::boussinesq_solver::heat_transfer_correlations::
+        nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+    use crate::boussinesq_solver::
+        array_control_vol_and_fluid_component_collections::
+        one_d_fluid_array_with_lateral_coupling::FluidArray;
     use uom::si::thermodynamic_temperature::degree_celsius;
 
     use uom::si::power::kilowatt;
@@ -39,9 +46,13 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
     use uom::si::pressure::atmosphere;
 
     use crate::boussinesq_solver::boundary_conditions::BCType;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+    use crate::boussinesq_solver::
+        boussinesq_thermophysical_properties::LiquidMaterial;
+    use crate::boussinesq_solver::heat_transfer_correlations::
+        heat_transfer_interactions::heat_transfer_interaction_enums::
+        HeatTransferInteractionType;
+    use crate::boussinesq_solver::pre_built_components::
+        heat_transfer_entities::HeatTransferEntity;
 
     use crate::boussinesq_solver::pre_built_components::
         non_insulated_parallel_fluid_components::
