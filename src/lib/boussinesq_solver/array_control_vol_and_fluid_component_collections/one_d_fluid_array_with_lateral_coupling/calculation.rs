@@ -436,6 +436,7 @@ impl FluidArray{
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
+            dbg!(&total_enthalpy_rate_change_back_node);
 
             if !forward_flow {
                 // first, get enthalpy of the node in front 

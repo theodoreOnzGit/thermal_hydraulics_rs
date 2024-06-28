@@ -510,6 +510,8 @@ impl NonInsulatedParallelFluidComponent {
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
 
+            dbg!(&total_enthalpy_rate_change_back_node);
+
             if !forward_flow {
                 // first, get specific enthalpy of the node in front 
 
@@ -1299,7 +1301,7 @@ impl NonInsulatedParallelFluidComponent {
             //dbg!(&power_source_vector[0]);
             //dbg!(&total_enthalpy_rate_change_back_node);
             //dbg!(&sum_of_lateral_power_sources[0]);
-            dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
+            //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
             //dbg!(&(pipe_shell_clone.temperature_array_current_timestep[0] 
             //    * single_shell_volume 
             //    * volume_fraction_array[0] * rho_cp[0] / dt));
