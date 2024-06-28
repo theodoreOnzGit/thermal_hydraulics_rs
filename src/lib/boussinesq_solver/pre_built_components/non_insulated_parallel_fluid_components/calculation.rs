@@ -132,6 +132,9 @@ impl NonInsulatedParallelFluidComponent {
         total_enthalpy_rate_change_back_node *= one_over_number_of_tubes;
         total_enthalpy_rate_change_front_node *= one_over_number_of_tubes;
 
+        //minimal differences between parallel implementation and original
+        //dbg!(&total_enthalpy_rate_change_back_node);
+
         // this front and back nodes will be an extra term added to the 
         // heat source vector S
         //
@@ -294,8 +297,6 @@ impl NonInsulatedParallelFluidComponent {
 
 
         }
-        //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures);
-        //dbg!(&sum_of_lateral_conductances);
         // we need to do the same for the q and q fractions
         //once the power array is built, I can add it to 
         // the htsum array
@@ -434,7 +435,6 @@ impl NonInsulatedParallelFluidComponent {
                 * total_volume / dt 
                 + sum_of_lateral_conductances[0];
 
-            //dbg!(&coefficient_matrix[[0,0]]);
 
             // the first part of the source term deals with 
             // the flow direction independent terms
@@ -477,10 +477,6 @@ impl NonInsulatedParallelFluidComponent {
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
-            //dbg!(&total_enthalpy_rate_change_back_node);
-            //dbg!(&(fluid_array_clone.temperature_array_current_timestep[0] 
-            //    * total_volume * 
-            //    volume_fraction_array[0] * rho_cp[0] / dt));
 
             if !forward_flow {
                 // first, get enthalpy of the node in front 
@@ -802,7 +798,8 @@ impl NonInsulatedParallelFluidComponent {
 
         
         dbg!(&power_source_vector);
-        //dbg!(&coefficient_matrix);
+        // parallel same as normal implementation
+        //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;
@@ -1244,7 +1241,6 @@ impl NonInsulatedParallelFluidComponent {
                 volume_fraction_array[0] * rho_cp[0] 
                 * single_shell_volume / dt + sum_of_lateral_conductances[0];
 
-            //dbg!(&coefficient_matrix[[0,0]]);
 
 
             // now this makes the scheme semi implicit, and we should then 
@@ -1258,13 +1254,6 @@ impl NonInsulatedParallelFluidComponent {
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
-            //dbg!(&power_source_vector[0]);
-            //dbg!(&total_enthalpy_rate_change_back_node);
-            //dbg!(&sum_of_lateral_power_sources[0]);
-            //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
-            //dbg!(&(pipe_shell_clone.temperature_array_current_timestep[0] 
-            //    * single_shell_volume 
-            //    * volume_fraction_array[0] * rho_cp[0] / dt));
         }
         // end back node calculation code block
 

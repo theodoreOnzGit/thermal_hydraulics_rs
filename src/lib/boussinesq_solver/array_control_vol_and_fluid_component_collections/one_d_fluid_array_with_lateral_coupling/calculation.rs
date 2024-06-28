@@ -87,6 +87,7 @@ impl FluidArray{
             }
 
         // then the front node,
+        //dbg!(&total_enthalpy_rate_change_back_node);
 
         let mut total_enthalpy_rate_change_front_node = 
         Power::new::<watt>(0.0);
@@ -439,6 +440,7 @@ impl FluidArray{
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
+            //minimal differences between parallel implementation and original
             //dbg!(&total_enthalpy_rate_change_back_node);
             //dbg!(&(self.temperature_array_current_timestep[0] 
             //    * total_volume * 
@@ -474,7 +476,6 @@ impl FluidArray{
 
 
         }
-        //dbg!(&power_source_vector[0]);
 
         // bulk node calculations 
         if number_of_nodes > 2 {
@@ -763,6 +764,7 @@ impl FluidArray{
 
         
         dbg!(&power_source_vector);
+        // parallel same as normal implementation
         //dbg!(&coefficient_matrix);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
