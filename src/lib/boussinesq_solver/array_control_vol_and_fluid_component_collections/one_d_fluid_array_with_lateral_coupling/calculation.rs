@@ -393,9 +393,10 @@ impl FluidArray{
             // belong in the M matrix, the rest belong in S
             coefficient_matrix[[0,0]] = 
                 volume_fraction_array[0] * rho_cp[0] 
-                * total_volume / dt + sum_of_lateral_conductances[0];
+                * total_volume / dt 
+                + sum_of_lateral_conductances[0];
 
-            dbg!(&coefficient_matrix[[0,0]]);
+            //dbg!(&coefficient_matrix[[0,0]]);
 
             // the first part of the source term deals with 
             // the flow direction independent terms
@@ -439,9 +440,9 @@ impl FluidArray{
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
             //dbg!(&total_enthalpy_rate_change_back_node);
-            dbg!(&(self.temperature_array_current_timestep[0] 
-                * total_volume * 
-                volume_fraction_array[0] * rho_cp[0] / dt));
+            //dbg!(&(self.temperature_array_current_timestep[0] 
+            //    * total_volume * 
+            //    volume_fraction_array[0] * rho_cp[0] / dt));
 
             if !forward_flow {
                 // first, get enthalpy of the node in front 
@@ -761,6 +762,8 @@ impl FluidArray{
         // done peclet number check (fluid array)
 
         
+        //dbg!(&power_source_vector);
+        //dbg!(&coefficient_matrix);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;

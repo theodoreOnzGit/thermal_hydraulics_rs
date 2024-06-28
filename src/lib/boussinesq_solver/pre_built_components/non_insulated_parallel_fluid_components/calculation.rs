@@ -467,7 +467,7 @@ impl NonInsulatedParallelFluidComponent {
                 * total_volume_for_single_tube / dt 
                 + sum_of_lateral_conductances[0];
 
-            dbg!(&coefficient_matrix[[0,0]]);
+            //dbg!(&coefficient_matrix[[0,0]]);
 
 
             // the first part of the source term deals with 
@@ -513,9 +513,9 @@ impl NonInsulatedParallelFluidComponent {
             // backflow conditions
 
             //dbg!(&total_enthalpy_rate_change_back_node);
-            dbg!(&(fluid_array_clone.temperature_array_current_timestep[0] 
-                * total_volume_for_single_tube * 
-                volume_fraction_array[0] * rho_cp[0] / dt));
+            //dbg!(&(fluid_array_clone.temperature_array_current_timestep[0] 
+            //    * total_volume_for_single_tube * 
+            //    volume_fraction_array[0] * rho_cp[0] / dt));
 
             if !forward_flow {
                 // first, get specific enthalpy of the node in front 
@@ -850,6 +850,8 @@ impl NonInsulatedParallelFluidComponent {
         }
         // done peclet number check (fluid array)
 
+        //dbg!(&power_source_vector);
+        //dbg!(&coefficient_matrix);
 
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
