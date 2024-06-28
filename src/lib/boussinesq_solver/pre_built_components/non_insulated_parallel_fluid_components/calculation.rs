@@ -38,7 +38,6 @@ impl NonInsulatedParallelFluidComponent {
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {
         self.advance_timestep_for_parallel_fluid_array_bundle(timestep)?;
-        todo!("to check solid column bundle code");
         self.advance_timestep_for_parallel_solid_column_bundle(timestep)?;
         Ok(())
         
@@ -66,8 +65,6 @@ impl NonInsulatedParallelFluidComponent {
         // fluid array clone is the single tube mass flowrate
         let mass_flowrate_over_single_tube = 
             fluid_array_clone.get_mass_flowrate();
-
-        dbg!(&mass_flowrate_over_single_tube);
 
         let mass_flowrate_for_single_tube = 
             mass_flowrate_over_single_tube;
@@ -723,8 +720,6 @@ impl NonInsulatedParallelFluidComponent {
 
         let low_peclet_number_flow = peclet_number.value < 100.0;
 
-        dbg!(&peclet_number);
-        
         if low_peclet_number_flow {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 
@@ -1068,8 +1063,7 @@ impl NonInsulatedParallelFluidComponent {
                     // now I'm inside the each conductance array,
                     // i can now sum the conductance array
                     // using array arithmetic without the hassle of indexing
-                    sum_of_lateral_conductances += 
-                        &(conductance_array * one_over_number_of_tubes);
+                    sum_of_lateral_conductances += conductance_array ;
                 }
             // end sum of conductances for loop
             
@@ -1108,6 +1102,10 @@ impl NonInsulatedParallelFluidComponent {
                     //
                     // to account for parallel tubes, I multiply the power 
                     // by one_over_number_of_tubes
+                    //
+                    // but this is done in the 
+                    // lateral_and_miscellaneous_connections,
+                    // so don't double correct here
 
                     let temperature_arr: Array1<ThermodynamicTemperature> 
                     = pipe_shell_clone.lateral_adjacent_array_temperature_vector[lateral_idx].clone();
@@ -1118,10 +1116,11 @@ impl NonInsulatedParallelFluidComponent {
                     for (node_idx, power) in power_arr.iter_mut().enumerate() {
                         
                         // this part deals with the HT
+                        // since we are taking power values from the shell,
+                        // don't double correct for number of tubes
 
                         *power = conductance_arr[node_idx] 
-                            * temperature_arr[node_idx]
-                            * one_over_number_of_tubes;
+                            * temperature_arr[node_idx];
                     }
 
                     // once the power array is built, I can add it to 
@@ -1179,8 +1178,12 @@ impl NonInsulatedParallelFluidComponent {
                 let power_ndarray: Array1<Power>
                 = power_frac_array.map(
                     |&power_frac| {
-                        power_frac * (*q_reference 
-                            * one_over_number_of_tubes)
+                        // for parallel tube treatment,
+                        // we already accounted for this in the 
+                        // lateral_and_miscellaneous_connections 
+                        // so don't double correct here
+                        //
+                        power_frac * (*q_reference)
                     }
 
                 );

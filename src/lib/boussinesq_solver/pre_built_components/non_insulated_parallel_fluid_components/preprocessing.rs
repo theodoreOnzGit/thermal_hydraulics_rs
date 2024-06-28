@@ -148,8 +148,6 @@ impl NonInsulatedParallelFluidComponent {
                 heater_power_over_all_tubes 
                 / (self.number_of_tubes as f64);
 
-            dbg!(&heater_power_over_single_tube);
-
             pipe_shell_clone.lateral_link_new_power_vector(
                 heater_power_over_single_tube,
                 q_frac_arr

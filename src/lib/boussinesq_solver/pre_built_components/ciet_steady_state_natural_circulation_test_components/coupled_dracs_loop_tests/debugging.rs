@@ -137,7 +137,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
         htc_to_ambient_zero;
 
     // now let's do a simple loop to check temperature after 30s
-    let max_time = Time::new::<second>(10.0);
+    let max_time = Time::new::<second>(30.0);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
