@@ -467,6 +467,8 @@ impl NonInsulatedParallelFluidComponent {
                 * total_volume_for_single_tube / dt 
                 + sum_of_lateral_conductances[0];
 
+            dbg!(&coefficient_matrix[[0,0]]);
+
 
             // the first part of the source term deals with 
             // the flow direction independent terms
@@ -546,7 +548,7 @@ impl NonInsulatedParallelFluidComponent {
 
         }
 
-        dbg!(&power_source_vector[0]);
+        //dbg!(&power_source_vector[0]);
 
         // bulk node calculations 
         if number_of_nodes > 2 {
