@@ -886,8 +886,8 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
     adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
         htc_to_ambient_high_value;
 
-    // now let's do a simple loop to check temperature after 0.7s
-    let max_time = Time::new::<second>(0.7);
+    // now let's do a simple loop to check temperature after short time
+    let max_time = Time::new::<second>(0.02);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
@@ -1117,6 +1117,8 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         parallel_adiabatic_dhx_tube_side_30_outlet_temp.value,
         max_relative = 0.0001
         );
+
+    todo!("debugging matrices");
 
 
 }

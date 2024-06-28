@@ -256,6 +256,8 @@ impl FluidArray{
 
 
         }
+        //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures);
+        //dbg!(&sum_of_lateral_conductances);
         // we need to do the same for the q and q fractions
         //once the power array is built, I can add it to 
         // the htsum array
@@ -361,6 +363,8 @@ impl FluidArray{
                 }
 
         }
+
+        dbg!(&sum_of_lateral_power_sources);
 
 
         // back node calculation (first node)
