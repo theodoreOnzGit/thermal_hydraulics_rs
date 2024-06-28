@@ -541,6 +541,8 @@ impl NonInsulatedParallelFluidComponent {
 
         }
 
+        dbg!(&power_source_vector[0]);
+
         // bulk node calculations 
         if number_of_nodes > 2 {
             // loop over all nodes from 1 to n-2 (n-1 is not included)

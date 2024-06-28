@@ -467,6 +467,7 @@ impl FluidArray{
 
 
         }
+        dbg!(&power_source_vector[0]);
 
         // bulk node calculations 
         if number_of_nodes > 2 {
