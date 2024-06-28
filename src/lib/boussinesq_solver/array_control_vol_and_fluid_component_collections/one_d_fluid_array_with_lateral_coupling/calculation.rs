@@ -763,7 +763,7 @@ impl FluidArray{
         // done peclet number check (fluid array)
 
         
-        dbg!(&power_source_vector);
+        //dbg!(&power_source_vector);
         // parallel same as normal implementation
         //dbg!(&coefficient_matrix);
         new_temperature_array = 

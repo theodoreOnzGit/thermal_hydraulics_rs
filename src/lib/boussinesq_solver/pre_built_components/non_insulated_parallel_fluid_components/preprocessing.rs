@@ -101,16 +101,6 @@ impl NonInsulatedParallelFluidComponent {
             self.pipe_fluid_array.clone().try_into()?;
 
 
-            // note, must set mass flowrate first 
-            // otherwise there is by default zero flow through 
-            // the array
-
-            let mass_flowrate_over_single_tube = 
-                mass_flowrate_over_all_tubes / (self.number_of_tubes as f64);
-
-            fluid_array_clone.set_mass_flowrate(
-                mass_flowrate_over_single_tube);
-
             // temperature vectors
 
             let pipe_temp_vector: Vec<ThermodynamicTemperature> 

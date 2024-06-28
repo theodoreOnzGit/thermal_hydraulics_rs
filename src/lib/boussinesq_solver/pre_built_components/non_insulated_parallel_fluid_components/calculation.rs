@@ -797,7 +797,7 @@ impl NonInsulatedParallelFluidComponent {
         // done peclet number check (fluid array)
 
         
-        dbg!(&power_source_vector);
+        //dbg!(&power_source_vector);
         // parallel same as normal implementation
         //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
         new_temperature_array = 

@@ -768,6 +768,9 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
 // the previous tests worked at 25s and 15s, but not 5s
 // disparity was great, likely thermal inertia problem
 //
+// thermal inertia seems buggy, especially from 4-8s for this case.
+// After that however, steady state values seem to work out just fine
+//
 #[test]
 pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
 
@@ -871,26 +874,26 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
 
     // for heat exchangers, I give an ideal Nusselt number correlation 
     // as an approximation so that film thermal resistance is minimised
-    let mut fluid_array_ideal_nusslet: FluidArray = 
+    let mut fluid_array_ideal_nusselt: FluidArray = 
         adiabatic_dhx_tube_side_30.pipe_fluid_array
         .clone()
         .try_into()
         .unwrap();
 
-    fluid_array_ideal_nusslet.nusselt_correlation = 
+    fluid_array_ideal_nusselt.nusselt_correlation = 
         NusseltCorrelation::IdealNusseltOneBillion;
 
     adiabatic_dhx_tube_side_30.pipe_fluid_array = 
-        fluid_array_ideal_nusslet.into();
+        fluid_array_ideal_nusselt.into();
 
     adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
         htc_to_ambient_high_value;
 
     // now let's do a simple loop to check temperature after short time
-    let max_time = Time::new::<second>(0.02);
-    let timestep = Time::new::<second>(0.01);
+    let max_time = Time::new::<second>(24.0);
+    let timestep = Time::new::<second>(0.1);
     let mut simulation_time = Time::ZERO;
-    let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);
+    let mass_flowrate_single_tube = MassRate::new::<kilogram_per_second>(0.18);
     let heater_power = Power::new::<kilowatt>(0.0);
 
     let mut inlet_bc: HeatTransferEntity = BCType::new_const_temperature( 
@@ -919,7 +922,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
 
         let advection_heat_transfer_interaction = 
             HeatTransferInteractionType::
-            new_advection_interaction(mass_flowrate, 
+            new_advection_interaction(mass_flowrate_single_tube, 
                                       average_therminol_density, 
                                       average_therminol_density);
 
@@ -946,7 +949,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         {
             adiabatic_dhx_tube_side_30
                 .lateral_and_miscellaneous_connections(
-                    mass_flowrate, 
+                    mass_flowrate_single_tube, 
                     heater_power).unwrap();
         }
 
@@ -972,6 +975,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         adiabatic_dhx_tube_side_30_outlet_temp = 
             outlet_temperature;
 
+        dbg!(&adiabatic_dhx_tube_side_30_outlet_temp);
 
 
         
@@ -986,7 +990,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
     // dhx tube side 30
     let number_of_tubes = 20;
     let mass_flowrate_through_tube_bundle = 
-        number_of_tubes as f64 * mass_flowrate;
+        number_of_tubes as f64 * mass_flowrate_single_tube;
 
     let heater_power_for_tube_bundle = 
         number_of_tubes as f64 * heater_power;
@@ -1014,17 +1018,17 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
             user_specified_inner_nodes,
             number_of_tubes);
 
-    let mut fluid_array_ideal_nusslet: FluidArray = 
+    let mut fluid_array_ideal_nusselt: FluidArray = 
         adiabatic_dhx_tube_side_30.pipe_fluid_array
         .clone()
         .try_into()
         .unwrap();
 
-    fluid_array_ideal_nusslet.nusselt_correlation = 
+    fluid_array_ideal_nusselt.nusselt_correlation = 
         NusseltCorrelation::IdealNusseltOneBillion;
 
     parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array = 
-        fluid_array_ideal_nusslet.into();
+        fluid_array_ideal_nusselt.into();
 
     parallel_adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
         htc_to_ambient_high_value;
@@ -1101,6 +1105,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
 
         parallel_adiabatic_dhx_tube_side_30_outlet_temp = 
             outlet_temperature;
+        dbg!(&parallel_adiabatic_dhx_tube_side_30_outlet_temp);
 
 
 
@@ -1118,7 +1123,9 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         max_relative = 0.0001
         );
 
-    todo!("debugging matrices");
+    todo!()
+
+
 
 
 }
