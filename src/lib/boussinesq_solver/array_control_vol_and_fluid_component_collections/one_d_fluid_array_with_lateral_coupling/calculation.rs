@@ -415,8 +415,9 @@ impl FluidArray{
             power_source_vector[0] = 
                 sum_of_lateral_conductance_times_lateral_temperatures[0]
                 - mass_flowrate * h_fluid_last_timestep 
-                + self.temperature_array_current_timestep[0] * total_volume * 
-                volume_fraction_array[0] * rho_cp[0] / dt 
+                + self.temperature_array_current_timestep[0] 
+                * total_volume 
+                * volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
@@ -436,7 +437,10 @@ impl FluidArray{
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
-            dbg!(&total_enthalpy_rate_change_back_node);
+            //dbg!(&total_enthalpy_rate_change_back_node);
+            dbg!(&(self.temperature_array_current_timestep[0] 
+                * total_volume * 
+                volume_fraction_array[0] * rho_cp[0] / dt));
 
             if !forward_flow {
                 // first, get enthalpy of the node in front 
