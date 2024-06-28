@@ -763,11 +763,13 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
 // the mass flow and heater power is increased by 20 times. 
 //
 // the heating time is 5 s long, both outlet temperatures should be 
-// the same
-// thermal inertia wise anyway
+// the same thermal inertia wise anyway
+//
+// the previous tests worked at 25s and 15s, but not 5s
+// disparity was great, likely thermal inertia problem
 //
 #[test]
-pub fn parallel_bare_pipes_debugging_parasitic_heat_loss(){
+pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
 
     use uom::si::f64::*;
     use uom::si::ratio::ratio;
@@ -825,6 +827,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss(){
     // dhx tubes are modelled in SAM as 19 tubes of diameter 
     // 0.00635 m 
     // and flow area of 6.1072e-4 m^2
+    // but I'll jsut use 20 here
     //
     // in Zweibaum's RELAP model,
     // it is quite different from the SAM model 
@@ -843,10 +846,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss(){
     let pipe_shell_material = SolidMaterial::SteelSS304L;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 11 nodes only, 
-    // now because there are two outer nodes, the 
-    // number of inner nodes is 11-2
-    let user_specified_inner_nodes = 11-2; 
+    let user_specified_inner_nodes = 3-2; 
 
 
 
@@ -886,8 +886,8 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss(){
     adiabatic_dhx_tube_side_30.heat_transfer_to_ambient = 
         htc_to_ambient_high_value;
 
-    // now let's do a simple loop to check temperature after 5s
-    let max_time = Time::new::<second>(5.0);
+    // now let's do a simple loop to check temperature after 0.7s
+    let max_time = Time::new::<second>(0.7);
     let timestep = Time::new::<second>(0.01);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate = MassRate::new::<kilogram_per_second>(0.18);

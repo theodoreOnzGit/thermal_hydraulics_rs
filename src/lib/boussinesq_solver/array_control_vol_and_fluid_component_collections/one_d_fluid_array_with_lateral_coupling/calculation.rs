@@ -751,6 +751,7 @@ impl FluidArray{
         // done peclet number check
 
         
+        dbg!(&power_source_vector);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;

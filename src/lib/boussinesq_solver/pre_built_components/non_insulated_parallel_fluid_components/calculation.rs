@@ -1486,6 +1486,7 @@ impl NonInsulatedParallelFluidComponent {
 
         }
         // done axial conduction code and ready to solve matrix
+        dbg!(&power_source_vector);
 
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
