@@ -234,20 +234,23 @@ impl FluidArray{
                     // for this temperature array
 
                     let temperature_arr: Array1<ThermodynamicTemperature> 
-                    = self.lateral_adjacent_array_temperature_vector[lateral_idx].clone();
+                    = self
+                    .lateral_adjacent_array_temperature_vector[lateral_idx]
+                    .clone();
 
                     let mut power_arr: Array1<Power> = Array::zeros(
                         number_of_nodes);
 
                     for (node_idx, power) in power_arr.iter_mut().enumerate() {
 
-                        *power = conductance_arr[node_idx] * temperature_arr[node_idx];
+                        *power = conductance_arr[node_idx] 
+                            * temperature_arr[node_idx];
 
                     }
 
 
                     sum_of_lateral_conductance_times_lateral_temperatures 
-                    += &power_arr;
+                        += &power_arr;
 
                 }
 

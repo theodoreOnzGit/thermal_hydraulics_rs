@@ -38,6 +38,7 @@ impl NonInsulatedParallelFluidComponent {
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {
         self.advance_timestep_for_parallel_fluid_array_bundle(timestep)?;
+        todo!("to check solid column bundle code");
         self.advance_timestep_for_parallel_solid_column_bundle(timestep)?;
         Ok(())
         
@@ -222,7 +223,8 @@ impl NonInsulatedParallelFluidComponent {
         // though!
 
         let lateral_temperature_arary_connected: bool 
-            = fluid_array_clone.lateral_adjacent_array_conductance_vector.len() > 0;
+            = fluid_array_clone.
+            lateral_adjacent_array_conductance_vector.len() > 0;
 
         if lateral_temperature_arary_connected {
 
@@ -294,7 +296,9 @@ impl NonInsulatedParallelFluidComponent {
                     // by number of nodes
 
                     let temperature_arr: Array1<ThermodynamicTemperature> 
-                        = fluid_array_clone.lateral_adjacent_array_temperature_vector[lateral_idx].clone();
+                        = fluid_array_clone.
+                        lateral_adjacent_array_temperature_vector[lateral_idx]
+                        .clone();
 
                     let mut power_arr: Array1<Power> = Array::zeros(
                         number_of_nodes);
@@ -610,6 +614,85 @@ impl NonInsulatedParallelFluidComponent {
 
             }
         }
+        // front node (last node) calculation 
+        {
+            // we still follow the same guideline
+            // m cp T / dt + HT = 
+            //
+            // HT_solid - m_flow h_fluid(T_old) 
+            // + m_flow h_fluid(adjacent T_old) + m cp / dt (Told)
+            // + q
+            let i = number_of_nodes-1;
+
+            coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
+                * total_volume_for_single_tube / dt 
+                + sum_of_lateral_conductances[i];
+            // the first part of the source term deals with 
+            // the flow direction independent terms
+
+            // now this makes the scheme semi implicit, and we should then 
+            // treat the scheme as explicit
+            //
+            // now I should subtract the enthalpy outflow from the 
+            // power source vector here, 
+            // but if done correctly, it should already be accounted 
+            // for in total_enthalpy_rate_change_front_node
+            //
+            // so i shouldn't double count
+
+            power_source_vector[i] = 
+                sum_of_lateral_conductance_times_lateral_temperatures[i]
+                + fluid_array_clone.temperature_array_current_timestep[i] 
+                * total_volume_for_single_tube 
+                * volume_fraction_array[i] * rho_cp[i] / dt 
+                + sum_of_lateral_power_sources[i] 
+                + total_enthalpy_rate_change_front_node ;
+
+            // now advection causing heat transfer between the frontal 
+            // node and some other single cv has already been accounted 
+            // for in total_enthalpy_rate_change_front_node 
+            // If flow is forward facing though, then enthalpy will 
+            // be coming in from the i-1 th node
+
+            if forward_flow {
+                // first, get enthalpy of the adjacent node to the 
+                // back
+
+                let enthalpy_of_adjacent_node_to_the_rear: AvailableEnergy = 
+                try_get_h(
+                    fluid_array_clone.back_single_cv.material_control_volume,
+                    fluid_array_clone.temperature_array_current_timestep[i-1],
+                    fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+
+                // now if mass flowrate is less than zero, then 
+                // we receive enthalpy from the front cv 
+                //
+                // But we need to subtract the negative mass flow if 
+                // that makes sense, or at least make it absolute
+                // - (-m) * h = m * h
+                //
+
+                power_source_vector[i] += 
+                mass_flowrate_for_single_tube.abs() * enthalpy_of_adjacent_node_to_the_rear;
+
+
+            } else {
+                // if there's backflow, 
+                // the front cv (last node) will receive enthalpy from 
+                // outside based on the enthalpy rate change vector in the 
+                // front node, 
+                // however it must also lose enthalpy, this is no 
+                // longer accounted for in the 
+                let h_fluid_last_timestep: AvailableEnergy = 
+                fluid_array_clone.front_single_cv.current_timestep_control_volume_specific_enthalpy;
+
+                power_source_vector[i] -= 
+                mass_flowrate_for_single_tube.abs() * h_fluid_last_timestep;
+            }
+
+
+
+        }
         //// note that this works for high peclet number flows
         //// peclet number is Re * Pr
         //// if peclet number is low, then we must consider conduction 
@@ -761,8 +844,6 @@ impl NonInsulatedParallelFluidComponent {
         }
         // done peclet number check
 
-        dbg!(&power_source_vector);
-        dbg!(&coefficient_matrix);
 
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
