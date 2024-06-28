@@ -434,7 +434,6 @@ impl NonInsulatedParallelFluidComponent {
                 }
 
         }
-        dbg!(&sum_of_lateral_power_sources);
 
         // back node calculation (first node)
         {
@@ -1136,6 +1135,8 @@ impl NonInsulatedParallelFluidComponent {
 
 
         }
+        dbg!(&sum_of_lateral_conductance_times_lateral_temperatures);
+        dbg!(&sum_of_lateral_conductances);
 
         // we need to do the same for the q and q fractions
         let mut sum_of_lateral_power_sources: Array1<Power>
