@@ -1,6 +1,6 @@
 [package]
 name = "thermal_hydraulics_rs"
-version = "0.0.9"
+version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0"
 description = "A Thermal Hydraulics Library with some useful traits,enums and functions for heat transfer and fluid mechanics"
@@ -18,7 +18,7 @@ ndarray = "0.15.6"
 peroxide = "0.34.0"
 roots = "0.0.8"
 thiserror = "1.0.46"
-uom = "0.35.0"
+uom = "0.36.0"
 
 [target.'cfg(windows)'.dependencies]
 ndarray-linalg = { version = "0.16.0", features = ["intel-mkl-static"] }
@@ -34,8 +34,15 @@ ndarray-linalg = { version = "0.16.0", features = ["openblas-system"] }
 name = "tests"
 path = "src/main.rs"
 
+[[bin]]
+name = "ciet_heater_example"
+path = "src/ciet_heater_only.rs"
+
 [lib]
 name = "thermal_hydraulics_rs"
 path = "src/lib/lib.rs"
 
 
+[dev-dependencies]
+# the natural circulation loop requires a PID controller
+chem-eng-real-time-process-control-simulator = "0.0.5"

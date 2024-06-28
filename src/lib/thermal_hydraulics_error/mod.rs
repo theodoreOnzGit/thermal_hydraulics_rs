@@ -45,6 +45,10 @@ pub enum ThermalHydraulicsLibError {
     /// generic thermophysical property error
     #[error("Thermophysical Property Error")]
     ThermophysicalPropertyError,
+
+    /// wrong heat transfer interaction type
+    #[error("Wrong Heat Transfer Interaction Type")]
+    WrongHeatTransferInteractionType,
     
 }
 
@@ -80,6 +84,9 @@ impl Into<String> for ThermalHydraulicsLibError {
                 self.to_string()
             },
             ThermalHydraulicsLibError::ThermophysicalPropertyError => {
+                self.to_string()
+            },
+            ThermalHydraulicsLibError::WrongHeatTransferInteractionType => {
                 self.to_string()
             },
 

@@ -4,21 +4,19 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use csv::Writer;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::{DataUserSpecifiedConvectionResistance, DataAdvection};
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::{self};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::{Material, LiquidMaterial};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SurfaceArea, SingleCVNode, CVType, BCType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
 
-
+use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material, SolidMaterial};
+use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::SurfaceArea;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataUserSpecifiedConvectionResistance;
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_centimeter;
@@ -31,9 +29,8 @@ use uom::si::pressure::atmosphere;
 use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
+use uom::ConstZero;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
 
 /// In this test, we have a one dimensional representation of the 
 /// CIET heater v1.0 
@@ -81,7 +78,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 #[test]
 #[ignore = "takes about 20min, only use for data collection"]
-pub fn one_dimension_ciet_heater_v_1_0_test(){
+pub fn one_dimension_ciet_heater_v_1_0_test_for_better_sampling_frequency(){
 
 
     // okay, let's make two control volumes 
@@ -114,7 +111,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         therminol,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     let steel_shell: HeatTransferEntity = 
     SingleCVNode::new_cylindrical_shell(
@@ -124,7 +121,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         steel,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     // now, let me make mutex locks and Arc pointers
 
@@ -143,7 +140,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(80.0)
         ));
 
@@ -186,6 +183,15 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     let max_time: Time = Time::new::<second>(20000.0);
     let max_time_ptr = Arc::new(max_time);
 
+
+    // this is the test temperature used for asserting 
+    //
+    let test_temperature: ThermodynamicTemperature = 
+        ThermodynamicTemperature::ZERO;
+
+    let test_temperature_ptr = Arc::new(Mutex::new(test_temperature));
+    let test_temperature_ptr_clone = test_temperature_ptr.clone();
+
     // this is the calculation loop
     let calculation_loop = move || {
         // csv writer, for post processing 
@@ -212,16 +218,20 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
         
         while current_time_simulation_time <= *max_time_ptr_in_loop {
 
-            // todo calculation steps
+            // first start with obtaining a mutex lock
 
             let mut therminol_cylinder_in_loop = 
-            therminol_cylinder_ptr.lock().unwrap();
+                therminol_cylinder_ptr.lock().unwrap();
             let mut steel_shell_in_loop = 
-            steel_shell_ptr.lock().unwrap();
+                steel_shell_ptr.lock().unwrap();
             let mut inlet_const_temp_in_loop = 
-            inlet_const_temp_ptr.lock().unwrap();
+                inlet_const_temp_ptr.lock().unwrap();
             let mut outlet_zero_heat_flux_in_loop = 
-            outlet_zero_heat_flux_ptr.lock().unwrap();
+                outlet_zero_heat_flux_ptr.lock().unwrap();
+
+            let mut test_temperature_ptr_in_loop = 
+                test_temperature_ptr.lock().unwrap();
+
 
 
 
@@ -245,6 +255,7 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             let therminol_cv_density_vec = 
             HeatTransferEntity::density_vector( 
                 therminol_cylinder_in_loop.deref_mut()).unwrap();
+
 
             let heater_fluid_cv_density: MassDensity = 
             therminol_cv_density_vec[0];
@@ -315,11 +326,12 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             let _heater_power = mfbs_poresky_2017_power_signal(
                 current_time_simulation_time);
 
-            let heater_power = mfbs_power_signal_logspace_custom(
+            let heater_power_logspace = mfbs_power_signal_logspace_custom(
                 current_time_simulation_time);
 
             let mut electrical_heat_bc: HeatTransferEntity = 
-            BCType::new_const_heat_addition(heater_power);
+            BCType::new_const_heat_addition(
+                heater_power_logspace).into();
 
             let heat_addition_interaction = 
             HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -334,18 +346,24 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let auto_calculated_timestep = HeatTransferEntity::
-                get_max_timestep(&mut therminol_cylinder_in_loop,
-                TemperatureInterval::new::<
-                        uom::si::temperature_interval::kelvin>(20.0))
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
+                therminol_cylinder_in_loop.clone().try_into().unwrap();
+
+            let auto_calculated_timestep = 
+                therminol_cylinder_clone_cv.
+                get_max_timestep(
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
+
+
+            *therminol_cylinder_in_loop.deref_mut() = therminol_cylinder_clone_cv.into();
 
             // csv data writing
             let current_time_string = 
             current_time_simulation_time.get::<second>().to_string();
 
             let heater_power_kilowatt_string = 
-            heater_power.get::<kilowatt>().to_string();
+            heater_power_logspace.get::<kilowatt>().to_string();
 
             let therminol_celsius_string = 
             HeatTransferEntity::temperature(
@@ -370,6 +388,11 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
                 auto_calculated_timestep_string])
                 .unwrap();
 
+            // load latest temperature 
+
+            *test_temperature_ptr_in_loop.deref_mut() = HeatTransferEntity::temperature(
+                &mut therminol_cylinder_in_loop).unwrap();
+
             // advance timestep for steel shell and therminol cylinder
             HeatTransferEntity::advance_timestep(
                 &mut therminol_cylinder_in_loop,
@@ -392,12 +415,23 @@ pub fn one_dimension_ciet_heater_v_1_0_test(){
     
     calculation_thread.join().unwrap();
 
+    // assert that temperature is approximately equal to 110 C plus minus 5
+    
+    let last_timestep_temp: ThermodynamicTemperature  = 
+        *test_temperature_ptr_clone.lock().unwrap();
+    
+    assert_abs_diff_eq!(
+        110.0, // therminol expected temp at 110C
+        last_timestep_temp.get::<degree_celsius>(),
+        epsilon=5.0
+        );
+
     // done!
     return ();
 }
 
 #[test]
-#[ignore = "already collected auto timestep test data"]
+//#[ignore = "already collected auto timestep test data"]
 pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
 
@@ -431,7 +465,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
         therminol,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     let steel_shell: HeatTransferEntity = 
     SingleCVNode::new_cylindrical_shell(
@@ -441,7 +475,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
         steel,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     // now, let me make mutex locks and Arc pointers
 
@@ -460,7 +494,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(80.0)
         ));
 
@@ -503,6 +537,13 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
     let max_time: Time = Time::new::<second>(20000.0);
     let max_time_ptr = Arc::new(max_time);
 
+    // test for temperature, should be around 110C plus mins 5C 
+    let test_temperature: ThermodynamicTemperature = 
+        ThermodynamicTemperature::ZERO;
+
+    let test_temperature_ptr = Arc::new(Mutex::new(test_temperature));
+    let test_temperature_ptr_clone = test_temperature_ptr.clone();
+
     // this is the calculation loop
     let calculation_loop = move || {
         // csv writer, for post processing 
@@ -540,7 +581,8 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             let mut outlet_zero_heat_flux_in_loop = 
             outlet_zero_heat_flux_ptr.lock().unwrap();
 
-
+            let mut test_temperature_ptr_in_loop = 
+                test_temperature_ptr.lock().unwrap();
 
             // advection bc, so at boundary condition, therminol flows in at 
             // 0.18 kg/s at 80C
@@ -565,6 +607,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
 
             let heater_fluid_cv_density: MassDensity = 
             therminol_cv_density_vec[0];
+
 
             // now crate the dataset 
             //
@@ -633,7 +676,7 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
                 current_time_simulation_time);
 
             let mut electrical_heat_bc: HeatTransferEntity = 
-            BCType::new_const_heat_addition(heater_power);
+            BCType::new_const_heat_addition(heater_power).into();
 
             let heat_addition_interaction = 
             HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -648,11 +691,17 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let auto_calculated_timestep = HeatTransferEntity::
-                get_max_timestep(&mut therminol_cylinder_in_loop,
-                TemperatureInterval::new::<
-                        uom::si::temperature_interval::kelvin>(20.0))
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
+                therminol_cylinder_in_loop.clone().try_into().unwrap();
+
+            let auto_calculated_timestep = 
+                therminol_cylinder_clone_cv.get_max_timestep(
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
+
+
+            *therminol_cylinder_in_loop.deref_mut() = 
+                therminol_cylinder_clone_cv.into();
 
             // csv data writing
             let current_time_string = 
@@ -694,6 +743,10 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
             HeatTransferEntity::advance_timestep(
                 &mut steel_shell_in_loop,
                 timestep_value).unwrap();
+            // load latest temperature 
+
+            *test_temperature_ptr_in_loop.deref_mut() = HeatTransferEntity::temperature(
+                &mut therminol_cylinder_in_loop).unwrap();
 
 
             // add the timestep
@@ -707,6 +760,16 @@ pub fn one_dimension_ciet_heater_v_1_0_auto_timestep_test(){
     let calculation_thread = thread::spawn(calculation_loop);
     
     calculation_thread.join().unwrap();
+    // assert that temperature is approximately equal to 110 C plus minus 5
+    
+    let last_timestep_temp: ThermodynamicTemperature  = 
+        *test_temperature_ptr_clone.lock().unwrap();
+    
+    assert_abs_diff_eq!(
+        110.0, // therminol expected temp at 110C
+        last_timestep_temp.get::<degree_celsius>(),
+        epsilon=5.0
+        );
 
     // done!
     return ();
@@ -748,7 +811,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
         therminol,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     let steel_shell: HeatTransferEntity = 
     SingleCVNode::new_cylindrical_shell(
@@ -758,7 +821,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
         steel,
         initial_temperature,
         atmospheric_pressure
-    ).unwrap();
+    ).unwrap().into();
 
     // now, let me make mutex locks and Arc pointers
 
@@ -777,7 +840,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(80.0)
         ));
 
@@ -950,7 +1013,7 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
                 current_time_simulation_time);
 
             let mut electrical_heat_bc: HeatTransferEntity = 
-            BCType::new_const_heat_addition(heater_power);
+            BCType::new_const_heat_addition(heater_power).into();
 
             let heat_addition_interaction = 
             HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -965,11 +1028,16 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
             // I also want to see what the automatic timestepping 
             // is 
 
-            let auto_calculated_timestep = HeatTransferEntity::
-                get_max_timestep(&mut therminol_cylinder_in_loop,
-                TemperatureInterval::new::<
-                        uom::si::temperature_interval::kelvin>(20.0))
+            let mut therminol_cylinder_clone_cv: SingleCVNode = 
+                therminol_cylinder_in_loop.clone().try_into().unwrap();
+
+            let auto_calculated_timestep = 
+                therminol_cylinder_clone_cv.get_max_timestep(
+                TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(20.0))
                 .unwrap();
+
+            *therminol_cylinder_in_loop.deref_mut() = 
+                therminol_cylinder_clone_cv.into();
 
             // csv data writing
             let current_time_string = 
@@ -997,10 +1065,11 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
             match &mut therminol_cylinder_in_loop.clone() {
                 HeatTransferEntity::ControlVolume(single_cv) => {
                     match single_cv {
-                        SingleCV(single_cv) => {
+                        CVType::SingleCV(single_cv) => {
                             single_cv.volumetric_flowrate_vector.len()
                         },
-                        CVType::ArrayCV(_) => todo!(),
+                        CVType::FluidArrayCV(_) => todo!(),
+                        CVType::SolidArrayCV(_) => todo!(),
                     }
                 },
                 HeatTransferEntity::BoundaryConditions(_) => todo!(),
@@ -1010,16 +1079,18 @@ pub fn one_dimension_ciet_heater_v_1_0_functional_test(){
             match &mut therminol_cylinder_in_loop.clone() {
                 HeatTransferEntity::ControlVolume(single_cv) => {
                     match single_cv {
-                        SingleCV(single_cv) => {
+                        CVType::SingleCV(single_cv) => {
                             single_cv.calculate_courant_number_timestep(
                             Ratio::new::<ratio>(1.0)).unwrap()
                                 .get::<second>()
                         },
-                        CVType::ArrayCV(_) => todo!(),
+                        CVType::FluidArrayCV(_) => todo!(),
+                        CVType::SolidArrayCV(_) => todo!(),
                     }
                 },
                 HeatTransferEntity::BoundaryConditions(_) => todo!(),
             };
+
 
 
             wtr.write_record(&[current_time_string,
