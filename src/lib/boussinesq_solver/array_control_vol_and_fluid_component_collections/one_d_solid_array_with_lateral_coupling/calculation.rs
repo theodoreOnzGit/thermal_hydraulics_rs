@@ -320,6 +320,7 @@ impl SolidColumn {
                 }
 
         }
+        dbg!(&sum_of_lateral_power_sources);
         // end if for lateral_power_sources_connected
 
 

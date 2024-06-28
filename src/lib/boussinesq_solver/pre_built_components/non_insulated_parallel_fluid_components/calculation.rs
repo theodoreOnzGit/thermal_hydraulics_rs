@@ -1247,6 +1247,8 @@ impl NonInsulatedParallelFluidComponent {
 
         }
         // end if for lateral_power_sources_connected
+        //
+        dbg!(&sum_of_lateral_power_sources);
 
 
         // now that we've gotten all the important properties, we can 
