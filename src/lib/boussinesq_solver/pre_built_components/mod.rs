@@ -39,6 +39,9 @@ pub mod insulated_pipes_and_fluid_components;
 ///
 pub mod non_insulated_parallel_fluid_components;
 
+/// This is code for 1D modelling of shell and tube heat exchangers
+///
+pub mod shell_and_tube_heat_exchanger;
 
 /// represents one dimensional solid structure
 pub mod one_d_solid_structure;
