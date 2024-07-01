@@ -87,6 +87,7 @@ impl FluidArray{
             }
 
         // then the front node,
+        //dbg!(&total_enthalpy_rate_change_back_node);
 
         let mut total_enthalpy_rate_change_front_node = 
         Power::new::<watt>(0.0);
@@ -256,6 +257,8 @@ impl FluidArray{
 
 
         }
+        //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures);
+        //dbg!(&sum_of_lateral_conductances);
         // we need to do the same for the q and q fractions
         //once the power array is built, I can add it to 
         // the htsum array
@@ -363,6 +366,7 @@ impl FluidArray{
         }
 
 
+
         // back node calculation (first node)
         {
 
@@ -390,8 +394,10 @@ impl FluidArray{
             // belong in the M matrix, the rest belong in S
             coefficient_matrix[[0,0]] = 
                 volume_fraction_array[0] * rho_cp[0] 
-                * total_volume / dt + sum_of_lateral_conductances[0];
+                * total_volume / dt 
+                + sum_of_lateral_conductances[0];
 
+            //dbg!(&coefficient_matrix[[0,0]]);
 
             // the first part of the source term deals with 
             // the flow direction independent terms
@@ -412,8 +418,9 @@ impl FluidArray{
             power_source_vector[0] = 
                 sum_of_lateral_conductance_times_lateral_temperatures[0]
                 - mass_flowrate * h_fluid_last_timestep 
-                + self.temperature_array_current_timestep[0] * total_volume * 
-                volume_fraction_array[0] * rho_cp[0] / dt 
+                + self.temperature_array_current_timestep[0] 
+                * total_volume 
+                * volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
@@ -433,6 +440,11 @@ impl FluidArray{
 
             // so if mass flowrate is <= 0 , then we will calculate 
             // backflow conditions
+            //minimal differences between parallel implementation and original
+            //dbg!(&total_enthalpy_rate_change_back_node);
+            //dbg!(&(self.temperature_array_current_timestep[0] 
+            //    * total_volume * 
+            //    volume_fraction_array[0] * rho_cp[0] / dt));
 
             if !forward_flow {
                 // first, get enthalpy of the node in front 
@@ -748,9 +760,12 @@ impl FluidArray{
             }
             // done for loop
         }
-        // done peclet number check
+        // done peclet number check (fluid array)
 
         
+        //dbg!(&power_source_vector);
+        // parallel same as normal implementation
+        //dbg!(&coefficient_matrix);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;

@@ -351,17 +351,26 @@ impl SolidColumn {
                 volume_fraction_array[0] * rho_cp[0] 
                 * total_volume / dt + sum_of_lateral_conductances[0];
 
+            //dbg!(&coefficient_matrix[[0,0]]);
 
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
 
             power_source_vector[0] = 
                 sum_of_lateral_conductance_times_lateral_temperatures[0] 
-                + self.temperature_array_current_timestep[0] * total_volume * 
-                volume_fraction_array[0] * rho_cp[0] / dt 
+                + self.temperature_array_current_timestep[0] 
+                * total_volume 
+                * volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
+            //dbg!(&power_source_vector[0]);
+            //dbg!(&total_enthalpy_rate_change_back_node);
+            //dbg!(&sum_of_lateral_power_sources[0]);
+            //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
+            //dbg!(&(self.temperature_array_current_timestep[0] 
+            //    * total_volume 
+            //    * volume_fraction_array[0] * rho_cp[0] / dt));
 
 
         }

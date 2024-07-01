@@ -63,14 +63,26 @@ impl NonInsulatedParallelFluidComponent {
 
         // for mass flowrate, getting the mass flow property from the 
         // fluid array clone is the single tube mass flowrate
-        let mass_flowrate_over_single_tube = 
+        let mass_flowrate_for_single_tube = 
             fluid_array_clone.get_mass_flowrate();
 
-        let mass_flowrate_for_single_tube = 
-            mass_flowrate_over_single_tube;
 
-        // once the fluid array clone is done, we can advance timestep
-        // I'll first copy code for advancing fluid array timesteps
+        // here's the function I copied from initially and modified
+        //advance_timestep_fluid_node_array_pipe_high_peclet_number(
+        //    back_cv_ptr_in_loop.deref_mut(),
+        //    front_cv_ptr_in_loop.deref_mut(),
+        //    number_of_nodes,
+        //    timestep,
+        //    total_volume,
+        //    heater_steady_state_power,
+        //    steel_temp_at_present_timestep_ptr_in_loop.deref_mut(),
+        //    &mut conductance_vector,
+        //    fluid_temp_vec_ptr_in_loop.deref_mut(),
+        //    therminol_mass_flowrate,
+        //    fluid_vol_fraction_ptr_in_loop.deref_mut(),
+        //    &mut fluid_rho_cp_array,
+        //    q_fraction_ptr_in_loop.deref_mut(),
+        //)?;
 
         // there will always be at least 2 nodes
 
@@ -105,11 +117,6 @@ impl NonInsulatedParallelFluidComponent {
                 total_enthalpy_rate_change_back_node += *enthalpy_chg_rate;
             }
 
-        total_enthalpy_rate_change_back_node *= one_over_number_of_tubes;
-
-
-
-        // then the front node, do the same thing
 
         let mut total_enthalpy_rate_change_front_node = 
         Power::new::<watt>(0.0);
@@ -120,7 +127,14 @@ impl NonInsulatedParallelFluidComponent {
                 total_enthalpy_rate_change_front_node += *enthalpy_chg_rate;
             }
 
+        // this is the parallel tube correction bit 
+
+        total_enthalpy_rate_change_back_node *= one_over_number_of_tubes;
         total_enthalpy_rate_change_front_node *= one_over_number_of_tubes;
+
+        //minimal differences between parallel implementation and original
+        //dbg!(&total_enthalpy_rate_change_back_node);
+
         // this front and back nodes will be an extra term added to the 
         // heat source vector S
         //
@@ -138,50 +152,41 @@ impl NonInsulatedParallelFluidComponent {
         let mut power_source_vector: 
         Array1<Power> = Array::zeros(number_of_nodes);
 
-        // ascertain if we have forward flow (doesn't change if we divide 
-        // by the number of tubes
+        // ascertain if we have forward flow 
 
-        let forward_flow: bool = mass_flowrate_over_single_tube.ge(
-            &MassRate::zero());
+        let forward_flow: bool = mass_flowrate_for_single_tube
+            .ge(&MassRate::zero());
 
         // obtain some important parameters for calculation
         let material = fluid_array_clone.material_control_volume;
         let pressure = fluid_array_clone.pressure_control_volume;
         let bulk_temperature = fluid_array_clone.try_get_bulk_temperature()?;
-        let total_volume_for_single_tube = fluid_array_clone.get_component_length() *  
-            fluid_array_clone.get_cross_sectional_area_immutable();
+        let total_volume = fluid_array_clone.get_component_length() 
+            *  fluid_array_clone.get_cross_sectional_area();
         let dt = timestep;
         let node_length = fluid_array_clone.get_component_length() 
             / number_of_nodes as f64;
-
-
         // for the fluid array, we do not keep track of node enthalpies,
         // instead, we keep track of temperatures and then calculate 
         // enthalpy changes using rho_cp calculated at the current 
         // timestep
-        //
-        // the m_cp must in turn be divided by the number of parallel tubes
         let volume_fraction_array: Array1<f64> = 
         fluid_array_clone.volume_fraction_array.iter().map(
             |&vol_frac| {
                 vol_frac
             }
         ).collect();
-
         // rho_cp is determined by the temperature array 
-        // m_cp will be determined by number of tubes (later)
         let rho_cp: Array1<VolumetricHeatCapacity> = 
         fluid_array_clone.temperature_array_current_timestep.iter().map(
             |&temperature| {
                 try_get_rho_cp(material, temperature, pressure).unwrap()
             }
         ).collect();
-        // energy balance for single tube is: 
+        // energy balance is: 
         // m c_p dT/dt = -\sum H (T - T_lateral) - m_flow h_fluid(T) 
         // + m_flow h_fluid(adjacent T) + q
-        //
-        // of all these terms, only the m cp dT/dt term and HT are are 
-        // implicitly calculated
+        // of all these terms, only the m cp dT/dt term and HT 
         // 
         // We separate this out to get:
         //
@@ -193,19 +198,6 @@ impl NonInsulatedParallelFluidComponent {
         //
         // so we will need to determine sum H and sum HT_lateral
         // as sum H is the relevant coefficient in the coefficient_matrix
-        //
-        //
-        // When parallel pipes are considered, the question now becomes
-        // whether to consider that conductances are to the tube bundle 
-        // as a whole or to tube bundles individually 
-        //
-        // For consistency, just as mass flowrates and control volume 
-        // masses are considered for pipe bundles, we also consider 
-        // conductances to be from a surrounding medium to the 
-        // pipe bundle *as a whole*
-        //
-        // we shall divide them by the number_of_tubes over here in other 
-        // words
 
         let mut sum_of_lateral_conductances: Array1<ThermalConductance>
         = Array1::zeros(number_of_nodes);
@@ -220,8 +212,7 @@ impl NonInsulatedParallelFluidComponent {
         // though!
 
         let lateral_temperature_arary_connected: bool 
-            = fluid_array_clone.
-            lateral_adjacent_array_conductance_vector.len() > 0;
+        = fluid_array_clone.lateral_adjacent_array_conductance_vector.len() > 0;
 
         if lateral_temperature_arary_connected {
 
@@ -237,12 +228,6 @@ impl NonInsulatedParallelFluidComponent {
             // sum over all H for each node
             // we need sum of conductances, which becomes the coefficient 
             // for the node temperature
-            //
-            // for parallel tube treatment, I note that all conductances 
-            // are already normalised to a per tube basis if I get 
-            // it from the fluid array clone, no changes here
-            //
-
 
             for conductance_array in 
                 fluid_array_clone.lateral_adjacent_array_conductance_vector.iter(){
@@ -252,10 +237,10 @@ impl NonInsulatedParallelFluidComponent {
                     // i can now sum the conductance array
                     // using array arithmetic without the hassle of indexing
                     sum_of_lateral_conductances += conductance_array;
-
                 }
             // end sum of conductances for loop
-
+            
+            
             // we also need the HT sum for the lateral temperatures 
             // this is power due to heat transfer (other than advection)
 
@@ -288,28 +273,18 @@ impl NonInsulatedParallelFluidComponent {
                     // once we cycle through the lateral index, 
                     // we need to calculate the vector of power contributions 
                     // for this temperature array
-                    //
-                    // for parallel tube treatment, I need to divide the HT sum 
-                    // by number of nodes
 
                     let temperature_arr: Array1<ThermodynamicTemperature> 
-                        = fluid_array_clone.
-                        lateral_adjacent_array_temperature_vector[lateral_idx]
-                        .clone();
-
+                    = fluid_array_clone
+                    .lateral_adjacent_array_temperature_vector[lateral_idx]
+                    .clone();
                     let mut power_arr: Array1<Power> = Array::zeros(
                         number_of_nodes);
 
                     for (node_idx, power) in power_arr.iter_mut().enumerate() {
 
-                        // for the parallel treatment here,
-                        // the conductances are already normalised on a 
-                        // per tube basis because I take it from the fluid 
-                        // array clone
-                        //
-                        // no need to normalise by number of tubes
                         *power = conductance_arr[node_idx] 
-                            * temperature_arr[node_idx] ;
+                            * temperature_arr[node_idx];
 
                     }
 
@@ -318,16 +293,13 @@ impl NonInsulatedParallelFluidComponent {
                         += &power_arr;
 
                 }
+
+
         }
-
-
         // we need to do the same for the q and q fractions
         //once the power array is built, I can add it to 
         // the htsum array
-        //
-        // as usual, the parallel treatment means I will divide the power 
-        // supplied to the tube bundle by the number_of_tubes 
-        // so that it will be accurate when handling for one bundle
+
 
         let lateral_power_sources_connected: bool 
         = fluid_array_clone.q_vector.len() > 0; 
@@ -358,6 +330,7 @@ impl NonInsulatedParallelFluidComponent {
             // The simplest way would be to multiply the power 
             // q by its respective fractions to obtain a vector
             // of power arrays
+
             let mut power_ndarray_vector: Vec<Array1<Power>>
             = vec![];
 
@@ -372,11 +345,7 @@ impl NonInsulatedParallelFluidComponent {
                 let power_ndarray: Array1<Power>
                 = power_frac_array.map(
                     |&power_frac| {
-                        // for heater power, I already normalised it 
-                        // by number of tubes 
-                        // so if taking the vector from the fluid_array_clone 
-                        // don't normalise again
-                        power_frac * (*q_reference) 
+                        power_frac * (*q_reference)
                     }
 
                 );
@@ -385,6 +354,7 @@ impl NonInsulatedParallelFluidComponent {
                 power_ndarray_vector.push(power_ndarray);
 
             }
+
             // this part constructs
             // the sum_of_lateral_power_sources
             // vector
@@ -400,9 +370,8 @@ impl NonInsulatedParallelFluidComponent {
             //
             // and obtains a reference to the node power source,
             // 0 watts
-            // 
-            // no need to correct for number_of_tubes again,
-            // already did that previously
+            //
+
             for (node_idx, node_power_source) in 
                 sum_of_lateral_power_sources.iter_mut().enumerate() {
 
@@ -433,6 +402,8 @@ impl NonInsulatedParallelFluidComponent {
 
         }
 
+
+
         // back node calculation (first node)
         {
 
@@ -452,17 +423,15 @@ impl NonInsulatedParallelFluidComponent {
             //
             // so we will need to determine sum H and sum HT_lateral
             // as sum H is the relevant coefficient in the coefficient_matrix
-            //
-            // for parallel tube treatment, we use the total volume of 
-            // single tube as a reference rather than total volume over 
-            // the whole bundle
+
+
 
 
             // Now I'm ready to construct the M matrix
             // belong in the M matrix, the rest belong in S
             coefficient_matrix[[0,0]] = 
                 volume_fraction_array[0] * rho_cp[0] 
-                * total_volume_for_single_tube / dt 
+                * total_volume / dt 
                 + sum_of_lateral_conductances[0];
 
 
@@ -486,8 +455,8 @@ impl NonInsulatedParallelFluidComponent {
                 sum_of_lateral_conductance_times_lateral_temperatures[0]
                 - mass_flowrate_for_single_tube * h_fluid_last_timestep 
                 + fluid_array_clone.temperature_array_current_timestep[0] 
-                * total_volume_for_single_tube * 
-                volume_fraction_array[0] * rho_cp[0] / dt 
+                * total_volume 
+                * volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
 
@@ -509,13 +478,13 @@ impl NonInsulatedParallelFluidComponent {
             // backflow conditions
 
             if !forward_flow {
-                // first, get specific enthalpy of the node in front 
+                // first, get enthalpy of the node in front 
 
                 let enthalpy_of_adjacent_node_to_the_front: AvailableEnergy = 
-                    try_get_h(
-                        fluid_array_clone.back_single_cv.material_control_volume,
-                        fluid_array_clone.temperature_array_current_timestep[1],
-                        fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                try_get_h(
+                    fluid_array_clone.back_single_cv.material_control_volume,
+                    fluid_array_clone.temperature_array_current_timestep[1],
+                    fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
 
                 // now if mass flowrate is less than zero, then 
                 // we receive enthalpy from the front cv 
@@ -526,18 +495,19 @@ impl NonInsulatedParallelFluidComponent {
                 //
 
                 power_source_vector[0] += 
-                    mass_flowrate_for_single_tube.abs() * enthalpy_of_adjacent_node_to_the_front;
+                mass_flowrate_for_single_tube.abs() * enthalpy_of_adjacent_node_to_the_front;
 
                 // additionally, in backflow situations, the mass 
                 // flow out of this cv is already accounted for 
                 // so don't double count 
 
                 power_source_vector[0] += 
-                    mass_flowrate_for_single_tube * h_fluid_last_timestep;
+                mass_flowrate_for_single_tube * h_fluid_last_timestep;
             }
 
 
         }
+        //dbg!(&power_source_vector[0]);
 
         // bulk node calculations 
         if number_of_nodes > 2 {
@@ -548,7 +518,7 @@ impl NonInsulatedParallelFluidComponent {
                 // thermal inertia terms
 
                 coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
-                    * total_volume_for_single_tube / dt + sum_of_lateral_conductances[i];
+                    * total_volume / dt + sum_of_lateral_conductances[i];
 
                 // we also consider outflow using previous timestep 
                 // temperature, 
@@ -564,8 +534,7 @@ impl NonInsulatedParallelFluidComponent {
                 power_source_vector[i] = 
                     sum_of_lateral_conductance_times_lateral_temperatures[i]
                     - mass_flowrate_for_single_tube.abs() * h_fluid_last_timestep 
-                    + fluid_array_clone.temperature_array_current_timestep[i] 
-                    * total_volume_for_single_tube * 
+                    + fluid_array_clone.temperature_array_current_timestep[i] * total_volume * 
                     volume_fraction_array[i] * rho_cp[i] / dt 
                     + sum_of_lateral_power_sources[i];
 
@@ -574,10 +543,6 @@ impl NonInsulatedParallelFluidComponent {
                 if forward_flow {
 
                     // enthalpy must be based on the the cv at i-1
-                    //
-                    // specific enthalpy is calculated, and then enthalpy 
-                    // flow is determined using that and mass flow for single 
-                    // tube
 
                     let h_fluid_adjacent_node: AvailableEnergy = 
                     try_get_h(
@@ -592,11 +557,6 @@ impl NonInsulatedParallelFluidComponent {
                 } else {
 
                     // enthalpy must be based on cv at i+1
-                    //
-                    //
-                    // specific enthalpy is calculated, and then enthalpy 
-                    // flow is determined using that and mass flow for single 
-                    // tube
                     let h_fluid_adjacent_node: AvailableEnergy = 
                     try_get_h(
                         fluid_array_clone.back_single_cv.material_control_volume,
@@ -611,6 +571,7 @@ impl NonInsulatedParallelFluidComponent {
 
             }
         }
+
         // front node (last node) calculation 
         {
             // we still follow the same guideline
@@ -622,8 +583,7 @@ impl NonInsulatedParallelFluidComponent {
             let i = number_of_nodes-1;
 
             coefficient_matrix[[i,i]] = volume_fraction_array[i] * rho_cp[i] 
-                * total_volume_for_single_tube / dt 
-                + sum_of_lateral_conductances[i];
+                * total_volume / dt + sum_of_lateral_conductances[i];
             // the first part of the source term deals with 
             // the flow direction independent terms
 
@@ -639,9 +599,8 @@ impl NonInsulatedParallelFluidComponent {
 
             power_source_vector[i] = 
                 sum_of_lateral_conductance_times_lateral_temperatures[i]
-                + fluid_array_clone.temperature_array_current_timestep[i] 
-                * total_volume_for_single_tube 
-                * volume_fraction_array[i] * rho_cp[i] / dt 
+                + fluid_array_clone.temperature_array_current_timestep[i] * total_volume * 
+                volume_fraction_array[i] * rho_cp[i] / dt 
                 + sum_of_lateral_power_sources[i] 
                 + total_enthalpy_rate_change_front_node ;
 
@@ -707,7 +666,7 @@ impl NonInsulatedParallelFluidComponent {
         )?;
 
         let peclet_number = reynolds * prandtl_number;
-        let average_axial_conductance_for_single_tube: ThermalConductance;
+        let average_axial_conductance: ThermalConductance;
 
         // note: this part is quite buggy as in the peclet number correction 
         // bit
@@ -719,7 +678,6 @@ impl NonInsulatedParallelFluidComponent {
         // it seems okay for now
 
         let low_peclet_number_flow = peclet_number.value < 100.0;
-
         if low_peclet_number_flow {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 
@@ -733,14 +691,10 @@ impl NonInsulatedParallelFluidComponent {
 
             // note that conductance axially is done only ONCE 
             // per timestep to expedite the speed of calculation
-            //
-            // conductance for single tube is determined by cross sectional 
-            // area for single tube
 
-            average_axial_conductance_for_single_tube = 
+            average_axial_conductance = 
                 average_fluid_conductivity * 
-                fluid_array_clone.xs_area 
-                / node_length;
+                fluid_array_clone.xs_area / node_length;
 
             for node_idx in 0..number_of_nodes {
                 // check if first or last node 
@@ -773,7 +727,7 @@ impl NonInsulatedParallelFluidComponent {
                     // So i'll have to add conductances to the 
                     // coefficient matrix
                     coefficient_matrix[[node_idx,node_idx]] 
-                    += 2.0 *average_axial_conductance_for_single_tube;
+                    += 2.0 *average_axial_conductance;
 
                     // we index using row, column convention 
                     // as per the ndarray crate
@@ -796,10 +750,10 @@ impl NonInsulatedParallelFluidComponent {
                     // but that would be computationally expensive
 
                     coefficient_matrix[[node_idx, node_idx+1]] 
-                    -= average_axial_conductance_for_single_tube;
+                    -= average_axial_conductance;
 
                     coefficient_matrix[[node_idx, node_idx-1]] 
-                    -= average_axial_conductance_for_single_tube;
+                    -= average_axial_conductance;
 
                 }
 
@@ -816,9 +770,9 @@ impl NonInsulatedParallelFluidComponent {
                     // = heat sources
 
                     coefficient_matrix[[node_idx,node_idx]] 
-                    += average_axial_conductance_for_single_tube;
+                    += average_axial_conductance;
                     coefficient_matrix[[node_idx, node_idx+1]] 
-                    -= average_axial_conductance_for_single_tube;
+                    -= average_axial_conductance;
 
                 }
                 // last node 
@@ -827,9 +781,9 @@ impl NonInsulatedParallelFluidComponent {
                     // likewise, the last node is also a fringe case
 
                     coefficient_matrix[[node_idx,node_idx]] 
-                    += average_axial_conductance_for_single_tube;
+                    += average_axial_conductance;
                     coefficient_matrix[[node_idx, node_idx-1]] 
-                    -= average_axial_conductance_for_single_tube;
+                    -= average_axial_conductance;
                 }
 
 
@@ -837,23 +791,22 @@ impl NonInsulatedParallelFluidComponent {
             }
             // done for loop
         }
-        // done peclet number check
+        // done peclet number check (fluid array)
 
-
+        
+        //dbg!(&power_source_vector);
+        // parallel same as normal implementation
+        //dbg!(&sum_of_lateral_conductance_times_lateral_temperatures[0]);
         new_temperature_array = 
             solve_conductance_matrix_power_vector(
                 coefficient_matrix,power_source_vector)?;
         // update the single cvs at the front and back with new enthalpies 
-        let back_cv_temperature: ThermodynamicTemperature 
-            = *new_temperature_array.first().unwrap();
 
-        let front_cv_temperature: ThermodynamicTemperature 
-            = *new_temperature_array.last().unwrap();
-
+        // Todo: probably need to synchronise error types in future
         let back_node_enthalpy_next_timestep: AvailableEnergy = 
         try_get_h(
             fluid_array_clone.back_single_cv.material_control_volume,
-            back_cv_temperature,
+            new_temperature_array[0],
             fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
 
         fluid_array_clone.back_single_cv.current_timestep_control_volume_specific_enthalpy 
@@ -862,14 +815,15 @@ impl NonInsulatedParallelFluidComponent {
         let front_node_enthalpy_next_timestep: AvailableEnergy = 
         try_get_h(
             fluid_array_clone.front_single_cv.material_control_volume,
-            front_cv_temperature,
-            fluid_array_clone.front_single_cv.pressure_control_volume)?;
+            new_temperature_array[number_of_nodes-1],
+            fluid_array_clone.front_single_cv.pressure_control_volume).unwrap();
 
         fluid_array_clone.front_single_cv.current_timestep_control_volume_specific_enthalpy 
             = front_node_enthalpy_next_timestep;
         // let's also update the previous temperature vector 
 
         fluid_array_clone.set_temperature_array(new_temperature_array.clone())?;
+
 
         // need to also set the front and back single cv temperature 
         // [back ------ front]
@@ -879,6 +833,12 @@ impl NonInsulatedParallelFluidComponent {
         // the back is the first temperature in the array, 
         // and the front is the last
         //
+        let back_cv_temperature: ThermodynamicTemperature 
+            = *new_temperature_array.first().unwrap();
+
+        let front_cv_temperature: ThermodynamicTemperature 
+            = *new_temperature_array.last().unwrap();
+
         fluid_array_clone.back_single_cv.temperature = back_cv_temperature;
         fluid_array_clone.front_single_cv.temperature = front_cv_temperature;
 
@@ -1278,6 +1238,7 @@ impl NonInsulatedParallelFluidComponent {
                 * single_shell_volume / dt + sum_of_lateral_conductances[0];
 
 
+
             // now this makes the scheme semi implicit, and we should then 
             // treat the scheme as explicit
 
@@ -1288,8 +1249,6 @@ impl NonInsulatedParallelFluidComponent {
                 * volume_fraction_array[0] * rho_cp[0] / dt 
                 + sum_of_lateral_power_sources[0]
                 + total_enthalpy_rate_change_back_node ;
-
-
 
         }
         // end back node calculation code block
