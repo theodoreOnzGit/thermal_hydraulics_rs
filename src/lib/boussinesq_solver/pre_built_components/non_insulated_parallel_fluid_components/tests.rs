@@ -1147,21 +1147,12 @@ pub fn parallel_fluid_component_test(){
         one_d_fluid_array_with_lateral_coupling::FluidArray;
     use uom::si::thermodynamic_temperature::degree_celsius;
 
-    use uom::si::power::kilowatt;
-    use uom::ConstZero;
-    use uom::si::time::second;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::pressure::atmosphere;
 
-    use crate::boussinesq_solver::boundary_conditions::BCType;
     use crate::boussinesq_solver::
         boussinesq_thermophysical_properties::LiquidMaterial;
-    use crate::boussinesq_solver::heat_transfer_correlations::
-        heat_transfer_interactions::heat_transfer_interaction_enums::
-        HeatTransferInteractionType;
-    use crate::boussinesq_solver::pre_built_components::
-        heat_transfer_entities::HeatTransferEntity;
     use crate::boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_traits::FluidComponentTrait;
@@ -1177,8 +1168,6 @@ pub fn parallel_fluid_component_test(){
     let initial_temperature = 
         ThermodynamicTemperature::new::<degree_celsius>(25.0);
 
-    let inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(80.0);
 
 
     let htc_to_ambient_high_value = 
@@ -1255,22 +1244,8 @@ pub fn parallel_fluid_component_test(){
 
 
     // now let's do a simple loop to check temperature after short time
-    let max_time = Time::new::<second>(5.0);
-    let timestep = Time::new::<second>(0.1);
-    let mut simulation_time = Time::ZERO;
     let mass_flowrate_single_tube = MassRate::new::<kilogram_per_second>(0.18);
-    let heater_power = Power::new::<kilowatt>(0.0);
 
-    let mut inlet_bc: HeatTransferEntity = BCType::new_const_temperature( 
-        inlet_temperature).into();
-
-    let mut outlet_bc: HeatTransferEntity = BCType::new_adiabatic_bc().into();
-
-    let mut adiabatic_dhx_tube_side_30_outlet_temp = 
-        ThermodynamicTemperature::ZERO;
-
-    // reset simulation time
-    simulation_time = Time::ZERO;
 
     // suppose there is a parallel tube bundle of 20 equivalent 
     // dhx tube side 30
@@ -1278,11 +1253,6 @@ pub fn parallel_fluid_component_test(){
     let mass_flowrate_through_tube_bundle = 
         number_of_tubes as f64 * mass_flowrate_single_tube;
 
-    let heater_power_for_tube_bundle = 
-        number_of_tubes as f64 * heater_power;
-
-    let mut parallel_adiabatic_dhx_tube_side_30_outlet_temp = 
-        ThermodynamicTemperature::ZERO;
 
     let mut parallel_adiabatic_dhx_tube_side_30 = 
         NonInsulatedParallelFluidComponent::new_bare_pipe_parallel_array(
