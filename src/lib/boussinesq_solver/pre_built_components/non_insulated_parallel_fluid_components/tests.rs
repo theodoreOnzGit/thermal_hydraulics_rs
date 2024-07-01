@@ -265,7 +265,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
             number_of_tubes);
 
     let mut fluid_array_ideal_nusslet: FluidArray = 
-        adiabatic_dhx_tube_side_30.pipe_fluid_array
+        parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array
         .clone()
         .try_into()
         .unwrap();
@@ -636,7 +636,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
             number_of_tubes);
 
     let mut fluid_array_ideal_nusslet: FluidArray = 
-        adiabatic_dhx_tube_side_30.pipe_fluid_array
+        parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array
         .clone()
         .try_into()
         .unwrap();
@@ -890,7 +890,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         htc_to_ambient_high_value;
 
     // now let's do a simple loop to check temperature after short time
-    let max_time = Time::new::<second>(24.0);
+    let max_time = Time::new::<second>(5.0);
     let timestep = Time::new::<second>(0.1);
     let mut simulation_time = Time::ZERO;
     let mass_flowrate_single_tube = MassRate::new::<kilogram_per_second>(0.18);
@@ -1019,7 +1019,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
             number_of_tubes);
 
     let mut fluid_array_ideal_nusselt: FluidArray = 
-        adiabatic_dhx_tube_side_30.pipe_fluid_array
+        parallel_adiabatic_dhx_tube_side_30.pipe_fluid_array
         .clone()
         .try_into()
         .unwrap();
@@ -1122,10 +1122,6 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         parallel_adiabatic_dhx_tube_side_30_outlet_temp.value,
         max_relative = 0.0001
         );
-
-    todo!()
-
-
 
 
 }
