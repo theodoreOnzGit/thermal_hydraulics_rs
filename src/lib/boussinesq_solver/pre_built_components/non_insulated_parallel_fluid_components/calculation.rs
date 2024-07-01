@@ -104,7 +104,9 @@ impl NonInsulatedParallelFluidComponent {
         let front_cv_rate_enthalpy_change_vector: Vec<Power> = 
         fluid_array_clone.front_single_cv.rate_enthalpy_change_vector.clone();
 
-        // compute power source for back node
+
+        // compute power source for back node,
+        // then multiply by one_over_number_of_tubes
 
         let mut total_enthalpy_rate_change_back_node = 
         Power::new::<watt>(0.0);
@@ -115,8 +117,6 @@ impl NonInsulatedParallelFluidComponent {
                 total_enthalpy_rate_change_back_node += *enthalpy_chg_rate;
             }
 
-
-        // then the front node,
 
         let mut total_enthalpy_rate_change_front_node = 
         Power::new::<watt>(0.0);
@@ -203,7 +203,7 @@ impl NonInsulatedParallelFluidComponent {
         = Array1::zeros(number_of_nodes);
 
         let mut sum_of_lateral_conductance_times_lateral_temperatures:
-        Array1<Power> = Array1::zeros(number_of_nodes);
+            Array1<Power> = Array1::zeros(number_of_nodes);
 
         // conductances will need to be summed over each node 
         //
@@ -278,7 +278,6 @@ impl NonInsulatedParallelFluidComponent {
                     = fluid_array_clone
                     .lateral_adjacent_array_temperature_vector[lateral_idx]
                     .clone();
-
                     let mut power_arr: Array1<Power> = Array::zeros(
                         number_of_nodes);
 
@@ -650,7 +649,6 @@ impl NonInsulatedParallelFluidComponent {
 
 
         }
-
         //// note that this works for high peclet number flows
         //// peclet number is Re * Pr
         //// if peclet number is low, then we must consider conduction 
@@ -680,7 +678,6 @@ impl NonInsulatedParallelFluidComponent {
         // it seems okay for now
 
         let low_peclet_number_flow = peclet_number.value < 100.0;
-        
         if low_peclet_number_flow {
             // for low peclet number flows, consider conduction
             // which means we need to get axial conductance 
@@ -1206,8 +1203,6 @@ impl NonInsulatedParallelFluidComponent {
 
         }
         // end if for lateral_power_sources_connected
-        //
-
 
         // now that we've gotten all the important properties, we can 
         // start matrix construction
