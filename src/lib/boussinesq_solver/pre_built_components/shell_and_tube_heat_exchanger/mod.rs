@@ -19,9 +19,26 @@
 // If i use this correlation for the outside of the tube, I should technically 
 // be able to reproduce the results.
 //
-// The Re and Nu_shell numbers (Fig 9) are:
+// The Re and Nu_shell numbers (Fig 9, obtained using graph reader) are:
 //
-// (TBD)
+// Re, Nu_shell
+// 3510.033,42.582
+// 3571.349,43.32
+// 3691.75,43.852
+// 3751.951,44.672
+// 3794.314,44.795
+// 3847.826,45.574
+// 3959.309,47.09
+// 4019.509,47.459
+// 4267.001,53.238
+// 4356.187,54.836
+// 4550.167,58.238
+// 4630.435,59.303
+// 4730.769,60.451
+// 4942.586,62.582
+// 5230.212,63.77
+// 5388.517,64.344
+// 5481.048,65.861
 //
 //
 // I'll still need to program in the Nusselt correlations, as well 
@@ -74,12 +91,13 @@
 //
 // D_e = (D_i^2 - N_t d_o^2) / (D_i + N_t d_o)
 //
-// In other words, we need two sets of fluid entities within this 
-// heat exchanger
+// The Re for the oil is from 3514 - 5482, and Pr is from 19.82 to 24.03
 //
-// 
+// For programming, we need two sets of fluid entities within this 
+// heat exchanger.
 //
+// For the reference simulation work, the tube is assumed to be well 
+// insulated. (adiabatic BC)
 //
-//
-// There are a few steps to complete,
+// There are a few steps to complete to try and replicate the experiment
 //
