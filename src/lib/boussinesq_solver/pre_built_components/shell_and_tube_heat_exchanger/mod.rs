@@ -40,6 +40,10 @@
 // 5388.517,64.344
 // 5481.048,65.861
 //
+// So basically, we need to reproduce this data. Use the correlations 
+// and obtain the Nu_shell using some of the experiments. This is a 
+// verification study.
+//
 //
 // I'll still need to program in the Nusselt correlations, as well 
 // as the as the thermophysical properties 
