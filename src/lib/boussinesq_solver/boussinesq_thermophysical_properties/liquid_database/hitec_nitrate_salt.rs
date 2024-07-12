@@ -55,9 +55,9 @@
 //
 // Btw, I have no affiliation with the Rust foundation.
 use uom::si::f64::*;
-use uom::si::thermodynamic_temperature::degree_celsius;
+use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 use uom::si::mass_density::kilogram_per_cubic_meter;
-use uom::si::dynamic_viscosity::millipascal_second;
+use uom::si::dynamic_viscosity::{millipascal_second, pascal_second};
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::available_energy::joule_per_kilogram;
@@ -79,19 +79,24 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 /// 
 ///
-/// rho (kg/m3) = 2090 - 0.636 T(C)
+/// rho (kg/m3) = 2280.22  - 0.773 T(K)
 pub fn get_hitec_equimolar_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
 
-    // first we check if fluid temp is between 220-630C (range of validity)
+    // first we check if fluid temp is between 440-800 K (range of validity)
     // panic otherwise
     range_check_hitec_salt(fluid_temp)?;
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    let a = 2280.22;
+    let b = -0.773;
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
 
-    //then convert the fluidTemp object into a f64
-    // and plug it into the correlation
-    let density_value_kg_per_m3 = 2090.0 - 0.636*fluid_temp
-       .get::<degree_celsius>();
+    let density_value_kg_per_m3 = 
+        a 
+        + b * fluid_temp_kelvin;
+
 
     return Ok(MassDensity::new::<
               kilogram_per_cubic_meter>(density_value_kg_per_m3));
@@ -106,21 +111,62 @@ pub fn get_hitec_equimolar_density(
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
 /// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 ///
-/// mu mPa-s = 22.714 - 0.120 T + 2.281e-4 T^2 -1.474e-7 T^3
-/// T in degc
+/// mu Pa-s (T = 440 - 500 K) 
+/// = 0.93845
+/// -0.54754 T(K)
+/// + 1.08225e-5 T(K)^2
+/// - 7.2058e-9 T(K)^3
+///
+/// mu Pa-s (T = 500 - 800 K) 
+/// = 0.23816
+/// - 1.2768e-3 T(K)
+/// + 2.6275e-6 T(K)^2
+/// - 2.4331e-9 T(K)^3
+/// + 8.507e-13 T(K)^4
+///
+/// 
 pub fn get_hitec_equimolar_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
 
     range_check_hitec_salt(fluid_temp)?;
-    let temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
-    let viscosity_value_millipascal_second = 
-        22.714 
-        - 0.120*temperature_degrees_c_value.powf(1.0)
-        + 2.281e-4*temperature_degrees_c_value.powf(2.0)
-        - 1.474e-7*temperature_degrees_c_value.powf(3.0);
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    // mu Pa-s (T = 500 - 800 K) 
+    // = 0.23816
+    // - 1.2768e-3 T(K)
+    // + 2.6275e-6 T(K)^2
+    // - 2.4331e-9 T(K)^3
+    // + 8.507e-13 T(K)^4
+    let mut a = 0.23816;
+    let mut b = - 1.2768e-3;
+    let mut c = 2.6275e-6;
+    let mut d = -2.4331e-9;
+    let mut e = 8.507e-13;
 
-    Ok(DynamicViscosity::new::<millipascal_second>(viscosity_value_millipascal_second))
+    if fluid_temp_kelvin < 500.0 {
+        // mu Pa-s (T = 440 - 500 K) 
+        // = 0.93845
+        // -0.54754 T(K)
+        // + 1.08225e-5 T(K)^2
+        // - 7.2058e-9 T(K)^3
+        a = 0.93845;
+        b = - 5.4754e-3;
+        c = 1.08225e-5;
+        d = -7.2058e-9;
+        e = 0.0;
+
+    }
+
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
+    let viscosity_value_pascal_second = 
+        a 
+        + b * fluid_temp_kelvin
+        + c * fluid_temp_kelvin.powf(2.0)
+        + d * fluid_temp_kelvin.powf(3.0)
+        + e * fluid_temp_kelvin.powf(4.0);
+
+    Ok(DynamicViscosity::new::<pascal_second>(viscosity_value_pascal_second))
                                 
 }
 
@@ -183,10 +229,10 @@ pub fn get_hitec_thermal_conductivity(
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
 /// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 ///
-/// From HITEC, the applicable range is 440C - 800 C, 
+/// From HITEC, the applicable range is 440K - 800 K, 
 ///
-/// In Du's paper, the viscosity correlation is applicable from 440 to 800C
-/// while the rest of the properties are from 420-800C
+/// In Du's paper, the viscosity correlation is applicable from 440 to 800K
+/// while the rest of the properties are from 420-800K
 /// 
 ///
 pub fn range_check_hitec_salt(fluid_temp: ThermodynamicTemperature) 
@@ -197,8 +243,8 @@ pub fn range_check_hitec_salt(fluid_temp: ThermodynamicTemperature)
 
         range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<degree_celsius>(800.0), 
-            ThermodynamicTemperature::new::<degree_celsius>(440.0))?;
+            ThermodynamicTemperature::new::<kelvin>(800.0), 
+            ThermodynamicTemperature::new::<kelvin>(440.0))?;
 
         return Ok(true);
 
