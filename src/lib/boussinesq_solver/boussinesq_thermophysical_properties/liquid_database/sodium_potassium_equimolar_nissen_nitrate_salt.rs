@@ -173,6 +173,7 @@ pub fn get_sodium_potassium_nitrate_thermal_conductivity(
         thermal_conductivity_value));
 }
 
+/// TODO
 /// function to obtain nitrate salt enthalpy
 /// given a temperature
 ///
@@ -222,9 +223,10 @@ pub fn get_sodium_potassium_nitrate_thermal_conductivity(
 /// approx::assert_relative_eq!(expected_enthalpy, specific_enthalpy_1.unwrap().value, 
 /// max_relative=0.02);
 /// ```
-pub fn get_dowtherm_a_enthalpy(
+pub fn get_sodium_potassium_nitrate_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
+    todo!();
 
     range_check_sodium_potassium_nitrate_equimolar(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
@@ -243,6 +245,7 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
         enthalpy_value_joule_per_kg));
 }
 
+/// TODO
 /// function to obtain dowtherm A temperature 
 /// given a enthalpy
 ///
@@ -299,9 +302,10 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 /// ```
 pub fn get_temperature_from_enthalpy(
     fluid_enthalpy: AvailableEnergy) -> Result<ThermodynamicTemperature,ThermalHydraulicsLibError> {
+    todo!();
 
     if fluid_enthalpy.value < 0_f64 {
-        panic!("dowtherm A : get_temperature_from_enthalpy \n
+        panic!("sodium_potassium_nitrate : get_temperature_from_enthalpy \n
                enthalpy < 0.0 , out of correlation range");
     }
 
@@ -323,7 +327,7 @@ pub fn get_temperature_from_enthalpy(
         let fluid_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(
                 temp_degrees_c_value_double);
-        let rhs = get_dowtherm_a_enthalpy(fluid_temperature).unwrap();
+        let rhs = get_sodium_potassium_nitrate_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
         return AD0(lhs_value-rhs_value);
@@ -333,7 +337,7 @@ pub fn get_temperature_from_enthalpy(
     
     let fluid_temperature_degrees_cresult 
         = bisection(enthalpy_root,
-                    (20.0,180.0),
+                    (220.0,630.0),
                     100,
                     1e-8);
 
