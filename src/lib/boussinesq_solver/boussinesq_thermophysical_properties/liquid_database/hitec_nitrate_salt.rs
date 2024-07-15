@@ -180,6 +180,16 @@ ThermalHydraulicsLibError>{
 ///
 /// cp (J/kg/K) = 1560.0 
 /// T in kelvin
+///
+/// Now, Sohal has a different correlation for cp 
+///
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and 
+/// thermochemical properties (No. INL/EXT-10-18297). 
+/// Idaho National Lab.(INL), Idaho Falls, ID (United States).
+///
+/// but I'm not going to consider that yet
+///
 pub fn get_hitec_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
@@ -254,6 +264,52 @@ pub fn get_hitec_thermal_conductivity(
         thermal_conductivity_value));
 }
 
+/// function to obtain nitrate salt enthalpy
+/// given a temperature
+/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
+/// Investigation on heat transfer characteristics of molten salt in 
+/// a shell-and-tube heat exchanger. International Communications 
+/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
+/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+///
+/// cp (J/kg/K) = 1560.0 
+/// T in kelvin
+///
+/// Manual integration with temperature yields:
+///
+/// h (J/kg) = 1560.0 T(K) + Constant
+///
+/// I can just adjust the enthalpy to be 0 J/kg at 440K
+///
+/// 0 J/kg = 1560 * T_0 (K) + Constant
+/// Constant = 0 - 1560 T_0 (K)
+/// Constant = 0 - 1560 * 440
+/// Constant = 0 - 686,400
+/// 
+/// h (J/kg) = 1560.0 T(K) - 686400
+/// h (J/kg) = - 686400 + 1560.0 T(K) 
+///
+///
+///
+pub fn get_hitec_enthalpy(
+    fluid_temp: ThermodynamicTemperature) -> 
+Result<AvailableEnergy,ThermalHydraulicsLibError>{
+
+    range_check_hitec_salt(fluid_temp)?;
+    // note, specific entropy and heat capcity are the same unit...
+    //
+    // h (J/kg) = - 686400 + 1560.0 T(K) 
+    let temp_kelvin_value = fluid_temp.get::<kelvin>();
+    let enthalpy_value_joule_per_kg 
+        = -686400_f64 
+        + 1560.0 * temp_kelvin_value;
+
+    // the closest unit available is AvailableEnergy which is
+    // joule per kg 
+
+    return Ok(AvailableEnergy::new::<joule_per_kilogram>(
+        enthalpy_value_joule_per_kg));
+}
 
 /// function checks if a fluid temperature falls in a range 
 ///
