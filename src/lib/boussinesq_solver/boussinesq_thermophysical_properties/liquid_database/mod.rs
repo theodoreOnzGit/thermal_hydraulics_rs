@@ -32,3 +32,8 @@ pub mod hitec_nitrate_salt;
 /// I used the correlation from Srivastava et al. 
 pub mod sodium_potassium_equimolar_nissen_nitrate_salt;
 
+/// properties for a custom liquid material 
+/// not covered in the database
+/// 
+/// You'll need to define your own functions for this to work
+pub mod custom_liquid_material;
