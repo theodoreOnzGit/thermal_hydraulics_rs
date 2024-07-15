@@ -156,7 +156,7 @@ pub fn get_hitec_density(
 ///
 ///
 /// 
-pub fn get_hitec_viscosity(
+pub fn get_hitec_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
 
@@ -246,7 +246,7 @@ pub fn hitec_nitrate_salt_test_viscosity(){
 
     // let's get the viscosity, should be around 11 cP 
     let viscosity_346_f = 
-        get_hitec_viscosity(temperature_346_f).unwrap();
+        get_hitec_dynamic_viscosity(temperature_346_f).unwrap();
 
     let viscosity_value_centipoise_346_f = 
         viscosity_346_f.get::<centipoise>();
@@ -265,7 +265,7 @@ pub fn hitec_nitrate_salt_test_viscosity(){
 
     // let's get the viscosity, should be around 2.5 cP 
     let viscosity_654_f = 
-        get_hitec_viscosity(temperature_654_f).unwrap();
+        get_hitec_dynamic_viscosity(temperature_654_f).unwrap();
 
     let viscosity_value_centipoise_654f = 
         viscosity_654_f.get::<centipoise>();
@@ -398,7 +398,7 @@ pub fn get_hitec_thermal_conductivity(
 ///
 ///
 ///
-pub fn get_hitec_enthalpy(
+pub fn get_hitec_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
@@ -469,7 +469,7 @@ pub fn get_temperature_from_enthalpy(
         let fluid_temperature = 
             ThermodynamicTemperature::new::<kelvin>(
                 temp_degrees_kelvin_value_double);
-        let rhs = get_hitec_enthalpy(fluid_temperature).unwrap();
+        let rhs = get_hitec_specific_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
         return AD0(lhs_value-rhs_value);

@@ -3,6 +3,7 @@ use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
+use super::liquid_database::hitec_nitrate_salt::get_hitec_constant_pressure_specific_heat_capacity;
 use super::range_check;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum;
 use super::LiquidMaterial;
@@ -91,13 +92,16 @@ ThermalHydraulicsLibError>{
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!(
         "liquid_specific_heat_capacity, use LiquidMaterial enums only")
     };
 
     let specific_heat_capacity: SpecificHeatCapacity = match liquid_material {
         DowthermA => dowtherm_a_specific_heat_capacity(fluid_temp)?,
-        TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)?
+        TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)?,
+        HITEC => get_hitec_constant_pressure_specific_heat_capacity(fluid_temp)?,
+
     };
 
     return Ok(specific_heat_capacity);

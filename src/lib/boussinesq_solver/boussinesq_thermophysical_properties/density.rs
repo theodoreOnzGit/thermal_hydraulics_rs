@@ -4,6 +4,7 @@ use uom::si::f64::ThermodynamicTemperature;
 use uom::si::mass_density::kilogram_per_cubic_meter;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
+use super::liquid_database::hitec_nitrate_salt::get_hitec_density;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -104,12 +105,14 @@ fn liquid_density(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!("liquid_density, use LiquidMaterial enums only")
     };
 
     let density: MassDensity = match liquid_material {
         DowthermA => dowtherm_a_density(fluid_temp)?,
-        TherminolVP1 => dowtherm_a_density(fluid_temp)?
+        TherminolVP1 => dowtherm_a_density(fluid_temp)?,
+        HITEC => get_hitec_density(fluid_temp)?,
     };
 
     return Ok(density);
@@ -124,7 +127,8 @@ impl LiquidMaterial {
 
         let density: MassDensity = match &self.clone() {
             DowthermA => dowtherm_a_density(fluid_temp)?,
-            TherminolVP1 => dowtherm_a_density(fluid_temp)?
+            TherminolVP1 => dowtherm_a_density(fluid_temp)?,
+            HITEC => get_hitec_density(fluid_temp)?,
         };
 
         Ok(density)

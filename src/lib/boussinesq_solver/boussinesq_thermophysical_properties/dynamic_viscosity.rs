@@ -1,6 +1,7 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
+use super::liquid_database::hitec_nitrate_salt::get_hitec_dynamic_viscosity;
 use super::LiquidMaterial;
 use super::Material;
 use super::LiquidMaterial::*;
@@ -61,12 +62,14 @@ fn liquid_dynamic_viscosity(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!("liquid_dynamic_viscosity, use LiquidMaterial enums only")
     };
 
     let dynamic_viscosity: DynamicViscosity = match liquid_material {
         DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp)?,
-        TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?
+        TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?,
+        HITEC => get_hitec_dynamic_viscosity(fluid_temp)?,
     };
 
     return Ok(dynamic_viscosity);
@@ -81,7 +84,8 @@ impl LiquidMaterial {
 
         let dynamic_viscosity: DynamicViscosity = match self {
             DowthermA => dowtherm_a_dynamic_viscosity(temperature)?,
-            TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)?
+            TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)?,
+            HITEC => get_hitec_dynamic_viscosity(temperature)?,
         };
 
         Ok(dynamic_viscosity)

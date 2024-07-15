@@ -82,8 +82,11 @@ impl Into<Material> for SolidMaterial {
 pub enum LiquidMaterial {
     /// therminol VP1 
     TherminolVP1,
-    /// DowthermA, using 
-    DowthermA
+    /// DowthermA, using the same correlations
+    DowthermA,
+    /// HITEC salt, 7 wt% sodium nitrate, 40 wt% sodium nitrite, 53 wt% potassium nitrate
+    HITEC,
+
 }
 
 impl Into<Material> for LiquidMaterial {

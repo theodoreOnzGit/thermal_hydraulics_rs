@@ -3,6 +3,7 @@ use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
+use super::liquid_database::hitec_nitrate_salt::get_hitec_thermal_conductivity;
 use super::range_check;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum;
 use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
@@ -94,7 +95,8 @@ impl LiquidMaterial {
 
         let thermal_conductivity: ThermalConductivity = match self {
             DowthermA => dowtherm_a_thermal_conductivity(fluid_temp)?,
-            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)?
+            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)?,
+            HITEC => get_hitec_thermal_conductivity(fluid_temp)?,
         };
 
         Ok(thermal_conductivity)
@@ -146,6 +148,7 @@ fn liquid_thermal_conductivity(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!(
         "liquid_thermal_conductivity, use LiquidMaterial enums only")
     };

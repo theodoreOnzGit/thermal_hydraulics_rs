@@ -4,6 +4,7 @@ use uom::si::available_energy::joule_per_kilogram;
 use uom::si::thermodynamic_temperature::{degree_celsius,kelvin};
 
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt::get_hitec_specific_enthalpy;
 
 use super::LiquidMaterial;
 use super::Material;
@@ -58,13 +59,15 @@ fn liquid_specific_enthalpy(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!(
         "liquid_specific_enthalpy, use LiquidMaterial enums only")
     };
 
     let specific_enthalpy: AvailableEnergy = match liquid_material {
         DowthermA => dowtherm_a_specific_enthalpy(fluid_temp),
-        TherminolVP1 => dowtherm_a_specific_enthalpy(fluid_temp)
+        TherminolVP1 => dowtherm_a_specific_enthalpy(fluid_temp),
+        HITEC => get_hitec_specific_enthalpy(fluid_temp).unwrap(),
     };
 
     return specific_enthalpy;

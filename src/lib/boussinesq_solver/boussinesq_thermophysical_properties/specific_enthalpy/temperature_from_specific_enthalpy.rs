@@ -10,6 +10,7 @@ use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
 ::try_get_h;
 
@@ -72,13 +73,15 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
+        Material::Liquid(HITEC) => HITEC,
         Material::Solid(_) => panic!(
         "liquid_specific_enthalpy, use LiquidMaterial enums only")
     };
 
     let specific_enthalpy: ThermodynamicTemperature = match liquid_material {
         DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
-        TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp)
+        TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
+        HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_temp).unwrap(),
     };
 
     return specific_enthalpy;
