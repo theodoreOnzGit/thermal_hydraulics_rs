@@ -4,6 +4,7 @@ use uom::si::f64::ThermodynamicTemperature;
 use uom::si::mass_density::kilogram_per_cubic_meter;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
+use super::liquid_database;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_density;
 use super::LiquidMaterial;
 use super::Material;
@@ -106,6 +107,10 @@ fn liquid_density(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
+        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        },
+
         Material::Solid(_) => panic!("liquid_density, use LiquidMaterial enums only")
     };
 
@@ -113,6 +118,13 @@ fn liquid_density(material: Material,
         DowthermA => dowtherm_a_density(fluid_temp)?,
         TherminolVP1 => dowtherm_a_density(fluid_temp)?,
         HITEC => get_hitec_density(fluid_temp)?,
+        Custom((low_bound_temp,high_bound_temp), _cp, _k, _mu, rho_fn) => {
+            liquid_database::custom_liquid_material
+                ::get_custom_fluid_density(fluid_temp, 
+                    rho_fn, 
+                    high_bound_temp, 
+                    low_bound_temp)?
+        },
     };
 
     return Ok(density);
@@ -129,6 +141,13 @@ impl LiquidMaterial {
             DowthermA => dowtherm_a_density(fluid_temp)?,
             TherminolVP1 => dowtherm_a_density(fluid_temp)?,
             HITEC => get_hitec_density(fluid_temp)?,
+            Custom((low_bound_temp,high_bound_temp), _cp, _k, _mu, rho_fn) => {
+                liquid_database::custom_liquid_material
+                    ::get_custom_fluid_density(fluid_temp, 
+                        *rho_fn, 
+                        *high_bound_temp, 
+                        *low_bound_temp)?
+            },
         };
 
         Ok(density)

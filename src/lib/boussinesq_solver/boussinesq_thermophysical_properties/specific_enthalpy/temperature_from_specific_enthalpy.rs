@@ -9,6 +9,7 @@ use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
@@ -74,6 +75,9 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
+        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        },
         Material::Solid(_) => panic!(
         "liquid_specific_enthalpy, use LiquidMaterial enums only")
     };
@@ -82,6 +86,13 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
         TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
         HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_temp).unwrap(),
+        Custom((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
+            liquid_database::custom_liquid_material
+                ::get_custom_fluid_temperature_from_enthalpy(fluid_temp, 
+                    cp_fn, 
+                    high_bound_temp, 
+                    low_bound_temp).unwrap()
+        },
     };
 
     return specific_enthalpy;

@@ -6,6 +6,7 @@ use super::LiquidMaterial;
 use super::Material;
 use super::LiquidMaterial::*;
 use super::liquid_database::dowtherm_a::get_dowtherm_a_viscosity;
+use super::liquid_database;
 
 /// returns a dynamic_viscosity given a material, temperature and pressure
 ///
@@ -63,6 +64,9 @@ fn liquid_dynamic_viscosity(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
+        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        },
         Material::Solid(_) => panic!("liquid_dynamic_viscosity, use LiquidMaterial enums only")
     };
 
@@ -70,6 +74,13 @@ fn liquid_dynamic_viscosity(material: Material,
         DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp)?,
         TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?,
         HITEC => get_hitec_dynamic_viscosity(fluid_temp)?,
+        Custom((low_bound_temp,high_bound_temp), _cp, _k, mu_fn, _rho_fn) => {
+            liquid_database::custom_liquid_material
+                ::get_custom_fluid_viscosity(fluid_temp, 
+                    mu_fn, 
+                    high_bound_temp, 
+                    low_bound_temp)?
+        },
     };
 
     return Ok(dynamic_viscosity);
@@ -86,6 +97,14 @@ impl LiquidMaterial {
             DowthermA => dowtherm_a_dynamic_viscosity(temperature)?,
             TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)?,
             HITEC => get_hitec_dynamic_viscosity(temperature)?,
+            Custom((low_bound_temp,high_bound_temp), _cp, _k, mu_fn, _rho_fn) => {
+                
+                liquid_database::custom_liquid_material
+                    ::get_custom_fluid_viscosity(temperature, 
+                        *mu_fn, 
+                        *high_bound_temp, 
+                        *low_bound_temp)?
+            },
         };
 
         Ok(dynamic_viscosity)

@@ -86,6 +86,22 @@ pub enum LiquidMaterial {
     DowthermA,
     /// HITEC salt, 7 wt% sodium nitrate, 40 wt% sodium nitrite, 53 wt% potassium nitrate
     HITEC,
+    /// Custom fluid, for the user to decide the correlations himself 
+    /// or herself
+    Custom(
+        // lower and upper bound temperatures
+        (ThermodynamicTemperature,ThermodynamicTemperature),
+        // fluid cp 
+        fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
+        // thermal conductivity 
+        fn(ThermodynamicTemperature) -> ThermalConductivity,
+        // viscosity 
+        fn(ThermodynamicTemperature) -> DynamicViscosity,
+        // density 
+        fn(ThermodynamicTemperature) -> MassDensity,
+    ),
+
+
 
 }
 
