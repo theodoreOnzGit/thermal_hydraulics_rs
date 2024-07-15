@@ -218,6 +218,15 @@ pub fn hitec_nitrate_salt_test_viscosity(){
     // 346.338,10.984
     // 653.944,2.5
     //
+    // These two temperautres were chosen because there are two 
+    // correlations used by Du 
+    //
+    // first in the 440-500K range. This is where 
+    // the 346 F or 447 K temperature is used 
+    //
+    // then in the 500K-800K range, where the 
+    // 653 F or 618 K temperature is used
+    //
     // No error bars were given, but based on Sohal's work 
     // typical error bars from Janz were as high as 16% 
     //
@@ -239,16 +248,35 @@ pub fn hitec_nitrate_salt_test_viscosity(){
     let viscosity_346_f = 
         get_hitec_viscosity(temperature_346_f).unwrap();
 
-    let viscosity_value_centipoise = 
+    let viscosity_value_centipoise_346_f = 
         viscosity_346_f.get::<centipoise>();
 
     // we expect a dynamic viscosity of around 11 cP at this temperature
+    // we have +/- 16% uncertainty
     approx::assert_relative_eq!(
         10.984, 
-        viscosity_value_centipoise, 
+        viscosity_value_centipoise_346_f, 
         max_relative=0.16);
 
-    todo!()
+    // let's try the 654 F one first 
+    let temperature_654_f = 
+        ThermodynamicTemperature::new::<degree_fahrenheit>(
+            653.944);
+
+    // let's get the viscosity, should be around 2.5 cP 
+    let viscosity_654_f = 
+        get_hitec_viscosity(temperature_654_f).unwrap();
+
+    let viscosity_value_centipoise_654f = 
+        viscosity_654_f.get::<centipoise>();
+
+    // we expect a dynamic viscosity of around 2.5 cP at this temperature
+    // we have +/- 16% uncertainty
+    approx::assert_relative_eq!(
+        2.5, 
+        viscosity_value_centipoise_654f, 
+        max_relative=0.16);
+
 
 }
 
