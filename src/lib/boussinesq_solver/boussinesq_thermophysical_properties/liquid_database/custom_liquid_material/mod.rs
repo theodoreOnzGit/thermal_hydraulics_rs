@@ -166,32 +166,6 @@ pub fn get_custom_fluid_thermal_conductivity(
 ///
 /// Therefore I will just use numerical integrals, so that the user need not 
 /// perform extra coding
-///
-///
-/// Example use:
-/// ```rust
-///
-/// use uom::si::f64::*;
-/// use uom::si::thermodynamic_temperature::kelvin;
-/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
-/// liquid_database::dowtherm_a::get_dowtherm_a_enthalpy;
-/// 
-///
-/// let temp1 = ThermodynamicTemperature::new::<kelvin>(303_f64);
-///
-/// let specific_enthalpy_1 = 
-/// get_dowtherm_a_enthalpy(temp1);
-///
-///
-/// let expected_enthalpy: f64 = 
-/// 1518_f64*30_f64 + 2.82/2.0*30_f64.powf(2_f64) - 30924_f64;
-///
-/// // the expected value is about 15885 J/kg
-///
-/// extern crate approx;
-/// approx::assert_relative_eq!(expected_enthalpy, specific_enthalpy_1.unwrap().value, 
-/// max_relative=0.02);
-/// ```
 pub fn get_custom_fluid_enthalpy(
     fluid_temp: ThermodynamicTemperature,
     cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
@@ -260,6 +234,57 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
         joule_per_kilogram>(specific_enthalpy_joule_per_kilogram);
 
     return Ok(enthalpy);
+
+}
+
+#[test]
+pub fn test_custom_fluid_enthalpy(){
+    // this is just test to test the custom fluid enthalpy 
+    // checks if its working properly 
+
+    // first lets get hitec salt enthalpy at 550K 
+    // this specific function 
+    // assumes a lower bound temperature of 440K 
+    //
+
+    use super::hitec_nitrate_salt::*;
+
+    let test_temperature_550_k = 
+        ThermodynamicTemperature::new::<kelvin>(550.0);
+
+    let ref_enthalpy = get_hitec_specific_enthalpy(test_temperature_550_k).unwrap();
+
+    // now lower bound and upper bound for hitec are set at 440k and 800k 
+
+    let lower_bound_temperature = 
+        ThermodynamicTemperature::new::<kelvin>(440.0);
+    let upper_bound_temperature = 
+        ThermodynamicTemperature::new::<kelvin>(800.0);
+
+
+    // and the cp function is: 
+
+    let cp_function = |fluid_temperature: ThermodynamicTemperature|{
+        get_hitec_constant_pressure_specific_heat_capacity(fluid_temperature).unwrap()
+    };
+
+    // now lets obtain the test enthalpy 
+
+    let test_enthalpy = 
+        get_custom_fluid_enthalpy(
+            test_temperature_550_k, 
+            cp_function, 
+            upper_bound_temperature, 
+            lower_bound_temperature).unwrap();
+
+    // reference enthalpy for hitec and 
+    // the custom fluid enthalpy given the cp function should be the same
+    approx::assert_abs_diff_eq!(
+        ref_enthalpy.get::<joule_per_kilogram>(), 
+        test_enthalpy.get::<joule_per_kilogram>(), 
+        epsilon=f64::EPSILON);
+
+
 
 }
 
