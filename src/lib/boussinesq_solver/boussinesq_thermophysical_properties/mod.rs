@@ -68,7 +68,21 @@ pub enum SolidMaterial {
     /// Copper material
     Copper,
     /// Fiberglass material
-    Fiberglass
+    Fiberglass,
+    /// Custom solid, for the user to decide the correlations himself 
+    /// or herself
+    CustomSolid(
+        // lower and upper bound temperatures
+        (ThermodynamicTemperature,ThermodynamicTemperature),
+        // solid cp 
+        fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
+        // thermal conductivity 
+        fn(ThermodynamicTemperature) -> ThermalConductivity,
+        // density 
+        fn(ThermodynamicTemperature) -> MassDensity,
+        // surface_roughness
+        Length,
+    ),
 }
 
 impl Into<Material> for SolidMaterial {
@@ -88,7 +102,7 @@ pub enum LiquidMaterial {
     HITEC,
     /// Custom fluid, for the user to decide the correlations himself 
     /// or herself
-    Custom(
+    CustomLiquid(
         // lower and upper bound temperatures
         (ThermodynamicTemperature,ThermodynamicTemperature),
         // fluid cp 

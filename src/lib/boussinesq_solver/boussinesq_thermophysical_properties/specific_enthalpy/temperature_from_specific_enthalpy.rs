@@ -12,6 +12,7 @@ use uom::si::pressure::atmosphere;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
 ::try_get_h;
 
@@ -41,21 +42,38 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
         Material::Solid(SteelSS304L) => SteelSS304L,
         Material::Solid(Fiberglass) => Fiberglass,
         Material::Solid(Copper) => Copper,
+        Material::Solid(CustomSolid((low_bound_temp,high_bound_temp),cp,k,rho,roughness)) => {
+            CustomSolid((low_bound_temp,high_bound_temp), cp, k, rho,roughness)
+        },
         Material::Liquid(_) => panic!("solid_specific_enthalpy, use SolidMaterial enums only")
     };
 
     let material_temperature: ThermodynamicTemperature = 
-    match solid_material {
-        Fiberglass => 
-            fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
-                h_material),
-        SteelSS304L => 
-            steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
-                h_material),
-        Copper => 
-            copper_spline_temp_attempt_2_from_specific_enthalpy(
-                h_material),
-    };
+        match solid_material {
+            Fiberglass => 
+            {
+                fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
+                    h_material)
+            },
+            SteelSS304L => 
+            {
+                steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
+                    h_material)
+            },
+            Copper => 
+            {
+                copper_spline_temp_attempt_2_from_specific_enthalpy(
+                    h_material)
+            },
+            CustomSolid((low_bound_temp,high_bound_temp),cp_fn,_k,_rho_fn,_roughness) => {
+                custom_solid_material::get_custom_solid_temperature_from_enthalpy(
+                    h_material, 
+                    cp_fn, 
+                    high_bound_temp, 
+                    low_bound_temp).unwrap()
+            },
+
+        };
 
     return material_temperature;
 
@@ -75,8 +93,8 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
-        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
-            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
         Material::Solid(_) => panic!(
         "liquid_specific_enthalpy, use LiquidMaterial enums only")
@@ -86,7 +104,7 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
         TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
         HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_temp).unwrap(),
-        Custom((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
+        CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_temperature_from_enthalpy(fluid_temp, 
                     cp_fn, 

@@ -56,9 +56,13 @@
 // Btw, I have no affiliation with the Rust foundation.
 //
 //
-// For liquids or fluids not in this database, we can use these functions 
-// to code in correlations for your own liquids
+// For solids not in this database, we can use these functions 
+// to code in correlations for your own solids
 //
+// I copied most of the code from the fluid side ad verbatim for solids 
+// so I'm not testing out code here
+//
+
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
@@ -70,82 +74,63 @@ use peroxide::fuga::*;
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-/// function to obtain custom fluid density
+/// function to obtain custom solid density
 /// given a temperature
 /// and temperature bounds
-pub fn get_custom_fluid_density(
-    fluid_temp: ThermodynamicTemperature,
+pub fn get_custom_solid_density(
+    solid_temp: ThermodynamicTemperature,
     density_function: fn(ThermodynamicTemperature) -> MassDensity,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature,
     ) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
-    // first we check if fluid temp is between the specified 
+    // first we check if solid temp is between the specified 
     // upper and lower bound
     // panic otherwise
-    range_check_custom_fluid(fluid_temp,
+    range_check_custom_solid(solid_temp,
         upper_bound_temperature,lower_bound_temperature)?;
 
-    return Ok(density_function(fluid_temp));
+    return Ok(density_function(solid_temp));
 }
 
-/// function to obtain custom fluid viscosity
+/// function to obtain custom solid specific heat capacity
 /// given a temperature
-pub fn get_custom_fluid_viscosity(
-    fluid_temp: ThermodynamicTemperature,
-    viscosity_function: fn(ThermodynamicTemperature) -> DynamicViscosity,
-    upper_bound_temperature: ThermodynamicTemperature,
-    lower_bound_temperature: ThermodynamicTemperature) -> Result<DynamicViscosity,
-ThermalHydraulicsLibError>{
-
-    // first we check if fluid temp is between the specified 
-    // upper and lower bound
-    // panic otherwise
-    range_check_custom_fluid(fluid_temp,
-        upper_bound_temperature,
-        lower_bound_temperature)?;
-
-
-    return Ok(viscosity_function(fluid_temp));
-                                
-}
-
-/// function to obtain custom fluid specific heat capacity
-/// given a temperature
-pub fn get_custom_fluid_constant_pressure_specific_heat_capacity(
-    fluid_temp: ThermodynamicTemperature,
+pub fn get_custom_solid_constant_pressure_specific_heat_capacity(
+    solid_temp: ThermodynamicTemperature,
     cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
 
-    // first we check if fluid temp is between the specified 
+    // first we check if solid temp is between the specified 
     // upper and lower bound
     // panic otherwise
-    range_check_custom_fluid(fluid_temp,
+    range_check_custom_solid(solid_temp,
         upper_bound_temperature,
         lower_bound_temperature)?;
-    return Ok(cp_function(fluid_temp));
+    return Ok(cp_function(solid_temp));
 }
 
-/// function to obtain custom fluid thermal conductivity
+
+/// function to obtain custom solid thermal conductivity
 /// given a temperature
-pub fn get_custom_fluid_thermal_conductivity(
-    fluid_temp: ThermodynamicTemperature,
+pub fn get_custom_solid_thermal_conductivity(
+    solid_temp: ThermodynamicTemperature,
     conductivity_function: fn(ThermodynamicTemperature) -> ThermalConductivity,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature
     ) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
 
-    range_check_custom_fluid(fluid_temp,
+    range_check_custom_solid(solid_temp,
         upper_bound_temperature,
         lower_bound_temperature)?;
 
-    return Ok(conductivity_function(fluid_temp));
+    return Ok(conductivity_function(solid_temp));
 }
 
-/// function to obtain custom fluid enthalpy
+
+/// function to obtain custom solid enthalpy
 /// given a temperature
 ///
 /// Now, there are two ways of doing this,
@@ -162,17 +147,17 @@ pub fn get_custom_fluid_thermal_conductivity(
 ///
 /// Therefore I will just use numerical integrals, so that the user need not 
 /// perform extra coding
-pub fn get_custom_fluid_enthalpy(
-    fluid_temp: ThermodynamicTemperature,
+pub fn get_custom_solid_enthalpy(
+    solid_temp: ThermodynamicTemperature,
     cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
-    // first we check if fluid temp is between the specified 
+    // first we check if solid temp is between the specified 
     // upper and lower bound
     // panic otherwise
-    range_check_custom_fluid(fluid_temp,
+    range_check_custom_solid(solid_temp,
         upper_bound_temperature,
         lower_bound_temperature)?;
 
@@ -188,13 +173,13 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
     let integration_method = Integral::G20K41(abs_tolerance, max_iterations);
 
     // next, my cp function needs to be converted into a f64 type function
-    // first let me get my fluid temperature and lower bound temperature 
+    // first let me get my solid temperature and lower bound temperature 
     // in kelvin 
 
-    let fluid_temp_kelvin: f64 = fluid_temp.get::<kelvin>();
+    let solid_temp_kelvin: f64 = solid_temp.get::<kelvin>();
     let lower_bound_temp_kelvin: f64 = lower_bound_temperature.get::<kelvin>();
 
-    // my cp function will take a fluid temperature value in kelvin 
+    // my cp function will take a solid temperature value in kelvin 
     // and return a cp value in joules/(kg Kelvin)
 
     let cp_fn_float = |temp_kelvin: f64| {
@@ -220,7 +205,7 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
             // cp function float
             cp_fn_float, 
             // bounds from lower bound to upper bound
-            (lower_bound_temp_kelvin,fluid_temp_kelvin),
+            (lower_bound_temp_kelvin,solid_temp_kelvin),
             // integration method described earlier
             integration_method,
             );
@@ -233,72 +218,21 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
 }
 
-#[test]
-pub fn test_custom_fluid_enthalpy(){
-    // this is just test to test the custom fluid enthalpy 
-    // checks if its working properly 
 
-    // first lets get hitec salt enthalpy at 550K 
-    // this specific function 
-    // assumes a lower bound temperature of 440K 
-    //
-
-    
-    use super::hitec_nitrate_salt::*;
-
-    let test_temperature_550_k = 
-        ThermodynamicTemperature::new::<kelvin>(550.0);
-
-    let ref_enthalpy = get_hitec_specific_enthalpy(test_temperature_550_k).unwrap();
-
-    // now lower bound and upper bound for hitec are set at 440k and 800k 
-
-    let lower_bound_temperature = 
-        ThermodynamicTemperature::new::<kelvin>(440.0);
-    let upper_bound_temperature = 
-        ThermodynamicTemperature::new::<kelvin>(800.0);
-
-
-    // and the cp function is: 
-
-    let cp_function = |fluid_temperature: ThermodynamicTemperature|{
-        get_hitec_constant_pressure_specific_heat_capacity(fluid_temperature).unwrap()
-    };
-
-    // now lets obtain the test enthalpy 
-
-    let test_enthalpy = 
-        get_custom_fluid_enthalpy(
-            test_temperature_550_k, 
-            cp_function, 
-            upper_bound_temperature, 
-            lower_bound_temperature).unwrap();
-
-    // reference enthalpy for hitec and 
-    // the custom fluid enthalpy given the cp function should be the same
-    approx::assert_abs_diff_eq!(
-        ref_enthalpy.get::<joule_per_kilogram>(), 
-        test_enthalpy.get::<joule_per_kilogram>(), 
-        epsilon=f64::EPSILON);
-
-
-
-}
-
-/// function to obtain custom fluid temperature 
+/// function to obtain custom solid temperature 
 /// given a enthalpy 
 /// 
 /// note that this is quite intensive calculation load 
 /// wise due to its iterative nature, use sparingly and with caution
 /// 
-pub fn get_custom_fluid_temperature_from_enthalpy(
-    fluid_enthalpy: AvailableEnergy,
+pub fn get_custom_solid_temperature_from_enthalpy(
+    solid_enthalpy: AvailableEnergy,
     cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature) -> Result<ThermodynamicTemperature,ThermalHydraulicsLibError> {
 
-    if fluid_enthalpy.value < 0_f64 {
-        panic!("user supplied fluid: get_temperature_from_enthalpy \n
+    if solid_enthalpy.value < 0_f64 {
+        panic!("user supplied solid: get_temperature_from_enthalpy \n
                enthalpy < 0.0 , out of correlation range");
     }
 
@@ -312,7 +246,7 @@ pub fn get_custom_fluid_temperature_from_enthalpy(
 
     // first let's convert enthalpy to a double (f64)
     let enthalpy_value_joule_per_kg = 
-        fluid_enthalpy.get::<joule_per_kilogram>();
+        solid_enthalpy.get::<joule_per_kilogram>();
 
     // second let's define a function 
     // or actually a closure or anonymous function that
@@ -326,10 +260,10 @@ pub fn get_custom_fluid_temperature_from_enthalpy(
         // convert AD type into double
         let temp_degrees_c_value_double = temp_degrees_c_value.x();
 
-        let fluid_temperature = 
+        let solid_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(
                 temp_degrees_c_value_double);
-        let rhs = get_custom_fluid_enthalpy(fluid_temperature,
+        let rhs = get_custom_solid_enthalpy(solid_temperature,
             cp_function,
             upper_bound_temperature,
             lower_bound_temperature).unwrap();
@@ -340,87 +274,34 @@ pub fn get_custom_fluid_temperature_from_enthalpy(
     
     // now solve using bisection
     
-    let fluid_temperature_degrees_cresult 
+    let solid_temperature_degrees_cresult 
         = bisection(enthalpy_root,
                     (lower_bound_temp_degc,upper_bound_temp_degc),
                     100,
                     1e-8);
 
-    let fluid_temperature_degrees_c = fluid_temperature_degrees_cresult.unwrap();
+    let solid_temperature_degrees_c = solid_temperature_degrees_cresult.unwrap();
 
     return Ok(ThermodynamicTemperature::
-        new::<degree_celsius>(fluid_temperature_degrees_c));
-
-}
-#[test]
-pub fn test_custom_fluid_temperature_from_enthalpy(){
-    // this is just test to test the custom fluid enthalpy 
-    // checks if its working properly 
-
-    // first lets get hitec salt enthalpy at 550K 
-    // this specific function 
-    // assumes a lower bound temperature of 440K 
-    //
-
-    
-    use super::hitec_nitrate_salt::*;
-
-    let test_temperature_550_k = 
-        ThermodynamicTemperature::new::<kelvin>(550.0);
-
-    let ref_enthalpy = get_hitec_specific_enthalpy(test_temperature_550_k).unwrap();
-
-    // now lower bound and upper bound for hitec are set at 440k and 800k 
-
-    let lower_bound_temperature = 
-        ThermodynamicTemperature::new::<kelvin>(440.0);
-    let upper_bound_temperature = 
-        ThermodynamicTemperature::new::<kelvin>(800.0);
-
-
-    // and the cp function is: 
-
-    let cp_function = |fluid_temperature: ThermodynamicTemperature|{
-        get_hitec_constant_pressure_specific_heat_capacity(fluid_temperature).unwrap()
-    };
-
-    // now lets obtain the test temperature
-
-    let test_temperature = 
-        get_custom_fluid_temperature_from_enthalpy(
-            ref_enthalpy, 
-            cp_function, 
-            upper_bound_temperature, 
-            lower_bound_temperature).unwrap();
-
-    // reference enthalpy for hitec and 
-    // the custom fluid enthalpy given the cp function should be the same
-    // to within single floating point error
-    approx::assert_abs_diff_eq!(
-        550.0, 
-        test_temperature.get::<kelvin>(), 
-        epsilon=f32::EPSILON as f64);
-
-
+        new::<degree_celsius>(solid_temperature_degrees_c));
 
 }
 
-
-/// function checks if a fluid temperature falls in a range (20-180C)
+/// function checks if a solid temperature falls in a range (20-180C)
 ///
 /// If it falls outside this range, it will panic
 /// or throw an error, and the program will not run
 ///
-pub fn range_check_custom_fluid(fluid_temp: ThermodynamicTemperature,
+pub fn range_check_custom_solid(solid_temp: ThermodynamicTemperature,
     upper_bound_temperature: ThermodynamicTemperature,
     lower_bound_temperature: ThermodynamicTemperature,
-    ) 
+) 
     -> Result<bool,ThermalHydraulicsLibError>{
 
-        // first i convert the fluidTemp object into a degree 
+        // first i convert the solidTemp object into a degree 
         // celsius
         let temp_value_celsius = 
-            fluid_temp.get::<degree_celsius>();
+            solid_temp.get::<degree_celsius>();
         let low_temp_value_celsius = 
             lower_bound_temperature.get::<degree_celsius>();
         let high_temp_value_celsius = 
@@ -461,3 +342,5 @@ pub fn range_check_custom_fluid(fluid_temp: ThermodynamicTemperature,
         return Ok(true);
 
     }
+
+

@@ -6,6 +6,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::liquid_database;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_thermal_conductivity;
 use super::range_check;
+use super::solid_database::custom_solid_material;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum;
 use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
 use super::LiquidMaterial;
@@ -76,6 +77,9 @@ fn solid_thermal_conductivity(material: Material,
         Material::Solid(SteelSS304L) => SteelSS304L,
         Material::Solid(Fiberglass) => Fiberglass,
         Material::Solid(Copper) => Copper,
+        Material::Solid(CustomSolid((low_bound_temp,high_bound_temp),cp,k,rho,roughness)) => {
+            CustomSolid((low_bound_temp,high_bound_temp), cp, k, rho,roughness)
+        },
         Material::Liquid(_) => panic!("solid_thermal_conductivity, use SolidMaterial enums only")
     };
 
@@ -98,7 +102,7 @@ impl LiquidMaterial {
             DowthermA => dowtherm_a_thermal_conductivity(fluid_temp)?,
             TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)?,
             HITEC => get_hitec_thermal_conductivity(fluid_temp)?,
-            Custom((low_bound_temp,high_bound_temp), _cp, k_fn, _mu_fn, _rho_fn) => {
+            CustomLiquid((low_bound_temp,high_bound_temp), _cp, k_fn, _mu_fn, _rho_fn) => {
                 liquid_database::custom_liquid_material
                     ::get_custom_fluid_thermal_conductivity(fluid_temp, 
                         *k_fn, 
@@ -142,6 +146,14 @@ impl SolidMaterial {
 
                 },
                 Copper => copper_thermal_conductivity(solid_temp)?,
+                CustomSolid((low_bound_temp,high_bound_temp),
+                    _cp,k_fn,_rho_fn,_roughness) => {
+                    custom_solid_material::get_custom_solid_thermal_conductivity(
+                        solid_temp, 
+                        *k_fn, 
+                        *high_bound_temp, 
+                        *low_bound_temp)?
+                },
             };
 
             Ok(thermal_conductivity)
@@ -157,8 +169,8 @@ fn liquid_thermal_conductivity(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
-        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
-            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
         Material::Solid(_) => panic!(
         "liquid_thermal_conductivity, use LiquidMaterial enums only")

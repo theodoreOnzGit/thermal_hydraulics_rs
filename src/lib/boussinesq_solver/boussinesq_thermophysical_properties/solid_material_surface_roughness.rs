@@ -34,6 +34,12 @@ impl SolidMaterial {
             SolidMaterial::Fiberglass => {
                 Length::new::<millimeter>(0.00152)
             },
+            // user defined surface roughness
+            SolidMaterial::CustomSolid(
+                (_low_bound_temp,_high_bound_temp),_cp,_k,_rho_fn,roughness
+            ) => {
+                *roughness
+            },
         };
 
         Ok(roughness)

@@ -6,6 +6,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 use super::liquid_database;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_constant_pressure_specific_heat_capacity;
 use super::range_check;
+use super::solid_database::custom_solid_material;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum;
 use super::LiquidMaterial;
 use super::Material;
@@ -63,7 +64,7 @@ pub fn try_get_cp(material: Material,
 
 // should the material happen to be a solid, use this function
 fn solid_specific_heat_capacity(material: Material,
-    temperature: ThermodynamicTemperature) -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError>{
+    solid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError>{
     
     // first match the enum
 
@@ -71,13 +72,23 @@ fn solid_specific_heat_capacity(material: Material,
         Material::Solid(SteelSS304L) => SteelSS304L,
         Material::Solid(Fiberglass) => Fiberglass,
         Material::Solid(Copper) => Copper,
+        Material::Solid( CustomSolid((low_bound_temp,high_bound_temp),cp,k,rho_fn,roughness))=> {
+            CustomSolid((low_bound_temp,high_bound_temp), cp, k, rho_fn,roughness)
+        },
         Material::Liquid(_) => panic!("solid_specific_heat_capacity, use SolidMaterial enums only")
     };
 
     let specific_heat_capacity: SpecificHeatCapacity = match solid_material {
-        Fiberglass => fiberglass_specific_heat_capacity(temperature) ,
-        SteelSS304L => steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum(temperature)?,
-        Copper => copper_specific_heat_capacity(temperature)?,
+        Fiberglass => fiberglass_specific_heat_capacity(solid_temp) ,
+        SteelSS304L => steel_304_l_libreoffice_spline_specific_heat_capacity_ciet_zweibaum(solid_temp)?,
+        Copper => copper_specific_heat_capacity(solid_temp)?,
+        CustomSolid((low_bound_temp,high_bound_temp),cp_fn,_k,_rho_fn,_roughness) => {
+            custom_solid_material::get_custom_solid_constant_pressure_specific_heat_capacity(
+                solid_temp, 
+                cp_fn, 
+                high_bound_temp, 
+                low_bound_temp)?
+        },
     };
 
     return Ok(specific_heat_capacity);
@@ -94,8 +105,8 @@ ThermalHydraulicsLibError>{
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
-        Material::Liquid(Custom((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
-            Custom((low_bound_temp,high_bound_temp), cp, k, mu, rho)
+        Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
+            CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
         Material::Solid(_) => panic!(
         "liquid_specific_heat_capacity, use LiquidMaterial enums only")
@@ -105,7 +116,7 @@ ThermalHydraulicsLibError>{
         DowthermA => dowtherm_a_specific_heat_capacity(fluid_temp)?,
         TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)?,
         HITEC => get_hitec_constant_pressure_specific_heat_capacity(fluid_temp)?,
-        Custom((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
+        CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_constant_pressure_specific_heat_capacity(fluid_temp, 
                     cp_fn, 
