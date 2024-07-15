@@ -79,7 +79,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// 
 ///
 /// rho (kg/m3) = 2280.22  - 0.773 T(K)
-pub fn get_hitec_equimolar_density(
+pub fn get_hitec_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
 
@@ -122,8 +122,41 @@ pub fn get_hitec_equimolar_density(
 /// - 2.4331e-9 T(K)^3
 /// + 8.507e-13 T(K)^4
 ///
+/// Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
+/// STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
+/// Lab.(ORNL), Oak Ridge, TN (United States).
+///
+/// given the complicated looking correlations, it's always good to 
+/// against data. I'm using Bohlman's data for HITEC salt in 1972 
+/// as comparison. Fig 6 on page 25 of the document shows a graph 
+/// of HITEC salt viscosity in centipoises against temperature in 
+/// Fahrenheit
+///
+/// Using graphreader, I got the following pieces of data for viscosity 
+/// in cP against temp in Fahrenheit (roughly, the curve axes were 
+/// tilted)
+///
+///
+/// 315.282,15.039
+/// 336.479,12.087
+/// 346.338,10.984
+/// 375.915,8.642
+/// 399.577,7.362
+/// 440.986,5.709
+/// 498.169,4.272
+/// 585.915,3.051
+/// 653.944,2.5
+/// 730.845,1.988
+/// 832.394,1.555
+/// 928.521,1.28
+///
+/// I can use a simple test to ascertain if the viscosity is close 
+/// to this value
+///
+///
+///
 /// 
-pub fn get_hitec_equimolar_viscosity(
+pub fn get_hitec_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
 
@@ -166,6 +199,57 @@ ThermalHydraulicsLibError>{
 
     Ok(DynamicViscosity::new::<pascal_second>(viscosity_value_pascal_second))
                                 
+}
+
+
+#[test]
+pub fn hitec_nitrate_salt_test_viscosity(){
+    // going to perform 2 tests here
+    //
+    // From
+    // Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
+    // STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
+    // Lab.(ORNL), Oak Ridge, TN (United States).
+    //
+    // figure 6 page 25, the HITEC salt temperature in Fahrenheit 
+    // was given and the resulting viscosity was plotted
+    //
+    // T(F), mu (cP)
+    // 346.338,10.984
+    // 653.944,2.5
+    //
+    // No error bars were given, but based on Sohal's work 
+    // typical error bars from Janz were as high as 16% 
+    //
+    // Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+    // Engineering database of liquid salt thermophysical and 
+    // thermochemical properties (No. INL/EXT-10-18297). 
+    // Idaho National Lab.(INL), Idaho Falls, ID (United States).
+    //
+
+    use uom::si::thermodynamic_temperature::degree_fahrenheit;
+    use uom::si::dynamic_viscosity::centipoise;
+    extern crate approx;
+    // let's try the 346 F one first 
+    let temperature_346_f = 
+        ThermodynamicTemperature::new::<degree_fahrenheit>(
+            346.338);
+
+    // let's get the viscosity, should be around 11 cP 
+    let viscosity_346_f = 
+        get_hitec_viscosity(temperature_346_f).unwrap();
+
+    let viscosity_value_centipoise = 
+        viscosity_346_f.get::<centipoise>();
+
+    // we expect a dynamic viscosity of around 11 cP at this temperature
+    approx::assert_relative_eq!(
+        10.984, 
+        viscosity_value_centipoise, 
+        max_relative=0.16);
+
+    todo!()
+
 }
 
 /// function to obtain nitrate salt specific heat capacity
