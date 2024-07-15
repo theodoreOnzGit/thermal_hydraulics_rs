@@ -178,8 +178,8 @@ ThermalHydraulicsLibError>{
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
 /// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 ///
-/// cp (J/kg/K) = 1443.0 + 0.172 T
-/// T in degc
+/// cp (J/kg/K) = 1560.0 
+/// T in kelvin
 pub fn get_hitec_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
@@ -187,8 +187,8 @@ ThermalHydraulicsLibError>{
     range_check_hitec_salt(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
-    let temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
-    let cp_value_joule_per_kg = 1443.0 + 0.172*temperature_degrees_c_value;
+    let _temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
+    let cp_value_joule_per_kg = 1560.0;
 
     Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
         cp_value_joule_per_kg))
@@ -203,15 +203,52 @@ ThermalHydraulicsLibError>{
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
 /// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 ///
-/// k (thermal conductivity in W/mK) = 0.443 + 1.9e-4 T
-/// T in degc
+/// k (thermal conductivity in W/mK for T = 536-800 kelvin) = 
+/// 0.7663 - 6.47e-4 T(K)
+///
+/// k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
+/// 2.2627 - 0.01176 T(K)
+/// + 2.551e-5 T(K)^2 
+/// - 1.863e-8 T(K)^3
+///
+/// T in kelvin
 pub fn get_hitec_thermal_conductivity(
     fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
 
     range_check_hitec_salt(fluid_temp)?;
-    let thermal_conductivity_value = 0.443 - 1.9e-4* fluid_temp
-        .get::<degree_celsius>();
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
+    // 2.2627 - 0.01176 T(K)
+    // + 2.551e-5 T(K)^2 
+    // - 1.863e-8 T(K)^3
+    let mut a = 2.2627;
+    let mut b = - 0.01176;
+    let mut c = 2.551e-5;
+    let mut d = -1.863e-8;
+    let mut e = 0.0;
+
+    if fluid_temp_kelvin > 536.0 {
+        // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
+        // 2.2627 - 0.01176 T(K)
+        // + 2.551e-5 T(K)^2 
+        // - 1.863e-8 T(K)^3
+        a = 0.7663;
+        b = - 2.551e-5;
+        c = 0.0;
+        d = 0.0;
+        e = 0.0;
+
+    }
+
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
+    let thermal_conductivity_value = 
+        a 
+        + b * fluid_temp_kelvin
+        + c * fluid_temp_kelvin.powf(2.0)
+        + d * fluid_temp_kelvin.powf(3.0)
+        + e * fluid_temp_kelvin.powf(4.0);
 
     return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
         thermal_conductivity_value));
