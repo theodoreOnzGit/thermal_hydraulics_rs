@@ -75,8 +75,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+/// in Heat and Mass Transfer, 96, 61-68.
 /// 
 ///
 /// rho (kg/m3) = 2280.22  - 0.773 T(K)
@@ -108,8 +107,7 @@ pub fn get_hitec_equimolar_density(
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+/// in Heat and Mass Transfer, 96, 61-68.
 ///
 /// mu Pa-s (T = 440 - 500 K) 
 /// = 0.93845
@@ -175,8 +173,7 @@ ThermalHydraulicsLibError>{
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+/// in Heat and Mass Transfer, 96, 61-68.
 ///
 /// cp (J/kg/K) = 1560.0 
 /// T in kelvin
@@ -210,8 +207,7 @@ ThermalHydraulicsLibError>{
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+/// in Heat and Mass Transfer, 96, 61-68.
 ///
 /// k (thermal conductivity in W/mK for T = 536-800 kelvin) = 
 /// 0.7663 - 6.47e-4 T(K)
@@ -264,13 +260,12 @@ pub fn get_hitec_thermal_conductivity(
         thermal_conductivity_value));
 }
 
-/// function to obtain nitrate salt enthalpy
+/// function to obtain nitrate salt specific enthalpy
 /// given a temperature
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
+/// in Heat and Mass Transfer, 96, 61-68.
 ///
 /// cp (J/kg/K) = 1560.0 
 /// T in kelvin
@@ -311,6 +306,79 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
         enthalpy_value_joule_per_kg));
 }
 
+
+
+/// function to obtain nitrate salt temperature from specific enthalpy
+/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
+/// Investigation on heat transfer characteristics of molten salt in 
+/// a shell-and-tube heat exchanger. International Communications 
+/// in Heat and Mass Transfer, 96, 61-68.
+///
+///
+/// Note that the enthalpy equation was derived from manual 
+/// integration of cp assuming 0 J/kg at 440K (the minimum temperature)
+///
+/// 0 J/kg = 1560 * T_0 (K) + Constant
+/// Constant = 0 - 1560 T_0 (K)
+/// Constant = 0 - 1560 * 440
+/// Constant = 0 - 686,400
+/// 
+/// h (J/kg) = 1560.0 T(K) - 686400
+/// h (J/kg) = - 686400 + 1560.0 T(K) 
+///
+///
+pub fn get_temperature_from_enthalpy(
+    fluid_enthalpy: AvailableEnergy) -> Result<ThermodynamicTemperature,ThermalHydraulicsLibError> {
+
+    // if enthalpy value below zero,
+    // based on me setting zero enthalpy at the lower end of the 
+    // temperature validity range for enthalpy,
+    // then enthalpy is technically out of range
+    if fluid_enthalpy.value < 0_f64 {
+        panic!("HITEC : get_temperature_from_enthalpy \n
+               enthalpy < 0.0 , out of correlation range");
+    }
+
+    // first let's convert enthalpy to a double (f64)
+    let enthalpy_value_joule_per_kg = 
+        fluid_enthalpy.get::<joule_per_kilogram>();
+
+    // second let's define a function 
+    // or actually a closure or anonymous function that
+    // is aware of the variables declared
+    // enthalpy value = 1518*T +2.82/2.0 T^2 - 30924
+    // LHS is actual enthalpy value
+
+    let enthalpy_root = |temp_degrees_kelvin_value : AD| -> AD {
+        let lhs_value = enthalpy_value_joule_per_kg;
+        // convert AD type into double
+        let temp_degrees_kelvin_value_double = temp_degrees_kelvin_value.x();
+
+        let fluid_temperature = 
+            ThermodynamicTemperature::new::<kelvin>(
+                temp_degrees_kelvin_value_double);
+        let rhs = get_hitec_enthalpy(fluid_temperature).unwrap();
+        let rhs_value = rhs.get::<joule_per_kilogram>();
+
+        return AD0(lhs_value-rhs_value);
+    };
+    
+    // now solve using bisection
+    // the range is from 440 K - 800 K
+    
+    let fluid_temperature_degrees_kelvin_result 
+        = bisection(enthalpy_root,
+                    (440.0,800.0),
+                    100,
+                    1e-8);
+
+    let fluid_temperature_degrees_kelvin = fluid_temperature_degrees_kelvin_result.unwrap();
+
+    return Ok(ThermodynamicTemperature::
+        new::<kelvin>(fluid_temperature_degrees_kelvin));
+
+}
+
 /// function checks if a fluid temperature falls in a range 
 ///
 /// If it falls outside this range, it will panic
@@ -320,7 +388,6 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
-/// Maheshwari, N. K., & Vijayan, P. K. (2016). 
 ///
 /// From HITEC, the applicable range is 440K - 800 K, 
 ///
