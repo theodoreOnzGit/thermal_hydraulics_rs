@@ -294,7 +294,7 @@ pub fn test_custom_fluid_enthalpy(){
 /// note that this is quite intensive calculation load 
 /// wise due to its iterative nature, use sparingly and with caution
 /// 
-pub fn get_temperature_from_enthalpy(
+pub fn get_custom_fluid_temperature_from_enthalpy(
     fluid_enthalpy: AvailableEnergy,
     cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
     upper_bound_temperature: ThermodynamicTemperature,
@@ -353,6 +353,57 @@ pub fn get_temperature_from_enthalpy(
 
     return Ok(ThermodynamicTemperature::
         new::<degree_celsius>(fluid_temperature_degrees_c));
+
+}
+#[test]
+pub fn test_custom_fluid_temperature_from_enthalpy(){
+    // this is just test to test the custom fluid enthalpy 
+    // checks if its working properly 
+
+    // first lets get hitec salt enthalpy at 550K 
+    // this specific function 
+    // assumes a lower bound temperature of 440K 
+    //
+
+    use super::hitec_nitrate_salt::*;
+
+    let test_temperature_550_k = 
+        ThermodynamicTemperature::new::<kelvin>(550.0);
+
+    let ref_enthalpy = get_hitec_specific_enthalpy(test_temperature_550_k).unwrap();
+
+    // now lower bound and upper bound for hitec are set at 440k and 800k 
+
+    let lower_bound_temperature = 
+        ThermodynamicTemperature::new::<kelvin>(440.0);
+    let upper_bound_temperature = 
+        ThermodynamicTemperature::new::<kelvin>(800.0);
+
+
+    // and the cp function is: 
+
+    let cp_function = |fluid_temperature: ThermodynamicTemperature|{
+        get_hitec_constant_pressure_specific_heat_capacity(fluid_temperature).unwrap()
+    };
+
+    // now lets obtain the test temperature
+
+    let test_temperature = 
+        get_custom_fluid_temperature_from_enthalpy(
+            ref_enthalpy, 
+            cp_function, 
+            upper_bound_temperature, 
+            lower_bound_temperature).unwrap();
+
+    // reference enthalpy for hitec and 
+    // the custom fluid enthalpy given the cp function should be the same
+    // to within single floating point error
+    approx::assert_abs_diff_eq!(
+        550.0, 
+        test_temperature.get::<kelvin>(), 
+        epsilon=f32::EPSILON as f64);
+
+
 
 }
 
