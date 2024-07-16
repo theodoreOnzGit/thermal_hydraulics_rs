@@ -264,6 +264,9 @@ pub fn flibe_salt_test_viscosity(){
 ///
 /// the 2415.6 value had an uncertainty of about +/- 20%
 ///
+/// The temperature range is for all fluid temperatures, from 
+/// 732.2K all the way up to 4498.8K (ish), the triple point
+///
 ///
 pub fn get_flibe_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
@@ -311,6 +314,9 @@ ThermalHydraulicsLibError>{
 /// k (thermal conductivity in W/mK for T = 500-1123 kelvin) = 
 /// 0.629697 + 0.0005 T[K]
 ///
+/// For more than 1123 K, I'll just let the conductivity be 
+/// the value obtained at 1123 K, seeing how in Sohal, the value is 
+/// does not seem to vary greatly with temperature 
 ///
 /// T in kelvin
 pub fn get_flibe_thermal_conductivity(
@@ -318,7 +324,7 @@ pub fn get_flibe_thermal_conductivity(
 
 
     range_check_flibe_salt(fluid_temp)?;
-    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    let mut fluid_temp_kelvin = fluid_temp.get::<kelvin>();
     // k (thermal conductivity in W/mK for T = 500-1123 kelvin) = 
     // 0.629697 + 0.0005 T[K]
     let a = 0.629697;
@@ -326,6 +332,13 @@ pub fn get_flibe_thermal_conductivity(
     let c = 0.0;
     let d = 0.0;
     let e = 0.0;
+
+    if fluid_temp_kelvin > 1123.0 {
+        // For more than 1123 K, I'll just let the conductivity be 
+        // the value obtained at 1123 K, seeing how in Sohal, the value is 
+        // does not seem to vary greatly with temperature 
+        fluid_temp_kelvin = 1123.0;
+    }
 
     // generic correlation is:
     // a + bT + cT^2 + dT^3 + eT^4;
@@ -340,31 +353,28 @@ pub fn get_flibe_thermal_conductivity(
         thermal_conductivity_value));
 }
 
-/// function to obtain nitrate salt specific enthalpy
+/// function to obtain flibe salt specific enthalpy
 /// given a temperature
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68.
 ///
-/// cp (J/kg/K) = 1560.0 
-/// T in kelvin
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
+///
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+///
+/// cp (J/kg/K) = 2389.0, T in kelvin
 ///
 /// Manual integration with temperature yields:
 ///
-/// h (J/kg) = 1560.0 T(K) + Constant
+/// h (J/kg) = 2389.0 T(K) + Constant
 ///
-/// I can just adjust the enthalpy to be 0 J/kg at 440K
+/// I can just adjust the enthalpy to be 0 J/kg at 812.5 K, which is 
+/// the low bound temperature for FLiBe
 ///
-/// 0 J/kg = 1560 * T_0 (K) + Constant
-/// Constant = 0 - 1560 T_0 (K)
-/// Constant = 0 - 1560 * 440
-/// Constant = 0 - 686,400
-/// 
-/// h (J/kg) = 1560.0 T(K) - 686400
-/// h (J/kg) = - 686400 + 1560.0 T(K) 
-///
-///
+/// 0.0 = 2389.0 * 812.5 + Constant
 ///
 pub fn get_flibe_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
@@ -374,10 +384,12 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
     // note, specific entropy and heat capcity are the same unit...
     //
     // h (J/kg) = - 686400 + 1560.0 T(K) 
+    let low_bound_temp_kelvin = 812.5;
+    let cp_val_constant_joule_per_kilogram_kelvin = 2389.0;
     let temp_kelvin_value = fluid_temp.get::<kelvin>();
     let enthalpy_value_joule_per_kg 
-        = -686400_f64 
-        + 1560.0 * temp_kelvin_value;
+        = -low_bound_temp_kelvin * cp_val_constant_joule_per_kilogram_kelvin
+        + cp_val_constant_joule_per_kilogram_kelvin * temp_kelvin_value;
 
     // the closest unit available is AvailableEnergy which is
     // joule per kg 
@@ -464,16 +476,25 @@ pub fn get_temperature_from_enthalpy(
 /// If it falls outside this range, it will panic
 /// or throw an error, and the program will not run
 ///
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
 ///
-/// From HITEC, the applicable range is 440K - 800 K, 
+/// For FLiBe, the applicable range is 732.2K (melting point) - 1573 K.
+/// I try to make the range as wide as possible because Gnielinski's correlation 
+/// requires corrections using wall temperature. These may be outside 
+/// the usual bulk temperatures of FLiBe.
 ///
-/// In Du's paper, the viscosity correlation is applicable from 440 to 800K
-/// while the rest of the properties are from 420-800K
 /// 
+/// thermal conductivity is extrapolated (constant till 1573 K, no data 
+/// exists there)
+/// viscosity is all the way up to 812.5 K - 1573 K (Abe's correlation)
+/// (about 540 C), which should be low enough (KP-FHR temperatures are 
+/// around 585 C) 
+/// cp and density are okay for all temperatures
+/// 
+///
 ///
 pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature) 
     -> Result<bool,ThermalHydraulicsLibError>{
@@ -483,8 +504,8 @@ pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature)
 
         range_check(&Material::Liquid(LiquidMaterial::HITEC), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(1123.0), 
-            ThermodynamicTemperature::new::<kelvin>(600.0))?;
+            ThermodynamicTemperature::new::<kelvin>(1573.0), 
+            ThermodynamicTemperature::new::<kelvin>(812.5))?;
 
         return Ok(true);
 
