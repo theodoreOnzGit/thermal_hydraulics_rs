@@ -131,7 +131,7 @@ pub fn get_yd325_density(
 ///
 ///
 /// 
-pub fn get_hitec_dynamic_viscosity(
+pub fn get_yd325_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
 
@@ -177,7 +177,7 @@ ThermalHydraulicsLibError>{
 
 
 
-/// function to obtain nitrate salt specific heat capacity
+/// function to obtain yd_325_heat_transfer_oil specific heat capacity
 /// given a temperature
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
@@ -188,33 +188,34 @@ ThermalHydraulicsLibError>{
 /// An experimental study on the heat transfer performance of a prototype 
 /// molten-salt rod baffle heat exchanger for concentrated solar power. 
 /// Energy, 156, 63-72.
-/// cp (J/kg/K) = 1560.0 
+///
+/// cp (J/kg/K) = 776.0 + 3.40 T(K)
 /// T in kelvin
 ///
-/// Now, Sohal has a different correlation for cp 
 ///
-/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
-/// Engineering database of liquid salt thermophysical and 
-/// thermochemical properties (No. INL/EXT-10-18297). 
-/// Idaho National Lab.(INL), Idaho Falls, ID (United States).
-///
-/// but I'm not going to consider that yet
-///
-pub fn get_hitec_constant_pressure_specific_heat_capacity(
+#[inline]
+pub fn get_yd325_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
 
     range_check_yd325_oil(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
-    let _temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
-    let cp_value_joule_per_kg = 1560.0;
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    let a = 776.0;
+    let b = 3.40;
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
+
+    let cp_value_joule_per_kg = 
+        a 
+        + b * fluid_temp_kelvin;
 
     Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
         cp_value_joule_per_kg))
 }
 
-/// function to obtain nitrate salt thermal conductivity
+/// function to obtain yd_325_heat_transfer_oil thermal conductivity
 /// given a temperature
 ///
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
@@ -222,43 +223,28 @@ ThermalHydraulicsLibError>{
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
-/// k (thermal conductivity in W/mK for T = 536-800 kelvin) = 
-/// 0.7663 - 6.47e-4 T(K)
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
 ///
-/// k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-/// 2.2627 - 0.01176 T(K)
-/// + 2.551e-5 T(K)^2 
-/// - 1.863e-8 T(K)^3
+/// lambda = 0.1416 - 6.68e-5 T(K)
 ///
 /// T in kelvin
-pub fn get_hitec_thermal_conductivity(
+pub fn get_yd325_thermal_conductivity(
     fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
 
     range_check_yd325_oil(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
-    // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-    // 2.2627 - 0.01176 T(K)
-    // + 2.551e-5 T(K)^2 
-    // - 1.863e-8 T(K)^3
-    let mut a = 2.2627;
-    let mut b = - 0.01176;
-    let mut c = 2.551e-5;
-    let mut d = -1.863e-8;
-    let mut e = 0.0;
+    // k (thermal conductivity in W/mK for T = 300-573 kelvin) = 
+    // lambda = 0.1416 - 6.68e-5 T(K)
+    let a = 0.1416;
+    let b = - 6.68e-5;
+    let c = 0.0;
+    let d = 0.0;
+    let e = 0.0;
 
-    if fluid_temp_kelvin > 536.0 {
-        // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-        // 2.2627 - 0.01176 T(K)
-        // + 2.551e-5 T(K)^2 
-        // - 1.863e-8 T(K)^3
-        a = 0.7663;
-        b = - 2.551e-5;
-        c = 0.0;
-        d = 0.0;
-        e = 0.0;
-
-    }
 
     // generic correlation is:
     // a + bT + cT^2 + dT^3 + eT^4;
@@ -273,48 +259,69 @@ pub fn get_hitec_thermal_conductivity(
         thermal_conductivity_value));
 }
 
-/// function to obtain nitrate salt specific enthalpy
+/// function to obtain yd_325_heat_transfer_oil specific enthalpy
 /// given a temperature
+///
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
 /// Investigation on heat transfer characteristics of molten salt in 
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
-/// cp (J/kg/K) = 1560.0 
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
+///
+/// cp (J/kg/K) = 776.0 + 3.40 T(K)
 /// T in kelvin
 ///
 /// Manual integration with temperature yields:
 ///
-/// h (J/kg) = 1560.0 T(K) + Constant
+/// h (J/kg) = 776.0 T(K) + 3.40 * 0.5 T(K)^2 + Constant
 ///
-/// I can just adjust the enthalpy to be 0 J/kg at 440K
-///
-/// 0 J/kg = 1560 * T_0 (K) + Constant
-/// Constant = 0 - 1560 T_0 (K)
-/// Constant = 0 - 1560 * 440
-/// Constant = 0 - 686,400
-/// 
-/// h (J/kg) = 1560.0 T(K) - 686400
-/// h (J/kg) = - 686400 + 1560.0 T(K) 
+/// Now, I can just "cheat" and perform a definite integral 
+/// The reference temperature can be the lower bound temperature of 
+/// 323K
 ///
 ///
 ///
-pub fn get_hitec_specific_enthalpy(
+///
+///
+pub fn get_yd325_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
     range_check_yd325_oil(fluid_temp)?;
-    // note, specific entropy and heat capcity are the same unit...
-    //
-    // h (J/kg) = - 686400 + 1560.0 T(K) 
+    let reference_temperature_kelvin = 323.0;
+
     let temp_kelvin_value = fluid_temp.get::<kelvin>();
+
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
+    // I define those parameters here:
+    let a = 0.0;
+    let b = 776.0;
+    let c = 3.40 * 0.5;
+    let d = 0.0;
+    let e = 0.0;
+
+    let enthalpy_value_joule_per_kg_calc =  |fluid_temp_kelvin: f64|{
+        a + b * fluid_temp_kelvin
+            + c * fluid_temp_kelvin.powf(2.0)
+            + d * fluid_temp_kelvin.powf(3.0)
+            + e * fluid_temp_kelvin.powf(4.0)
+    };
+
+    // this is slightly more computationally expensive than other calcs,
+    // but perhaps less error prone during development.
     let enthalpy_value_joule_per_kg 
-        = -686400_f64 
-        + 1560.0 * temp_kelvin_value;
+        = enthalpy_value_joule_per_kg_calc(temp_kelvin_value) 
+        - enthalpy_value_joule_per_kg_calc(reference_temperature_kelvin);
 
     // the closest unit available is AvailableEnergy which is
     // joule per kg 
 
+    // note, specific entropy and heat capcity are the same unit...
     return Ok(AvailableEnergy::new::<joule_per_kilogram>(
         enthalpy_value_joule_per_kg));
 }
@@ -327,17 +334,11 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
 ///
-/// Note that the enthalpy equation was derived from manual 
-/// integration of cp assuming 0 J/kg at 440K (the minimum temperature)
-///
-/// 0 J/kg = 1560 * T_0 (K) + Constant
-/// Constant = 0 - 1560 T_0 (K)
-/// Constant = 0 - 1560 * 440
-/// Constant = 0 - 686,400
-/// 
-/// h (J/kg) = 1560.0 T(K) - 686400
-/// h (J/kg) = - 686400 + 1560.0 T(K) 
 ///
 ///
 pub fn get_temperature_from_enthalpy(
@@ -348,7 +349,7 @@ pub fn get_temperature_from_enthalpy(
     // temperature validity range for enthalpy,
     // then enthalpy is technically out of range
     if fluid_enthalpy.value < 0_f64 {
-        panic!("HITEC : get_temperature_from_enthalpy \n
+        panic!("yd_325_heat_transfer_oil : get_temperature_from_enthalpy \n
                enthalpy < 0.0 , out of correlation range");
     }
 
@@ -359,7 +360,6 @@ pub fn get_temperature_from_enthalpy(
     // second let's define a function 
     // or actually a closure or anonymous function that
     // is aware of the variables declared
-    // enthalpy value = 1518*T +2.82/2.0 T^2 - 30924
     // LHS is actual enthalpy value
 
     let enthalpy_root = |temp_degrees_kelvin_value : AD| -> AD {
@@ -370,18 +370,18 @@ pub fn get_temperature_from_enthalpy(
         let fluid_temperature = 
             ThermodynamicTemperature::new::<kelvin>(
                 temp_degrees_kelvin_value_double);
-        let rhs = get_hitec_specific_enthalpy(fluid_temperature).unwrap();
+        let rhs = get_yd325_specific_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
         return AD0(lhs_value-rhs_value);
     };
     
     // now solve using bisection
-    // the range is from 440 K - 800 K
+    // the range is from 323 K - 523 K
     
     let fluid_temperature_degrees_kelvin_result 
         = bisection(enthalpy_root,
-                    (440.0,800.0),
+                    (323.0,523.0),
                     100,
                     1e-8);
 
