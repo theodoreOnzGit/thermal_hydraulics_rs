@@ -249,7 +249,21 @@ pub fn flibe_salt_test_viscosity(){
 ///
 /// It is quite invariant with temperature
 /// 
-/// values range from 2415.6 J/(kg K) to 2386 J/(kg K)
+/// values range from 2415.8 J/(kg K) to 2386 J/(kg K)
+///
+/// Lichtenstein had a cp value of 1860 J/(kg K), but this 
+/// lowered value was attributed to BeO impurities within the FLiBe
+///
+/// Lichtenstein, T., Rose, M. A., Krueger, J., Wu, E., & 
+/// Williamson, M. A. (2022). Thermochemical Property Measurements of 
+/// FLiNaK and FLiBe in FY 2020 (No. ANL/CFCT-20/37 Rev. 1). 
+/// Argonne National Lab.(ANL), Argonne, IL (United States).
+///
+/// It is more reasonable to take the 2386 J/(kg K) value as this had an 
+/// uncertainty of +/- 3% 
+///
+/// the 2415.6 value had an uncertainty of about +/- 20%
+///
 ///
 pub fn get_flibe_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
@@ -259,27 +273,44 @@ ThermalHydraulicsLibError>{
     // note, specific entropy and heat capcity are the same unit...
     //
     let _temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
-    let cp_value_joule_per_kg = 1560.0;
+    let cp_value_joule_per_kg = 2386.0;
 
     Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
         cp_value_joule_per_kg))
 }
 
-/// function to obtain nitrate salt thermal conductivity
-/// given a temperature
+/// function to obtain flibe salt thermal conductivity
+/// given a temperature.
+/// Data was obtained from the following publications
 ///
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68.
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
 ///
-/// k (thermal conductivity in W/mK for T = 536-800 kelvin) = 
-/// 0.7663 - 6.47e-4 T(K)
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
 ///
-/// k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-/// 2.2627 - 0.01176 T(K)
-/// + 2.551e-5 T(K)^2 
-/// - 1.863e-8 T(K)^3
+/// Thermal conductivity is in the range of 1.1 W/(m K) in 873K to 1073K,
+/// and Sohal's correlation was originally for 500-650 K
+/// Which is strangely below the melting 
+/// point of flibe
+/// but based on Romatoski's data, I found that Romatoski's data 
+/// could fit Sohal's correlation to within 10% error
+/// even up to 1123 K in my PhD Thesis
+///
+/// Therefore I could use it in the whole temperature range from 
+/// 500 - 1123K .
+///
+///
+/// Ong, T. K. C. (2024). Digital Twins as Testbeds for 
+/// Iterative Simulated Neutronics Feedback Controller 
+/// Development (Doctoral dissertation, UC Berkeley).
+///
+/// k (thermal conductivity in W/mK for T = 500-1123 kelvin) = 
+/// 0.629697 + 0.0005 T[K]
+///
 ///
 /// T in kelvin
 pub fn get_flibe_thermal_conductivity(
@@ -288,28 +319,13 @@ pub fn get_flibe_thermal_conductivity(
 
     range_check_flibe_salt(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
-    // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-    // 2.2627 - 0.01176 T(K)
-    // + 2.551e-5 T(K)^2 
-    // - 1.863e-8 T(K)^3
-    let mut a = 2.2627;
-    let mut b = - 0.01176;
-    let mut c = 2.551e-5;
-    let mut d = -1.863e-8;
-    let mut e = 0.0;
-
-    if fluid_temp_kelvin > 536.0 {
-        // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
-        // 2.2627 - 0.01176 T(K)
-        // + 2.551e-5 T(K)^2 
-        // - 1.863e-8 T(K)^3
-        a = 0.7663;
-        b = - 2.551e-5;
-        c = 0.0;
-        d = 0.0;
-        e = 0.0;
-
-    }
+    // k (thermal conductivity in W/mK for T = 500-1123 kelvin) = 
+    // 0.629697 + 0.0005 T[K]
+    let a = 0.629697;
+    let b = 0.0005;
+    let c = 0.0;
+    let d = 0.0;
+    let e = 0.0;
 
     // generic correlation is:
     // a + bT + cT^2 + dT^3 + eT^4;

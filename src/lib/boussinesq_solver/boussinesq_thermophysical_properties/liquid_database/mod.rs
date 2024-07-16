@@ -75,8 +75,6 @@ pub mod sodium_potassium_equimolar_nissen_nitrate_salt;
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
 /// for nuclear reactor applications: A review. Annals 
 /// of Nuclear Energy, 109, 635-647.
-/// properties for a custom liquid material 
-/// not covered in the database
 ///
 /// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
 /// Engineering database of liquid salt thermophysical and thermochemical 
@@ -84,6 +82,8 @@ pub mod sodium_potassium_equimolar_nissen_nitrate_salt;
 /// Idaho Falls, ID (United States).
 
 pub mod flibe;
-/// 
+
+/// properties for a custom liquid material 
+/// not covered in the database
 /// You'll need to define your own functions for this to work
 pub mod custom_liquid_material;
