@@ -83,6 +83,24 @@ pub mod sodium_potassium_equimolar_nissen_nitrate_salt;
 
 pub mod flibe;
 
+/// FLiNaK 
+/// 46.5-11.5-42.0 mol% of LiF, NaF and KF respectively,
+/// melting temperature is commonly in literature 
+/// 454 C, though 462 C is a safer (more conservative) bet
+///
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+///
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
+///
+///
+///
+pub mod flinak;
+
 /// properties for a custom liquid material 
 /// not covered in the database
 /// You'll need to define your own functions for this to work

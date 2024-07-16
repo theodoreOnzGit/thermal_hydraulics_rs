@@ -488,7 +488,7 @@ pub fn get_temperature_from_enthalpy(
     // temperature validity range for enthalpy,
     // then enthalpy is technically out of range
     if fluid_enthalpy.value < 0_f64 {
-        panic!("HITEC : get_temperature_from_enthalpy \n
+        panic!("FLiBe : get_temperature_from_enthalpy \n
                enthalpy < 0.0 , out of correlation range");
     }
 
