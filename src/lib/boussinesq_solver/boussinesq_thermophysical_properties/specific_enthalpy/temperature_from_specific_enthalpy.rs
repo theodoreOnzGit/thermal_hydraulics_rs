@@ -11,6 +11,7 @@ use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
@@ -95,6 +96,7 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325) => YD325,
+        Material::Liquid(FLiBe) => FLiBe,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -107,6 +109,7 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
         HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_temp).unwrap(),
         YD325 => yd_325_heat_transfer_oil::get_temperature_from_enthalpy(fluid_temp).unwrap(),
+        FLiBe => flibe::get_temperature_from_enthalpy(fluid_temp).unwrap(),
         CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_temperature_from_enthalpy(fluid_temp, 

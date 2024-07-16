@@ -1,6 +1,7 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
+use super::liquid_database::flibe::get_flibe_dynamic_viscosity;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_dynamic_viscosity;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_dynamic_viscosity;
 use super::LiquidMaterial;
@@ -66,6 +67,7 @@ fn liquid_dynamic_viscosity(material: Material,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325) => YD325,
+        Material::Liquid(FLiBe) => FLiBe,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -77,6 +79,7 @@ fn liquid_dynamic_viscosity(material: Material,
         TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?,
         HITEC => get_hitec_dynamic_viscosity(fluid_temp)?,
         YD325 => get_yd325_dynamic_viscosity(fluid_temp)?,
+        FLiBe => get_flibe_dynamic_viscosity(fluid_temp)?,
         CustomLiquid((low_bound_temp,high_bound_temp), _cp, _k, mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_viscosity(fluid_temp, 
@@ -101,6 +104,7 @@ impl LiquidMaterial {
             TherminolVP1 => dowtherm_a_dynamic_viscosity(temperature)?,
             HITEC => get_hitec_dynamic_viscosity(temperature)?,
             YD325 => get_yd325_dynamic_viscosity(temperature)?,
+            FLiBe => get_flibe_dynamic_viscosity(temperature)?,
             CustomLiquid((low_bound_temp,high_bound_temp), _cp, _k, mu_fn, _rho_fn) => {
                 
                 liquid_database::custom_liquid_material

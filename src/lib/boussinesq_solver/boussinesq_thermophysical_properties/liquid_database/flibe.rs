@@ -400,23 +400,23 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
 
 
-/// function to obtain nitrate salt temperature from specific enthalpy
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68.
+/// function to obtain flibe salt temperature from specific enthalpy
+///
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
 ///
 ///
 /// Note that the enthalpy equation was derived from manual 
-/// integration of cp assuming 0 J/kg at 440K (the minimum temperature)
+/// integration of cp assuming 0 J/kg at 812.5K (the minimum temperature)
 ///
-/// 0 J/kg = 1560 * T_0 (K) + Constant
-/// Constant = 0 - 1560 T_0 (K)
-/// Constant = 0 - 1560 * 440
-/// Constant = 0 - 686,400
-/// 
-/// h (J/kg) = 1560.0 T(K) - 686400
-/// h (J/kg) = - 686400 + 1560.0 T(K) 
+/// h (J/kg) = 2389.0 T(K) + Constant
+///
+/// I can just adjust the enthalpy to be 0 J/kg at 812.5 K, which is 
+/// the low bound temperature for FLiBe
+///
+/// 0.0 = 2389.0 * 812.5 + Constant
 ///
 ///
 pub fn get_temperature_from_enthalpy(
@@ -456,11 +456,11 @@ pub fn get_temperature_from_enthalpy(
     };
     
     // now solve using bisection
-    // the range is from 440 K - 800 K
+    // the range is from 812.5 K - 1573 K
     
     let fluid_temperature_degrees_kelvin_result 
         = bisection(enthalpy_root,
-                    (440.0,800.0),
+                    (812.5,1573.0),
                     100,
                     1e-8);
 
@@ -502,7 +502,7 @@ pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature)
         // first i convert the fluidTemp object into a degree 
         // celsius
 
-        range_check(&Material::Liquid(LiquidMaterial::HITEC), 
+        range_check(&Material::Liquid(LiquidMaterial::FLiBe), 
             fluid_temp, 
             ThermodynamicTemperature::new::<kelvin>(1573.0), 
             ThermodynamicTemperature::new::<kelvin>(812.5))?;

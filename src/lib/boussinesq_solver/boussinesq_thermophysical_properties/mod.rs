@@ -106,6 +106,21 @@ pub enum LiquidMaterial {
     /// molten-salt rod baffle heat exchanger for concentrated solar power. 
     /// Energy, 156, 63-72.
     YD325,
+    /// 
+    /// LiF - BeF2  in approx 67 mol% - 33 mol% combination
+    /// Data taken from:
+    ///
+    /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+    /// for nuclear reactor applications: A review. Annals 
+    /// of Nuclear Energy, 109, 635-647.
+    /// properties for a custom liquid material 
+    /// not covered in the database
+    ///
+    /// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+    /// Engineering database of liquid salt thermophysical and thermochemical 
+    /// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+    /// Idaho Falls, ID (United States).
+    FLiBe,
     /// Custom fluid, for the user to decide the correlations himself 
     /// or herself
     CustomLiquid(

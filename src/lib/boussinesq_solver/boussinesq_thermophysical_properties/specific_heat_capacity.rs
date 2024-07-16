@@ -4,6 +4,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 
 use super::liquid_database;
+use super::liquid_database::flibe::get_flibe_constant_pressure_specific_heat_capacity;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_constant_pressure_specific_heat_capacity;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_constant_pressure_specific_heat_capacity;
 use super::range_check;
@@ -107,6 +108,7 @@ ThermalHydraulicsLibError>{
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325) => YD325,
+        Material::Liquid(FLiBe) => FLiBe,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -119,6 +121,7 @@ ThermalHydraulicsLibError>{
         TherminolVP1 => dowtherm_a_specific_heat_capacity(fluid_temp)?,
         HITEC => get_hitec_constant_pressure_specific_heat_capacity(fluid_temp)?,
         YD325 => get_yd325_constant_pressure_specific_heat_capacity(fluid_temp)?,
+        FLiBe => get_flibe_constant_pressure_specific_heat_capacity(fluid_temp)?,
         CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_constant_pressure_specific_heat_capacity(fluid_temp, 
