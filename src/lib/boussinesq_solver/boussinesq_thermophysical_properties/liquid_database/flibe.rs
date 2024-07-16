@@ -57,7 +57,7 @@
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 use uom::si::mass_density::kilogram_per_cubic_meter;
-use uom::si::dynamic_viscosity::pascal_second;
+use uom::si::dynamic_viscosity::{centipoise, pascal_second};
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::available_energy::joule_per_kilogram;
@@ -115,57 +115,41 @@ pub fn get_flibe_density(
 /// function to obtain nitrate salt viscosity
 /// given a temperature
 ///
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68.
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+/// properties for a custom liquid material 
+/// not covered in the database
 ///
-/// mu Pa-s (T = 440 - 500 K) 
-/// = 0.93845
-/// -0.54754 T(K)
-/// + 1.08225e-5 T(K)^2
-/// - 7.2058e-9 T(K)^3
+/// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
 ///
-/// mu Pa-s (T = 500 - 800 K) 
-/// = 0.23816
-/// - 1.2768e-3 T(K)
-/// + 2.6275e-6 T(K)^2
-/// - 2.4331e-9 T(K)^3
-/// + 8.507e-13 T(K)^4
+/// Romatoski writes that Gierszewski et al. had a correlation for 
+/// 66 mol% LiF, 34 mol% BeF2 for dynamic_viscosity in cP, temperature 
+/// in kelvin
 ///
-/// Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
-/// STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
-/// Lab.(ORNL), Oak Ridge, TN (United States).
+/// mu (cP) = 0.116 exp(3760/T(K))
+/// Applicable from 600-1200 K
 ///
-/// given the complicated looking correlations, it's always good to 
-/// against data. I'm using Bohlman's data for HITEC salt in 1972 
-/// as comparison. Fig 6 on page 25 of the document shows a graph 
-/// of HITEC salt viscosity in centipoises against temperature in 
-/// Fahrenheit
+/// Beyond this range, there is no viscosity data for this same composition,
+/// but Romatoski writes that Abe et al, had data for
+/// 66 mol% LiF, 34 mol% BeF2 for dynamic_viscosity in cP, temperature 
+/// in kelvin
 ///
-/// Using graphreader, I got the following pieces of data for viscosity 
-/// in cP against temp in Fahrenheit (roughly, the curve axes were 
-/// tilted)
+/// mu (cP) = 0.07803 exp(4022/T(K))
+/// Applicable from 812.5 - 1573 K 
 ///
-///
-/// 315.282,15.039
-/// 336.479,12.087
-/// 346.338,10.984
-/// 375.915,8.642
-/// 399.577,7.362
-/// 440.986,5.709
-/// 498.169,4.272
-/// 585.915,3.051
-/// 653.944,2.5
-/// 730.845,1.988
-/// 832.394,1.555
-/// 928.521,1.28
-///
-/// I can use a simple test to ascertain if the viscosity is close 
-/// to this value
+/// 
+/// There is some discrepancy within the literature data, 
+/// but I suppose for this code, 
+/// Abe's correlation can work from 1200 - 1573 K 
 ///
 ///
-///
+/// There will be obvious discontinuity at 1200K, but I'll leave it 
+/// for future patches
+/// 
 /// 
 pub fn get_flibe_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
@@ -173,120 +157,79 @@ ThermalHydraulicsLibError>{
 
     range_check_flibe_salt(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
-    // mu Pa-s (T = 500 - 800 K) 
-    // = 0.23816
-    // - 1.2768e-3 T(K)
-    // + 2.6275e-6 T(K)^2
-    // - 2.4331e-9 T(K)^3
-    // + 8.507e-13 T(K)^4
-    let mut a = 0.23816;
-    let mut b = - 1.2768e-3;
-    let mut c = 2.6275e-6;
-    let mut d = -2.4331e-9;
-    let mut e = 8.507e-13;
+    // mu centipoise (T = 600 - 1200 K) 
+    // mu (cP) = 0.116 exp(3760/T(K))
+    // 
+    // 
+    // generic form:  
+    // mu = a * exp (b/T[K])
+    let mut a = 0.116;
+    let mut b = 3760_f64;
+    // c, d and e variables need not be here,
+    // but I'm leaving it as a legacy thing
+    let mut _c = 0.0;
+    let mut _d = 0.0;
+    let mut _e = 0.0;
 
-    if fluid_temp_kelvin < 500.0 {
-        // mu Pa-s (T = 440 - 500 K) 
-        // = 0.93845
-        // -0.54754 T(K)
-        // + 1.08225e-5 T(K)^2
-        // - 7.2058e-9 T(K)^3
-        a = 0.93845;
-        b = - 5.4754e-3;
-        c = 1.08225e-5;
-        d = -7.2058e-9;
-        e = 0.0;
+    if fluid_temp_kelvin > 1200.0 {
+        // Abe's correlation can work from 1200 - 1573 K 
+        // mu (cP) = 0.07803 exp(4022/T(K))
+        a = 0.07803;
+        b = 4022_f64;
+        _c = 0.0;
+        _d = 0.0;
+        _e = 0.0;
 
     }
 
-    // generic correlation is:
-    // a + bT + cT^2 + dT^3 + eT^4;
-    let viscosity_value_pascal_second = 
-        a 
-        + b * fluid_temp_kelvin
-        + c * fluid_temp_kelvin.powf(2.0)
-        + d * fluid_temp_kelvin.powf(3.0)
-        + e * fluid_temp_kelvin.powf(4.0);
+    let viscosity_value_centipoise = a * (b/fluid_temp_kelvin).exp();
 
-    Ok(DynamicViscosity::new::<pascal_second>(viscosity_value_pascal_second))
+    Ok(DynamicViscosity::new::<centipoise>(viscosity_value_centipoise))
                                 
 }
 
 
 #[test]
-pub fn flibe_nitrate_salt_test_viscosity(){
-    // going to perform 2 tests here
+pub fn flibe_salt_test_viscosity(){
+    // going to perform 1 test
     //
     // From
-    // Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
-    // STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
-    // Lab.(ORNL), Oak Ridge, TN (United States).
+    // Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+    // for nuclear reactor applications: A review. Annals 
+    // of Nuclear Energy, 109, 635-647.
+    // properties for a custom liquid material 
+    // not covered in the database
     //
-    // figure 6 page 25, the HITEC salt temperature in Fahrenheit 
-    // was given and the resulting viscosity was plotted
+    // Figure 3 page 7, there is a graph providing some values of viscosity
     //
-    // T(F), mu (cP)
-    // 346.338,10.984
-    // 653.944,2.5
+    // at roughly 900K viscosity was 7.5 cP from the graph 
+    // (didn't use graphreader)
     //
-    // These two temperautres were chosen because there are two 
-    // correlations used by Du 
+    // I'm going to use this to test 
     //
-    // first in the 440-500K range. This is where 
-    // the 346 F or 447 K temperature is used 
-    //
-    // then in the 500K-800K range, where the 
-    // 653 F or 618 K temperature is used
-    //
-    // No error bars were given, but based on Sohal's work 
-    // typical error bars from Janz were as high as 16% 
-    //
-    // Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
-    // Engineering database of liquid salt thermophysical and 
-    // thermochemical properties (No. INL/EXT-10-18297). 
-    // Idaho National Lab.(INL), Idaho Falls, ID (United States).
     //
 
-    use uom::si::thermodynamic_temperature::degree_fahrenheit;
+    use uom::si::thermodynamic_temperature::kelvin;
     use uom::si::dynamic_viscosity::centipoise;
     extern crate approx;
-    // let's try the 346 F one first 
-    let temperature_346_f = 
-        ThermodynamicTemperature::new::<degree_fahrenheit>(
-            346.338);
+    // let's try the 900 F one first 
+    let temperature_900_k = 
+        ThermodynamicTemperature::new::<kelvin>(900.0);
 
-    // let's get the viscosity, should be around 11 cP 
-    let viscosity_346_f = 
-        get_flibe_dynamic_viscosity(temperature_346_f).unwrap();
+    // let's get the viscosity, should be around 7.5 cP 
+    let viscosity_900_k = 
+        get_flibe_dynamic_viscosity(temperature_900_k).unwrap();
 
-    let viscosity_value_centipoise_346_f = 
-        viscosity_346_f.get::<centipoise>();
+    let viscosity_value_centipoise_900_k = 
+        viscosity_900_k.get::<centipoise>();
 
-    // we expect a dynamic viscosity of around 11 cP at this temperature
-    // we have +/- 16% uncertainty
+    // we expect a dynamic viscosity of around 7.5 cP at this temperature
+    // we have +/- 2% uncertainty
     approx::assert_relative_eq!(
-        10.984, 
-        viscosity_value_centipoise_346_f, 
-        max_relative=0.16);
+        7.5, 
+        viscosity_value_centipoise_900_k, 
+        max_relative=0.02);
 
-    // let's try the 654 F one first 
-    let temperature_654_f = 
-        ThermodynamicTemperature::new::<degree_fahrenheit>(
-            653.944);
-
-    // let's get the viscosity, should be around 2.5 cP 
-    let viscosity_654_f = 
-        get_flibe_dynamic_viscosity(temperature_654_f).unwrap();
-
-    let viscosity_value_centipoise_654f = 
-        viscosity_654_f.get::<centipoise>();
-
-    // we expect a dynamic viscosity of around 2.5 cP at this temperature
-    // we have +/- 16% uncertainty
-    approx::assert_relative_eq!(
-        2.5, 
-        viscosity_value_centipoise_654f, 
-        max_relative=0.16);
 
 
 }
@@ -526,8 +469,8 @@ pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature)
 
         range_check(&Material::Liquid(LiquidMaterial::HITEC), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(800.0), 
-            ThermodynamicTemperature::new::<kelvin>(440.0))?;
+            ThermodynamicTemperature::new::<kelvin>(1123.0), 
+            ThermodynamicTemperature::new::<kelvin>(600.0))?;
 
         return Ok(true);
 
