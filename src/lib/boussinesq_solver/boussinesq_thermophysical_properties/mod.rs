@@ -96,10 +96,16 @@ impl Into<Material> for SolidMaterial {
 pub enum LiquidMaterial {
     /// therminol VP1 
     TherminolVP1,
-    /// DowthermA, using the same correlations
+    /// DowthermA, using the same correlations as TherminolVP1
     DowthermA,
     /// HITEC salt, 7 wt% sodium nitrate, 40 wt% sodium nitrite, 53 wt% potassium nitrate
     HITEC,
+    /// YD-325 Synthetic Heat transfer oil
+    /// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+    /// An experimental study on the heat transfer performance of a prototype 
+    /// molten-salt rod baffle heat exchanger for concentrated solar power. 
+    /// Energy, 156, 63-72.
+    YD325,
     /// Custom fluid, for the user to decide the correlations himself 
     /// or herself
     CustomLiquid(

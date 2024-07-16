@@ -3,6 +3,7 @@ use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
 use uom::si::thermodynamic_temperature::{degree_celsius,kelvin};
 
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil::get_yd325_specific_enthalpy;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::{self, dowtherm_a};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt::get_hitec_specific_enthalpy;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
@@ -71,6 +72,7 @@ fn liquid_specific_enthalpy(material: Material,
         Material::Liquid(DowthermA) => DowthermA,
         Material::Liquid(TherminolVP1) => TherminolVP1,
         Material::Liquid(HITEC) => HITEC,
+        Material::Liquid(YD325) => YD325,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -82,6 +84,7 @@ fn liquid_specific_enthalpy(material: Material,
         DowthermA => dowtherm_a_specific_enthalpy(fluid_temp),
         TherminolVP1 => dowtherm_a_specific_enthalpy(fluid_temp),
         HITEC => get_hitec_specific_enthalpy(fluid_temp).unwrap(),
+        YD325 => get_yd325_specific_enthalpy(fluid_temp).unwrap(),
         CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_enthalpy(fluid_temp, 

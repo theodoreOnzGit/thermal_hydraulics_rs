@@ -57,7 +57,7 @@
 //
 // Btw, I have no affiliation with the Rust foundation.
 use uom::si::f64::*;
-use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
+use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::mass_density::kilogram_per_cubic_meter;
 use uom::si::dynamic_viscosity::pascal_second;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
