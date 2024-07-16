@@ -12,6 +12,7 @@ use uom::si::pressure::atmosphere;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flinak;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
@@ -89,7 +90,7 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 // nothing else
 pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
 fn get_liquid_temperature_from_specific_enthalpy(material: Material, 
-    fluid_temp: AvailableEnergy) -> ThermodynamicTemperature {
+    fluid_enthalpy: AvailableEnergy) -> ThermodynamicTemperature {
 
     let liquid_material: LiquidMaterial = match material {
         Material::Liquid(DowthermA) => DowthermA,
@@ -97,6 +98,7 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325) => YD325,
         Material::Liquid(FLiBe) => FLiBe,
+        Material::Liquid(FLiNaK) => FLiNaK,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -105,14 +107,15 @@ fn get_liquid_temperature_from_specific_enthalpy(material: Material,
     };
 
     let specific_enthalpy: ThermodynamicTemperature = match liquid_material {
-        DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
-        TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_temp),
-        HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_temp).unwrap(),
-        YD325 => yd_325_heat_transfer_oil::get_temperature_from_enthalpy(fluid_temp).unwrap(),
-        FLiBe => flibe::get_temperature_from_enthalpy(fluid_temp).unwrap(),
+        DowthermA => dowtherm_a_get_temperature_from_enthalpy(fluid_enthalpy),
+        TherminolVP1 => dowtherm_a_get_temperature_from_enthalpy(fluid_enthalpy),
+        HITEC => hitec_nitrate_salt::get_temperature_from_enthalpy(fluid_enthalpy).unwrap(),
+        YD325 => yd_325_heat_transfer_oil::get_temperature_from_enthalpy(fluid_enthalpy).unwrap(),
+        FLiBe => flibe::get_temperature_from_enthalpy(fluid_enthalpy).unwrap(),
+        FLiNaK => flinak::get_temperature_from_enthalpy(fluid_enthalpy).unwrap(),
         CustomLiquid((low_bound_temp,high_bound_temp), cp_fn, _k, _mu_fn, _rho_fn) => {
             liquid_database::custom_liquid_material
-                ::get_custom_fluid_temperature_from_enthalpy(fluid_temp, 
+                ::get_custom_fluid_temperature_from_enthalpy(fluid_enthalpy, 
                     cp_fn, 
                     high_bound_temp, 
                     low_bound_temp).unwrap()

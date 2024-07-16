@@ -5,6 +5,7 @@ use uom::si::thermodynamic_temperature::kelvin;
 
 use super::liquid_database;
 use super::liquid_database::flibe::get_flibe_thermal_conductivity;
+use super::liquid_database::flinak::get_flinak_thermal_conductivity;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_thermal_conductivity;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_thermal_conductivity;
 use super::range_check;
@@ -106,6 +107,7 @@ impl LiquidMaterial {
             HITEC => get_hitec_thermal_conductivity(fluid_temp)?,
             YD325 => get_yd325_thermal_conductivity(fluid_temp)?,
             FLiBe => get_flibe_thermal_conductivity(fluid_temp)?,
+            FLiNaK => get_flinak_thermal_conductivity(fluid_temp)?,
             CustomLiquid((low_bound_temp,high_bound_temp), _cp, k_fn, _mu_fn, _rho_fn) => {
                 liquid_database::custom_liquid_material
                     ::get_custom_fluid_thermal_conductivity(fluid_temp, 
@@ -175,6 +177,7 @@ fn liquid_thermal_conductivity(material: Material,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325)=> YD325,
         Material::Liquid(FLiBe) => FLiBe,
+        Material::Liquid(FLiNaK) => FLiNaK,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },

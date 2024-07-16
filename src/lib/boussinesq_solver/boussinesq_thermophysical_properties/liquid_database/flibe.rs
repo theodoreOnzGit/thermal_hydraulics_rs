@@ -94,7 +94,7 @@ pub fn get_flibe_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
 
-    // first we check if fluid temp is between 440-800 K (range of validity)
+    // first we check if fluid temp is between 732.2-1573 K (range of validity)
     // panic otherwise
     range_check_flibe_salt(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
@@ -112,7 +112,7 @@ pub fn get_flibe_density(
               kilogram_per_cubic_meter>(density_value_kg_per_m3));
 }
 
-/// function to obtain nitrate salt viscosity
+/// function to obtain flibe salt viscosity
 /// given a temperature
 ///
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
@@ -499,7 +499,6 @@ pub fn get_temperature_from_enthalpy(
     // second let's define a function 
     // or actually a closure or anonymous function that
     // is aware of the variables declared
-    // enthalpy value = 1518*T +2.82/2.0 T^2 - 30924
     // LHS is actual enthalpy value
 
     let enthalpy_root = |temp_degrees_kelvin_value : AD| -> AD {

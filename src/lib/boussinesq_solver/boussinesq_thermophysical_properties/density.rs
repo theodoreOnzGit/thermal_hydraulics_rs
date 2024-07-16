@@ -6,6 +6,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::liquid_database;
 use super::liquid_database::flibe::get_flibe_density;
+use super::liquid_database::flinak::get_flinak_density;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_density;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_density;
 use super::solid_database::custom_solid_material;
@@ -122,6 +123,7 @@ fn liquid_density(material: Material,
         Material::Liquid(HITEC) => HITEC,
         Material::Liquid(YD325) => YD325,
         Material::Liquid(FLiBe) => FLiBe,
+        Material::Liquid(FLiNaK) => FLiNaK,
         Material::Liquid(CustomLiquid((low_bound_temp,high_bound_temp),cp,k,mu,rho)) => {
             CustomLiquid((low_bound_temp,high_bound_temp), cp, k, mu, rho)
         },
@@ -135,6 +137,7 @@ fn liquid_density(material: Material,
         HITEC => get_hitec_density(fluid_temp)?,
         YD325 => get_yd325_density(fluid_temp)?,
         FLiBe => get_flibe_density(fluid_temp)?,
+        FLiNaK => get_flinak_density(fluid_temp)?,
         CustomLiquid((low_bound_temp,high_bound_temp), _cp, _k, _mu, rho_fn) => {
             liquid_database::custom_liquid_material
                 ::get_custom_fluid_density(fluid_temp, 
@@ -160,6 +163,7 @@ impl LiquidMaterial {
             HITEC => get_hitec_density(fluid_temp)?,
             YD325 => get_yd325_density(fluid_temp)?,
             FLiBe => get_flibe_density(fluid_temp)?,
+            FLiNaK => get_flinak_density(fluid_temp)?,
             CustomLiquid((low_bound_temp,high_bound_temp), _cp, _k, _mu, rho_fn) => {
                 liquid_database::custom_liquid_material
                     ::get_custom_fluid_density(fluid_temp, 

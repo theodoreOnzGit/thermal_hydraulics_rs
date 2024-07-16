@@ -121,6 +121,25 @@ pub enum LiquidMaterial {
     /// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
     /// Idaho Falls, ID (United States).
     FLiBe,
+
+    /// 46.5-11.5-42.0 mol% LiF, NaF, KF respectively 
+    /// eutectic composition
+    /// 
+    /// Data taken from:
+    ///
+    /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+    /// for nuclear reactor applications: A review. Annals 
+    /// of Nuclear Energy, 109, 635-647.
+    /// properties for a custom liquid material 
+    /// not covered in the database
+    ///
+    /// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
+    /// Engineering database of liquid salt thermophysical and thermochemical 
+    /// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+    /// Idaho Falls, ID (United States).
+    FLiNaK,
+
+
     /// Custom fluid, for the user to decide the correlations himself 
     /// or herself
     CustomLiquid(
