@@ -83,11 +83,23 @@ ThermalHydraulicsLibError>{
     todo!()
 }
 
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+/// properties for a custom liquid material 
+/// not covered in the database
+///
+/// we are using Romatoski's recommended value of 1884 J/(kg K)
+/// uncertainty (error bars) are 10%
 pub fn get_flinak_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
     range_check_flinak_salt(fluid_temp)?;
-    todo!()
+
+    let cp_value_joule_per_kg = 1884.0;
+
+    Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        cp_value_joule_per_kg))
 }
 
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
