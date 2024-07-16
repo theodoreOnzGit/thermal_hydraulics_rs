@@ -71,28 +71,81 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 pub fn get_flinak_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
+
+    range_check_flinak_salt(fluid_temp)?;
     todo!()
 }
 
 pub fn get_flinak_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
+    range_check_flinak_salt(fluid_temp)?;
     todo!()
 }
 
 pub fn get_flinak_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
+    range_check_flinak_salt(fluid_temp)?;
     todo!()
 }
 
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+/// properties for a custom liquid material 
+/// not covered in the database
+///
+/// we are using Smirnov correlation as recommended by Romatoski
 pub fn get_flinak_thermal_conductivity(
     fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
-    todo!()
+
+    // first check if correlation is in range of validity
+    range_check_flinak_salt(fluid_temp)?;
+
+    // get fluid temp in kelvin
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+
+    // apply correlation by smirnov
+    //
+    // I was unsure as to whether the correlation units were in kelvin or 
+    // degrees c, hence I coded a test for it
+    let thermal_conductivity_value_watt_per_meter_kelvin 
+        = 0.36 + 0.00056 * fluid_temp_kelvin;
+
+
+    return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
+        thermal_conductivity_value_watt_per_meter_kelvin));
+
 }
+
+#[test]
+pub fn test_flinak_thermal_conductivity_correlation_unit_in_kelvin(){
+    // at 973K, we shld expect 0.90 W/(m K)
+    // this test checks if the value is properly obtained in terms of units
+
+    let thermal_cond_value_973_k_watt_per_meter_kelvin: f64;
+
+    let temperature_973_kelvin = 
+        ThermodynamicTemperature::new::<kelvin>(973.0);
+
+    let thermal_cond_973_kelvin = 
+        get_flinak_thermal_conductivity(temperature_973_kelvin).unwrap();
+
+    thermal_cond_value_973_k_watt_per_meter_kelvin = 
+        thermal_cond_973_kelvin.get::<watt_per_meter_kelvin>();
+
+    approx::assert_relative_eq!(
+        0.90, 
+        thermal_cond_value_973_k_watt_per_meter_kelvin, 
+        max_relative=0.02);
+}
+
+
 pub fn get_flinak_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
+    range_check_flinak_salt(fluid_temp)?;
     todo!()
 }
 pub fn get_temperature_from_enthalpy(
@@ -131,11 +184,11 @@ pub fn get_temperature_from_enthalpy(
     };
     
     // now solve using bisection
-    // the range is from 732.2 K - 1573 K
+    // the range is from 940.0 K - 1073.0 K
     
     let fluid_temperature_degrees_kelvin_result 
         = bisection(enthalpy_root,
-                    (732.2,1573.0),
+                    (940.0,1073.0),
                     100,
                     1e-8);
 
@@ -155,10 +208,33 @@ pub fn get_temperature_from_enthalpy(
 /// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
 /// Idaho Falls, ID (United States).
 ///
-/// For FLiBe, the applicable range is 732.2K (melting point) - 1573 K.
-/// I try to make the range as wide as possible because Gnielinski's correlation 
-/// requires corrections using wall temperature. These may be outside 
-/// the usual bulk temperatures of FLiBe.
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+/// properties for a custom liquid material 
+/// not covered in the database
+///
+/// For FLiNaK, the absolute lower bound is 462C, which is a melting point 
+/// estimate 
+///
+/// The density correlation is in range 940 - 1170 K 
+/// about 666.85 C to 896.85 C
+///
+/// cp is across all temperature range 1884 J/(kg K)
+///
+/// the thermal conductivity is from about 773 to 1073 K
+/// 
+///
+/// viscosity is over from 773-1173 K
+///
+/// From these, it seems that density and thermal conductivity correlations 
+/// limit the range of applicability
+///
+/// I'm not going to make effort to increase this range for the time being,
+/// can be patched in future
+///
+/// most conservative range is density (940 - 1073 K)
+/// 666.85- 800C
 ///
 /// 
 pub fn range_check_flinak_salt(fluid_temp: ThermodynamicTemperature) 
@@ -167,10 +243,10 @@ pub fn range_check_flinak_salt(fluid_temp: ThermodynamicTemperature)
         // first i convert the fluidTemp object into a degree 
         // celsius
 
-        range_check(&Material::Liquid(LiquidMaterial::FLiBe), 
+        range_check(&Material::Liquid(LiquidMaterial::FLiNaK), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(1573.0), 
-            ThermodynamicTemperature::new::<kelvin>(732.2))?;
+            ThermodynamicTemperature::new::<kelvin>(1073.0), 
+            ThermodynamicTemperature::new::<kelvin>(940.0))?;
 
         return Ok(true);
 
