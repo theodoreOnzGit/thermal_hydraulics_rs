@@ -69,11 +69,37 @@ use peroxide::prelude::*;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+///
+/// using recommendation by Romatoski to use Janz and Tompkins correlation 
+///
+/// rho (kg/m3) = 2579 - 0.624 T[K]
+///
+/// uncertainty is 2%
+/// applicable from 940 - 1170 K 
+/// This is a major factor limiting the temperature range of the 
+/// correlations for FLiNaK as a whole
+///
 pub fn get_flinak_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
     range_check_flinak_salt(fluid_temp)?;
-    todo!()
+
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    let a = 2579.6;
+    let b = -0.624;
+    // generic correlation is:
+    // a + bT + cT^2 + dT^3 + eT^4;
+
+    let density_value_kg_per_m3 = 
+        a 
+        + b * fluid_temp_kelvin;
+
+
+    return Ok(MassDensity::new::<
+              kilogram_per_cubic_meter>(density_value_kg_per_m3));
 }
 
 pub fn get_flinak_dynamic_viscosity(
@@ -86,8 +112,6 @@ ThermalHydraulicsLibError>{
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
 /// for nuclear reactor applications: A review. Annals 
 /// of Nuclear Energy, 109, 635-647.
-/// properties for a custom liquid material 
-/// not covered in the database
 ///
 /// we are using Romatoski's recommended value of 1884 J/(kg K)
 /// uncertainty (error bars) are 10%
@@ -105,8 +129,6 @@ ThermalHydraulicsLibError>{
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
 /// for nuclear reactor applications: A review. Annals 
 /// of Nuclear Energy, 109, 635-647.
-/// properties for a custom liquid material 
-/// not covered in the database
 ///
 /// we are using Smirnov correlation as recommended by Romatoski
 pub fn get_flinak_thermal_conductivity(
@@ -223,8 +245,6 @@ pub fn get_temperature_from_enthalpy(
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
 /// for nuclear reactor applications: A review. Annals 
 /// of Nuclear Energy, 109, 635-647.
-/// properties for a custom liquid material 
-/// not covered in the database
 ///
 /// For FLiNaK, the absolute lower bound is 462C, which is a melting point 
 /// estimate 
