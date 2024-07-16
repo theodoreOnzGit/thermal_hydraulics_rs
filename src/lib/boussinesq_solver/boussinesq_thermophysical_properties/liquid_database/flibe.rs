@@ -356,6 +356,62 @@ pub fn get_flibe_thermal_conductivity(
         thermal_conductivity_value));
 }
 
+/// FLiBe prandtl number is widely known in literature by people in 
+/// Th Lab, UC Berkeley around 2015 
+/// Eg. Zweibaum
+///
+/// I replotted some of these plots in my PhD thesis
+/// 
+/// Ong, T. K. C. (2024). Digital Twins as Testbeds for 
+/// Iterative Simulated Neutronics Feedback Controller 
+/// Development (Doctoral dissertation, UC Berkeley).
+///
+/// A simple test to check if the thermophysical property 
+/// values are reasonable is to calculate prandtl number at various 
+/// temperatures
+///
+/// at 560 C, Pr is around 24.0
+/// at 730 C, Pr is around 10.5
+///
+/// These are the values I'm using to test the FLiBe correlations
+#[test]
+pub fn flibe_prandtl_number(){
+
+    let prandtl_fn= |flibe_temp: ThermodynamicTemperature|{
+
+        let mu = get_flibe_dynamic_viscosity(flibe_temp).unwrap();
+        let cp = get_flibe_constant_pressure_specific_heat_capacity(flibe_temp).unwrap();
+        let k = get_flibe_thermal_conductivity(flibe_temp).unwrap();
+
+        // return prandtl number
+        return mu*cp/k;
+
+    };
+
+    use uom::si::ratio::ratio;
+
+    let temp_1_560_c = ThermodynamicTemperature::new::<degree_celsius>(560.0);
+    let temp_2_730_c = ThermodynamicTemperature::new::<degree_celsius>(730.0);
+
+    // at 560 C, Pr is around 24.0
+    // accurate to within 2%
+    let prandtl_560c = prandtl_fn(temp_1_560_c);
+
+    approx::assert_relative_eq!(
+        prandtl_560c.get::<ratio>(), 
+        24.0, 
+        max_relative=0.02);
+
+    // at 730c, Pr is around 10.5
+    // accurate to within 2%
+    let prandtl_730c = prandtl_fn(temp_2_730_c);
+
+    approx::assert_relative_eq!(
+        prandtl_730c.get::<ratio>(), 
+        10.5, 
+        max_relative=0.02);
+}
+
 /// function to obtain flibe salt specific enthalpy
 /// given a temperature
 ///
@@ -386,7 +442,9 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
     range_check_flibe_salt(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
-    // h (J/kg) = - 686400 + 1560.0 T(K) 
+    // h (J/kg) = 2389.0 T(K) + Constant
+    // Where:
+    // 0.0 = 2389.0 * 732.2 + Constant
     let low_bound_temp_kelvin = 732.2;
     let cp_val_constant_joule_per_kilogram_kelvin = 2389.0;
     let temp_kelvin_value = fluid_temp.get::<kelvin>();
@@ -494,9 +552,6 @@ pub fn get_temperature_from_enthalpy(
 /// exists there)
 /// viscosity is all the way up to 732.2 K - 1573 K (Abe's correlation
 /// forms the upper bound limit)
-/// (about 540 C), which should be low enough (KP-FHR temperatures are 
-/// around 585 C) 
-/// cp and density are okay for all temperatures
 /// 
 ///
 ///
