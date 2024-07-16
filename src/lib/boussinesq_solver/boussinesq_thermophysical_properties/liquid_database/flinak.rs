@@ -55,9 +55,9 @@
 //
 // Btw, I have no affiliation with the Rust foundation.
 use uom::si::f64::*;
-use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
+use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::mass_density::kilogram_per_cubic_meter;
-use uom::si::dynamic_viscosity::pascal_second;
+use uom::si::dynamic_viscosity::centipoise;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::available_energy::joule_per_kilogram;
@@ -102,11 +102,29 @@ pub fn get_flinak_density(
               kilogram_per_cubic_meter>(density_value_kg_per_m3));
 }
 
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+///
+/// using recommendation by Romatoski to use Cohen correlation
+/// as he had experimental data points
+///
+/// mu = 0.04 exp(4170/T[K])
 pub fn get_flinak_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
     range_check_flinak_salt(fluid_temp)?;
-    todo!()
+
+
+    let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
+    // generic form:  
+    // mu = a * exp (b/T[K])
+
+    let a = 0.04;
+    let b = 4170_f64;
+    let viscosity_value_centipoise = a * (b/fluid_temp_kelvin).exp();
+
+    Ok(DynamicViscosity::new::<centipoise>(viscosity_value_centipoise))
 }
 
 /// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
