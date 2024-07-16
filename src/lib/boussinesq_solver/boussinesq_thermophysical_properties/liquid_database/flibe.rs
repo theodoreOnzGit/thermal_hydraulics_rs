@@ -149,6 +149,9 @@ pub fn get_flibe_density(
 ///
 /// There will be obvious discontinuity at 1200K, but I'll leave it 
 /// for future patches
+///
+/// in totality, 600-1573 K is reasonable, but 
+/// freezing point is 732.2
 /// 
 /// 
 pub fn get_flibe_dynamic_viscosity(
@@ -371,10 +374,10 @@ pub fn get_flibe_thermal_conductivity(
 ///
 /// h (J/kg) = 2389.0 T(K) + Constant
 ///
-/// I can just adjust the enthalpy to be 0 J/kg at 812.5 K, which is 
+/// I can just adjust the enthalpy to be 0 J/kg at 732.2 K, which is 
 /// the low bound temperature for FLiBe
 ///
-/// 0.0 = 2389.0 * 812.5 + Constant
+/// 0.0 = 2389.0 * 732.2 + Constant
 ///
 pub fn get_flibe_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
@@ -384,7 +387,7 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
     // note, specific entropy and heat capcity are the same unit...
     //
     // h (J/kg) = - 686400 + 1560.0 T(K) 
-    let low_bound_temp_kelvin = 812.5;
+    let low_bound_temp_kelvin = 732.2;
     let cp_val_constant_joule_per_kilogram_kelvin = 2389.0;
     let temp_kelvin_value = fluid_temp.get::<kelvin>();
     let enthalpy_value_joule_per_kg 
@@ -409,14 +412,14 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 ///
 ///
 /// Note that the enthalpy equation was derived from manual 
-/// integration of cp assuming 0 J/kg at 812.5K (the minimum temperature)
+/// integration of cp assuming 0 J/kg at 732.2K (the minimum temperature)
 ///
 /// h (J/kg) = 2389.0 T(K) + Constant
 ///
-/// I can just adjust the enthalpy to be 0 J/kg at 812.5 K, which is 
+/// I can just adjust the enthalpy to be 0 J/kg at 732.2 K, which is 
 /// the low bound temperature for FLiBe
 ///
-/// 0.0 = 2389.0 * 812.5 + Constant
+/// 0.0 = 2389.0 * 732.2 + Constant
 ///
 ///
 pub fn get_temperature_from_enthalpy(
@@ -456,11 +459,11 @@ pub fn get_temperature_from_enthalpy(
     };
     
     // now solve using bisection
-    // the range is from 812.5 K - 1573 K
+    // the range is from 732.2 K - 1573 K
     
     let fluid_temperature_degrees_kelvin_result 
         = bisection(enthalpy_root,
-                    (812.5,1573.0),
+                    (732.2,1573.0),
                     100,
                     1e-8);
 
@@ -489,7 +492,8 @@ pub fn get_temperature_from_enthalpy(
 /// 
 /// thermal conductivity is extrapolated (constant till 1573 K, no data 
 /// exists there)
-/// viscosity is all the way up to 812.5 K - 1573 K (Abe's correlation)
+/// viscosity is all the way up to 732.2 K - 1573 K (Abe's correlation
+/// forms the upper bound limit)
 /// (about 540 C), which should be low enough (KP-FHR temperatures are 
 /// around 585 C) 
 /// cp and density are okay for all temperatures
@@ -505,7 +509,7 @@ pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature)
         range_check(&Material::Liquid(LiquidMaterial::FLiBe), 
             fluid_temp, 
             ThermodynamicTemperature::new::<kelvin>(1573.0), 
-            ThermodynamicTemperature::new::<kelvin>(812.5))?;
+            ThermodynamicTemperature::new::<kelvin>(732.2))?;
 
         return Ok(true);
 
