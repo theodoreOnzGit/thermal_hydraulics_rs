@@ -513,7 +513,7 @@ pub fn range_check_hitec_salt(fluid_temp: ThermodynamicTemperature)
         // first i convert the fluidTemp object into a degree 
         // celsius
 
-        range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
+        range_check(&Material::Liquid(LiquidMaterial::HITEC), 
             fluid_temp, 
             ThermodynamicTemperature::new::<kelvin>(800.0), 
             ThermodynamicTemperature::new::<kelvin>(440.0))?;

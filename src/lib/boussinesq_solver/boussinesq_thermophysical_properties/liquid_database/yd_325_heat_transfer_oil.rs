@@ -71,7 +71,7 @@ use peroxide::prelude::*;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-/// function to obtain nitrate salt density
+/// function to obtain yd_325_heat_transfer_oil density
 /// given a temperature
 ///
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
@@ -79,18 +79,22 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 /// 
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
 ///
-/// rho (kg/m3) = 2280.22  - 0.773 T(K)
-pub fn get_hitec_density(
+/// rho (kg/m3) = 1199.13  - 0.6311 T(K)
+pub fn get_yd325_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
 
     // first we check if fluid temp is between 440-800 K (range of validity)
     // panic otherwise
-    range_check_hitec_salt(fluid_temp)?;
+    range_check_yd325_oil(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
-    let a = 2280.22;
-    let b = -0.773;
+    let a = 1199.13;
+    let b = -0.6311;
     // generic correlation is:
     // a + bT + cT^2 + dT^3 + eT^4;
 
@@ -103,7 +107,7 @@ pub fn get_hitec_density(
               kilogram_per_cubic_meter>(density_value_kg_per_m3));
 }
 
-/// function to obtain nitrate salt viscosity
+/// function to obtain yd_325_heat_transfer_oil viscosity
 /// given a temperature
 ///
 /// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
@@ -111,49 +115,18 @@ pub fn get_hitec_density(
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
-/// mu Pa-s (T = 440 - 500 K) 
-/// = 0.93845
-/// -0.54754 T(K)
-/// + 1.08225e-5 T(K)^2
-/// - 7.2058e-9 T(K)^3
+/// mu Pa-s (T = 323-423 K) 
+/// = 0.33065
+/// - 2.283e-3 T(K)
+/// + 5.2746e-6 T(K)^2
+/// - 4.066e-9 T(K)^3
 ///
-/// mu Pa-s (T = 500 - 800 K) 
-/// = 0.23816
-/// - 1.2768e-3 T(K)
-/// + 2.6275e-6 T(K)^2
-/// - 2.4331e-9 T(K)^3
-/// + 8.507e-13 T(K)^4
-///
-/// Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
-/// STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
-/// Lab.(ORNL), Oak Ridge, TN (United States).
-///
-/// given the complicated looking correlations, it's always good to 
-/// against data. I'm using Bohlman's data for HITEC salt in 1972 
-/// as comparison. Fig 6 on page 25 of the document shows a graph 
-/// of HITEC salt viscosity in centipoises against temperature in 
-/// Fahrenheit
-///
-/// Using graphreader, I got the following pieces of data for viscosity 
-/// in cP against temp in Fahrenheit (roughly, the curve axes were 
-/// tilted)
-///
-///
-/// 315.282,15.039
-/// 336.479,12.087
-/// 346.338,10.984
-/// 375.915,8.642
-/// 399.577,7.362
-/// 440.986,5.709
-/// 498.169,4.272
-/// 585.915,3.051
-/// 653.944,2.5
-/// 730.845,1.988
-/// 832.394,1.555
-/// 928.521,1.28
-///
-/// I can use a simple test to ascertain if the viscosity is close 
-/// to this value
+/// mu Pa-s (T = 423-523 K) 
+/// = 0.05989
+/// - 3.452e-4 T(K)
+/// + 6.735e-7 T(K)^2
+/// - 4.413e-10 T(K)^3
+/// 
 ///
 ///
 ///
@@ -162,30 +135,29 @@ pub fn get_hitec_dynamic_viscosity(
     fluid_temp: ThermodynamicTemperature) -> Result<DynamicViscosity,
 ThermalHydraulicsLibError>{
 
-    range_check_hitec_salt(fluid_temp)?;
+    range_check_yd325_oil(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
-    // mu Pa-s (T = 500 - 800 K) 
-    // = 0.23816
-    // - 1.2768e-3 T(K)
-    // + 2.6275e-6 T(K)^2
-    // - 2.4331e-9 T(K)^3
-    // + 8.507e-13 T(K)^4
-    let mut a = 0.23816;
-    let mut b = - 1.2768e-3;
-    let mut c = 2.6275e-6;
-    let mut d = -2.4331e-9;
-    let mut e = 8.507e-13;
+    // mu Pa-s (T = 423-523 K) 
+    // = 0.05989
+    // - 3.452e-4 T(K)
+    // + 6.735e-7 T(K)^2
+    // - 4.413e-10 T(K)^3
+    let mut a = 0.05989;
+    let mut b = - 3.452e-4;
+    let mut c = 6.735e-7;
+    let mut d = -4.413e-10;
+    let mut e = 0.0;
 
-    if fluid_temp_kelvin < 500.0 {
-        // mu Pa-s (T = 440 - 500 K) 
-        // = 0.93845
-        // -0.54754 T(K)
-        // + 1.08225e-5 T(K)^2
-        // - 7.2058e-9 T(K)^3
-        a = 0.93845;
-        b = - 5.4754e-3;
-        c = 1.08225e-5;
-        d = -7.2058e-9;
+    if fluid_temp_kelvin < 423.0 {
+        // mu Pa-s (T = 323-423 K) 
+        // = 0.33065
+        // - 2.283e-3 T(K)
+        // + 5.2746e-6 T(K)^2
+        // - 4.066e-9 T(K)^3
+        a = 0.33065;
+        b = - 2.283e-3;
+        c = 5.2746e-6;
+        d = -4.066e-9;
         e = 0.0;
 
     }
@@ -204,83 +176,6 @@ ThermalHydraulicsLibError>{
 }
 
 
-#[test]
-pub fn hitec_nitrate_salt_test_viscosity(){
-    // going to perform 2 tests here
-    //
-    // From
-    // Bohlmann, E. G. (1972). HEAT TRANSFER SALT FOR HIGH TEMPERATURE 
-    // STEAM GENERATION (No. ORNL-TM-3777). Oak Ridge National 
-    // Lab.(ORNL), Oak Ridge, TN (United States).
-    //
-    // figure 6 page 25, the HITEC salt temperature in Fahrenheit 
-    // was given and the resulting viscosity was plotted
-    //
-    // T(F), mu (cP)
-    // 346.338,10.984
-    // 653.944,2.5
-    //
-    // These two temperautres were chosen because there are two 
-    // correlations used by Du 
-    //
-    // first in the 440-500K range. This is where 
-    // the 346 F or 447 K temperature is used 
-    //
-    // then in the 500K-800K range, where the 
-    // 653 F or 618 K temperature is used
-    //
-    // No error bars were given, but based on Sohal's work 
-    // typical error bars from Janz were as high as 16% 
-    //
-    // Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
-    // Engineering database of liquid salt thermophysical and 
-    // thermochemical properties (No. INL/EXT-10-18297). 
-    // Idaho National Lab.(INL), Idaho Falls, ID (United States).
-    //
-
-    use uom::si::thermodynamic_temperature::degree_fahrenheit;
-    use uom::si::dynamic_viscosity::centipoise;
-    extern crate approx;
-    // let's try the 346 F one first 
-    let temperature_346_f = 
-        ThermodynamicTemperature::new::<degree_fahrenheit>(
-            346.338);
-
-    // let's get the viscosity, should be around 11 cP 
-    let viscosity_346_f = 
-        get_hitec_dynamic_viscosity(temperature_346_f).unwrap();
-
-    let viscosity_value_centipoise_346_f = 
-        viscosity_346_f.get::<centipoise>();
-
-    // we expect a dynamic viscosity of around 11 cP at this temperature
-    // we have +/- 16% uncertainty
-    approx::assert_relative_eq!(
-        10.984, 
-        viscosity_value_centipoise_346_f, 
-        max_relative=0.16);
-
-    // let's try the 654 F one first 
-    let temperature_654_f = 
-        ThermodynamicTemperature::new::<degree_fahrenheit>(
-            653.944);
-
-    // let's get the viscosity, should be around 2.5 cP 
-    let viscosity_654_f = 
-        get_hitec_dynamic_viscosity(temperature_654_f).unwrap();
-
-    let viscosity_value_centipoise_654f = 
-        viscosity_654_f.get::<centipoise>();
-
-    // we expect a dynamic viscosity of around 2.5 cP at this temperature
-    // we have +/- 16% uncertainty
-    approx::assert_relative_eq!(
-        2.5, 
-        viscosity_value_centipoise_654f, 
-        max_relative=0.16);
-
-
-}
 
 /// function to obtain nitrate salt specific heat capacity
 /// given a temperature
@@ -289,6 +184,10 @@ pub fn hitec_nitrate_salt_test_viscosity(){
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
 /// cp (J/kg/K) = 1560.0 
 /// T in kelvin
 ///
@@ -305,7 +204,7 @@ pub fn get_hitec_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
 ThermalHydraulicsLibError>{
 
-    range_check_hitec_salt(fluid_temp)?;
+    range_check_yd325_oil(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
     let _temperature_degrees_c_value = fluid_temp.get::<degree_celsius>();
@@ -336,7 +235,7 @@ pub fn get_hitec_thermal_conductivity(
     fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
 
 
-    range_check_hitec_salt(fluid_temp)?;
+    range_check_yd325_oil(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
     // k (thermal conductivity in W/mK for T = 420-536 kelvin) = 
     // 2.2627 - 0.01176 T(K)
@@ -404,7 +303,7 @@ pub fn get_hitec_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
 
-    range_check_hitec_salt(fluid_temp)?;
+    range_check_yd325_oil(fluid_temp)?;
     // note, specific entropy and heat capcity are the same unit...
     //
     // h (J/kg) = - 686400 + 1560.0 T(K) 
@@ -503,22 +402,28 @@ pub fn get_temperature_from_enthalpy(
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68./// Jana, S. S., 
 ///
-/// From HITEC, the applicable range is 440K - 800 K, 
+/// Qiu, Y., Li, M. J., Wang, W. Q., Du, B. C., & Wang, K. (2018). 
+/// An experimental study on the heat transfer performance of a prototype 
+/// molten-salt rod baffle heat exchanger for concentrated solar power. 
+/// Energy, 156, 63-72.
 ///
-/// In Du's paper, the viscosity correlation is applicable from 440 to 800K
-/// while the rest of the properties are from 420-800K
+/// From YD-325, the applicable range is 323K - 523 K, 
+///
+/// In Qiu's paper, the viscosity correlation is applicable from 323-523 K
+/// while the rest of the properties are from 300-573 K
 /// 
 ///
-pub fn range_check_hitec_salt(fluid_temp: ThermodynamicTemperature) 
+pub fn range_check_yd325_oil(fluid_temp: ThermodynamicTemperature) 
     -> Result<bool,ThermalHydraulicsLibError>{
 
         // first i convert the fluidTemp object into a degree 
         // celsius
 
+        // TBD with range checking
         range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(800.0), 
-            ThermodynamicTemperature::new::<kelvin>(440.0))?;
+            ThermodynamicTemperature::new::<kelvin>(523.0), 
+            ThermodynamicTemperature::new::<kelvin>(323.0))?;
 
         return Ok(true);
 
