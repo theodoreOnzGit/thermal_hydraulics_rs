@@ -234,24 +234,22 @@ pub fn flibe_salt_test_viscosity(){
 
 }
 
-/// function to obtain nitrate salt specific heat capacity
+/// function to obtain flibe salt specific heat capacity
 /// given a temperature
-/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
-/// Investigation on heat transfer characteristics of molten salt in 
-/// a shell-and-tube heat exchanger. International Communications 
-/// in Heat and Mass Transfer, 96, 61-68.
-///
-/// cp (J/kg/K) = 1560.0 
-/// T in kelvin
-///
-/// Now, Sohal has a different correlation for cp 
+/// Romatoski, R. R., & Hu, L. W. (2017). Fluoride salt coolant properties 
+/// for nuclear reactor applications: A review. Annals 
+/// of Nuclear Energy, 109, 635-647.
+/// properties for a custom liquid material 
+/// not covered in the database
 ///
 /// Sohal, M. S., Ebner, M. A., Sabharwall, P., & Sharpe, P. (2010). 
-/// Engineering database of liquid salt thermophysical and 
-/// thermochemical properties (No. INL/EXT-10-18297). 
-/// Idaho National Lab.(INL), Idaho Falls, ID (United States).
+/// Engineering database of liquid salt thermophysical and thermochemical 
+/// properties (No. INL/EXT-10-18297). Idaho National Lab.(INL), 
+/// Idaho Falls, ID (United States).
 ///
-/// but I'm not going to consider that yet
+/// It is quite invariant with temperature
+/// 
+/// values range from 2415.6 J/(kg K) to 2386 J/(kg K)
 ///
 pub fn get_flibe_constant_pressure_specific_heat_capacity(
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
