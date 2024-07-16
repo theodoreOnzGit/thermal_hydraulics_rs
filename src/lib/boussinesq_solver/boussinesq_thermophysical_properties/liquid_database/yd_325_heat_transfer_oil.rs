@@ -10,6 +10,8 @@
 // As such, the entire library is released under GNU GPL v3.0. It is a strong 
 // copyleft license which means you cannot use it in proprietary software.
 //
+// Additions to it were made in Singapore Nuclear Research and Safety 
+// Institute (SNRSI) in National University of Singapore (NUS)
 //
 // License
 //    This is file is part of a thermal hydraulics library written 
@@ -78,7 +80,7 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 /// in Heat and Mass Transfer, 96, 61-68.
 /// 
 ///
-/// rho (kg/m3) = 2280.22  - 0.733 T(K)
+/// rho (kg/m3) = 2280.22  - 0.773 T(K)
 pub fn get_hitec_density(
     fluid_temp: ThermodynamicTemperature) -> Result<MassDensity,ThermalHydraulicsLibError> {
 
@@ -88,7 +90,7 @@ pub fn get_hitec_density(
     range_check_hitec_salt(fluid_temp)?;
     let fluid_temp_kelvin = fluid_temp.get::<kelvin>();
     let a = 2280.22;
-    let b = -0.733;
+    let b = -0.773;
     // generic correlation is:
     // a + bT + cT^2 + dT^3 + eT^4;
 
