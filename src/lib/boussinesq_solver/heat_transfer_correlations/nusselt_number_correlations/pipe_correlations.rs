@@ -1,3 +1,6 @@
+use uom::si::f64::*;
+use uom::si::ratio::ratio;
+
 
 /// A nusselt correlation for CIET heater v1.0
 ///
@@ -1048,4 +1051,34 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 
 
 }
+
+
+/// from Du's paper
+///
+/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
+/// Investigation on heat transfer characteristics of molten salt in 
+/// a shell-and-tube heat exchanger. International Communications 
+/// in Heat and Mass Transfer, 96, 61-68.
+///
+/// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+///
+pub fn custom_gnielinski_turbulent_nusselt_correlation(
+    correlation_coefficient: Ratio,
+    reynolds_exponent: f64,
+    prandtl_number_fluid: Ratio,
+    prandtl_number_wall: Ratio,
+    reynolds_number: Ratio,
+    length_to_diameter_ratio: Ratio,
+    ) -> Ratio {
+
+    let reynolds_num_float: f64 = reynolds_number.get::<ratio>();
+
+    // (Re^m - 280.0)
+    let reynolds_bracket_term = 
+        reynolds_num_float.powf(reynolds_exponent) - 280.0;
+
+
+    todo!()
+}
+
 
