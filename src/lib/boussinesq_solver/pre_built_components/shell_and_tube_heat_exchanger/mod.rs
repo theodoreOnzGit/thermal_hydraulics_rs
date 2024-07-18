@@ -112,6 +112,7 @@ use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections:
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 
 use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;
@@ -199,6 +200,14 @@ pub struct SimpleShellAndTubeHeatExchanger {
     /// allows for a custom flow area for the shell side
     pub shell_side_flow_area: Area,
 
+
+    /// allows user to set custom nusselt correlation for shell side 
+    /// fluid to tubes
+    pub shell_side_nusselt_correlation_to_tubes: NusseltCorrelation,
+
+    /// allows user to set custom nusselt correlation for shell side 
+    /// fluid to shell
+    pub shell_side_nusselt_correlation_to_shell: NusseltCorrelation,
 
     /// specifies an thickness for the insulation covering 
     /// the shell side

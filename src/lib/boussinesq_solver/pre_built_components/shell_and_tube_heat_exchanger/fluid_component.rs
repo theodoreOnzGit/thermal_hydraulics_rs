@@ -1,4 +1,5 @@
 use uom::si::f64::*;
+use uom::si::length::meter;
 
 use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::{fluid_component_collection::fluid_component::FluidComponent, one_d_fluid_array_with_lateral_coupling::FluidArray};
@@ -60,6 +61,61 @@ impl SimpleShellAndTubeHeatExchanger {
 
         self.shell_side_fluid_array.set(shell_side_fluid_array.into()).unwrap();
 
+    }
+
+    /// returns tube side hydraulic diameter 
+    /// by default, the internal diameter of the tube side
+    #[inline]
+    pub fn get_tube_side_hydraulic_diameter(&self) -> Length {
+        return self.tube_side_id;
+    }
+
+    /// returns the shell side hydraulic diameter 
+    /// this assumes that the shell side is a big tube with 
+    /// a number of uniform circular tubes inside the big tube 
+    ///
+    /// from Du's paper, the formula here is:
+    /// D_e = (D_i^2 - N_t d_o^2) / (D_i + N_t d_i)
+    ///
+    /// where 
+    /// D_i  is shell_side_id
+    /// d_i  is tube_side_id
+    /// d_o is tube_side_od
+    /// N_t is number_of_tubes
+    #[inline]
+    pub fn get_shell_side_hydraulic_diameter(&self) -> Length {
+
+
+        // D_i 
+        let shell_side_id = self.shell_side_id;
+        
+        //d_i 
+        let tube_side_id = self.tube_side_id;
+
+        //d_o 
+        let tube_side_od = self.tube_side_od;
+
+        // N_t 
+        let number_of_tubes = self.number_of_tubes;
+
+        // (D_i^2 - N_t d_o^2)
+
+        let numerator: f64 = shell_side_id.get::<meter>().powf(2.0)
+            - number_of_tubes as f64 
+            * tube_side_od.get::<meter>().powf(2.0);
+        
+        // (D_i + N_t d_i)
+        let denominator: f64 = 
+            shell_side_id.get::<meter>() 
+            + number_of_tubes as f64 * 
+            tube_side_id.get::<meter>();
+
+        // hydraulic diameter is in meters 
+
+        let hydraulic_diameter: Length 
+            = Length::new::<meter>(numerator/denominator);
+
+        return hydraulic_diameter;
     }
 
 }
