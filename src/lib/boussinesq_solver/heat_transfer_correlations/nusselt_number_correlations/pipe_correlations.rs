@@ -1060,11 +1060,19 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 /// a shell-and-tube heat exchanger. International Communications 
 /// in Heat and Mass Transfer, 96, 61-68.
 ///
+/// we have a generic Gnielinski type correlation, 
+/// empirically fitted to experimental data. This is in the form:
+///
 /// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
 ///
+/// For Du's Heat exchanger, 
+/// C = 0.04318,
+/// m = 0.7797
+/// 
+/// No specific bounds are given
 pub fn custom_gnielinski_turbulent_nusselt_correlation(
-    correlation_coefficient: Ratio,
-    reynolds_exponent: f64,
+    correlation_coefficient_c: Ratio,
+    reynolds_exponent_m: f64,
     prandtl_number_fluid: Ratio,
     prandtl_number_wall: Ratio,
     reynolds_number: Ratio,
@@ -1074,11 +1082,35 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
     let reynolds_num_float: f64 = reynolds_number.get::<ratio>();
 
     // (Re^m - 280.0)
-    let reynolds_bracket_term = 
-        reynolds_num_float.powf(reynolds_exponent) - 280.0;
+    let reynolds_bracket_term: f64 = 
+        reynolds_num_float.powf(reynolds_exponent_m) - 280.0;
+
+    // Pr_f^0.4
+    let prandtl_term = 
+        prandtl_number_fluid.get::<ratio>().powf(0.4);
+
+    // ( 1.0 + (D_e/l)^(2/3) )
+    // I'm providing l/d rather than d/l
+    // so it is raised to -2/3, which I approximate as 
+    // -0.6666666667
+    let length_to_diameter_term = 
+        1.0 + length_to_diameter_ratio.get::<ratio>().powf(-0.6666666667);
+
+    // (Pr_f/Pr_w)^0.25
+    let prandtl_correction_term: f64 = 
+        (prandtl_number_fluid/prandtl_number_wall).get::<ratio>().powf(0.25);
 
 
-    todo!()
+    let nusselt_number = 
+        correlation_coefficient_c * 
+        reynolds_bracket_term *
+        prandtl_term *
+        length_to_diameter_term * 
+        prandtl_correction_term;
+
+
+
+    return nusselt_number;
 }
 
 
