@@ -117,8 +117,15 @@ use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;
 
+/// Single pass, no baffle, parrallel flow shell and tube 
+/// heat exchanger 
+///
+/// Nusselt correlations can be customised to empirically fit other 
+/// correlations
+///
+/// The axial sides are adiabatic unless otherwise stated
 #[derive(Clone,Debug,PartialEq)]
-pub struct ShellAndTubeHeatExchanger {
+pub struct SimpleShellAndTubeHeatExchanger {
 
     
     inner_nodes: usize,
@@ -183,6 +190,19 @@ pub struct ShellAndTubeHeatExchanger {
     /// each pipe fluid array represents one tube only
     pub number_of_tubes: u32,
 
+    /// assuming the outer shell is circular, provide the internal diameter 
+    pub shell_side_id: Length,
+
+    /// assuming the outer shell is circular, provide the outer diameter 
+    pub shell_side_od: Length,
+
+    /// allows for a custom flow area for the shell side
+    pub shell_side_flow_area: Area,
+
+
+    /// specifies an thickness for the insulation covering 
+    /// the shell side
+    pub insulation_thickness: Length,
 
 
 }
