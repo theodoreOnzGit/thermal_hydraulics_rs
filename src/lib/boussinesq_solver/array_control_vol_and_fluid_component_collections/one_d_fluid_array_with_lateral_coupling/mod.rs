@@ -279,8 +279,6 @@ pub mod lateral_connection;
 /// or other single cvs
 pub mod axial_connection;
 
-
-
 /// defaults 
 pub mod default;
 
@@ -291,3 +289,6 @@ pub mod constructors;
 /// fluid component calculations 
 /// with the DimensionlessDarcyLossCorrelations
 pub mod fluid_component_calculation;
+
+/// type conversion 
+pub mod type_conversion;

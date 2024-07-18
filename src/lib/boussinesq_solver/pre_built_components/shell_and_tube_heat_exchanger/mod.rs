@@ -213,6 +213,11 @@ pub mod preprocessing;
 
 /// implementations for the FluidComponent trait
 /// are done here
+///
+/// unfortunately, we cannot treat this as a fluid component because 
+/// this is not a simple pipe 
+///
+/// each fluid array must be treated as a fluid component in itself
 pub mod fluid_component;
 
 
