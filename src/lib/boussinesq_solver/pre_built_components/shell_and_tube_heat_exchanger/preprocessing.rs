@@ -7,6 +7,7 @@ use uom::si::f64::*;
 use ndarray::*;
 use super::SimpleShellAndTubeHeatExchanger;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -315,7 +316,7 @@ impl SimpleShellAndTubeHeatExchanger {
             = pipe_shell_clone.try_get_bulk_temperature()?;
 
         let single_tube_hydraulic_diameter = 
-            tube_side_fluid_array_clone.get_hydraulic_diameter();
+            self.get_tube_side_hydraulic_diameter();
         let bundled_tubes_flow_area: Area = 
             tube_side_fluid_array_clone.get_cross_sectional_area_immutable();
 
@@ -494,13 +495,11 @@ impl SimpleShellAndTubeHeatExchanger {
         let pipe_shell_surf_temperature: ThermodynamicTemperature 
             = pipe_shell_clone.try_get_bulk_temperature()?;
 
-        let single_tube_hydraulic_diameter = 
-            shell_side_fluid_array_clone.get_hydraulic_diameter();
-        let bundled_tubes_flow_area: Area = 
-            shell_side_fluid_array_clone.get_cross_sectional_area_immutable();
+        let shell_side_fluid_hydraulic_diameter = 
+            self.get_shell_side_hydraulic_diameter();
 
-        let single_tube_flow_area: Area = 
-            bundled_tubes_flow_area / (self.number_of_tubes as f64);
+        let shell_side_cross_sectional_flow_area: Area = 
+            self.get_shell_side_cross_sectional_area();
 
 
         // flow area and hydraulic diameter are ok
@@ -521,10 +520,10 @@ impl SimpleShellAndTubeHeatExchanger {
         // but for now, I'm going to use Re and Nu using hydraulic diameter 
         // and live with it for the time being
         //
-        let reynolds_number_single_tube: Ratio = 
+        let reynolds_number_shell_side: Ratio = 
             shell_side_mass_flowrate/
-            single_tube_flow_area
-            *single_tube_hydraulic_diameter / viscosity;
+            shell_side_cross_sectional_flow_area
+            *shell_side_fluid_hydraulic_diameter / viscosity;
 
         // next, bulk prandtl number 
 
@@ -536,17 +535,28 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
 
-        let mut pipe_prandtl_reynolds_data: GnielinskiData 
-            = GnielinskiData::default();
+        let shell_side_nusselt_correlation: NusseltCorrelation
+            = self.shell_side_nusselt_correlation_to_tubes.clone();
 
+        let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
+        = GnielinskiData::default();
         // wall correction is optionally turned on based on whether 
         // wall correction is true or false
-        pipe_prandtl_reynolds_data.reynolds = reynolds_number_single_tube;
-        pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.length_to_diameter = 
+        pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side;
+        pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
             shell_side_fluid_array_clone.get_component_length_immutable()/
-            shell_side_fluid_array_clone.get_hydraulic_diameter_immutable();
+            shell_side_fluid_hydraulic_diameter;
+
+
+        // I need to use Nusselt correlations present in this struct 
+        //
+        // wall correction is optionally done here
+        //
+        // this uses the gnielinski correlation for pipes or tubes
+
+        let nusselt_estimate: Ratio;
 
         if correct_prandtl_for_wall_temperatures {
 
@@ -558,18 +568,21 @@ impl SimpleShellAndTubeHeatExchanger {
                     atmospheric_pressure
                 )?;
 
-            pipe_prandtl_reynolds_data.prandtl_wall = wall_prandtl_number;
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
+
+            nusselt_estimate = shell_side_nusselt_correlation.
+            estimate_based_on_prandtl_reynolds_and_wall_correction(
+                bulk_prandtl_number, 
+                wall_prandtl_number,
+                reynolds_number_shell_side)?;
+
+        } else {
+            nusselt_estimate = shell_side_nusselt_correlation.
+            estimate_based_on_prandtl_and_reynolds_no_wall_correction(
+                bulk_prandtl_number, 
+                reynolds_number_shell_side)?;
+
         }
-
-        // I need to use Nusselt correlations present in this struct 
-        //
-        // wall correction is optionally done here
-        //
-        // this uses the gnielinski correlation for pipes or tubes
-
-        let nusselt_estimate = 
-            pipe_prandtl_reynolds_data.
-            get_nusselt_for_developing_flow()?;
 
 
 
@@ -581,7 +594,7 @@ impl SimpleShellAndTubeHeatExchanger {
             fluid_material.try_get_thermal_conductivity(
                 fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / single_tube_hydraulic_diameter;
+        h_to_fluid = nusselt_estimate * k_fluid_average / shell_side_fluid_hydraulic_diameter;
 
 
         // and then get the convective resistance
@@ -600,8 +613,10 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
+        todo!();
 
 
+        // still need to adjust this to convection liquid outside 
         let fluid_pipe_shell_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidInside(
