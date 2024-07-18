@@ -35,8 +35,12 @@ impl SimpleShellAndTubeHeatExchanger {
 
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
+        tube_side_total_mass_flowrate: MassRate,
+        shell_side_total_mass_flowrate: MassRate,
+
     ) -> Result<(), ThermalHydraulicsLibError>
     {
+        // set the mass flowrates first on shell and tube side
 
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
@@ -65,7 +69,8 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance;
         let single_tube_to_shell_side_fluid_conductance: ThermalConductance;
-        let single_tube_to_tube_side_fluid_conductance: ThermalConductance;
+        let single_tube_to_tube_side_fluid_conductance: ThermalConductance
+            = self.get_single_tube_side_fluid_array_node_to_pipe_shell_conductance_with_wall_temp_correction()?;
 
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
