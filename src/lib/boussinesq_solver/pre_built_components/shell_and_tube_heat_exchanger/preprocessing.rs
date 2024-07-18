@@ -47,6 +47,9 @@ impl SimpleShellAndTubeHeatExchanger {
         self.set_tube_side_total_mass_flowrate(tube_side_total_mass_flowrate);
         self.set_shell_side_total_mass_flowrate(shell_side_total_mass_flowrate);
 
+        // set prandtl wall correction 
+        let prandtl_wall_correction_on = true;
+
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
 
@@ -75,7 +78,8 @@ impl SimpleShellAndTubeHeatExchanger {
         let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance;
         let single_tube_to_shell_side_fluid_conductance: ThermalConductance;
         let single_tube_to_tube_side_fluid_conductance: ThermalConductance
-            = self.get_single_tube_side_fluid_array_node_to_pipe_shell_conductance_with_wall_temp_correction()?;
+            = self.get_single_tube_side_fluid_array_node_to_pipe_shell_conductance(
+                prandtl_wall_correction_on)?;
 
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
@@ -275,8 +279,9 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// obtains fluid to pipe shell conductance
     #[inline]
-    pub fn get_single_tube_side_fluid_array_node_to_pipe_shell_conductance_with_wall_temp_correction(
-        &mut self) 
+    pub fn get_single_tube_side_fluid_array_node_to_pipe_shell_conductance(
+        &mut self,
+        correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
     {
 
@@ -349,29 +354,36 @@ impl SimpleShellAndTubeHeatExchanger {
                 atmospheric_pressure
             )?;
 
-        // then wall prandtl number
-
-        let wall_prandtl_number: Ratio 
-            = fluid_material.try_get_prandtl_liquid(
-                wall_temperature,
-                atmospheric_pressure
-            )?;
 
 
         let mut pipe_prandtl_reynolds_data: GnielinskiData 
             = GnielinskiData::default();
 
-        // wall correction given for this case yet
+        // wall correction is optionally turned on based on whether 
+        // wall correction is true or false
         pipe_prandtl_reynolds_data.reynolds = reynolds_number_single_tube;
         pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.prandtl_wall = wall_prandtl_number;
+        pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
         pipe_prandtl_reynolds_data.length_to_diameter = 
             fluid_array_clone.get_component_length_immutable()/
             fluid_array_clone.get_hydraulic_diameter_immutable();
 
+        if correct_prandtl_for_wall_temperatures {
+
+            // then wall prandtl number
+
+            let wall_prandtl_number: Ratio 
+                = fluid_material.try_get_prandtl_liquid(
+                    wall_temperature,
+                    atmospheric_pressure
+                )?;
+
+            pipe_prandtl_reynolds_data.prandtl_wall = wall_prandtl_number;
+        }
+
         // I need to use Nusselt correlations present in this struct 
         //
-        // wall correction is done here
+        // wall correction is optionally done here
         //
         // this uses the gnielinski correlation for pipes or tubes
 
