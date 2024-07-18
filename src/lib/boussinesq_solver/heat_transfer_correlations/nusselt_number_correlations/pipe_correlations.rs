@@ -798,7 +798,7 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// max_relative=0.02);
 /// ```
 ///
-pub fn gnielinski_correlation_liquids_developing(
+pub fn gnielinski_turbulent_correlation_liquids_developing(
     reynolds_number: f64, prandtl_number_bulk_fluid: f64, 
     prandtl_number_wall: f64,
     darcy_friction_factor: f64,
@@ -1000,7 +1000,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     // turbulent correlation
     if reynolds > 4000_f64 {
         let fluid_nusselt_number = 
-            gnielinski_correlation_liquids_developing(
+            gnielinski_turbulent_correlation_liquids_developing(
                 reynolds, 
                 prandtl_number_fluid, 
                 prandtl_number_wall, 
@@ -1031,7 +1031,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
                 length_to_diameter_ratio);
 
     let turbulent_nusselt = 
-        gnielinski_correlation_liquids_developing(
+        gnielinski_turbulent_correlation_liquids_developing(
             4000_f64, 
             prandtl_number_fluid, 
             prandtl_number_wall, 
@@ -1202,7 +1202,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
                 length_to_diameter_ratio.get::<ratio>());
 
     let turbulent_nusselt = 
-        gnielinski_correlation_liquids_developing(
+        gnielinski_turbulent_correlation_liquids_developing(
             4000_f64, 
             prandtl_number_fluid.get::<ratio>(), 
             prandtl_number_wall.get::<ratio>(), 
