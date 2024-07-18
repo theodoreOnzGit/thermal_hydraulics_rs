@@ -29,6 +29,12 @@ pub enum NusseltCorrelation {
     /// Correlation be like:
     /// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
     /// User must supply C and m 
+    ///
+    /// For low Re flows, Nu = 4.36 is used. 
+    /// Turbulence is assumed at Re = 4000 taking pipes as a reference.
+    /// The transition regime is around Re = 2300 - 4000 
+    /// this is taken from the Re for transition in pipes 
+    /// THESE MAY NOT BE APPLICABLE IN THIS CASE
     CustomGnielinskiGeneric(GnielinskiData, Ratio, f64),
 
     /// nusselt number only for turbulent

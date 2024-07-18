@@ -246,6 +246,9 @@ impl GnielinskiData {
     /// Custom Gnielinski correlation but for developing flows 
     ///
     /// suitable for laminar, turbulent and transition flows
+    /// the transition regime is around Re = 2300 - 4000 
+    /// this is taken from the Re for transition in pipes 
+    /// IT MAY NOT BE APPLICABLE IN THIS CASE
     #[inline]
     pub fn get_nusselt_for_custom_developing_flow(&self,
         correlation_coefficient_c: Ratio,

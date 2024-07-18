@@ -1145,6 +1145,10 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
 ///
 /// No specific bounds are given for Prandtl number or otherwise
 /// 
+///
+/// the transition regime is around Re = 2300 - 4000 
+/// this is taken from the Re for transition in pipes 
+/// IT MAY NOT BE APPLICABLE IN THIS CASE
 pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     correlation_coefficient_c: Ratio,
     reynolds_exponent_m: f64,
