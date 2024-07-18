@@ -1152,7 +1152,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
     prandtl_number_wall: Ratio,
     reynolds_number: Ratio,
     length_to_diameter_ratio: Ratio,
-    darcy_friction_factor: f64,
+    _darcy_friction_factor: f64,
     ) -> f64 {
 
 
@@ -1202,12 +1202,13 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
                 length_to_diameter_ratio.get::<ratio>());
 
     let turbulent_nusselt = 
-        gnielinski_turbulent_correlation_liquids_developing(
-            4000_f64, 
-            prandtl_number_fluid.get::<ratio>(), 
-            prandtl_number_wall.get::<ratio>(), 
-            darcy_friction_factor, 
-            length_to_diameter_ratio.get::<ratio>());
+        custom_gnielinski_turbulent_nusselt_correlation(
+            correlation_coefficient_c,
+            reynolds_exponent_m,
+            prandtl_number_fluid, 
+            prandtl_number_wall, 
+            reynolds_number, 
+            length_to_diameter_ratio).get::<ratio>();
 
 
     // the interpolation factor is known as gamma

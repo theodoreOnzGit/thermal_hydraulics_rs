@@ -2,7 +2,7 @@ use uom::{si::{f64::*, ratio::ratio}, ConstZero};
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
-use super::pipe_correlations::gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing;
+use super::pipe_correlations::*;
 /// contains information Nusselt Prandtl Reynold's
 /// correlation
 /// usually in the form:
@@ -259,12 +259,14 @@ impl GnielinskiData {
 
 
         let nusselt_value = 
-        gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
-            reynolds.get::<ratio>(),
-            prandtl_bulk.get::<ratio>(),
-            prandtl_wall.get::<ratio>(),
+        custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+            correlation_coefficient_c,
+            reynolds_exponent_m,
+            prandtl_bulk,
+            prandtl_wall,
+            reynolds,
+            length_to_diameter,
             darcy_friction_factor.get::<ratio>(),
-            length_to_diameter.get::<ratio>(),
         );
 
         return Ok(
