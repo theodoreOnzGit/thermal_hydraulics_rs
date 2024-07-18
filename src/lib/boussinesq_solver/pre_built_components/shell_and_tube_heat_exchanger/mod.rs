@@ -105,3 +105,84 @@
 //
 // There are a few steps to complete to try and replicate the experiment
 //
+
+
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+
+use super::heat_transfer_entities::cv_types::CVType;
+use super::heat_transfer_entities::HeatTransferEntity;
+use uom::si::f64::*;
+
+#[derive(Clone,Debug,PartialEq)]
+pub struct ShellAndTubeHeatExchanger {
+
+    
+    inner_nodes: usize,
+
+    /// this HeatTransferEntity represents the pipe shell which 
+    /// contains the tube side fluid
+    /// it is exposed to the shell side fluid
+    pub pipe_shell: HeatTransferEntity,
+
+
+    /// this HeatTransferEntity represents the pipe fluid
+    /// which is coupled to the pipe shell via a Nusselt Number based
+    /// thermal resistance (usually Gnielinski correlation)
+    pub tube_side_parallel_fluid_array: HeatTransferEntity,
+
+    /// this HeatTransferEntity represents the pipe fluid
+    /// which is coupled to the pipe shell via a Nusselt Number based
+    /// thermal resistance, this must be specified by the user
+    pub shell_side_fluid_array: HeatTransferEntity,
+
+    /// this HeatTransferEntity represents the pipe shell which 
+    /// contains the shell side fluid and tube bundle
+    /// it is exposed to the insulation, or ambient temperature 
+    /// depending on whether the insulation is toggled on or off
+    pub outer_shell: HeatTransferEntity,
+
+    /// ambient temperature that the shell and tube heat 
+    /// exchanger is exposed to
+    pub ambient_temperature: ThermodynamicTemperature,
+
+    /// heat transfer coefficient to ambient
+    /// This provides thermal resistance between the surface of 
+    /// the shell and tube heat exchanger 
+    /// This could be the outer shell or insulation, depending on whether 
+    /// insulation is toggled on or off
+    /// 
+    ///
+    pub heat_transfer_to_ambient: HeatTransfer,
+
+    /// insulation array covering the 
+    /// outer_shell array if insulation is toggled on
+    pub insulation_array: HeatTransferEntity,
+
+    /// this option allows the user to toggle on or off insulation 
+    pub heat_exchanger_has_insulation: bool,
+
+    /// representative 
+    /// tube outer diameter on a per tube bases
+    pub tube_side_od: Length,
+
+    /// representative 
+    /// tube inner diameter one a per tube basis
+    pub tube_side_id: Length,
+
+    /// representative tube flow area on a per tube basis
+    pub tube_side_flow_area: Area,
+
+    /// loss correlation on a per tube basis
+    pub tube_side_custom_component_loss_correlation: DimensionlessDarcyLossCorrelations,
+
+    /// number of tubes in parallel 
+    /// each pipe fluid array represents one tube only
+    pub number_of_tubes: u32,
+
+
+
+}
