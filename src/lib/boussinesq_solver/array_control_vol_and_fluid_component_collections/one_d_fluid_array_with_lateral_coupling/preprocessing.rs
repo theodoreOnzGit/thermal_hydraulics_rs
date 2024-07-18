@@ -154,7 +154,7 @@ impl FluidArray {
         // obtain a nusselt number estimate ignoring wall prandtl 
         // number
         let nusselt_estimate_ignoring_wall_prandtl 
-        = self.nusselt_correlation.estimate_based_on_prandtl_and_reynolds(
+        = self.nusselt_correlation.estimate_based_on_prandtl_and_reynolds_no_wall_correction(
             fluid_prandtl_number,
             fluid_reynolds_number)?;
 

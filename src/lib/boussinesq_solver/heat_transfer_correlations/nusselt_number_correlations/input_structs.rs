@@ -242,5 +242,36 @@ impl GnielinskiData {
 
     }
 
+
+    /// Custom Gnielinski correlation but for developing flows 
+    ///
+    /// suitable for laminar, turbulent and transition flows
+    #[inline]
+    pub fn get_nusselt_for_custom_developing_flow(&self,
+        correlation_coefficient_c: Ratio,
+        reynolds_exponent_m: f64) 
+    -> Result<Ratio,ThermalHydraulicsLibError>{
+        let reynolds: Ratio =  self.reynolds;
+        let prandtl_bulk: Ratio = self.prandtl_bulk;
+        let prandtl_wall: Ratio = self.prandtl_wall;
+        let darcy_friction_factor = self.darcy_friction_factor;
+        let length_to_diameter = self.length_to_diameter;
+
+
+        let nusselt_value = 
+        gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+            reynolds.get::<ratio>(),
+            prandtl_bulk.get::<ratio>(),
+            prandtl_wall.get::<ratio>(),
+            darcy_friction_factor.get::<ratio>(),
+            length_to_diameter.get::<ratio>(),
+        );
+
+        return Ok(
+            Ratio::new::<ratio>(nusselt_value)
+        );
+
+    }
+
 }
 
