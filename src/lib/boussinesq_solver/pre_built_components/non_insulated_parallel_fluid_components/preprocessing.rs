@@ -188,7 +188,7 @@ impl NonInsulatedParallelFluidComponent {
         let interaction: HeatTransferInteractionType = 
         HeatTransferInteractionType::UserSpecifiedHeatAddition;
 
-        // now connect the twisted tape 
+        // now connect the fluid arrays and pipe shells
 
 
         self.pipe_fluid_array.link_to_front(&mut zero_power_bc,

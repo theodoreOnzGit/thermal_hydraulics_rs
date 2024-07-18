@@ -206,3 +206,26 @@ pub struct SimpleShellAndTubeHeatExchanger {
 
 
 }
+
+
+/// stuff such as conductances are calculated here
+pub mod preprocessing;
+
+/// implementations for the FluidComponent trait
+/// are done here
+pub mod fluid_component;
+
+
+/// stuff for calculation is done here, ie, advancing timestep
+pub mod calculation;
+
+/// postprocessing stuff, ie, get the temperature vectors 
+/// of both arrays of control volumes 
+pub mod postprocessing;
+
+/// type conversion, such as into fluid component and such
+pub mod type_conversion;
+
+
+/// verification tests for parallel tubing
+pub mod tests;
