@@ -31,16 +31,21 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 //
 // then we need to connect the parallel fluid arrays laterally to some 
 // boundary condition
+//
+// If you want to set this in countercurrent mode, ensure that 
+// the mass flowrates are going in opposite sides, otherwise,
+// it will be in co-current mode
 impl SimpleShellAndTubeHeatExchanger {
 
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         tube_side_total_mass_flowrate: MassRate,
         shell_side_total_mass_flowrate: MassRate,
-
     ) -> Result<(), ThermalHydraulicsLibError>
     {
         // set the mass flowrates first on shell and tube side
+        self.set_tube_side_total_mass_flowrate(tube_side_total_mass_flowrate);
+        self.set_shell_side_total_mass_flowrate(shell_side_total_mass_flowrate);
 
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;

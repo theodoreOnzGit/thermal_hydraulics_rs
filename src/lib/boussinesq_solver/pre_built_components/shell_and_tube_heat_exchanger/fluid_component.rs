@@ -45,4 +45,21 @@ impl SimpleShellAndTubeHeatExchanger {
 
     }
 
+    /// sets the tube side mass flowrate 
+    pub fn set_shell_side_total_mass_flowrate(&mut self,
+        mass_flowrate_through_shell: MassRate) {
+
+        let mut shell_side_fluid_array: FluidArray = 
+        self.shell_side_fluid_array.clone().try_into().unwrap();
+
+
+
+        shell_side_fluid_array.set_mass_flowrate(mass_flowrate_through_shell);
+        // unfortunately, this makes setting mass flowrate quite 
+        // expensive as we need to clone it everytime
+
+        self.shell_side_fluid_array.set(shell_side_fluid_array.into()).unwrap();
+
+    }
+
 }
