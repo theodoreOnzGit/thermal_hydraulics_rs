@@ -306,6 +306,9 @@ impl NonInsulatedParallelFluidComponent {
         let fluid_material: LiquidMaterial
             = fluid_array_clone.material_control_volume.try_into()?;
 
+        let solid_material: SolidMaterial 
+            = pipe_shell_clone.material_control_volume.try_into()?;
+
         let viscosity: DynamicViscosity = 
             fluid_material.try_get_dynamic_viscosity(fluid_temperature)?;
 
@@ -379,12 +382,14 @@ impl NonInsulatedParallelFluidComponent {
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
+        
+
 
 
         let fluid_pipe_shell_conductance_interaction: HeatTransferInteractionType
         = HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidInside(
-                (SolidMaterial::SteelSS304L.into(), 
+                (solid_material.into(), 
                     (cylinder_mid_diameter - id).into(),
                     pipe_shell_surf_temperature,
                     atmospheric_pressure),
