@@ -36,10 +36,12 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 // If you want to set this in countercurrent mode, ensure that 
 // the mass flowrates are going in opposite sides, otherwise,
 // it will be in co-current mode
+//
 impl SimpleShellAndTubeHeatExchanger {
 
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
+        prandtl_wall_correction_setting: bool,
         tube_side_total_mass_flowrate: MassRate,
         shell_side_total_mass_flowrate: MassRate,
     ) -> Result<(), ThermalHydraulicsLibError>
@@ -47,9 +49,6 @@ impl SimpleShellAndTubeHeatExchanger {
         // set the mass flowrates first on shell and tube side
         self.set_tube_side_total_mass_flowrate(tube_side_total_mass_flowrate);
         self.set_shell_side_total_mass_flowrate(shell_side_total_mass_flowrate);
-
-        // set prandtl wall correction 
-        let prandtl_wall_correction_on = true;
 
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
@@ -59,8 +58,8 @@ impl SimpleShellAndTubeHeatExchanger {
                 heat_transfer_to_ambient)?;
 
         let insulation_to_shell_conductance: ThermalConductance;
-
         let shell_to_shell_side_fluid_conductance: ThermalConductance;
+
 
         // for the parallel tube bundle, we have to be extra careful 
         // because we are accounting for multiple tubes 
@@ -76,11 +75,16 @@ impl SimpleShellAndTubeHeatExchanger {
         // However, I also define a single tube to shell side fluid conductance
         // This avoids ambiguity when dealing with the conductance arrays
         //
-        let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance;
-        let single_tube_to_shell_side_fluid_conductance: ThermalConductance;
+        let single_tube_to_shell_side_fluid_conductance: ThermalConductance
+            = self.get_shell_side_fluid_to_single_pipe_shell_conductance(
+                prandtl_wall_correction_setting)?;
         let single_tube_to_tube_side_fluid_conductance: ThermalConductance
             = self.get_single_tube_side_fluid_array_node_to_pipe_shell_conductance(
-                prandtl_wall_correction_on)?;
+                prandtl_wall_correction_setting)?;
+
+        let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance 
+            = single_tube_to_shell_side_fluid_conductance * 
+            self.number_of_tubes as f64;
 
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
@@ -460,7 +464,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// you'll have to multiply by the number of tubes to obtain 
     /// the whole conductance bit
     #[inline]
-    pub fn get_shell_side_fluid__to_single_pipe_shell_conductance(
+    pub fn get_shell_side_fluid_to_single_pipe_shell_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -613,19 +617,18 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
-        todo!();
 
 
         // still need to adjust this to convection liquid outside 
         let fluid_pipe_shell_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
-            CylindricalConductionConvectionLiquidInside(
+            CylindricalConductionConvectionLiquidOutside(
                 (solid_material.into(), 
-                 (cylinder_mid_diameter - id).into(),
+                 (od - cylinder_mid_diameter).into(),
                  pipe_shell_surf_temperature,
                  atmospheric_pressure),
                  (h_to_fluid,
-                  id.into(),
+                  od.into(),
                   node_length.into())
             );
 
