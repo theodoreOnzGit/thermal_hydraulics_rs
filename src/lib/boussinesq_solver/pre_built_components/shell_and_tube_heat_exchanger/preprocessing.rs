@@ -59,7 +59,9 @@ impl SimpleShellAndTubeHeatExchanger {
                 heat_transfer_to_ambient)?;
 
         let insulation_to_shell_conductance: ThermalConductance;
-        let shell_to_shell_side_fluid_conductance: ThermalConductance;
+        let shell_to_shell_side_fluid_conductance: ThermalConductance = 
+            self.get_shell_side_fluid_to_outer_pipe_shell_conductance(
+                prandtl_wall_correction_setting)?;
 
 
         // for the parallel tube bundle, we have to be extra careful 

@@ -11,3 +11,6 @@ pub mod input_structs;
 
 /// contains nusselt number enums used for input calculation
 pub mod enums;
+
+/// tests to ensure correlations are working correctly 
+pub mod tests;
