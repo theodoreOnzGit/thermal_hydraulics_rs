@@ -140,7 +140,7 @@ pub struct SimpleShellAndTubeHeatExchanger {
     /// this HeatTransferEntity represents the pipe fluid
     /// which is coupled to the pipe shell via a Nusselt Number based
     /// thermal resistance (usually Gnielinski correlation)
-    pub tube_side_parallel_fluid_array: HeatTransferEntity,
+    pub tube_side_fluid_array_for_single_tube: HeatTransferEntity,
 
     /// this HeatTransferEntity represents the pipe fluid
     /// which is coupled to the pipe shell via a Nusselt Number based

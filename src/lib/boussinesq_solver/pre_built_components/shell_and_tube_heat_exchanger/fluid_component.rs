@@ -35,7 +35,7 @@ impl SimpleShellAndTubeHeatExchanger {
         mass_flowrate_over_all_tubes: MassRate) {
 
         let mut tube_side_fluid_array: FluidArray = 
-        self.tube_side_parallel_fluid_array.clone().try_into().unwrap();
+        self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
 
 
         let single_tube_mass_rate = 
@@ -45,7 +45,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // unfortunately, this makes setting mass flowrate quite 
         // expensive as we need to clone it everytime
 
-        self.tube_side_parallel_fluid_array.set(tube_side_fluid_array.into()).unwrap();
+        self.tube_side_fluid_array_for_single_tube.set(tube_side_fluid_array.into()).unwrap();
 
     }
 

@@ -8,6 +8,7 @@ use ndarray::*;
 use super::SimpleShellAndTubeHeatExchanger;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -54,7 +55,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
 
         let outer_node_to_air_conductance = 
-            self.get_air_to_single_shell_nodal_shell_conductance(
+            self.get_air_to_outer_sthe_layer_conductance(
                 heat_transfer_to_ambient)?;
 
         let insulation_to_shell_conductance: ThermalConductance;
@@ -76,10 +77,10 @@ impl SimpleShellAndTubeHeatExchanger {
         // This avoids ambiguity when dealing with the conductance arrays
         //
         let single_tube_to_shell_side_fluid_conductance: ThermalConductance
-            = self.get_shell_side_fluid_to_single_pipe_shell_conductance(
+            = self.get_shell_side_fluid_to_single_inner_pipe_shell_conductance(
                 prandtl_wall_correction_setting)?;
         let single_tube_to_tube_side_fluid_conductance: ThermalConductance
-            = self.get_single_tube_side_fluid_array_node_to_pipe_shell_conductance(
+            = self.get_single_tube_side_fluid_array_node_to_inner_pipe_shell_conductance(
                 prandtl_wall_correction_setting)?;
 
         let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance 
@@ -123,10 +124,10 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
         // tube side
-        self.tube_side_parallel_fluid_array.link_to_front(&mut zero_power_bc,
+        self.tube_side_fluid_array_for_single_tube.link_to_front(&mut zero_power_bc,
             interaction)?;
 
-        self.tube_side_parallel_fluid_array.link_to_back(&mut zero_power_bc,
+        self.tube_side_fluid_array_for_single_tube.link_to_back(&mut zero_power_bc,
             interaction)?;
 
         self.pipe_shell.link_to_front(&mut zero_power_bc,
@@ -165,13 +166,13 @@ impl SimpleShellAndTubeHeatExchanger {
     }
 
 
-    /// obtains air to shell and tube heat exchanger 
+    /// obtains air to shell and tube heat exchanger (sthe)
     /// outer array conductance 
     ///
     /// The outer array will be insulation if insulation is switched on,
     /// or the outer shell if insulation is switched off
     #[inline]
-    pub fn get_air_to_single_shell_nodal_shell_conductance(&mut self,
+    pub fn get_air_to_outer_sthe_layer_conductance(&mut self,
         h_air_to_pipe_surf: HeatTransfer) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
     {
@@ -284,7 +285,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// obtains tube side fluid to pipe shell conductance
     #[inline]
-    pub fn get_single_tube_side_fluid_array_node_to_pipe_shell_conductance(
+    pub fn get_single_tube_side_fluid_array_node_to_inner_pipe_shell_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -294,9 +295,12 @@ impl SimpleShellAndTubeHeatExchanger {
         // nusselt number correlation
 
         // before any calculations, I will first need a clone of 
-        // the fluid array and twisted tape array
-        let mut tube_side_fluid_array_clone: FluidArray = 
-            self.tube_side_parallel_fluid_array.clone().try_into()?;
+        // the fluid array and inner shell array
+        //
+        // the fluid array represents only a single tube
+        let mut tube_side_single_fluid_array_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into()?;
+
 
         let mut pipe_shell_clone: SolidColumn = 
             self.pipe_shell.clone().try_into()?;
@@ -306,10 +310,10 @@ impl SimpleShellAndTubeHeatExchanger {
         // cloning, which is computationally expensive
 
         let single_tube_mass_flowrate: MassRate = 
-            tube_side_fluid_array_clone.get_mass_flowrate();
+            tube_side_single_fluid_array_clone.get_mass_flowrate();
 
         let fluid_temperature: ThermodynamicTemperature 
-            = tube_side_fluid_array_clone.try_get_bulk_temperature()?;
+            = tube_side_single_fluid_array_clone.try_get_bulk_temperature()?;
 
         let wall_temperature: ThermodynamicTemperature 
             = pipe_shell_clone.try_get_bulk_temperature()?;
@@ -321,18 +325,14 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let single_tube_hydraulic_diameter = 
             self.get_tube_side_hydraulic_diameter();
-        let bundled_tubes_flow_area: Area = 
-            tube_side_fluid_array_clone.get_cross_sectional_area_immutable();
-
         let single_tube_flow_area: Area = 
-            bundled_tubes_flow_area / (self.number_of_tubes as f64);
-
+            tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
 
         // flow area and hydraulic diameter are ok
 
 
         let fluid_material: LiquidMaterial
-            = tube_side_fluid_array_clone.material_control_volume.try_into()?;
+            = tube_side_single_fluid_array_clone.material_control_volume.try_into()?;
 
         let solid_material: SolidMaterial 
             = pipe_shell_clone.material_control_volume.try_into()?;
@@ -370,8 +370,8 @@ impl SimpleShellAndTubeHeatExchanger {
         pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
         pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
         pipe_prandtl_reynolds_data.length_to_diameter = 
-            tube_side_fluid_array_clone.get_component_length_immutable()/
-            tube_side_fluid_array_clone.get_hydraulic_diameter_immutable();
+            tube_side_single_fluid_array_clone.get_component_length_immutable()/
+            tube_side_single_fluid_array_clone.get_hydraulic_diameter_immutable();
 
         if correct_prandtl_for_wall_temperatures {
 
@@ -411,7 +411,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
         // and then get the convective resistance
         let number_of_temperature_nodes = self.inner_nodes + 2;
-        let heated_length = tube_side_fluid_array_clone.get_component_length();
+        let heated_length = tube_side_single_fluid_array_clone.get_component_length();
         let id = self.tube_side_id;
         let od = self.tube_side_od;
 
@@ -464,7 +464,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// you'll have to multiply by the number of tubes to obtain 
     /// the whole conductance bit
     #[inline]
-    pub fn get_shell_side_fluid_to_single_pipe_shell_conductance(
+    pub fn get_shell_side_fluid_to_single_inner_pipe_shell_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -476,7 +476,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // before any calculations, I will first need a clone of 
         // the fluid array and twisted tape array
         let mut shell_side_fluid_array_clone: FluidArray = 
-            self.tube_side_parallel_fluid_array.clone().try_into()?;
+            self.shell_side_fluid_array.clone().try_into()?;
 
         let mut pipe_shell_clone: SolidColumn = 
             self.pipe_shell.clone().try_into()?;
@@ -540,7 +540,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
         let shell_side_nusselt_correlation: NusseltCorrelation
-            = self.shell_side_nusselt_correlation_to_tubes.clone();
+            = self.shell_side_nusselt_correlation_to_tubes;
 
         let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
         = GnielinskiData::default();
@@ -601,7 +601,8 @@ impl SimpleShellAndTubeHeatExchanger {
         h_to_fluid = nusselt_estimate * k_fluid_average / shell_side_fluid_hydraulic_diameter;
 
 
-        // and then get the convective resistance
+        // and then get the convective resistance from shell side fluid 
+        // to the tubes
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let heated_length = shell_side_fluid_array_clone.get_component_length();
         let id = self.tube_side_id;
@@ -650,5 +651,34 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
         return Ok(fluid_pipe_shell_nodal_thermal_conductance);
+    }
+
+
+    #[inline]
+    pub fn get_shell_side_fluid_to_outer_pipe_shell_conductance(
+        &mut self,
+        correct_prandtl_for_wall_temperatures: bool) 
+        -> Result<ThermalConductance,ThermalHydraulicsLibError> 
+    {
+        // the thermal conductance here should be based on the 
+        // nusselt number correlation
+
+        // before any calculations, I will first need a clone of 
+        // the fluid array and outer shell array
+        let mut shell_side_fluid_array_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into()?;
+
+        let mut outer_shell_clone: SolidColumn = 
+            self.outer_shell.clone().try_into()?;
+
+        // also need to get basic temperatures and mass flowrates 
+        // only do this once because some of these methods involve 
+        // cloning, which is computationally expensive
+
+        let shell_side_mass_flowrate: MassRate = 
+            
+
+
+        todo!();
     }
 }
