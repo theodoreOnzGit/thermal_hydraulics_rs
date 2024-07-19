@@ -539,13 +539,11 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
 
-        let shell_side_nusselt_correlation: NusseltCorrelation
+        let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
             = self.shell_side_nusselt_correlation_to_tubes;
 
         let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
         = GnielinskiData::default();
-        // wall correction is optionally turned on based on whether 
-        // wall correction is true or false
         pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
@@ -574,14 +572,14 @@ impl SimpleShellAndTubeHeatExchanger {
 
             pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
 
-            nusselt_estimate = shell_side_nusselt_correlation.
+            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_reynolds_and_wall_correction(
                 bulk_prandtl_number, 
                 wall_prandtl_number,
                 reynolds_number_shell_side)?;
 
         } else {
-            nusselt_estimate = shell_side_nusselt_correlation.
+            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_and_reynolds_no_wall_correction(
                 bulk_prandtl_number, 
                 reynolds_number_shell_side)?;
@@ -620,8 +618,9 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
 
-        // still need to adjust this to convection liquid outside 
-        let fluid_pipe_shell_conductance_interaction: HeatTransferInteractionType
+        // conductance calculations assumes a cylinder with 
+        // liquid on the outside, solid on the inside
+        let shell_fluid_to_inner_tube_surf_conductance_interaction: HeatTransferInteractionType
             = HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidOutside(
                 (solid_material.into(), 
@@ -641,16 +640,16 @@ impl SimpleShellAndTubeHeatExchanger {
         // has already been loaded into the thermal conductance 
         // interaction object
 
-        let fluid_pipe_shell_nodal_thermal_conductance: ThermalConductance = 
+        let shell_fluid_to_inner_tube_surf_nodal_thermal_conductance: ThermalConductance = 
             try_get_thermal_conductance_based_on_interaction(
                 fluid_temperature,
                 pipe_shell_surf_temperature,
                 atmospheric_pressure,
                 atmospheric_pressure,
-                fluid_pipe_shell_conductance_interaction)?;
+                shell_fluid_to_inner_tube_surf_conductance_interaction)?;
 
 
-        return Ok(fluid_pipe_shell_nodal_thermal_conductance);
+        return Ok(shell_fluid_to_inner_tube_surf_nodal_thermal_conductance);
     }
 
 
@@ -724,6 +723,111 @@ impl SimpleShellAndTubeHeatExchanger {
                 atmospheric_pressure
             )?;
 
+        let shell_side_fluid_to_outer_tube_surf_nusselt_correlation: NusseltCorrelation
+            = self.shell_side_nusselt_correlation_to_shell;
+
+
+        let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
+        = GnielinskiData::default();
+        pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side;
+        pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
+            shell_side_fluid_array_clone.get_component_length_immutable()/
+            shell_side_fluid_hydraulic_diameter;
         todo!();
+
+
+        // I need to use Nusselt correlations present in this struct 
+        //
+        // wall correction is optionally done here
+        //
+        // this uses the gnielinski correlation for pipes or tubes
+
+        let nusselt_estimate: Ratio;
+
+        if correct_prandtl_for_wall_temperatures {
+
+            // then wall prandtl number
+
+            let wall_prandtl_number: Ratio 
+                = fluid_material.try_get_prandtl_liquid(
+                    wall_temperature,
+                    atmospheric_pressure
+                )?;
+
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
+
+            nusselt_estimate = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
+            estimate_based_on_prandtl_reynolds_and_wall_correction(
+                bulk_prandtl_number, 
+                wall_prandtl_number,
+                reynolds_number_shell_side)?;
+
+        } else {
+            nusselt_estimate = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
+            estimate_based_on_prandtl_and_reynolds_no_wall_correction(
+                bulk_prandtl_number, 
+                reynolds_number_shell_side)?;
+
+        }
+
+
+        // now we can get the heat transfer coeff, 
+
+        let h_to_fluid: HeatTransfer;
+
+        let k_fluid_average: ThermalConductivity = 
+            fluid_material.try_get_thermal_conductivity(
+                fluid_temperature)?;
+
+        h_to_fluid = nusselt_estimate * k_fluid_average / shell_side_fluid_hydraulic_diameter;
+
+
+        // and then get the convective resistance from shell side fluid 
+        // to the tubes
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let heated_length = shell_side_fluid_array_clone.get_component_length();
+        let id = self.tube_side_id;
+        let od = self.tube_side_od;
+
+
+        let node_length = heated_length / 
+            number_of_temperature_nodes as f64;
+
+        // now I need to calculate resistance of the half length of the 
+        // pipe shell, which is an annular cylinder
+
+        let cylinder_mid_diameter: Length = 0.5*(id+od);
+
+        // conductance calculations assumes a cylinder with 
+        // liquid on the inside, solid on the outside 
+        
+
+        let shell_fluid_to_outer_tube_conductance_interaction: HeatTransferInteractionType 
+            = HeatTransferInteractionType::
+            CylindricalConductionConvectionLiquidInside(
+                (solid_material.into(),
+                (cylinder_mid_diameter - id).into(),
+                wall_temperature,
+                 atmospheric_pressure), 
+                (h_to_fluid,
+                 id.into(),
+                 node_length.into()
+                 )
+
+            );
+
+        let shell_fluid_to_outer_tube_surf_nodal_thermal_conductance:
+            ThermalConductance = 
+            try_get_thermal_conductance_based_on_interaction(
+                fluid_temperature,
+                wall_temperature,
+                atmospheric_pressure,
+                atmospheric_pressure,
+                shell_fluid_to_outer_tube_conductance_interaction)?;
+
+        return Ok(shell_fluid_to_outer_tube_surf_nodal_thermal_conductance);
+
     }
 }
