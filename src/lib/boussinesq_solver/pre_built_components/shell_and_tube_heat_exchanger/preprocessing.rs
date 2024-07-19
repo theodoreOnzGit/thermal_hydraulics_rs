@@ -676,8 +676,53 @@ impl SimpleShellAndTubeHeatExchanger {
         // cloning, which is computationally expensive
 
         let shell_side_mass_flowrate: MassRate = 
-            
+            shell_side_fluid_array_clone.get_mass_flowrate();
 
+        let fluid_temperature: ThermodynamicTemperature 
+            = shell_side_fluid_array_clone.try_get_bulk_temperature()?;
+            
+        let wall_temperature: ThermodynamicTemperature 
+            = outer_shell_clone.try_get_bulk_temperature()?;
+
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+
+        let shell_side_fluid_hydraulic_diameter = 
+            self.get_shell_side_hydraulic_diameter();
+
+        let shell_side_cross_sectional_flow_area: Area = 
+            self.get_shell_side_cross_sectional_area();
+
+        // flow area and hydraulic diameter are ok
+
+
+        let fluid_material: LiquidMaterial
+            = shell_side_fluid_array_clone.material_control_volume.try_into()?;
+
+        let solid_material: SolidMaterial 
+            = outer_shell_clone.material_control_volume.try_into()?;
+
+        let viscosity: DynamicViscosity = 
+            fluid_material.try_get_dynamic_viscosity(fluid_temperature)?;
+
+
+        // need to convert hydraulic diameter to an equivalent 
+        // spherical diameter
+        //
+        // but for now, I'm going to use Re and Nu using hydraulic diameter 
+        // and live with it for the time being
+        //
+        let reynolds_number_shell_side: Ratio = 
+            shell_side_mass_flowrate/
+            shell_side_cross_sectional_flow_area
+            *shell_side_fluid_hydraulic_diameter / viscosity;
+
+        // next, bulk prandtl number 
+
+        let bulk_prandtl_number: Ratio 
+            = fluid_material.try_get_prandtl_liquid(
+                fluid_temperature,
+                atmospheric_pressure
+            )?;
 
         todo!();
     }
