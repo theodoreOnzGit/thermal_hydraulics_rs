@@ -86,6 +86,14 @@ pub fn calculate_single_cv_front_heat_flux_back(
                 return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             }
         ,
+        HeatTransferInteractionType::SimpleRadiation
+            (_area_coeff, _hot_temperature, _cold_temperature) => 
+            {
+                println!("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            }
+        ,
 
         HeatTransferInteractionType::
             DualCylindricalThermalConductance(_, _, _) => 
@@ -814,6 +822,16 @@ pub fn calculate_mesh_stability_conduction_timestep_for_single_node_and_bc(
             ()
         },
 
+        HeatTransferInteractionType::SimpleRadiation
+            (_area_coeff, _hot_temperature, _cold_temperature) => 
+            {
+                // radiation can be construed as a conduction 
+                // process if the optical thickness is thick enough 
+                // but I'm not implementing auto timestepping for radiation 
+                // until further notice 
+                ()
+            }
+        ,
     }
 
 

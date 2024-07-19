@@ -10,6 +10,9 @@ use uom::si::f64::*;
 use uom::si::thermal_conductance::watt_per_kelvin;
 use uom::si::thermodynamic_temperature::kelvin;
 
+use uom::si::area::square_meter;
+use uom::si::power::watt;
+use uom::si::temperature_interval;
 use super::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
 
 /// Suppose we have two control volumes of the same materials and  
@@ -385,4 +388,72 @@ pub fn get_conductance_single_cylindrical_radial_solid_liquid(
 }
 
 
+/// H = sigma * coefficient * (T_hot^2 + T_cold^2)*(T_hot + T_cold) 
+/// where sigma is the stefan boltzmann constant
+/// in W m^(-2) T^(-4)
+///
+/// the coefficient is in units of area, so provide it yourself
+/// Stefan boltzmann constant
+/// Modest, M. F., & Mazumder, S. (2021). 
+/// Radiative heat transfer. Academic press. 
+/// List of Symbols (page 32 of 2174) 
+///
+/// 5.670e-8 W m^(-2) K^(-4)
+#[inline]
+pub fn simple_radiation_conductance(
+    area_coeff: Area,
+    hot_temperature: ThermodynamicTemperature,
+    cold_temperature: ThermodynamicTemperature) -> ThermalConductance {
+
+    // convert hot and cold temperatures to kelvin first 
+    //
+    // the best way to be sure that the numbers are preserved is 
+    // to treat them as intervals (not absolute temperatures)
+
+    let hot_temperature_interval: TemperatureInterval = 
+        TemperatureInterval::new::<
+        temperature_interval::kelvin>(
+            hot_temperature.get::<kelvin>()
+            );
+
+    let cold_temperature_interval: TemperatureInterval = 
+        TemperatureInterval::new::<
+        temperature_interval::kelvin>(
+            cold_temperature.get::<kelvin>()
+            );
+
+    // (T_hot^2 + T_cold^2)
+    let square_term = hot_temperature_interval * hot_temperature_interval +
+        cold_temperature_interval * cold_temperature_interval;
+
+    //(T_hot + T_cold) 
+
+    let linear_term = hot_temperature_interval + cold_temperature_interval;
+
+    // Stefan boltzmann constant
+    // Modest, M. F., & Mazumder, S. (2021). 
+    // Radiative heat transfer. Academic press. 
+    // List of Symbols (page 32 of 2174) 
+    //
+    // 5.670e-8 W m^(-2) K^(-4)
+    
+    let stefan_boltzmann_constant = 
+        Power::new::<watt>(5.670e-8) /
+        Area::new::<square_meter>(1.0) /
+        TemperatureInterval::new::<temperature_interval::kelvin>(1.0) /
+        TemperatureInterval::new::<temperature_interval::kelvin>(1.0) /
+        TemperatureInterval::new::<temperature_interval::kelvin>(1.0) /
+        TemperatureInterval::new::<temperature_interval::kelvin>(1.0);
+
+    // H = sigma * coefficient * (T_hot^2 + T_cold^2)*(T_hot + T_cold) 
+    //
+    // the coefficient is in units of area, so provide it yourself
+    
+    let radiation_thermal_conductance: ThermalConductance = 
+        area_coeff * stefan_boltzmann_constant 
+        * square_term * linear_term;
+
+    radiation_thermal_conductance
+
+}
 

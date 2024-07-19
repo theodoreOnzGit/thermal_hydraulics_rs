@@ -1236,6 +1236,17 @@ impl SingleCVNode {
 
                 ()
             },
+
+            HeatTransferInteractionType::
+                SimpleRadiation
+                (_area_coeff, _hot_temperature, _cold_temperature) => 
+                {
+                    // while radiation can be treated as conduction 
+                    // in optically thick media, i'm not implementing 
+                    // this yet
+                    ()
+                }
+            ,
         };
 
         // push the corrected minimum timesteps to cv 1 and cv 2

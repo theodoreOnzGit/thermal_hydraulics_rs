@@ -111,6 +111,13 @@ impl SolidColumn {
                     UserSpecifiedHeatFluxCustomArea or Similar");
                 return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
+            HeatTransferInteractionType::SimpleRadiation(_,_,_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+
+            },
         };
 
         // once area is calculated, we can calculate heat flowrate into 
@@ -241,6 +248,13 @@ impl SolidColumn {
                 println!("please specify interaction type as \n 
                     UserSpecifiedHeatFluxCustomArea or Similar");
                 return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+            },
+            HeatTransferInteractionType::SimpleRadiation(_,_,_) => 
+            {
+                println!("please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err( ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
+
             },
         };
 

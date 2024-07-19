@@ -797,6 +797,15 @@ fn try_get_thermal_conductance_based_on_interaction(
                 do not correspond to conductance");
                 return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             },
+            HeatTransferInteractionType::SimpleRadiation
+                (area_coeff, hot_temperature, cold_temperature) => 
+                {
+                    simple_radiation_conductance(
+                        area_coeff, 
+                        hot_temperature, 
+                        cold_temperature)
+                }
+            ,
 
         };
 
@@ -1095,6 +1104,14 @@ pub fn calculate_constant_heat_flux_front_single_cv_back(
                     advection_data)?;
 
                 return Ok(());
+            }
+        ,
+        HeatTransferInteractionType::SimpleRadiation
+            (_area_coeff, _hot_temperature, _cold_temperature) => 
+            {
+                println!("please specify interaction type as \n 
+                UserSpecifiedHeatFluxCustomArea or Similar");
+                return Err(ThermalHydraulicsLibError::WrongHeatTransferInteractionType);
             }
         ,
     };
