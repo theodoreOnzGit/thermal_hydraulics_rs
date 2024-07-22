@@ -54,13 +54,20 @@ impl SimpleShellAndTubeHeatExchanger {
         // first let's get all the conductances 
         let heat_transfer_to_ambient = self.heat_transfer_to_ambient;
 
-        let outer_node_to_air_conductance = 
-            self.get_air_to_outer_sthe_layer_conductance(
+        // note that this outer node layer depends on whether 
+        // insulation is toggled on by the user 
+        //
+        // if it is toggled on, then the outer layer is the insulation 
+        // if it is toggled off, then the outer layer is the outer 
+        // metallic shell
+        let outer_node_layer_to_air_conductance = 
+            self.get_air_to_outer_sthe_layer_nodal_conductance(
                 heat_transfer_to_ambient)?;
 
-        let insulation_to_shell_conductance: ThermalConductance;
-        let shell_to_shell_side_fluid_conductance: ThermalConductance = 
-            self.get_shell_side_fluid_to_outer_pipe_shell_conductance(
+        let insulation_to_outer_shell_conductance: ThermalConductance;
+        
+        let outer_shell_to_shell_side_fluid_conductance: ThermalConductance = 
+            self.get_shell_side_fluid_to_outer_pipe_shell_nodal_conductance(
                 prandtl_wall_correction_setting)?;
 
 
@@ -79,10 +86,10 @@ impl SimpleShellAndTubeHeatExchanger {
         // This avoids ambiguity when dealing with the conductance arrays
         //
         let single_tube_to_shell_side_fluid_conductance: ThermalConductance
-            = self.get_shell_side_fluid_to_single_inner_pipe_shell_conductance(
+            = self.get_shell_side_fluid_to_single_inner_pipe_shell_nodal_conductance(
                 prandtl_wall_correction_setting)?;
         let single_tube_to_tube_side_fluid_conductance: ThermalConductance
-            = self.get_single_tube_side_fluid_array_node_to_inner_pipe_shell_conductance(
+            = self.get_single_tube_side_fluid_array_node_to_inner_pipe_shell_nodal_conductance(
                 prandtl_wall_correction_setting)?;
 
         let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance 
@@ -174,7 +181,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// The outer array will be insulation if insulation is switched on,
     /// or the outer shell if insulation is switched off
     #[inline]
-    pub fn get_air_to_outer_sthe_layer_conductance(&mut self,
+    pub fn get_air_to_outer_sthe_layer_nodal_conductance(&mut self,
         h_air_to_pipe_surf: HeatTransfer) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
     {
@@ -287,7 +294,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// obtains tube side fluid to pipe shell conductance
     #[inline]
-    pub fn get_single_tube_side_fluid_array_node_to_inner_pipe_shell_conductance(
+    pub fn get_single_tube_side_fluid_array_node_to_inner_pipe_shell_nodal_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -466,7 +473,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// you'll have to multiply by the number of tubes to obtain 
     /// the whole conductance bit
     #[inline]
-    pub fn get_shell_side_fluid_to_single_inner_pipe_shell_conductance(
+    pub fn get_shell_side_fluid_to_single_inner_pipe_shell_nodal_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -656,7 +663,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
     #[inline]
-    pub fn get_shell_side_fluid_to_outer_pipe_shell_conductance(
+    pub fn get_shell_side_fluid_to_outer_pipe_shell_nodal_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> 
@@ -726,7 +733,7 @@ impl SimpleShellAndTubeHeatExchanger {
             )?;
 
         let shell_side_fluid_to_outer_tube_surf_nusselt_correlation: NusseltCorrelation
-            = self.shell_side_nusselt_correlation_to_shell;
+            = self.shell_side_nusselt_correlation_to_outer_shell;
 
 
         let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
@@ -737,7 +744,6 @@ impl SimpleShellAndTubeHeatExchanger {
         pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
             shell_side_fluid_array_clone.get_component_length_immutable()/
             shell_side_fluid_hydraulic_diameter;
-        todo!();
 
 
         // I need to use Nusselt correlations present in this struct 
