@@ -187,6 +187,9 @@ pub struct SimpleShellAndTubeHeatExchanger {
     /// loss correlation on a per tube basis
     pub tube_side_custom_component_loss_correlation: DimensionlessDarcyLossCorrelations,
 
+    /// loss correlation for shell side
+    pub shell_side_custom_component_loss_correlation: DimensionlessDarcyLossCorrelations,
+
     /// number of tubes in parallel 
     /// each pipe fluid array represents one tube only
     pub number_of_tubes: u32,
