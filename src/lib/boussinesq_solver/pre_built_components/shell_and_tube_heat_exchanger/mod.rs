@@ -209,6 +209,10 @@ pub struct SimpleShellAndTubeHeatExchanger {
     /// fluid to shell
     pub shell_side_nusselt_correlation_to_outer_shell: NusseltCorrelation,
 
+    /// allows the user to set custom nusselt correlation 
+    /// for tube side fluid to tube 
+    pub tube_side_nusselt_correlation: NusseltCorrelation,
+
     /// specifies an thickness for the insulation covering 
     /// the shell side
     pub insulation_thickness: Length,

@@ -582,6 +582,10 @@ impl SimpleShellAndTubeHeatExchanger {
             )?;
 
 
+        // for tube side, gnielinski correlation is expected
+        // however, if we want to change this, 
+        // we need to rely on the nusselt correlation set in 
+        // the struct
 
         let mut pipe_prandtl_reynolds_data: GnielinskiData 
             = GnielinskiData::default();
@@ -612,12 +616,18 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // wall correction is optionally done here
         //
-        // this uses the gnielinski correlation for pipes or tubes
+        // for tubes,
+        // the gnielinski correlation should be used as it 
+        // is for tubes and pipes.
+        //
+        // but I allow the user to set the nusselt correlation 
 
         let nusselt_estimate = 
-            pipe_prandtl_reynolds_data.
-            get_nusselt_for_developing_flow()?;
-
+            self.tube_side_nusselt_correlation
+            .estimate_based_on_prandtl_reynolds_and_wall_correction(
+                pipe_prandtl_reynolds_data.prandtl_bulk, 
+                pipe_prandtl_reynolds_data.prandtl_wall, 
+                pipe_prandtl_reynolds_data.reynolds)?;
 
 
         // now we can get the heat transfer coeff, 
