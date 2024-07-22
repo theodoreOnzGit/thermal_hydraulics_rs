@@ -41,6 +41,23 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 //
 impl SimpleShellAndTubeHeatExchanger {
 
+    /// The shell and tube heat exchanger has two configurations,
+    ///
+    /// Firstly with insulation:
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|-outer shell-|-insulation-| ambient
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
+    ///
+    /// Secondly, without insulation
+    ///
+    /// |            |            |               |             |
+    /// |            |            |               |             |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|-outer shell-| ambient
+    /// |            |            |               |             |
+    /// |            |            |               |             |
+    ///
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         prandtl_wall_correction_setting: bool,
@@ -103,6 +120,10 @@ impl SimpleShellAndTubeHeatExchanger {
         let tube_bundle_to_shell_side_fluid_conductance: ThermalConductance 
             = single_tube_to_shell_side_fluid_conductance * 
             self.number_of_tubes as f64;
+
+        // now that we have obtained the conductances, we then need to 
+        // obtain temperature vectors and conductance vectors for  
+        // each pipe array for the lateral connections
 
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
