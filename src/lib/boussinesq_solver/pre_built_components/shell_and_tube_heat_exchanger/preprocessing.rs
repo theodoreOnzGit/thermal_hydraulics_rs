@@ -265,14 +265,46 @@ impl SimpleShellAndTubeHeatExchanger {
                         outer_node_layer_to_air_conductance, 
                         ambient_temperature_vector)?;
 
+                // for the insulation array,
+                // lateral connections are done, 
+                // so now, modify the heat transfer entity 
+                self.insulation_array.set(
+                    insulation_array_clone.into())?;
+
                 // pretty much done here, now for testing..
 
             } else {
+                // the outer shell connects directly to the 
+                // air 
 
+                outer_shell_clone 
+                    .lateral_link_new_temperature_vector_avg_conductance(
+                        outer_shell_to_shell_side_fluid_conductance, 
+                        ambient_temperature_vector)?;
             }
 
+            // after this, we are done for the internal connections
+
+            // by default, we don't expect shell and 
+            // heat exchangers to have heat added to them 
+            // so I'm not going to add heat addition vectors to 
+            // any of these arrays 
 
 
+            // now that lateral connections are done, 
+            // for the outer shell, inner shell and 
+            // both fluid arrays
+            // modify the heat transfer entities
+
+            self.outer_shell.set(outer_shell_clone.into())?;
+
+            self.shell_side_fluid_array.set(shell_side_fluid_arr_clone.into())?;
+
+            self.tube_side_fluid_array_for_single_tube
+                .set(single_inner_tube_fluid_arr_clone.into())?;
+
+            self.inner_pipe_shell_array_for_single_tube
+                .set(single_inner_pipe_shell_clone.into())?;
 
             
 
@@ -281,7 +313,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
 
-        todo!()
+        Ok(())
 
     }
 
