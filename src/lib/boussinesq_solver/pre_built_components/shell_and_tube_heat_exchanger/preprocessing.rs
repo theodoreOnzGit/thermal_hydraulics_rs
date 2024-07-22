@@ -58,6 +58,10 @@ impl SimpleShellAndTubeHeatExchanger {
     /// |            |            |               |             |
     /// |            |            |               |             |
     ///
+    /// This setting is toggled on or off depending on the 
+    /// self.heat_exchanger_has_insulation variable, which should be set 
+    /// when you construct this struct
+    ///
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         prandtl_wall_correction_setting: bool,
@@ -87,7 +91,7 @@ impl SimpleShellAndTubeHeatExchanger {
         if self.heat_exchanger_has_insulation {
 
             insulation_to_outer_shell_conductance = 
-                self.get_pipe_shell_to_insulation_conductance()?;
+                self.get_outer_pipe_shell_to_insulation_conductance()?;
 
         }
         
@@ -124,6 +128,104 @@ impl SimpleShellAndTubeHeatExchanger {
         // now that we have obtained the conductances, we then need to 
         // obtain temperature vectors and conductance vectors for  
         // each pipe array for the lateral connections
+
+        let ambient_temp: ThermodynamicTemperature = self.ambient_temperature;
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+
+
+        // now for the lateral linkages
+        {
+            // let's do the temperature vectors first 
+            let mut ambient_temperature_vector: Vec<ThermodynamicTemperature>
+                = Array1::default(number_of_temperature_nodes)
+                .iter().map( |&temp| {
+                    temp
+                }
+                ).collect();
+
+            ambient_temperature_vector.fill(ambient_temp);
+
+
+            // for this process, I will make a clone of 
+            // each HeatTransferEntity, modify the clone, then 
+            // replace the HeatTransferEntity within the pipe using 
+            // these changed entities
+            let mut single_inner_tube_fluid_arr_clone: FluidArray = 
+                self.tube_side_fluid_array_for_single_tube.clone().try_into()?;
+
+            let mut single_inner_pipe_shell_clone: SolidColumn = 
+                self.inner_pipe_shell_array_for_single_tube.clone().try_into()?;
+
+            let mut shell_side_fluid_arr_clone: FluidArray = 
+                self.shell_side_fluid_array.clone().try_into()?;
+
+            let mut outer_shell_clone: SolidColumn = 
+                self.outer_shell.clone().try_into()?;
+
+            // let's get the temperature vectors
+
+            let single_inner_tube_fluid_arr_temp_vec: Vec<ThermodynamicTemperature>
+                = single_inner_tube_fluid_arr_clone.get_temperature_vector()?;
+
+            let single_inner_pipe_shell_arr_temp_vec: Vec<ThermodynamicTemperature> 
+                = single_inner_pipe_shell_clone.get_temperature_vector()?;
+
+            let shell_side_fluid_arry_temp_vec: Vec<ThermodynamicTemperature> 
+                = shell_side_fluid_arr_clone.get_temperature_vector()?;
+
+            let outer_shell_arr_temp_vec: Vec<ThermodynamicTemperature> 
+                = outer_shell_clone.get_temperature_vector()?;
+
+            // perform the inner connections 
+            // for single inner tube fluid to single pipe shell arr 
+            //
+            // so the single inner fluid array must be linked to the 
+            // temperature of the shell via a single tube to single 
+            // tube side fluid conductance
+
+            single_inner_tube_fluid_arr_clone.
+                lateral_link_new_temperature_vector_avg_conductance(
+                    single_tube_to_tube_side_fluid_conductance, 
+                    single_inner_pipe_shell_arr_temp_vec.clone())?;
+
+            single_inner_pipe_shell_clone.
+                lateral_link_new_temperature_vector_avg_conductance(
+                    single_tube_to_tube_side_fluid_conductance, 
+                    single_inner_tube_fluid_arr_temp_vec)?;
+
+            // next the single inner tube needs to be connected 
+            // laterally to the shell side fluid
+            // no reversals are given here, as in to reverse the 
+            // temperature vector
+            //
+            // the only thing is that to account for parallel tube effects,
+            //
+            // the conductance to the single 
+            // inner tube is based on one tube only,
+            //
+            // while the conductance to shell side fluid is based on all 
+            // the parallel tubes
+
+            single_inner_pipe_shell_clone.
+                lateral_link_new_temperature_vector_avg_conductance(
+                    single_tube_to_shell_side_fluid_conductance, 
+                    shell_side_fluid_arry_temp_vec)?;
+
+            shell_side_fluid_arr_clone. 
+                lateral_link_new_temperature_vector_avg_conductance(
+                    tube_bundle_to_shell_side_fluid_conductance, 
+                    single_inner_pipe_shell_arr_temp_vec)?;
+
+            // next, we need to link the shell side fluid 
+            // to the outer shell 
+
+
+
+
+
+            
+
+        }
 
         // axial connections  (adiabatic by default)
         self.zero_power_bc_axial_connection()?;
@@ -168,10 +270,10 @@ impl SimpleShellAndTubeHeatExchanger {
         self.tube_side_fluid_array_for_single_tube.link_to_back(&mut zero_power_bc,
             interaction)?;
 
-        self.pipe_shell.link_to_front(&mut zero_power_bc,
+        self.inner_pipe_shell_array_for_single_tube.link_to_front(&mut zero_power_bc,
             interaction)?;
 
-        self.pipe_shell.link_to_back(&mut zero_power_bc,
+        self.inner_pipe_shell_array_for_single_tube.link_to_back(&mut zero_power_bc,
             interaction)?;
 
         // shell side
@@ -341,7 +443,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
         let mut pipe_shell_clone: SolidColumn = 
-            self.pipe_shell.clone().try_into()?;
+            self.inner_pipe_shell_array_for_single_tube.clone().try_into()?;
 
         // also need to get basic temperatures and mass flowrates 
         // only do this once because some of these methods involve 
@@ -517,7 +619,7 @@ impl SimpleShellAndTubeHeatExchanger {
             self.shell_side_fluid_array.clone().try_into()?;
 
         let mut pipe_shell_clone: SolidColumn = 
-            self.pipe_shell.clone().try_into()?;
+            self.inner_pipe_shell_array_for_single_tube.clone().try_into()?;
 
         // also need to get basic temperatures and mass flowrates 
         // only do this once because some of these methods involve 
@@ -870,7 +972,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// obtains outer pipe shell to insulation conductance
     #[inline]
-    pub fn get_pipe_shell_to_insulation_conductance(
+    pub fn get_outer_pipe_shell_to_insulation_conductance(
     &self) -> Result<ThermalConductance,ThermalHydraulicsLibError> {
         // first, make a clone of outer pipe shell and insulation
 

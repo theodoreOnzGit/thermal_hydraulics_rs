@@ -134,7 +134,7 @@ pub struct SimpleShellAndTubeHeatExchanger {
     /// this HeatTransferEntity represents the pipe shell which 
     /// contains the tube side fluid
     /// it is exposed to the shell side fluid
-    pub pipe_shell: HeatTransferEntity,
+    pub inner_pipe_shell_array_for_single_tube: HeatTransferEntity,
 
 
     /// this HeatTransferEntity represents the pipe fluid
