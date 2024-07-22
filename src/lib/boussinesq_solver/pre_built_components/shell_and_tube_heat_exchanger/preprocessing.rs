@@ -9,7 +9,6 @@ use super::SimpleShellAndTubeHeatExchanger;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
