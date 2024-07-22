@@ -2,6 +2,8 @@ use uom::si::length::meter;
 use uom::{si::ratio::ratio, ConstZero};
 use uom::si::f64::*;
 
+use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::pipe_correlations::custom_gnielinski_turbulent_nusselt_correlation;
+
 use super::{enums::NusseltCorrelation, input_structs::GnielinskiData};
 
 /// from Du's paper
@@ -78,7 +80,25 @@ pub fn du_correlation_empirical_test(){
         number_of_tubes as f64 
         * tube_od * tube_od) / 
         (shell_id + number_of_tubes as f64 * tube_od);
+
+
     let length_to_diameter = heat_exchg_length/effective_diameter;
+
+    // in Du's paper, D_e/l is 0.009
+    // let me test for that
+    {
+        let diameter_to_length = 
+            effective_diameter/heat_exchg_length;
+
+        approx::assert_relative_eq!(
+            diameter_to_length.get::<ratio>(),
+            0.009,
+            max_relative=0.5
+            );
+    }
+
+    // let me use now the D_e/l of 0.009
+    //let length_to_diameter = 1.0 / Ratio::new::<ratio>(0.009);
 
     let gnielinski_params: GnielinskiData = 
         GnielinskiData { 
@@ -103,23 +123,44 @@ pub fn du_correlation_empirical_test(){
     let wall_prandtl_number = bulk_prandtl_number / 0.5;
 
 
-    // test for Re about 5481
-    {
-        let reynolds = Ratio::new::<ratio>(5481_f64);
-        let nusselt = du_nusselt_correlation
-            .estimate_based_on_prandtl_reynolds_and_wall_correction(
+    // define a test closure so I can easily test
+    let test_fn = |reynolds_float: f64, expected_nusselt_float: f64,
+        tolerance: f64|{
+            let reynolds_num = Ratio::new::<ratio>(reynolds_float);
+
+            let nusselt = custom_gnielinski_turbulent_nusselt_correlation(
+                c, 
+                m, 
                 bulk_prandtl_number, 
                 wall_prandtl_number, 
-                reynolds).unwrap();
-    
-        approx::assert_relative_eq!(
-            nusselt.get::<ratio>(),
-            0.0,
-            max_relative=0.00
+                reynolds_num, 
+                length_to_diameter);
+
+            // max tolerance is 8%
+            approx::assert_relative_eq!(
+                nusselt.get::<ratio>(),
+                expected_nusselt_float,
+                max_relative=tolerance
             );
-    
-    }
 
+        };
 
+    // test for Re about 5481, 
+    // We should expect nusselt of 65.861 
+    // with tolerance of 8% from expt data given Du's paper
+    //
+    test_fn(5481.048, 65.861 ,0.08);
+
+    // test for Re about 4019.509, 
+    // We should expect nusselt of 47.459
+    // with tolerance of 8% from expt data given Du's paper
+    //
+    test_fn(4019.509, 47.459 ,0.08);
+
+    // test for Re about 3510.033, 
+    // We should expect nusselt of 42.582
+    // with tolerance of 8% from expt data given Du's paper
+    //
+    test_fn(3510.033, 42.582 ,0.08);
 
 }
