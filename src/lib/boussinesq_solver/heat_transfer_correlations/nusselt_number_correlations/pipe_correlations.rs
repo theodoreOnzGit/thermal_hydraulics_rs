@@ -1146,9 +1146,20 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
 /// No specific bounds are given for Prandtl number or otherwise
 /// 
 ///
-/// the transition regime is around Re = 2300 - 4000 
+/// the transition regime for pipes is around Re = 2300 - 4000 
 /// this is taken from the Re for transition in pipes 
-/// IT MAY NOT BE APPLICABLE IN THIS CASE
+///
+/// However, for transitions in tube bundles, we expect them 
+/// for around Re = 40-100 
+///
+/// Takemoto, Y., Kawanishi, K., & Mizushima, J. (2010). Heat transfer 
+/// in the flow through a bundle of tubes and transitions of the flow. 
+/// International journal of heat and mass transfer, 53(23-24), 5411-5419.
+///
+/// I will use the Re from 40-100 as the transition regime
+/// at Re of 40 and below, Nu is the same as for pipe lamniar flow
+///
+/// IT MAY NOT BE APPLICABLE IN THIS CASE, but its a decent estimate
 ///
 /// darcy friction factor is not used for this case
 pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
@@ -1160,6 +1171,12 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
     length_to_diameter_ratio: Ratio,
     ) -> f64 {
 
+    let transition_regime_reynolds_high_bound_float = 
+        100_f64;
+
+    let transition_regime_reynolds_low_bound_float = 
+        40_f64;
+        
 
 
 
@@ -1173,7 +1190,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
 
     // if this is turbulent flow, use the
     // turbulent correlation
-    if reynolds > 4000_f64 {
+    if reynolds > transition_regime_reynolds_high_bound_float {
         let fluid_nusselt_number: f64 = 
             custom_gnielinski_turbulent_nusselt_correlation(
                 correlation_coefficient_c,
@@ -1188,7 +1205,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
 
     // if this is laminar flow, 
     // use laminar flow correlation for uniform heat flux
-    if reynolds < 2300_f64 {
+    if reynolds < transition_regime_reynolds_low_bound_float {
         let fluid_nusselt_number = 
             laminar_nusselt_uniform_heat_flux_developing(
                 reynolds, 
@@ -1202,7 +1219,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
 
     let laminar_nusselt = 
             laminar_nusselt_uniform_heat_flux_developing(
-                2300_f64, 
+                transition_regime_reynolds_low_bound_float, 
                 prandtl_number_fluid.get::<ratio>(), 
                 length_to_diameter_ratio.get::<ratio>());
 
@@ -1218,7 +1235,9 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
 
     // the interpolation factor is known as gamma
     // in gnielinski's paper
-    let gamma = (reynolds - 2300_f64)/(4000_f64 - 2300_f64);
+    let gamma = (reynolds - transition_regime_reynolds_low_bound_float)
+        /(transition_regime_reynolds_high_bound_float 
+            - transition_regime_reynolds_low_bound_float);
 
     let fluid_nusselt_number = 
         (1_f64 - gamma) * laminar_nusselt +

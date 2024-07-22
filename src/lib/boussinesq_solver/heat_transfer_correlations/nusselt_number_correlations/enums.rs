@@ -221,8 +221,8 @@ impl NusseltCorrelation {
             ) => 
             {
                 let mut modified_data = data.clone();
-                modified_data.prandtl_wall = bulk_prandtl_number_input;
-                modified_data.prandtl_bulk = wall_prandtl_number_input;
+                modified_data.prandtl_wall = wall_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_custom_developing_flow
                     (*correlation_coefficient_c,*reynolds_exponent_m)
