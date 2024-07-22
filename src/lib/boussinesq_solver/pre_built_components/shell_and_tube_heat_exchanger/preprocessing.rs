@@ -1139,5 +1139,38 @@ impl SimpleShellAndTubeHeatExchanger {
 
         return Ok(1.0/total_resistance);
     }
+
+    /// spawns a thread and moves the clone of the entire heater object into the 
+    /// thread, "locking" it for parallel computation
+    ///
+    /// once that is done, the join handle is returned 
+    /// which when unwrapped, returns the heater object
+    pub fn lateral_connection_thread_spawn(&self,
+        prandtl_wall_correction_setting: bool,
+        tube_side_total_mass_flowrate: MassRate,
+        shell_side_total_mass_flowrate: MassRate,) -> JoinHandle<Self>{
+
+        let mut heater_clone = self.clone();
+
+        // move ptr into a new thread 
+
+        let join_handle = thread::spawn(
+            move || -> Self {
+
+                // carry out the connection calculations
+                heater_clone.
+                    lateral_and_miscellaneous_connections(
+                        prandtl_wall_correction_setting,
+                        tube_side_total_mass_flowrate,
+                        shell_side_total_mass_flowrate,).unwrap();
+
+                heater_clone
+
+            }
+        );
+
+        return join_handle;
+
+    }
     
 }
