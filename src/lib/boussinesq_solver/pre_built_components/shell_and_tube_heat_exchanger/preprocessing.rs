@@ -8,6 +8,7 @@ use ndarray::*;
 use super::SimpleShellAndTubeHeatExchanger;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+use crate::boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
 use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
@@ -65,6 +66,13 @@ impl SimpleShellAndTubeHeatExchanger {
                 heat_transfer_to_ambient)?;
 
         let insulation_to_outer_shell_conductance: ThermalConductance;
+        
+        if self.heat_exchanger_has_insulation {
+
+            insulation_to_outer_shell_conductance = 
+                self.get_pipe_shell_to_insulation_conductance()?;
+
+        }
         
         let outer_shell_to_shell_side_fluid_conductance: ThermalConductance = 
             self.get_shell_side_fluid_to_outer_pipe_shell_nodal_conductance(
@@ -838,4 +846,92 @@ impl SimpleShellAndTubeHeatExchanger {
         return Ok(shell_fluid_to_outer_tube_surf_nodal_thermal_conductance);
 
     }
+
+    /// obtains outer pipe shell to insulation conductance
+    #[inline]
+    pub fn get_pipe_shell_to_insulation_conductance(
+    &self) -> Result<ThermalConductance,ThermalHydraulicsLibError> {
+        // first, make a clone of outer pipe shell and insulation
+
+        let mut insulation_array_clone: SolidColumn = 
+        self.insulation_array.clone().try_into()?;
+
+        let mut pipe_shell_clone: SolidColumn = 
+        self.outer_shell.clone().try_into()?;
+
+        // find the length of the array and node length
+
+        let array_length =  pipe_shell_clone.get_component_length();
+
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+
+        let node_length = array_length / 
+        number_of_temperature_nodes as f64;
+
+        // then we need to find the surface area of each node 
+        // for steel to insulation_material, it will be 
+        // the steel outer diameter or insulation inner_diameter
+        
+        let pipe_shell_mid_section_diameter = 0.5 * (self.shell_side_od 
+        + self.shell_side_id);
+
+        let insulation_material_mid_section_diameter = 
+            0.5 * self.insulation_thickness + 
+            self.shell_side_od;
+
+        let shell_od = self.shell_side_od;
+
+        // next, thermal conductivities of both solid_pipe_material and insulation_material 
+
+        let solid_pipe_material_shell_temperature = pipe_shell_clone.try_get_bulk_temperature() 
+            ?;
+
+        let solid_pipe_material: SolidMaterial = pipe_shell_clone.material_control_volume
+            .try_into()?;
+
+        let solid_pipe_material_conductivity: ThermalConductivity 
+        = solid_pipe_material.try_get_thermal_conductivity(
+            solid_pipe_material_shell_temperature
+        )?;
+
+
+        let insulation_material_shell_temperature = insulation_array_clone.try_get_bulk_temperature() 
+            ?;
+
+        let insulation_material: SolidMaterial = insulation_array_clone.material_control_volume
+            .try_into()?;
+
+        let insulation_material_conductivity: ThermalConductivity 
+        = insulation_material.try_get_thermal_conductivity(
+            insulation_material_shell_temperature
+        )?;
+
+        // we should be able to get the conductance now
+
+        let insulation_material_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            shell_od,
+            insulation_material_mid_section_diameter,
+            node_length,
+            insulation_material_conductivity
+        )?;
+        
+        let solid_pipe_material_layer_conductance: ThermalConductance = 
+        try_get_thermal_conductance_annular_cylinder(
+            pipe_shell_mid_section_diameter,
+            shell_od,
+            node_length,
+            solid_pipe_material_conductivity
+        )?;
+        // now that we have the conductances, we get the resistances 
+
+        let insulation_material_resistance = 1.0/insulation_material_layer_conductance;
+        let solid_pipe_material_resistance = 1.0/solid_pipe_material_layer_conductance;
+
+        let total_resistance = insulation_material_resistance + solid_pipe_material_resistance;
+
+
+        return Ok(1.0/total_resistance);
+    }
+    
 }
