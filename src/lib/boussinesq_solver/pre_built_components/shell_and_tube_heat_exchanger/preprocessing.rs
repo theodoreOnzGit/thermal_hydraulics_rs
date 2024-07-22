@@ -86,14 +86,11 @@ impl SimpleShellAndTubeHeatExchanger {
             self.get_air_to_outer_sthe_layer_nodal_conductance(
                 heat_transfer_to_ambient)?;
 
+        // we will only calculate the insulation to outer shell 
+        // conductance if we toggled that this heat exchanger has 
+        // insulation
         let insulation_to_outer_shell_conductance: ThermalConductance;
         
-        if self.heat_exchanger_has_insulation {
-
-            insulation_to_outer_shell_conductance = 
-                self.get_outer_pipe_shell_to_insulation_conductance()?;
-
-        }
         
         let outer_shell_to_shell_side_fluid_conductance: ThermalConductance = 
             self.get_shell_side_fluid_to_outer_pipe_shell_nodal_conductance(
@@ -209,7 +206,7 @@ impl SimpleShellAndTubeHeatExchanger {
             single_inner_pipe_shell_clone.
                 lateral_link_new_temperature_vector_avg_conductance(
                     single_tube_to_shell_side_fluid_conductance, 
-                    shell_side_fluid_arry_temp_vec)?;
+                    shell_side_fluid_arry_temp_vec.clone())?;
 
             shell_side_fluid_arr_clone. 
                 lateral_link_new_temperature_vector_avg_conductance(
@@ -219,6 +216,60 @@ impl SimpleShellAndTubeHeatExchanger {
             // next, we need to link the shell side fluid 
             // to the outer shell 
 
+            shell_side_fluid_arr_clone. 
+                lateral_link_new_temperature_vector_avg_conductance(
+                    outer_shell_to_shell_side_fluid_conductance, 
+                    outer_shell_arr_temp_vec.clone())?;
+
+            outer_shell_clone. 
+                lateral_link_new_temperature_vector_avg_conductance(
+                    outer_shell_to_shell_side_fluid_conductance, 
+                    shell_side_fluid_arry_temp_vec)?;
+
+            // for the last part, it depends whether we turned 
+            // insulation on or off 
+
+            if self.heat_exchanger_has_insulation {
+                // if insulation is on, then use the insulation to outer 
+                // shell thermal conductance
+                //
+
+                insulation_to_outer_shell_conductance = 
+                    self.get_outer_pipe_shell_to_insulation_conductance()?;
+
+                // we shall need to clone the insulation array 
+                let mut insulation_array_clone: SolidColumn = 
+                    self.insulation_array.clone().try_into()?;
+
+                // get its temperature vector
+                let insulation_arr_arr_temp_vec: Vec<ThermodynamicTemperature> 
+                    = insulation_array_clone.get_temperature_vector()?;
+
+                // then laterally link it to the outer shell array 
+
+
+                insulation_array_clone. 
+                    lateral_link_new_temperature_vector_avg_conductance(
+                        insulation_to_outer_shell_conductance, 
+                        outer_shell_arr_temp_vec)?;
+
+                outer_shell_clone 
+                    .lateral_link_new_temperature_vector_avg_conductance(
+                        insulation_to_outer_shell_conductance, 
+                        insulation_arr_arr_temp_vec)?;
+
+                // then the ambient air
+
+                insulation_array_clone
+                    .lateral_link_new_temperature_vector_avg_conductance(
+                        outer_node_layer_to_air_conductance, 
+                        ambient_temperature_vector)?;
+
+                // pretty much done here, now for testing..
+
+            } else {
+
+            }
 
 
 
