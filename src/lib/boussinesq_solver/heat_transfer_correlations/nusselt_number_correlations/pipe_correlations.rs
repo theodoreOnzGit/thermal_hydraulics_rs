@@ -1149,6 +1149,8 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
 /// the transition regime is around Re = 2300 - 4000 
 /// this is taken from the Re for transition in pipes 
 /// IT MAY NOT BE APPLICABLE IN THIS CASE
+///
+/// darcy friction factor is not used for this case
 pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     correlation_coefficient_c: Ratio,
     reynolds_exponent_m: f64,
@@ -1156,7 +1158,6 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
     prandtl_number_wall: Ratio,
     reynolds_number: Ratio,
     length_to_diameter_ratio: Ratio,
-    _darcy_friction_factor: f64,
     ) -> f64 {
 
 

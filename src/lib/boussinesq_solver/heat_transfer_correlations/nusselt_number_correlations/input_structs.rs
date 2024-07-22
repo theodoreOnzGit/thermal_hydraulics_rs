@@ -257,7 +257,6 @@ impl GnielinskiData {
         let reynolds: Ratio =  self.reynolds;
         let prandtl_bulk: Ratio = self.prandtl_bulk;
         let prandtl_wall: Ratio = self.prandtl_wall;
-        let darcy_friction_factor = self.darcy_friction_factor;
         let length_to_diameter = self.length_to_diameter;
 
 
@@ -269,7 +268,6 @@ impl GnielinskiData {
             prandtl_wall,
             reynolds,
             length_to_diameter,
-            darcy_friction_factor.get::<ratio>(),
         );
 
         return Ok(
