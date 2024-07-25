@@ -8,7 +8,7 @@
 /// 1 + (T_in,t - T_out,t)/(T_in,s - T_out,t) 
 /// = exp ( [UA]/[m_t c_p] )
 #[test]
-pub fn basic_test_shell_and_tube_heat_exchanger(){
+pub fn overall_htc_postprocessing_basic_test_shell_and_tube_heat_exchanger(){
 
     use std::f64::consts::PI;
 
