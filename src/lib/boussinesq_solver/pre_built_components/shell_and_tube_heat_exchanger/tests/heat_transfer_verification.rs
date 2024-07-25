@@ -220,8 +220,13 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
     //
     // but the direction differs in a counter current setup, 
     // so I'll have to add a negative sign
-    let m_t = MassRate::new::<kilogram_per_second>(0.5);
+    let m_t = MassRate::new::<kilogram_per_second>(0.005);
     let m_s = -m_t * 0.5;
+
+    let tube_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(230.0);
+    let shell_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(270.0);
 
     // code a function to obtain outlet temperature 
 
@@ -243,14 +248,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(10.0);
-        let timestep = Time::new::<second>(0.01);
+        let max_time = Time::new::<second>(200.0);
+        let timestep = Time::new::<second>(0.5);
         let mut simulation_time = Time::ZERO;
 
         // for simplicity, I'm going to use an average HITEC 
         // density at 250C (or just the shell and tube inlet temp)
-        let average_temp_kelvin = tube_inlet_temperature.value +
-            shell_inlet_temperature.value;
+        let average_temp_kelvin = 0.5* tube_inlet_temperature.value +
+            0.5*shell_inlet_temperature.value;
         let average_temp = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin);
         let average_hitec_density = 
@@ -289,23 +294,92 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             shell_front_cv_density,
         );
 
-        // remember this is counter flow
-        // shell flows in opposite direction by default
-        //
-        // tube side goes back -> front
+        
+        while max_time < simulation_time {
+            // remember this is counter flow
+            // shell flows in opposite direction by default
+            //
+            // tube side goes back -> front
+            sthe.tube_side_fluid_array_for_single_tube. 
+                link_to_back(&mut tube_inlet_bc, 
+                    tube_inlet_interaction).unwrap();
 
-        sthe.tube_side_fluid_array_for_single_tube. 
-            link_to_back(&mut tube_inlet_bc, 
-                tube_inlet_interaction).unwrap();
+            sthe.tube_side_fluid_array_for_single_tube. 
+                link_to_front(&mut outlet_bc, 
+                    tube_outlet_interaction).unwrap();
 
-        sthe.tube_side_fluid_array_for_single_tube. 
-            link_to_front(&mut outlet_bc, 
-                tube_outlet_interaction).unwrap();
+            // shell side goes front -> back
+            sthe.shell_side_fluid_array.
+                link_to_front(&mut shell_inlet_bc, 
+                    shell_inlet_interaction).unwrap();
 
-        // shell side goes front -> back
+            sthe.shell_side_fluid_array. 
+                link_to_back(&mut outlet_bc, 
+                    shell_outlet_interaction).unwrap();
 
-        todo!()
+            let prandtl_wall_correction_setting = false;
+
+            // connect the arrays with thermal conductances 
+            // interally
+
+            sthe.lateral_and_miscellaneous_connections(
+                prandtl_wall_correction_setting, 
+                tube_mass_flowrate, 
+                shell_mass_flowrate).unwrap();
+
+            // advance timestep
+            sthe.advance_timestep(timestep).unwrap();
+
+
+            simulation_time += timestep;
+        }
+
+        // collect information
+        let temperature_vec_tube_side = 
+            sthe.tube_side_fluid_array_for_single_tube.
+            get_temperature_vector().unwrap();
+
+        dbg!(&temperature_vec_tube_side);
+
+        let temperature_vec_shell_side = 
+            sthe.shell_side_fluid_array. 
+            get_temperature_vector().unwrap();
+
+        dbg!(&temperature_vec_shell_side);
+
+        // get the last item
+        let tube_outlet_temperature: ThermodynamicTemperature = 
+            *temperature_vec_tube_side.last().unwrap();
+
+        let tube_inlet_temperature_steady_state: 
+            ThermodynamicTemperature = 
+            *temperature_vec_tube_side.first().unwrap();
+
+        // tube inlet temperature here should be equal to the 
+        // specified boundary condition 
+
+        //approx::assert_abs_diff_eq!(
+        //    tube_inlet_temperature.get::<kelvin>(),
+        //    tube_inlet_temperature_steady_state.get::<kelvin>(),
+        //    epsilon=0.5
+        //    );
+
+        tube_outlet_temperature
+
     }
+
+    let tube_outlet_temperature: ThermodynamicTemperature 
+        = obtain_outlet_steady_state_temp(
+            &mut sthe_one_shell_one_tube, 
+            tube_inlet_temperature, 
+            shell_inlet_temperature, 
+            m_t, 
+            m_s);
+
+    dbg!(&tube_outlet_temperature);
+
+
+    todo!();
 
 
 }

@@ -851,7 +851,8 @@ impl SimpleShellAndTubeHeatExchanger {
         tube_side_fluid_array_for_single_tube_clone.clear_vectors()?;
 
         // change the pipe fluid array now
-        self.tube_side_fluid_array_for_single_tube = tube_side_fluid_array_for_single_tube_clone.into();
+        self.tube_side_fluid_array_for_single_tube 
+            = tube_side_fluid_array_for_single_tube_clone.into();
 
         Ok(())
     }
