@@ -489,6 +489,30 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         dbg!(&tube_outlet_temperature);
     }
 
+    // slightly increase mass flowrate 
+    // 0.1 kg/s 220C tube, 310C shell had numerical instability
+    // 0.07 kg/s 220C tube, 310C shell had numerical instability given the 
+    // time step settings
+    // change temperatures
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.04);
+        let m_s = -m_t * 0.5;
+        let tube_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(220_f64);
+        let shell_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(270_f64);
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
+
+
     todo!();
 
 
