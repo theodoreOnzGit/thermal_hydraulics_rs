@@ -340,13 +340,13 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             sthe.tube_side_fluid_array_for_single_tube.
             get_temperature_vector().unwrap();
 
-        dbg!(&temperature_vec_tube_side);
+        //dbg!(&temperature_vec_tube_side);
 
-        let temperature_vec_shell_side = 
-            sthe.shell_side_fluid_array. 
-            get_temperature_vector().unwrap();
+        //let temperature_vec_shell_side = 
+        //    sthe.shell_side_fluid_array. 
+        //    get_temperature_vector().unwrap();
 
-        dbg!(&temperature_vec_shell_side);
+        //dbg!(&temperature_vec_shell_side);
 
         // get the last item
         let tube_inlet_temperature_steady_state: 
@@ -370,6 +370,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
     }
 
+
     let tube_outlet_temperature: ThermodynamicTemperature 
         = obtain_outlet_steady_state_temp(
             &mut sthe_one_shell_one_tube, 
@@ -377,9 +378,116 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             shell_inlet_temperature, 
             m_t, 
             m_s);
-
+    dbg!(&m_t);
     dbg!(&tube_outlet_temperature);
 
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.05);
+        let m_s = -m_t * 0.5;
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
+
+
+
+
+    // too high or too low flowrates means instabilities
+    // or not reached steady state yet
+    // ie 0.5 kg/s or 5e-4 kg/s
+    //{
+    //    let m_t = MassRate::new::<kilogram_per_second>(0.05);
+    //    let m_s = -m_t * 0.5;
+    //    let tube_outlet_temperature: ThermodynamicTemperature 
+    //        = obtain_outlet_steady_state_temp(
+    //            &mut sthe_one_shell_one_tube, 
+    //            tube_inlet_temperature, 
+    //            shell_inlet_temperature, 
+    //            m_t, 
+    //            m_s);
+    //    dbg!(&m_t);
+    //    dbg!(&tube_outlet_temperature);
+    //}
+    
+    // let's change the shell and tube inlet temperatures instead
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.05);
+        let m_s = -m_t * 0.5;
+        let tube_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+        let shell_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
+    // invert shell and tube temperatures
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.05);
+        let m_s = -m_t * 0.5;
+        let tube_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+        let shell_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
+    // slightly lower mass flowrate 
+    // not quite steady state...
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.02);
+        let m_s = -m_t * 0.5;
+        let tube_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+        let shell_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
+    // slightly increase mass flowrate 
+    {
+        let m_t = MassRate::new::<kilogram_per_second>(0.07);
+        let m_s = -m_t * 0.5;
+        let tube_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+        let shell_inlet_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+        let tube_outlet_temperature: ThermodynamicTemperature 
+            = obtain_outlet_steady_state_temp(
+                &mut sthe_one_shell_one_tube, 
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s);
+        dbg!(&m_t);
+        dbg!(&tube_outlet_temperature);
+    }
 
     todo!();
 
