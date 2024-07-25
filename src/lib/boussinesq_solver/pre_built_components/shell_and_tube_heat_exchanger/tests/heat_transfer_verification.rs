@@ -248,7 +248,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(200.0);
+        let max_time = Time::new::<second>(2e4_f64);
         let timestep = Time::new::<second>(0.5);
         let mut simulation_time = Time::ZERO;
 
@@ -268,34 +268,34 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let shell_back_cv_density = average_hitec_density;
         let shell_front_cv_density = average_hitec_density;
 
-        // probably want to make this bit a little more user friendly
-        let tube_inlet_interaction: HeatTransferInteractionType = 
-        HeatTransferInteractionType::new_advection_interaction(
-            tube_mass_flowrate,
-            tube_inlet_density,
-            tube_back_cv_density);
-
-        let tube_outlet_interaction = 
-        HeatTransferInteractionType::new_advection_interaction(
-            tube_mass_flowrate,
-            tube_front_cv_density,
-            tube_front_cv_density,
-        );
-        let shell_inlet_interaction: HeatTransferInteractionType = 
-        HeatTransferInteractionType::new_advection_interaction(
-            shell_mass_flowrate,
-            shell_inlet_density,
-            shell_back_cv_density);
-
-        let shell_outlet_interaction = 
-        HeatTransferInteractionType::new_advection_interaction(
-            shell_mass_flowrate,
-            shell_front_cv_density,
-            shell_front_cv_density,
-        );
 
         
-        while max_time < simulation_time {
+        while max_time > simulation_time {
+            // probably want to make this bit a little more user friendly
+            let tube_inlet_interaction: HeatTransferInteractionType = 
+                HeatTransferInteractionType::new_advection_interaction(
+                    tube_mass_flowrate,
+                    tube_inlet_density,
+                    tube_back_cv_density);
+
+            let tube_outlet_interaction = 
+                HeatTransferInteractionType::new_advection_interaction(
+                    tube_mass_flowrate,
+                    tube_front_cv_density,
+                    tube_front_cv_density,
+                );
+            let shell_inlet_interaction: HeatTransferInteractionType = 
+                HeatTransferInteractionType::new_advection_interaction(
+                    shell_mass_flowrate,
+                    shell_inlet_density,
+                    shell_back_cv_density);
+
+            let shell_outlet_interaction = 
+                HeatTransferInteractionType::new_advection_interaction(
+                    shell_mass_flowrate,
+                    shell_front_cv_density,
+                    shell_front_cv_density,
+                );
             // remember this is counter flow
             // shell flows in opposite direction by default
             //
@@ -331,6 +331,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             sthe.advance_timestep(timestep).unwrap();
 
 
+
             simulation_time += timestep;
         }
 
@@ -348,21 +349,22 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         dbg!(&temperature_vec_shell_side);
 
         // get the last item
-        let tube_outlet_temperature: ThermodynamicTemperature = 
-            *temperature_vec_tube_side.last().unwrap();
-
         let tube_inlet_temperature_steady_state: 
             ThermodynamicTemperature = 
             *temperature_vec_tube_side.first().unwrap();
 
+        let tube_outlet_temperature: ThermodynamicTemperature = 
+            *temperature_vec_tube_side.last().unwrap();
+
+
         // tube inlet temperature here should be equal to the 
         // specified boundary condition 
 
-        //approx::assert_abs_diff_eq!(
-        //    tube_inlet_temperature.get::<kelvin>(),
-        //    tube_inlet_temperature_steady_state.get::<kelvin>(),
-        //    epsilon=0.5
-        //    );
+        approx::assert_abs_diff_eq!(
+            tube_inlet_temperature.get::<kelvin>(),
+            tube_inlet_temperature_steady_state.get::<kelvin>(),
+            epsilon=0.5
+            );
 
         tube_outlet_temperature
 
