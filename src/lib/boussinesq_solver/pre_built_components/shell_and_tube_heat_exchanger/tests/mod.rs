@@ -1,18 +1,3 @@
-use std::f64::consts::PI;
-
-use uom::si::angle::degree;
-use uom::si::length::{meter, millimeter};
-use uom::si::pressure::atmosphere;
-use uom::si::ratio::ratio;
-use uom::si::thermodynamic_temperature::degree_celsius;
-use uom::ConstZero;
-
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
-use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
 
 /// this is a basic test for shell and tube heat exchanger
 ///
@@ -25,6 +10,22 @@ use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchange
 #[test]
 pub fn basic_test_shell_and_tube_heat_exchanger(){
 
+    use std::f64::consts::PI;
+
+    use uom::si::angle::degree;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::length::{meter, millimeter};
+    use uom::si::pressure::atmosphere;
+    use uom::si::ratio::ratio;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use uom::ConstZero;
+
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+    use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
+    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
     use uom::si::f64::*;
     let number_of_tubes = 1_u32;
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
@@ -54,9 +55,9 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
     let form_loss = Ratio::new::<ratio>(0.0);
 
-    // initial temperature is 220C 
+    // initial temperature is 250C 
     let initial_temperature = ThermodynamicTemperature::
-        new::<degree_celsius>(220.0);
+        new::<degree_celsius>(250.0);
     // ambient temperature is 25C 
     let ambient_temperature = ThermodynamicTemperature::
         new::<degree_celsius>(25.0);
@@ -165,7 +166,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         Length::new::<meter>(1.0);
     
 
-    let mut sthe_one_shell_one_tube 
+    let sthe_one_shell_one_tube 
         = SimpleShellAndTubeHeatExchanger{ 
             inner_nodes: number_of_inner_nodes, 
             inner_pipe_shell_array_for_single_tube: inner_shell.into(), 
@@ -190,4 +191,30 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };
+
+    let correct_for_prandtl_wall_temperatures = true;
+    let overall_heat_exchg_coeff = 
+        sthe_one_shell_one_tube.overall_heat_transfer_coeff_u_shell_side(
+            correct_for_prandtl_wall_temperatures).unwrap();
+
+    let u_val_watts_per_sqm_kelvin = 
+        overall_heat_exchg_coeff.get::<watt_per_square_meter_kelvin>();
+
+    // based on manual calculations and derivations,
+    // the overall heat exchg coeff at this temperature should be 
+    // 18.48 W/(m^2 K) based on Du's material property correlations 
+    //
+    // See document
+    //
+    // For for steel though, the thermophysical property correlation
+    // I use is different from Du's constant thermal conductivity 
+    // of 16.3 W/(m^2 K), so answers will be slightly different
+    // 
+    // I tested that I agrees to within 4%
+
+    approx::assert_relative_eq!(
+        18.48,
+        u_val_watts_per_sqm_kelvin,
+        max_relative = 0.04
+        );
 }
