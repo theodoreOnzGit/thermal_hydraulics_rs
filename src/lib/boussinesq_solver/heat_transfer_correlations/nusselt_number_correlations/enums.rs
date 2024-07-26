@@ -82,6 +82,9 @@ pub enum NusseltCorrelation {
     /// Just returns a Nusselt number of 10^9 
     /// which may be suitable as an approximation for heat exchangers 
     IdealNusseltOneBillion,
+
+    /// Fixed nusselt number,
+    FixedNusselt(Ratio),
 }
 
 impl NusseltCorrelation {
@@ -121,6 +124,9 @@ impl NusseltCorrelation {
             },
             NusseltCorrelation::IdealNusseltOneBillion => {
                 Ratio::new::<ratio>(1e9_f64)
+            },
+            NusseltCorrelation::FixedNusselt(value) => {
+                *value
             },
         };
 
@@ -194,6 +200,9 @@ impl NusseltCorrelation {
             NusseltCorrelation::IdealNusseltOneBillion => {
                 Ratio::new::<ratio>(1e9_f64)
             },
+            NusseltCorrelation::FixedNusselt(value) => {
+                *value
+            },
         };
 
         return Ok(nusselt_number);
@@ -264,6 +273,9 @@ impl NusseltCorrelation {
             },
             NusseltCorrelation::IdealNusseltOneBillion => {
                 Ratio::new::<ratio>(1e9_f64)
+            },
+            NusseltCorrelation::FixedNusselt(value) => {
+                *value
             },
         };
 

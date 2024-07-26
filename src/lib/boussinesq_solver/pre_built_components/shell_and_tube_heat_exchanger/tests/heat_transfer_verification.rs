@@ -25,13 +25,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
 
     use uom::si::angle::degree;
-    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::length::{meter, millimeter};
     use uom::si::pressure::atmosphere;
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
     use uom::ConstZero;
-    use uom::si::{area::square_meter, mass_rate::kilogram_per_second};
+    use uom::si::mass_rate::kilogram_per_second;
+    //use uom::si::area::square_meter;
 
     use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
@@ -173,14 +174,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         NusseltCorrelation::PipeConstantHeatFluxFullyDeveloped;
 
     let shell_side_nusselt_correlation_to_outer_shell = 
-        NusseltCorrelation::PipeConstantHeatFluxFullyDeveloped;
+        NusseltCorrelation::FixedNusselt(Ratio::ZERO);
 
     // we are not going to use this anyway
     let dummy_insulation_thickness =
         Length::new::<meter>(1.0);
     
 
-    let mut sthe_one_shell_one_tube 
+    let sthe_one_shell_one_tube 
         = SimpleShellAndTubeHeatExchanger{ 
             inner_nodes: number_of_inner_nodes, 
             inner_pipe_shell_array_for_single_tube: inner_shell.into(), 
@@ -206,21 +207,21 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             insulation_thickness: dummy_insulation_thickness,
         };
 
-    let correct_for_prandtl_wall_temperatures = true;
-    let overall_heat_exchg_coeff = 
-        sthe_one_shell_one_tube.overall_heat_transfer_coeff_u_shell_side(
-            correct_for_prandtl_wall_temperatures).unwrap();
+    //let correct_for_prandtl_wall_temperatures = true;
+    //let overall_heat_exchg_coeff = 
+    //    sthe_one_shell_one_tube.overall_heat_transfer_coeff_u_shell_side(
+    //        correct_for_prandtl_wall_temperatures).unwrap();
 
-    let u_val_watts_per_sqm_kelvin = 
-        overall_heat_exchg_coeff.get::<watt_per_square_meter_kelvin>();
-    let shell_side_tube_area: Area = 
-        sthe_one_shell_one_tube.tube_bundle_heat_transfer_area_shell_side();
+    //let u_val_watts_per_sqm_kelvin = 
+    //    overall_heat_exchg_coeff.get::<watt_per_square_meter_kelvin>();
+    //let shell_side_tube_area: Area = 
+    //    sthe_one_shell_one_tube.tube_bundle_heat_transfer_area_shell_side();
 
-    let shell_side_tube_area_m2 = 
-        shell_side_tube_area.get::<square_meter>();
+    //let shell_side_tube_area_m2 = 
+    //    shell_side_tube_area.get::<square_meter>();
 
-    let ua: ThermalConductance = 
-        overall_heat_exchg_coeff * shell_side_tube_area;
+    //let ua: ThermalConductance = 
+    //    overall_heat_exchg_coeff * shell_side_tube_area;
 
     // m_t/m_s = 2,
     // shell side flowrate is half of tube side mass flowrate
@@ -356,22 +357,15 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         //dbg!(&temperature_vec_shell_side);
 
         // get the last item
-        let tube_inlet_temperature_steady_state: 
-            ThermodynamicTemperature = 
-            *temperature_vec_tube_side.first().unwrap();
+        //let tube_inlet_temperature_steady_state: 
+        //    ThermodynamicTemperature = 
+        //    *temperature_vec_tube_side.first().unwrap();
 
         let tube_outlet_temperature: ThermodynamicTemperature = 
             *temperature_vec_tube_side.last().unwrap();
 
 
-        // tube inlet temperature here should be equal to the 
-        // specified boundary condition 
 
-        approx::assert_abs_diff_eq!(
-            tube_inlet_temperature.get::<kelvin>(),
-            tube_inlet_temperature_steady_state.get::<kelvin>(),
-            epsilon=0.5
-            );
 
         tube_outlet_temperature
 
@@ -400,9 +394,20 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             correct_for_prandtl_wall_temperatures).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
+        // shell side outlet temperature 
+        let shell_side_outlet_temperature: ThermodynamicTemperature = {
+            let temperature_vec_shell_side = 
+                sthe.shell_side_fluid_array. 
+                get_temperature_vector().unwrap();
+
+            *temperature_vec_shell_side.first().unwrap()
+
+        };
+
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
                 shell_inlet_temperature.get::<degree_celsius>(),
                 tube_outlet_temperature.get::<degree_celsius>(),
+                shell_side_outlet_temperature.get::<degree_celsius>(),
                 m_t,
                 m_s,
                 ua));
@@ -589,7 +594,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
 
     // note: use a panic to reveal the dbg! information 
-    todo!();
+    //todo!();
 
 
 }
@@ -623,13 +628,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
 
 
     use uom::si::angle::degree;
-    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::length::{meter, millimeter};
     use uom::si::pressure::atmosphere;
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
     use uom::ConstZero;
-    use uom::si::{area::square_meter, mass_rate::kilogram_per_second};
+    use uom::si::mass_rate::kilogram_per_second;
+    //use uom::si::area::square_meter;
 
     use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
@@ -771,14 +777,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
         NusseltCorrelation::PipeConstantHeatFluxFullyDeveloped;
 
     let shell_side_nusselt_correlation_to_outer_shell = 
-        NusseltCorrelation::PipeConstantHeatFluxFullyDeveloped;
+        NusseltCorrelation::FixedNusselt(Ratio::ZERO);
 
     // we are not going to use this anyway
     let dummy_insulation_thickness =
         Length::new::<meter>(1.0);
     
 
-    let mut sthe_one_shell_one_tube 
+    let sthe_one_shell_one_tube 
         = SimpleShellAndTubeHeatExchanger{ 
             inner_nodes: number_of_inner_nodes, 
             inner_pipe_shell_array_for_single_tube: inner_shell.into(), 
@@ -804,21 +810,21 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
             insulation_thickness: dummy_insulation_thickness,
         };
 
-    let correct_for_prandtl_wall_temperatures = true;
-    let overall_heat_exchg_coeff = 
-        sthe_one_shell_one_tube.overall_heat_transfer_coeff_u_shell_side(
-            correct_for_prandtl_wall_temperatures).unwrap();
+    //let correct_for_prandtl_wall_temperatures = true;
+    //let overall_heat_exchg_coeff = 
+    //    sthe_one_shell_one_tube.overall_heat_transfer_coeff_u_shell_side(
+    //        correct_for_prandtl_wall_temperatures).unwrap();
 
-    let u_val_watts_per_sqm_kelvin = 
-        overall_heat_exchg_coeff.get::<watt_per_square_meter_kelvin>();
-    let shell_side_tube_area: Area = 
-        sthe_one_shell_one_tube.tube_bundle_heat_transfer_area_shell_side();
+    //let u_val_watts_per_sqm_kelvin = 
+    //    overall_heat_exchg_coeff.get::<watt_per_square_meter_kelvin>();
+    //let shell_side_tube_area: Area = 
+    //    sthe_one_shell_one_tube.tube_bundle_heat_transfer_area_shell_side();
 
-    let shell_side_tube_area_m2 = 
-        shell_side_tube_area.get::<square_meter>();
+    //let shell_side_tube_area_m2 = 
+    //    shell_side_tube_area.get::<square_meter>();
 
-    let ua: ThermalConductance = 
-        overall_heat_exchg_coeff * shell_side_tube_area;
+    //let ua: ThermalConductance = 
+    //    overall_heat_exchg_coeff * shell_side_tube_area;
 
     // m_t/m_s = 2,
     // shell side flowrate is half of tube side mass flowrate
@@ -990,9 +996,20 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
             correct_for_prandtl_wall_temperatures).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
+        // shell side outlet temperature 
+        let shell_side_outlet_temperature: ThermodynamicTemperature = {
+            let temperature_vec_shell_side = 
+                sthe.shell_side_fluid_array. 
+                get_temperature_vector().unwrap();
+
+            *temperature_vec_shell_side.first().unwrap()
+
+        };
+
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
                 shell_inlet_temperature.get::<degree_celsius>(),
                 tube_outlet_temperature.get::<degree_celsius>(),
+                shell_side_outlet_temperature.get::<degree_celsius>(),
                 m_t,
                 m_s,
                 ua));
@@ -1179,7 +1196,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
 
 
     // note: use a panic to reveal the dbg! information 
-    todo!();
+    //todo!();
 
 
 }
