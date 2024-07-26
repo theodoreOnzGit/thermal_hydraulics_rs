@@ -250,7 +250,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(2e4_f64);
+        let max_time = Time::new::<second>(4e4_f64);
         let timestep = Time::new::<second>(0.5);
         let mut simulation_time = Time::ZERO;
 
@@ -584,7 +584,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
 
     // note: use a panic to reveal the dbg! information 
-    // todo!();
+    todo!();
 
 
 }
