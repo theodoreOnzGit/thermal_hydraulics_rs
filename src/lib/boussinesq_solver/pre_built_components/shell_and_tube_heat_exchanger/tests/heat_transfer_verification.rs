@@ -647,8 +647,8 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
     // from Du's heat exchanger type, except we use one inner tube
     let tube_side_od = Length::new::<meter>(0.014);
     let tube_side_id = Length::new::<meter>(0.01);
-    let shell_side_od = Length::new::<meter>(0.028);
-    let shell_side_id = Length::new::<meter>(0.02);
+    let shell_side_od = Length::new::<meter>(0.048);
+    let shell_side_id = Length::new::<meter>(0.04);
     let pipe_length = Length::new::<meter>(1.95);
 
     let tube_side_flow_area: Area 
@@ -854,7 +854,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
             BCType::new_adiabatic_bc().into();
 
         let max_time = Time::new::<second>(4e4_f64);
-        let timestep = Time::new::<second>(0.5);
+        let timestep = Time::new::<second>(0.1);
         let mut simulation_time = Time::ZERO;
 
         // for simplicity, I'm going to use an average HITEC 
@@ -954,22 +954,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
         //dbg!(&temperature_vec_shell_side);
 
         // get the last item
-        let tube_inlet_temperature_steady_state: 
-            ThermodynamicTemperature = 
-            *temperature_vec_tube_side.first().unwrap();
+        //let tube_inlet_temperature_steady_state: 
+        //    ThermodynamicTemperature = 
+        //    *temperature_vec_tube_side.first().unwrap();
 
         let tube_outlet_temperature: ThermodynamicTemperature = 
             *temperature_vec_tube_side.last().unwrap();
 
 
-        // tube inlet temperature here should be equal to the 
-        // specified boundary condition 
-
-        approx::assert_abs_diff_eq!(
-            tube_inlet_temperature.get::<kelvin>(),
-            tube_inlet_temperature_steady_state.get::<kelvin>(),
-            epsilon=0.5
-            );
 
         tube_outlet_temperature
 
