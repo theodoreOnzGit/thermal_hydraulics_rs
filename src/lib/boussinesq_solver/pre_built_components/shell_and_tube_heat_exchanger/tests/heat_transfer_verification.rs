@@ -1,3 +1,5 @@
+use std::thread;
+
 use uom::si::{thermodynamic_temperature::kelvin, time::second};
 
 use crate::boussinesq_solver::{boundary_conditions::BCType, heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType};
@@ -370,31 +372,75 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 
     }
 
+    // now I want to speed up this process using parallel threads
 
-    let tube_outlet_temperature: ThermodynamicTemperature 
-        = obtain_outlet_steady_state_temp(
-            &mut sthe_one_shell_one_tube, 
-            tube_inlet_temperature, 
-            shell_inlet_temperature, 
-            m_t, 
-            m_s);
-    dbg!(&m_t);
-    dbg!(&tube_outlet_temperature);
+    let test_thread = move |mut sthe: SimpleShellAndTubeHeatExchanger,
+    tube_inlet_temperature: ThermodynamicTemperature,
+    shell_inlet_temperature: ThermodynamicTemperature,
+    m_t: MassRate,
+    m_s: MassRate,| {
 
-    {
-        let m_t = MassRate::new::<kilogram_per_second>(0.05);
-        let m_s = -m_t * 0.5;
+
         let tube_outlet_temperature: ThermodynamicTemperature 
             = obtain_outlet_steady_state_temp(
-                &mut sthe_one_shell_one_tube, 
+                &mut sthe, 
                 tube_inlet_temperature, 
                 shell_inlet_temperature, 
                 m_t, 
                 m_s);
-        dbg!(&m_t);
-        dbg!(&tube_outlet_temperature);
-    }
+        let correct_for_prandtl_wall_temperatures = false;
 
+        let ua: ThermalConductance 
+            = sthe.overall_heat_transfer_coeff_u_shell_side(
+            correct_for_prandtl_wall_temperatures).unwrap() * 
+            sthe.tube_bundle_heat_transfer_area_shell_side();
+
+        dbg!(&(tube_inlet_temperature,
+                shell_inlet_temperature,
+                tube_outlet_temperature,
+                m_s,
+                m_s,
+                ua));
+
+
+    };
+
+    // first test 
+
+    let clone_for_test_one: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+
+    let test_one = 
+        thread::spawn(
+            move || {
+                test_thread(
+                    clone_for_test_one,
+                    tube_inlet_temperature, 
+                    shell_inlet_temperature, 
+                    m_t, 
+                    m_s,) }
+        );
+
+    // second test 
+
+    let clone_for_test_two: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let m_t = MassRate::new::<kilogram_per_second>(0.05);
+    let m_s = -m_t * 0.5;
+
+    let test_two = 
+        thread::spawn(
+            move || {
+                test_thread(
+                    clone_for_test_two,
+                    tube_inlet_temperature, 
+                    shell_inlet_temperature, 
+                    m_t, 
+                    m_s,) }
+        );
+
+
+    // third test
 
 
 
@@ -416,41 +462,54 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
     //}
     
     // let's change the shell and tube inlet temperatures instead
-    {
-        let m_t = MassRate::new::<kilogram_per_second>(0.05);
-        let m_s = -m_t * 0.5;
-        let tube_inlet_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-        let shell_inlet_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-        let tube_outlet_temperature: ThermodynamicTemperature 
-            = obtain_outlet_steady_state_temp(
-                &mut sthe_one_shell_one_tube, 
-                tube_inlet_temperature, 
-                shell_inlet_temperature, 
-                m_t, 
-                m_s);
-        dbg!(&m_t);
-        dbg!(&tube_outlet_temperature);
-    }
+    let m_t = MassRate::new::<kilogram_per_second>(0.05);
+    let m_s = -m_t * 0.5;
+    let tube_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+    let shell_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+    let clone_for_test_three: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_three = 
+        thread::spawn(
+            move || {
+                test_thread(
+                    clone_for_test_three,
+                    tube_inlet_temperature, 
+                    shell_inlet_temperature, 
+                    m_t, 
+                    m_s,) }
+        );
+
     // invert shell and tube temperatures
-    {
-        let m_t = MassRate::new::<kilogram_per_second>(0.05);
-        let m_s = -m_t * 0.5;
-        let tube_inlet_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-        let shell_inlet_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-        let tube_outlet_temperature: ThermodynamicTemperature 
-            = obtain_outlet_steady_state_temp(
-                &mut sthe_one_shell_one_tube, 
-                tube_inlet_temperature, 
-                shell_inlet_temperature, 
-                m_t, 
-                m_s);
-        dbg!(&m_t);
-        dbg!(&tube_outlet_temperature);
-    }
+    let m_t = MassRate::new::<kilogram_per_second>(0.05);
+    let m_s = -m_t * 0.5;
+    let tube_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
+    let shell_inlet_temperature = 
+        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
+
+
+    let clone_for_test_four: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_four = 
+        thread::spawn(
+            move || {
+                test_thread(
+                    clone_for_test_four,
+                    tube_inlet_temperature, 
+                    shell_inlet_temperature, 
+                    m_t, 
+                    m_s,) }
+        );
+
+    //join and unwrap all threads 
+
+    test_one.join().unwrap();
+    test_two.join().unwrap();
+    test_three.join().unwrap();
+    test_four.join().unwrap();
+
     // slightly lower mass flowrate 
     // not quite steady state...
     {
