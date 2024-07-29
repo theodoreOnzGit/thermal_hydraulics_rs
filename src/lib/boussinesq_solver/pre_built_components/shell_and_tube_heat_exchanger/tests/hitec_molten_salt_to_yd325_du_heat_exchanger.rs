@@ -8,7 +8,7 @@
 /// and switching off the insulation boolean
 ///
 #[test]
-pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
+pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
     use std::f64::consts::PI;
 
@@ -74,9 +74,11 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
 
     let form_loss = Ratio::new::<ratio>(0.0);
 
+    let inlet_temp_salt = 
+        ThermodynamicTemperature::new::<degree_celsius>(214.93);
+    let inlet_temp_oil = 
+        ThermodynamicTemperature::new::<degree_celsius>(74.49);
     // initial temperature is 250C 
-    let initial_temperature = ThermodynamicTemperature::
-        new::<degree_celsius>(250.0);
     // ambient temperature is 25C 
     let ambient_temperature = ThermodynamicTemperature::
         new::<degree_celsius>(25.0);
@@ -96,7 +98,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             pipe_length,
             tube_side_id,
             tube_side_flow_area,
-            initial_temperature,
+            inlet_temp_oil,
             fluid_pressure,
             steel,
             yd325,
@@ -113,7 +115,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             pipe_length,
             shell_side_fluid_hydraulic_diameter,
             shell_side_flow_area,
-            initial_temperature,
+            inlet_temp_salt,
             fluid_pressure,
             steel,
             hitec,
@@ -127,7 +129,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             pipe_length, 
             shell_side_id, 
             shell_side_od, 
-            initial_temperature, 
+            inlet_temp_salt, 
             solid_pressure, 
             steel, 
             number_of_inner_nodes
@@ -138,7 +140,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             pipe_length, 
             tube_side_id, 
             tube_side_od, 
-            initial_temperature, 
+            inlet_temp_salt, 
             solid_pressure, 
             steel, 
             number_of_inner_nodes
@@ -254,10 +256,6 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
     let vol_flowrate_oil = 
         VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
-    let inlet_temp_salt = 
-        ThermodynamicTemperature::new::<degree_celsius>(214.93);
-    let inlet_temp_oil = 
-        ThermodynamicTemperature::new::<degree_celsius>(74.49);
 
     let inlet_rho_salt = 
         LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
