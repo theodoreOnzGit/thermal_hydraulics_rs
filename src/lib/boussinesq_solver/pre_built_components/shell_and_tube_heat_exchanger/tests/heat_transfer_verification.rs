@@ -1599,23 +1599,48 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             correct_for_prandtl_wall_temperatures).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
-        // shell side outlet temperature 
-        let shell_side_outlet_temperature: ThermodynamicTemperature = {
+        // shell side outlet temperature and inlet cv temperature
+        let (shell_side_inlet_cv_temperature, 
+            shell_side_outlet_temperature): 
+            (ThermodynamicTemperature, ThermodynamicTemperature) = {
             let temperature_vec_shell_side = 
                 sthe.shell_side_fluid_array. 
                 get_temperature_vector().unwrap();
 
-            *temperature_vec_shell_side.first().unwrap()
+            let shell_side_outlet_temperature = 
+                *temperature_vec_shell_side.first().unwrap();
+
+            let shell_side_inlet_cv_temperature = 
+                *temperature_vec_shell_side.last().unwrap();
+
+            (shell_side_inlet_cv_temperature,
+             shell_side_outlet_temperature)
+
+        };
+
+        // tube side inlet cv temperature
+        let tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
+
+            let temperature_vec_tube_side = 
+                sthe.tube_side_fluid_array_for_single_tube. 
+                get_temperature_vector().unwrap();
+
+            let tube_side_inlet_cv_temperature = 
+                *temperature_vec_tube_side.first().unwrap();
+
+            tube_side_inlet_cv_temperature
 
         };
 
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
-                shell_inlet_temperature.get::<degree_celsius>(),
-                tube_outlet_temperature.get::<degree_celsius>(),
-                shell_side_outlet_temperature.get::<degree_celsius>(),
-                m_t,
-                m_s,
-                ua));
+        tube_side_inlet_cv_temperature.get::<degree_celsius>(),
+        shell_inlet_temperature.get::<degree_celsius>(),
+        shell_side_inlet_cv_temperature.get::<degree_celsius>(),
+        tube_outlet_temperature.get::<degree_celsius>(),
+        shell_side_outlet_temperature.get::<degree_celsius>(),
+        m_t,
+        m_s,
+        ua));
 
 
     };
@@ -1799,7 +1824,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
 
 
     // note: use a panic to reveal the dbg! information 
-    //todo!();
+    todo!();
 
 
 }
