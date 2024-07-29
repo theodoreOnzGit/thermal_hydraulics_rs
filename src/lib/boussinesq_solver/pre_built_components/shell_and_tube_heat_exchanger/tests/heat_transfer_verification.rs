@@ -5,9 +5,6 @@
 /// I'm assuming an adiabatic bc to the outside
 /// and switching off the insulation boolean
 ///
-/// for this internal consistency test, 
-/// 1 + (T_in,t - T_out,t)/(T_in,s - T_out,t) 
-/// = exp ( [UA]/[m_t c_p] )
 #[test]
 pub fn basic_test_shell_and_tube_heat_exchanger(){
 
@@ -604,11 +601,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
 ///
 /// I'm assuming an adiabatic bc to the outside
 /// and switching off the insulation boolean
-///
-/// for this internal consistency test, 
-/// 1 + (T_in,t - T_out,t)/(T_in,s - T_out,t) 
-/// = exp ( [UA]/[m_t c_p] )
-///
+//
 /// this time, I reduce the diameter of the shell side, so it 
 /// reaches steady state faster
 #[test]
@@ -1206,10 +1199,6 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
 ///
 /// I'm assuming an adiabatic bc to the outside
 /// and switching off the insulation boolean
-///
-/// for this internal consistency test, 
-/// 1 + (T_in,t - T_out,t)/(T_in,s - T_out,t) 
-/// = exp ( [UA]/[m_t c_p] )
 ///
 /// this test is similar to the first set, except now I have 19 tubes
 /// similar to Du
