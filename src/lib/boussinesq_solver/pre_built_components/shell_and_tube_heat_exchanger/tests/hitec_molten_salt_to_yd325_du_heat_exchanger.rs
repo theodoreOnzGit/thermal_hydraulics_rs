@@ -62,11 +62,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
     let shell_side_flow_area: Area 
         = PI * 0.25 * shell_side_id * shell_side_id 
-        - PI * 0.25 * tube_side_od * tube_side_od;
+        - number_of_tubes as f64 *
+        PI * 0.25 * tube_side_od * tube_side_od;
 
     let shell_side_fluid_hydraulic_diameter: Length = 
-        (shell_side_id * shell_side_id - tube_side_od * tube_side_od)/
-        (shell_side_id + tube_side_od);
+        (shell_side_id * shell_side_id - number_of_tubes as f64 *
+         tube_side_od * tube_side_od)/
+        (shell_side_id + number_of_tubes as f64 * tube_side_od);
 
     let hitec: LiquidMaterial = LiquidMaterial::HITEC;
     let yd325: LiquidMaterial = LiquidMaterial::YD325;
@@ -78,7 +80,6 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         ThermodynamicTemperature::new::<degree_celsius>(214.93);
     let inlet_temp_oil = 
         ThermodynamicTemperature::new::<degree_celsius>(74.49);
-    // initial temperature is 250C 
     // ambient temperature is 25C 
     let ambient_temperature = ThermodynamicTemperature::
         new::<degree_celsius>(25.0);
@@ -271,6 +272,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     // (YD 325) flows through the tube side
     let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
     let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+    dbg!(&(m_s,m_t));
 
     let tube_inlet_temperature = 
         inlet_temp_oil;
@@ -297,22 +299,27 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(4e4_f64);
+        let max_time = Time::new::<second>(4e3_f64);
         let timestep = Time::new::<second>(0.5);
         let mut simulation_time = Time::ZERO;
 
         // for simplicity, I'm going to use an average HITEC 
         // density at 250C (or just the shell and tube inlet temp)
-        let average_temp_kelvin = 0.5* tube_inlet_temperature.value +
-            0.5*shell_inlet_temperature.value;
-        let average_temp = ThermodynamicTemperature::new::<kelvin>(
-            average_temp_kelvin);
+        let average_temp_kelvin_hitec = shell_inlet_temperature.value;
+        let average_temp_hitec = ThermodynamicTemperature::new::<kelvin>(
+            average_temp_kelvin_hitec);
         let average_hitec_density = 
-            LiquidMaterial::HITEC.density(average_temp).unwrap();
+            LiquidMaterial::HITEC.density(average_temp_hitec).unwrap();
 
-        let tube_inlet_density = average_hitec_density;
-        let tube_back_cv_density = average_hitec_density;
-        let tube_front_cv_density = average_hitec_density;
+        let average_temp_kelvin_oil = tube_inlet_temperature.value;
+        let average_temp_oil = ThermodynamicTemperature::new::<kelvin>(
+            average_temp_kelvin_oil);
+        let average_oil_density = 
+            LiquidMaterial::YD325.density(average_temp_oil).unwrap();
+
+        let tube_inlet_density = average_oil_density;
+        let tube_back_cv_density = average_oil_density;
+        let tube_front_cv_density = average_oil_density;
         let shell_inlet_density = average_hitec_density;
         let shell_back_cv_density = average_hitec_density;
         let shell_front_cv_density = average_hitec_density;
@@ -486,175 +493,26 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     let clone_for_test_one: SimpleShellAndTubeHeatExchanger = 
         sthe_one_shell_one_tube.clone();
 
-    let test_one = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_one,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-
-    // second test 
-
-    let clone_for_test_two: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let m_t = MassRate::new::<kilogram_per_second>(0.05);
-    let m_s = -m_t * 0.5;
-
-    let test_two = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_two,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
+    test_thread(clone_for_test_one,
+        tube_inlet_temperature,
+        shell_inlet_temperature,
+        m_t,
+        m_s);
 
 
-    // third test
+    //let test_one = 
+    //    thread::spawn(
+    //        move || {
+    //            test_thread(
+    //                clone_for_test_one,
+    //                tube_inlet_temperature, 
+    //                shell_inlet_temperature, 
+    //                m_t, 
+    //                m_s,) }
+    //    );
 
 
-
-    // too high or too low flowrates means instabilities
-    // or not reached steady state yet
-    // ie 0.5 kg/s or 5e-4 kg/s
-    //{
-    //    let m_t = MassRate::new::<kilogram_per_second>(0.05);
-    //    let m_s = -m_t * 0.5;
-    //    let tube_outlet_temperature: ThermodynamicTemperature 
-    //        = obtain_outlet_steady_state_temp(
-    //            &mut sthe_one_shell_one_tube, 
-    //            tube_inlet_temperature, 
-    //            shell_inlet_temperature, 
-    //            m_t, 
-    //            m_s);
-    //    dbg!(&m_t);
-    //    dbg!(&tube_outlet_temperature);
-    //}
-    
-    // let's change the shell and tube inlet temperatures instead
-    let m_t = MassRate::new::<kilogram_per_second>(0.05);
-    let m_s = -m_t * 0.5;
-    let tube_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-    let shell_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-    let clone_for_test_three: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let test_three = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_three,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-
-    // invert shell and tube temperatures
-    let m_t = MassRate::new::<kilogram_per_second>(0.05);
-    let m_s = -m_t * 0.5;
-    let tube_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-    let shell_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-
-
-    let clone_for_test_four: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let test_four = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_four,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-
-    // test 5
-    // slightly lower mass flowrate 
-    // not quite steady state...
-    let m_t = MassRate::new::<kilogram_per_second>(0.02);
-    let m_s = -m_t * 0.5;
-    let tube_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-    let shell_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-    let clone_for_test_five: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let test_five = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_five,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-    // test 6
-    // slightly increase mass flowrate 
-    //
-    let m_t = MassRate::new::<kilogram_per_second>(0.045);
-    let m_s = -m_t * 0.5;
-    let tube_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(180_f64);
-    let shell_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(280_f64);
-    let clone_for_test_six: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let test_six = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_six,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-
-    // test 7
-    // slightly increase mass flowrate 
-    // 0.1 kg/s 220C tube, 310C shell had numerical instability
-    // 0.07 kg/s 220C tube, 310C shell had numerical instability given the 
-    // time step settings
-    // change temperatures
-    let m_t = MassRate::new::<kilogram_per_second>(0.04);
-    let m_s = -m_t * 0.5;
-    let tube_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(220_f64);
-    let shell_inlet_temperature = 
-        ThermodynamicTemperature::new::<degree_celsius>(270_f64);
-    let clone_for_test_seven: SimpleShellAndTubeHeatExchanger = 
-        sthe_one_shell_one_tube.clone();
-    let test_seven = 
-        thread::spawn(
-            move || {
-                test_thread(
-                    clone_for_test_seven,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
-    //join and unwrap all threads 
-
-    test_one.join().unwrap();
-    test_two.join().unwrap();
-    test_three.join().unwrap();
-    test_four.join().unwrap();
-    test_five.join().unwrap();
-    test_six.join().unwrap();
-    test_seven.join().unwrap();
+    //test_one.join().unwrap();
 
 
 

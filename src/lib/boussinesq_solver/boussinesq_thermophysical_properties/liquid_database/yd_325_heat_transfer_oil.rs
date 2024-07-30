@@ -420,7 +420,7 @@ pub fn range_check_yd325_oil(fluid_temp: ThermodynamicTemperature)
         // celsius
 
         // TBD with range checking
-        range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
+        range_check(&Material::Liquid(LiquidMaterial::YD325), 
             fluid_temp, 
             ThermodynamicTemperature::new::<kelvin>(523.0), 
             ThermodynamicTemperature::new::<kelvin>(323.0))?;

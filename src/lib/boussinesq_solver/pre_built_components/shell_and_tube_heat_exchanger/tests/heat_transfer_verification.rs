@@ -1253,11 +1253,13 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
 
     let shell_side_flow_area: Area 
         = PI * 0.25 * shell_side_id * shell_side_id 
-        - PI * 0.25 * tube_side_od * tube_side_od;
+        - number_of_tubes as f64 *
+        PI * 0.25 * tube_side_od * tube_side_od;
 
     let shell_side_fluid_hydraulic_diameter: Length = 
-        (shell_side_id * shell_side_id - tube_side_od * tube_side_od)/
-        (shell_side_id + tube_side_od);
+        (shell_side_id * shell_side_id - number_of_tubes as f64 *
+         tube_side_od * tube_side_od)/
+        (shell_side_id + number_of_tubes as f64 * tube_side_od);
 
     let hitec: LiquidMaterial = LiquidMaterial::HITEC;
     let steel: SolidMaterial = SolidMaterial::SteelSS304L;
