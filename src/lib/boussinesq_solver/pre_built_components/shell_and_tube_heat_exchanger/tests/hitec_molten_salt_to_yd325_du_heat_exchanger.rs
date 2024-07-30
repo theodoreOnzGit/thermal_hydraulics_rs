@@ -272,7 +272,6 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     // (YD 325) flows through the tube side
     let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
     let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
-    dbg!(&(m_s,m_t));
 
     let tube_inlet_temperature = 
         inlet_temp_oil;
@@ -299,8 +298,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(4e3_f64);
-        let timestep = Time::new::<second>(0.5);
+        let max_time = Time::new::<second>(100_f64);
+        let timestep = Time::new::<second>(0.05);
         let mut simulation_time = Time::ZERO;
 
         // for simplicity, I'm going to use an average HITEC 

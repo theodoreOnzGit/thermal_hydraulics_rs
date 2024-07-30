@@ -120,10 +120,10 @@ impl SimpleShellAndTubeHeatExchanger {
             // but for now, I'm going to use Re and Nu using hydraulic diameter 
             // and live with it for the time being
             //
-            let reynolds_number_single_tube: Ratio = 
-                single_tube_mass_flowrate/
+            let reynolds_number_single_tube_abs_for_nusselt_estimate: Ratio = 
+                (single_tube_mass_flowrate/
                 single_tube_flow_area
-                *single_tube_hydraulic_diameter / viscosity;
+                *single_tube_hydraulic_diameter / viscosity).abs();
 
             // next, bulk prandtl number 
 
@@ -148,14 +148,14 @@ impl SimpleShellAndTubeHeatExchanger {
                     .estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
                         wall_prandtl_number, 
-                        reynolds_number_single_tube)?;
+                        reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             } else {
                 tube_side_nusselt_estimate = 
                     self.tube_side_nusselt_correlation
                     .estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
                         bulk_prandtl_number, 
-                        reynolds_number_single_tube)?;
+                        reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             }
 
             let k_fluid_average: ThermalConductivity = 
@@ -242,10 +242,10 @@ impl SimpleShellAndTubeHeatExchanger {
             // but for now, I'm going to use Re and Nu using hydraulic diameter 
             // and live with it for the time being
             //
-            let reynolds_number_shell_side: Ratio = 
-                shell_side_mass_flowrate/
+            let reynolds_number_shell_side_abs_for_nusselt_estimate: Ratio = 
+                (shell_side_mass_flowrate/
                 shell_side_cross_sectional_flow_area
-                *shell_side_fluid_hydraulic_diameter / viscosity;
+                *shell_side_fluid_hydraulic_diameter / viscosity).abs();
 
             // next, bulk prandtl number 
 
@@ -262,7 +262,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
             let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
                 = GnielinskiData::default();
-            pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side;
+            pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side_abs_for_nusselt_estimate;
             pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
             pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
             pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
@@ -294,13 +294,13 @@ impl SimpleShellAndTubeHeatExchanger {
                     estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
                         wall_prandtl_number,
-                        reynolds_number_shell_side)?;
+                        reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             } else {
                 nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_and_reynolds_no_wall_correction(
                         bulk_prandtl_number, 
-                        reynolds_number_shell_side)?;
+                        reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             }
 
