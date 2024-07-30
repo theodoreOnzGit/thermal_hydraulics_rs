@@ -298,7 +298,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(1e3_f64);
+        let max_time = Time::new::<second>(800_f64);
         let timestep = Time::new::<second>(0.05);
         let mut simulation_time = Time::ZERO;
 
