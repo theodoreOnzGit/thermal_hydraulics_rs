@@ -484,7 +484,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         // note: tube side is oil, shell side is HITEC salt
 
         let average_shell_side_temp_kelvin: f64 = 
-            0.5 * (shell_side_inlet_cv_temperature.get::<kelvin>() 
+            0.5 * (shell_inlet_temperature.get::<kelvin>() 
                 + shell_side_outlet_temperature.get::<kelvin>()
                 );
 
@@ -499,7 +499,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let shell_side_delta_t: TemperatureInterval = 
             TemperatureInterval::new::<temperature_interval::kelvin>(
                 shell_side_outlet_temperature.get::<kelvin>() - 
-                shell_side_inlet_cv_temperature.get::<kelvin>()
+                shell_inlet_temperature.get::<kelvin>()
             );
 
         let q_shell: Power = 
@@ -507,7 +507,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             
 
         let average_tube_side_temp_kelvin: f64 = 
-            0.5 * (tube_side_inlet_cv_temperature.get::<kelvin>() 
+            0.5 * (tube_inlet_temperature.get::<kelvin>() 
                 + tube_side_outlet_temperature.get::<kelvin>()
                 );
 
@@ -522,7 +522,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let tube_side_delta_t: TemperatureInterval = 
             TemperatureInterval::new::<temperature_interval::kelvin>(
                 tube_side_outlet_temperature.get::<kelvin>() - 
-                tube_side_inlet_cv_temperature.get::<kelvin>()
+                tube_inlet_temperature.get::<kelvin>()
             );
 
         let q_tube: Power = 
@@ -541,7 +541,61 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         // checks that heat balance is valid, needs to be within 5% as per 
         // experimental setup
         assert!(heat_balance_valid);
-        
+
+        // now we go onto calculating U via the log mean temp diff 
+        // U = Q_av/(A_shell LMTD)
+        let delta_t_max: TemperatureInterval = 
+            TemperatureInterval::new::<temperature_interval::kelvin>(
+                shell_side_outlet_temperature.get::<kelvin>() - 
+                tube_inlet_temperature.get::<kelvin>()
+            );
+
+        let delta_t_min: TemperatureInterval = 
+            TemperatureInterval::new::<temperature_interval::kelvin>(
+                shell_inlet_temperature.get::<kelvin>() - 
+                tube_side_outlet_temperature.get::<kelvin>()
+            );
+
+        let delta_t_max_to_delta_t_min: Ratio = 
+            delta_t_max/delta_t_min;
+
+        let lmtd: TemperatureInterval =  
+            (delta_t_max - delta_t_min)/(
+                delta_t_max_to_delta_t_min.get::<ratio>().ln()
+            );
+
+        let shell_side_area: Area = 
+            number_of_tubes as f64 * PI * tube_side_od * pipe_length;
+
+        let u: HeatTransfer = q_avg / shell_side_area / lmtd ;
+
+        // next, I want the nusselt number of the tube side, 
+        //
+        // However, there needs to be a correction factor of Pr/Pr_wall 
+        //
+        // Wall temperature was in turn estimated using h_s and h_t 
+        // in Du's paper
+        //
+        // We could iteratively calculate h_s and h_t using some 
+        // algorithm to find Pr_wall. 
+        //
+        // I find it ridiculous however, to spend so much effort
+        // on something so simple. 
+        //
+        // There are two methods we can use
+        //
+        // (1) don't calculate Pr_wall correction 
+        // (2) use the solid array control volume temperature to calculate 
+        // Pr_wall.
+        //
+        // I'm just going to use the latter
+
+        let wall_side_bulk_temp: ThermodynamicTemperature = 
+            sthe.inner_pipe_shell_array_for_single_tube.try_get_bulk_temperature()
+            .unwrap();
+
+
+
 
 
 

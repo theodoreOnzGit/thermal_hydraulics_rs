@@ -51,7 +51,7 @@ impl HeatTransferEntity {
 
     /// gets bulk temperature of the heat transfer entity
     #[inline]
-    pub fn get_bulk_temperature(&mut self) -> Result<ThermodynamicTemperature,
+    pub fn try_get_bulk_temperature(&mut self) -> Result<ThermodynamicTemperature,
     ThermalHydraulicsLibError> {
 
         let bulk_temp: ThermodynamicTemperature = 
