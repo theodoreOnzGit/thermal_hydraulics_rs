@@ -1,5 +1,6 @@
 
 
+
 /// this is a test for shell and tube heat exchanger in Du's paper 
 /// HITEC flows through the shell side while heat transfer oil 
 /// (YD 325) flows through the tube side
@@ -473,6 +474,36 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             tube_side_inlet_cv_temperature
 
         };
+
+        // now I need to recreate the nusselt numbers and reynolds 
+        // numbers, 
+        //
+        // First, find T_avg on shell and tube side to get cp
+        // note: tube side is oil, shell side is HITEC salt
+
+        let average_shell_side_temp_kelvin: f64 = 
+            0.5 * (shell_side_inlet_cv_temperature.get::<kelvin>() 
+                + shell_side_outlet_temperature.get::<kelvin>()
+                );
+
+        let average_shell_side_temp: ThermodynamicTemperature = 
+            ThermodynamicTemperature::new::<kelvin>(
+                average_shell_side_temp_kelvin);
+
+            
+
+        let average_tube_side_temp_kelvin: f64 = 
+            0.5 * (tube_side_inlet_cv_temperature.get::<kelvin>() 
+                + tube_outlet_temperature.get::<kelvin>()
+                );
+
+        let average_tube_side_temp: ThermodynamicTemperature = 
+            ThermodynamicTemperature::new::<kelvin>(
+                average_tube_side_temp_kelvin);
+
+        
+
+
 
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
         tube_side_inlet_cv_temperature.get::<degree_celsius>(),

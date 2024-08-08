@@ -99,6 +99,36 @@ fn solid_specific_heat_capacity(material: Material,
 
 }
 
+
+impl LiquidMaterial {
+    /// returns the liquid thermal conductivity in a result enum 
+    #[inline]
+    pub fn try_get_cp(&self,
+        fluid_temp: ThermodynamicTemperature,) 
+        -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError>{
+
+            liquid_specific_heat_capacity(
+                self.clone().into(),
+                fluid_temp)
+        }
+
+
+}
+impl SolidMaterial {
+    /// returns the liquid thermal conductivity in a result enum 
+    #[inline]
+    pub fn try_get_cp(&self,
+        solid_temp: ThermodynamicTemperature,) 
+        -> Result<SpecificHeatCapacity, ThermalHydraulicsLibError>{
+
+            solid_specific_heat_capacity(
+                self.clone().into(),
+                solid_temp)
+        }
+
+
+}
+
 // should the material happen to be a liquid, use this function
 fn liquid_specific_heat_capacity(material: Material, 
     fluid_temp: ThermodynamicTemperature) -> Result<SpecificHeatCapacity,
