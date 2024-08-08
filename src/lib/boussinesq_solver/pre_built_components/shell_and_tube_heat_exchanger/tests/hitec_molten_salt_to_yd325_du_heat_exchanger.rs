@@ -2,6 +2,7 @@
 
 
 
+
 /// this is a test for shell and tube heat exchanger in Du's paper 
 /// HITEC flows through the shell side while heat transfer oil 
 /// (YD 325) flows through the tube side
@@ -34,6 +35,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     use uom::ConstZero;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::temperature_interval;
+    use uom::si::thermal_conductivity::watt_per_meter_kelvin;
     //use uom::si::area::square_meter;
     use uom::si::volume_rate::cubic_meter_per_hour;
     use uom::si::quantities::VolumeRate;
@@ -636,10 +638,60 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let h_t: HeatTransfer = 
             nusselt_tube_side * lambda_tube / tube_side_id;
 
+        // now to calculate for h_s 
+        //
+        // 1/u = 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
+        // + 1/h_s
 
+        // 1/u
+        let one_over_u = u.recip();
+
+        // 1/h_t d_o/d_i
+        let reciprocal_tube_side_fluid_term = h_t.recip() * 
+            tube_side_od/tube_side_id;
+
+
+        // d_o/(2 lambda_w) ln (d_o/d_i)
+        //
+        // lambda_w, based on 16.3 W/(m K) in Du's paper
+        let lambda_wall: ThermalConductivity = 
+            ThermalConductivity::new::<watt_per_meter_kelvin>(
+                16.3);
+
+        let reciprocal_tube_side_solid_term = 
+            tube_side_od/(2.0 as f64 * lambda_wall) 
+            * (tube_side_od/tube_side_id).get::<ratio>().ln();
+
+        // 1/h_s = 1/u - 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
+        let one_over_hs = 
+            one_over_u - reciprocal_tube_side_fluid_term - 
+            reciprocal_tube_side_solid_term;
+
+
+        // shell side heat trf coeff
+        let h_s: HeatTransfer = one_over_hs.recip();
+
+        // now for shell side nusselt
+        // Nu_s = h_s D_e/k_s
+
+        let lambda_shell_fluid: ThermalConductivity = 
+            LiquidMaterial::HITEC.try_get_thermal_conductivity(
+                average_shell_side_temp).unwrap();
+
+        let nusselt_number_shell: Ratio = 
+            h_s * shell_side_fluid_hydraulic_diameter / 
+            lambda_shell_fluid;
         
+        // then shell side reynolds number 
 
+        let mu_shell_side: DynamicViscosity = 
+            LiquidMaterial::HITEC.try_get_dynamic_viscosity(
+                average_shell_side_temp).unwrap();
 
+        let reynolds_shell_side: Ratio = 
+            m_s.abs() * shell_side_fluid_hydraulic_diameter / 
+            shell_side_flow_area / 
+            mu_shell_side;
 
 
 
@@ -651,7 +703,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         shell_side_outlet_temperature.get::<degree_celsius>(),
         m_t,
         m_s,
-        ua));
+        ua,
+        reynolds_shell_side,
+        nusselt_number_shell
+        ));
 
 
     };
