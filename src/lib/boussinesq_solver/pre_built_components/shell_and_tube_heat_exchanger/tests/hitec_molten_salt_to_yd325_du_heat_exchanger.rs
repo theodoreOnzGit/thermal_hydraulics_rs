@@ -381,7 +381,11 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 link_to_back(&mut outlet_bc, 
                     shell_outlet_interaction).unwrap();
 
-            let prandtl_wall_correction_setting = false;
+            // prandtl wall correction setting can be problematic as the 
+            // wall is either too cold or too hot
+            // probably need result matching to get the wall prandtl number 
+            // even partially corrected
+            let prandtl_wall_correction_setting = true;
 
             // connect the arrays with thermal conductances 
             // interally
@@ -711,6 +715,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         m_t,
         m_s,
         ua,
+        heat_balance_error,
         reynolds_shell_side,
         nusselt_number_shell
         ));

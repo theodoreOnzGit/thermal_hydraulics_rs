@@ -1,6 +1,7 @@
 use std::thread::JoinHandle;
 use std::thread;
 
+use uom::si::thermodynamic_temperature::kelvin;
 use uom::ConstZero;
 use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
@@ -609,14 +610,38 @@ impl SimpleShellAndTubeHeatExchanger {
         if correct_prandtl_for_wall_temperatures {
 
             // then wall prandtl number
+            //
+            // wall prandtl number will likely be out of range as the 
+            // wall temperature is quite different from bulk fluid 
+            // temperature. May be  out of correlation range
+            // if that is the case, then just go for a partial correction
+            // temperature of the range or go for the lowest temperature 
+            // possible
+            //
+            // though, the easiest code wise is to just go for partial 
+            // correction all the way (ie just use film temperature 
+            // to correct for prandtl number
+
+
+            let part_correct_wall_temperature: ThermodynamicTemperature = 
+                ThermodynamicTemperature::new::<kelvin>(
+                    0.1 * (
+                        3.0 * wall_temperature.get::<kelvin>() + 
+                        7.0 * fluid_temperature.get::<kelvin>()
+                    )
+                );
 
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    wall_temperature,
+                    part_correct_wall_temperature,
                     atmospheric_pressure
                 )?;
 
             pipe_prandtl_reynolds_data.prandtl_wall = wall_prandtl_number;
+
+
+
+
         }
 
         // I need to use Nusselt correlations present in this struct 
@@ -812,10 +837,21 @@ impl SimpleShellAndTubeHeatExchanger {
         if correct_prandtl_for_wall_temperatures {
 
             // then wall prandtl number
+            //
+            // in this case, we partially correct because wall temperatures 
+            // may be outside range of correlation
+
+            let part_correct_wall_temperature: ThermodynamicTemperature = 
+                ThermodynamicTemperature::new::<kelvin>(
+                    0.1 * (
+                        3.0 * wall_temperature.get::<kelvin>() + 
+                        7.0 * fluid_temperature.get::<kelvin>()
+                    )
+                );
 
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    wall_temperature,
+                    part_correct_wall_temperature,
                     atmospheric_pressure
                 )?;
 
@@ -1003,14 +1039,26 @@ impl SimpleShellAndTubeHeatExchanger {
         if correct_prandtl_for_wall_temperatures {
 
             // then wall prandtl number
+            //
+            // in this case, we partially correct because wall temperatures 
+            // may be outside range of correlation
+            //
+            // stop gap measure is to partly correct for wall temperatures 
+            // 30% wall temp and 70% fluid temp
+
+            let part_correct_wall_temperature: ThermodynamicTemperature = 
+                ThermodynamicTemperature::new::<kelvin>(
+                    0.1 * (
+                        3.0 * wall_temperature.get::<kelvin>() + 
+                        7.0 * fluid_temperature.get::<kelvin>()
+                    )
+                );
 
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    wall_temperature,
+                    part_correct_wall_temperature,
                     atmospheric_pressure
                 )?;
-
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
 
             nusselt_estimate = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_reynolds_and_wall_correction(
