@@ -92,7 +92,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     // adiabatic, heat transfer for ambient is zero 
     let heat_transfer_to_ambient = HeatTransfer::ZERO;
 
-    let number_of_inner_nodes = 25;
+    // perfomed mesh refinement up to 25 inner nodes, 
+    // 12 is sufficient
+    let number_of_inner_nodes = 12;
 
     let incline_angle = Angle::new::<degree>(0.0);
 
