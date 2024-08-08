@@ -245,7 +245,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
             shell_side_nusselt_correlation_to_outer_shell, 
-            tube_side_nusselt_correlation, 
+            tube_side_nusselt_correlation: tube_side_nusselt_correlation.clone(), 
             insulation_thickness: dummy_insulation_thickness,
         };
 
@@ -594,6 +594,50 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             sthe.inner_pipe_shell_array_for_single_tube.try_get_bulk_temperature()
             .unwrap();
 
+
+        let nusselt_tube_side: Ratio;
+
+        // get reynolds and prandtl
+
+        let tube_side_dynamic_viscosity: DynamicViscosity = 
+            LiquidMaterial::YD325.try_get_dynamic_viscosity(
+                average_tube_side_temp).unwrap();
+
+        let tube_side_prandtl: Ratio = 
+            LiquidMaterial::YD325.try_get_prandtl_liquid(
+                average_tube_side_temp, fluid_pressure).unwrap();
+
+        let wall_side_prandtl: Ratio = 
+            LiquidMaterial::YD325.try_get_prandtl_liquid(
+                average_tube_side_temp, fluid_pressure).unwrap();
+
+        let tube_side_reynolds: Ratio = 
+            m_t * tube_side_id   
+            / tube_side_flow_area
+            / tube_side_dynamic_viscosity;
+
+        nusselt_tube_side = tube_side_nusselt_correlation
+            .estimate_based_on_prandtl_reynolds_and_wall_correction
+            (
+                tube_side_prandtl,
+                wall_side_prandtl,
+                tube_side_reynolds
+            ).unwrap();
+
+        // now for the tube side heat transfer coeff 
+        //
+        // Nu = hD/k 
+        // k = conductivity (denoted lambda)
+
+        let lambda_tube: ThermalConductivity =  
+            LiquidMaterial::YD325.try_get_thermal_conductivity
+            (average_tube_side_temp).unwrap();
+
+        let h_t: HeatTransfer = 
+            nusselt_tube_side * lambda_tube / tube_side_id;
+
+
+        
 
 
 
