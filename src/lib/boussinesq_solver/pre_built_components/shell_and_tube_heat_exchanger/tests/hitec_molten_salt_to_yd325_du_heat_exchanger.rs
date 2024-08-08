@@ -139,7 +139,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             solid_pressure, 
             steel, 
             number_of_inner_nodes
-            );
+        );
 
     let inner_shell: SolidColumn 
         = SolidColumn::new_cylindrical_shell(
@@ -150,7 +150,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             solid_pressure, 
             steel, 
             number_of_inner_nodes
-            );
+        );
 
     // dummy insulation array, will not be used,
     // just clone the inner shell 
@@ -166,7 +166,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             Length::new::<millimeter>(0.001), 
             shell_side_fluid_hydraulic_diameter, 
             form_loss
-            );
+        );
 
 
     let tube_loss_correlations: DimensionlessDarcyLossCorrelations
@@ -175,7 +175,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             Length::new::<millimeter>(0.001), 
             tube_side_id, 
             form_loss
-            );
+        );
 
     // nusselt correlations, 4.36 by default
 
@@ -223,7 +223,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     // we are not going to use this anyway
     let dummy_insulation_thickness =
         Length::new::<meter>(1.0);
-    
+
 
     let sthe_one_shell_one_tube 
         = SimpleShellAndTubeHeatExchanger{ 
@@ -267,7 +267,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
     let inlet_rho_oil = 
         LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
-    
+
     //
     // but the direction differs in a counter current setup, 
     // so I'll have to add a negative sign
@@ -329,7 +329,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let shell_front_cv_density = average_hitec_density;
 
 
-        
+
         while max_time > simulation_time {
             // probably want to make this bit a little more user friendly
             let tube_inlet_interaction: HeatTransferInteractionType = 
@@ -443,27 +443,27 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
         let ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
-            correct_for_prandtl_wall_temperatures).unwrap() * 
+                correct_for_prandtl_wall_temperatures).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
         // shell side outlet temperature and inlet cv temperature
         let (shell_side_inlet_cv_temperature, 
             shell_side_outlet_temperature): 
             (ThermodynamicTemperature, ThermodynamicTemperature) = {
-            let temperature_vec_shell_side = 
-                sthe.shell_side_fluid_array. 
-                get_temperature_vector().unwrap();
+                let temperature_vec_shell_side = 
+                    sthe.shell_side_fluid_array. 
+                    get_temperature_vector().unwrap();
 
-            let shell_side_outlet_temperature = 
-                *temperature_vec_shell_side.first().unwrap();
+                let shell_side_outlet_temperature = 
+                    *temperature_vec_shell_side.first().unwrap();
 
-            let shell_side_inlet_cv_temperature = 
-                *temperature_vec_shell_side.last().unwrap();
+                let shell_side_inlet_cv_temperature = 
+                    *temperature_vec_shell_side.last().unwrap();
 
-            (shell_side_inlet_cv_temperature,
-             shell_side_outlet_temperature)
+                (shell_side_inlet_cv_temperature,
+                 shell_side_outlet_temperature)
 
-        };
+            };
 
         // tube side inlet cv temperature
         let tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
@@ -488,7 +488,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let average_shell_side_temp_kelvin: f64 = 
             0.5 * (shell_inlet_temperature.get::<kelvin>() 
                 + shell_side_outlet_temperature.get::<kelvin>()
-                );
+            );
 
         let average_shell_side_temp: ThermodynamicTemperature = 
             ThermodynamicTemperature::new::<kelvin>(
@@ -506,12 +506,12 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
         let q_shell: Power = 
             m_s * average_cp_shell_side * shell_side_delta_t;
-            
+
 
         let average_tube_side_temp_kelvin: f64 = 
             0.5 * (tube_inlet_temperature.get::<kelvin>() 
                 + tube_side_outlet_temperature.get::<kelvin>()
-                );
+            );
 
         let average_tube_side_temp: ThermodynamicTemperature = 
             ThermodynamicTemperature::new::<kelvin>(
@@ -611,7 +611,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
         let wall_side_prandtl: Ratio = 
             LiquidMaterial::YD325.try_get_prandtl_liquid(
-                average_tube_side_temp, fluid_pressure).unwrap();
+                wall_side_bulk_temp, fluid_pressure).unwrap();
 
         let tube_side_reynolds: Ratio = 
             m_t * tube_side_id   
@@ -657,6 +657,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let lambda_wall: ThermalConductivity = 
             ThermalConductivity::new::<watt_per_meter_kelvin>(
                 16.3);
+        let lambda_wall: ThermalConductivity = 
+            SolidMaterial::SteelSS304L 
+            .try_get_thermal_conductivity(wall_side_bulk_temp).unwrap();
 
         let reciprocal_tube_side_solid_term = 
             tube_side_od/(2.0 as f64 * lambda_wall) 
@@ -681,7 +684,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let nusselt_number_shell: Ratio = 
             h_s * shell_side_fluid_hydraulic_diameter / 
             lambda_shell_fluid;
-        
+
         // then shell side reynolds number 
 
         let mu_shell_side: DynamicViscosity = 
@@ -725,41 +728,226 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
     let clone_for_test_two: SimpleShellAndTubeHeatExchanger = 
         sthe_one_shell_one_tube.clone();
-    let test_two = 
-        thread::spawn(
-            move || {
-                let inlet_temp_salt = 
-                    ThermodynamicTemperature::new::<degree_celsius>(224.93);
-                let inlet_temp_oil = 
-                    ThermodynamicTemperature::new::<degree_celsius>(74.49);
-                let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
-                let vol_flowrate_oil = 
-                    VolumeRate::new::<cubic_meter_per_hour>(15.635);
+    let test_two = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(224.93);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(74.49);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
-                // intermediate calcs
+            // intermediate calcs
 
-                let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
-                let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
 
-                let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
-                let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
 
-                let tube_inlet_temperature = inlet_temp_oil;
-                let shell_inlet_temperature = inlet_temp_salt;
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
 
-                test_thread(
-                    clone_for_test_two,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) }
-        );
+            test_thread(
+                clone_for_test_two,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
 
+
+    let clone_for_test_three: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_three = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(236.91);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(74.49);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
+
+            // intermediate calcs
+
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
+
+            test_thread(
+                clone_for_test_three,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
+
+
+    let clone_for_test_four: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_four = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(236.91);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(80.41);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
+
+            // intermediate calcs
+
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
+
+            test_thread(
+                clone_for_test_four,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
+
+
+    let clone_for_test_five: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_five = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(214.93);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(90.41);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
+
+            // intermediate calcs
+
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
+
+            test_thread(
+                clone_for_test_five,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
+
+
+    let clone_for_test_six: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_six = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(224.93);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(80.49);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
+
+            // intermediate calcs
+
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
+
+            test_thread(
+                clone_for_test_six,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
+
+
+    let clone_for_test_seven: SimpleShellAndTubeHeatExchanger = 
+        sthe_one_shell_one_tube.clone();
+    let test_seven = thread::spawn(
+        move || {
+            let inlet_temp_salt = 
+                ThermodynamicTemperature::new::<degree_celsius>(236.91);
+            let inlet_temp_oil = 
+                ThermodynamicTemperature::new::<degree_celsius>(90.49);
+            let vol_flowrate_salt = 
+                VolumeRate::new::<cubic_meter_per_hour>(12.63);
+            let vol_flowrate_oil = 
+                VolumeRate::new::<cubic_meter_per_hour>(15.635);
+
+            // intermediate calcs
+
+            let inlet_rho_salt = 
+                LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+            let inlet_rho_oil = 
+                LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+
+            let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
+            let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
+
+            let tube_inlet_temperature = inlet_temp_oil;
+            let shell_inlet_temperature = inlet_temp_salt;
+
+            test_thread(
+                clone_for_test_seven,
+                tube_inlet_temperature, 
+                shell_inlet_temperature, 
+                m_t, 
+                m_s,) 
+    }
+    );
 
     test_two.join().unwrap();
+    test_three.join().unwrap();
+    test_four.join().unwrap();
+    test_five.join().unwrap();
+    test_six.join().unwrap();
+    test_seven.join().unwrap();
+
 
 
 
