@@ -92,7 +92,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     // adiabatic, heat transfer for ambient is zero 
     let heat_transfer_to_ambient = HeatTransfer::ZERO;
 
-    let number_of_inner_nodes = 8;
+    let number_of_inner_nodes = 25;
 
     let incline_angle = Angle::new::<degree>(0.0);
 
@@ -304,7 +304,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             BCType::new_adiabatic_bc().into();
 
         let max_time = Time::new::<second>(800_f64);
-        let timestep = Time::new::<second>(0.05);
+
+        let number_of_nodes = sthe.inner_nodes + 2;
+        let timestep = Time::new::<second>(0.05 * 10.0 / number_of_nodes as f64);
         let mut simulation_time = Time::ZERO;
 
         // for simplicity, I'm going to use an average HITEC 
@@ -725,6 +727,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         m_t,
         m_s);
 
+
+    // second and subseuent 
 
     let clone_for_test_two: SimpleShellAndTubeHeatExchanger = 
         sthe_one_shell_one_tube.clone();
