@@ -1,6 +1,7 @@
 
 
 
+
 /// this is a test for shell and tube heat exchanger in Du's paper 
 /// HITEC flows through the shell side while heat transfer oil 
 /// (YD 325) flows through the tube side
@@ -32,6 +33,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     use uom::si::thermodynamic_temperature::degree_celsius;
     use uom::ConstZero;
     use uom::si::mass_rate::kilogram_per_second;
+    use uom::si::temperature_interval;
     //use uom::si::area::square_meter;
     use uom::si::volume_rate::cubic_meter_per_hour;
     use uom::si::quantities::VolumeRate;
@@ -428,7 +430,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     m_s: MassRate,| {
 
 
-        let tube_outlet_temperature: ThermodynamicTemperature 
+        let tube_side_outlet_temperature: ThermodynamicTemperature 
             = obtain_outlet_steady_state_temp(
                 &mut sthe, 
                 tube_inlet_temperature, 
@@ -490,17 +492,55 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             ThermodynamicTemperature::new::<kelvin>(
                 average_shell_side_temp_kelvin);
 
+        let average_cp_shell_side = 
+            LiquidMaterial::HITEC.try_get_cp(
+                average_shell_side_temp).unwrap();
+
+        let shell_side_delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<temperature_interval::kelvin>(
+                shell_side_outlet_temperature.get::<kelvin>() - 
+                shell_side_inlet_cv_temperature.get::<kelvin>()
+            );
+
+        let q_shell: Power = 
+            m_s * average_cp_shell_side * shell_side_delta_t;
             
 
         let average_tube_side_temp_kelvin: f64 = 
             0.5 * (tube_side_inlet_cv_temperature.get::<kelvin>() 
-                + tube_outlet_temperature.get::<kelvin>()
+                + tube_side_outlet_temperature.get::<kelvin>()
                 );
 
         let average_tube_side_temp: ThermodynamicTemperature = 
             ThermodynamicTemperature::new::<kelvin>(
                 average_tube_side_temp_kelvin);
 
+        let average_cp_tube_side = 
+            LiquidMaterial::YD325.try_get_cp(
+                average_tube_side_temp).unwrap();
+
+        let tube_side_delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<temperature_interval::kelvin>(
+                tube_side_outlet_temperature.get::<kelvin>() - 
+                tube_side_inlet_cv_temperature.get::<kelvin>()
+            );
+
+        let q_tube: Power = 
+            m_t * average_cp_tube_side * tube_side_delta_t;
+
+        let q_avg: Power = 0.5 * (q_shell + q_tube);
+
+        let heat_balance_error: Ratio = 
+            (q_tube - q_shell).abs()/q_avg;
+
+        let max_heat_balance_error = Ratio::new::<ratio>(0.05);
+
+        let heat_balance_valid: bool = 
+            heat_balance_error < max_heat_balance_error;
+
+        // checks that heat balance is valid, needs to be within 5% as per 
+        // experimental setup
+        assert!(heat_balance_valid);
         
 
 
@@ -509,7 +549,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         tube_side_inlet_cv_temperature.get::<degree_celsius>(),
         shell_inlet_temperature.get::<degree_celsius>(),
         shell_side_inlet_cv_temperature.get::<degree_celsius>(),
-        tube_outlet_temperature.get::<degree_celsius>(),
+        tube_side_outlet_temperature.get::<degree_celsius>(),
         shell_side_outlet_temperature.get::<degree_celsius>(),
         m_t,
         m_s,
