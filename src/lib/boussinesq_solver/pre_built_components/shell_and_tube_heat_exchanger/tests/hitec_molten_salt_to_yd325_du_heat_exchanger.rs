@@ -743,12 +743,6 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 shell_side_length_to_diameter
             );
 
-        let nusselt_from_correlation_object = 
-            shell_side_nusselt_correlation_to_tubes
-            .estimate_based_on_prandtl_reynolds_and_wall_correction(
-                shell_side_fluid_bulk_prandtl, 
-                shell_side_fluid_wall_prandtl, 
-                reynolds_shell_side).unwrap();
 
 
 
@@ -762,9 +756,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         m_s,
         // ua, 
         u,
-        nusselt_number_direct_from_correlation,
-        nusselt_from_correlation_object,
+        reynolds_shell_side,
         nusselt_number_shell_calculated,
+        nusselt_number_direct_from_correlation
         ));
 
         // check whether correlation input into object is same as 
