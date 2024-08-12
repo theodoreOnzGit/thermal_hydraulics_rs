@@ -629,17 +629,18 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             LiquidMaterial::YD325.try_get_prandtl_liquid(
                 wall_side_bulk_temp, fluid_pressure).unwrap();
 
-        let tube_side_reynolds: Ratio = 
+        let reynolds_tube_side: Ratio = 
             m_t * tube_side_id   
             / tube_side_flow_area
-            / tube_side_dynamic_viscosity;
+            / tube_side_dynamic_viscosity
+            / number_of_tubes as f64;
 
         nusselt_tube_side = tube_side_nusselt_correlation
             .estimate_based_on_prandtl_reynolds_and_wall_correction
             (
                 tube_side_prandtl,
                 tube_wall_side_prandtl,
-                tube_side_reynolds
+                reynolds_tube_side
             ).unwrap();
 
         // now for the tube side heat transfer coeff 
@@ -761,9 +762,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         m_s,
         // ua, 
         u,
-        reynolds_shell_side,
+        nusselt_number_direct_from_correlation,
+        nusselt_from_correlation_object,
         nusselt_number_shell_calculated,
-        nusselt_number_direct_from_correlation
         ));
 
         // check whether correlation input into object is same as 
