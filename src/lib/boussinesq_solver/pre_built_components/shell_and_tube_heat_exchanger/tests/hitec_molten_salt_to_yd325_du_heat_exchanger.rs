@@ -3,6 +3,7 @@
 
 
 
+
 /// this is a test for shell and tube heat exchanger in Du's paper 
 /// HITEC flows through the shell side while heat transfer oil 
 /// (YD 325) flows through the tube side
@@ -50,6 +51,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
     use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
     use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
+    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::pipe_correlations::custom_gnielinski_turbulent_nusselt_correlation;
+
     use uom::si::f64::*;
     let number_of_tubes = 19_u32;
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -689,7 +692,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             LiquidMaterial::HITEC.try_get_thermal_conductivity(
                 average_shell_side_temp).unwrap();
 
-        let nusselt_number_shell: Ratio = 
+        let nusselt_number_shell_calculated: Ratio = 
             h_s * shell_side_fluid_hydraulic_diameter / 
             lambda_shell_fluid;
 
@@ -704,6 +707,36 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             shell_side_flow_area / 
             mu_shell_side;
 
+        // for debugging, cos Nusselt is underestimated by about 1.5x 
+        // consistently
+
+        let shell_side_fluid_bulk_temp: ThermodynamicTemperature = 
+            sthe.shell_side_fluid_array.try_get_bulk_temperature()
+            .unwrap();
+
+        let shell_side_fluid_bulk_prandtl = 
+            LiquidMaterial::YD325.try_get_prandtl_liquid(
+                shell_side_fluid_bulk_temp, fluid_pressure).unwrap();
+
+
+        let shell_side_fluid_wall_prandtl = 
+            LiquidMaterial::YD325.try_get_prandtl_liquid(
+                wall_side_bulk_temp, fluid_pressure).unwrap();
+
+        // Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+        // For Du's Heat exchanger, 
+        // C = 0.04318,
+        // m = 0.7797
+        let nusselt_number_direct_from_correlation = 
+            custom_gnielinski_turbulent_nusselt_correlation(
+                Ratio::new::<ratio>(0.04318),
+                0.7797,
+                shell_side_fluid_bulk_prandtl,
+                shell_side_fluid_wall_prandtl,
+                reynolds_shell_side,
+                shell_side_length_to_diameter
+                );
+
 
 
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
@@ -715,9 +748,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         m_t,
         m_s,
         ua,
-        heat_balance_error,
         reynolds_shell_side,
-        nusselt_number_shell
+        nusselt_number_shell_calculated,
+        nusselt_number_direct_from_correlation
         ));
 
 
