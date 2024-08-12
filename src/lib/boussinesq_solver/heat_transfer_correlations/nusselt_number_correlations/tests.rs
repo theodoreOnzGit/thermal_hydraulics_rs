@@ -53,7 +53,7 @@
 #[test] 
 pub fn du_correlation_empirical_test(){
     use uom::si::length::meter;
-    use uom::{si::ratio::ratio, ConstZero};
+    use uom::si::ratio::ratio;
     use uom::si::f64::*;
 
     use crate::boussinesq_solver::heat_transfer_correlations::
@@ -392,10 +392,6 @@ pub fn du_nusselt_enum_correlation_empirical_test(){
     use uom::si::length::meter;
     use uom::{si::ratio::ratio, ConstZero};
     use uom::si::f64::*;
-
-    use crate::boussinesq_solver::heat_transfer_correlations::
-        nusselt_number_correlations::pipe_correlations::
-        custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing;
 
     use super::input_structs::GnielinskiData;
     use super::enums::NusseltCorrelation;

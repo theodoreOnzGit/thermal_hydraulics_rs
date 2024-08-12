@@ -457,6 +457,11 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 correct_for_prandtl_wall_temperatures).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
+        let u: HeatTransfer = 
+            sthe.overall_heat_transfer_coeff_u_shell_side(
+                correct_for_prandtl_wall_temperatures).unwrap();
+
+
         // shell side outlet temperature and inlet cv temperature
         let (shell_side_inlet_cv_temperature, 
             shell_side_outlet_temperature): 
@@ -754,18 +759,23 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         shell_side_outlet_temperature.get::<degree_celsius>(),
         m_t,
         m_s,
-        ua,
+        // ua, 
+        u,
         reynolds_shell_side,
         nusselt_number_shell_calculated,
         nusselt_number_direct_from_correlation
         ));
 
-        dbg!(
-            &(
-                nusselt_number_direct_from_correlation,
-                nusselt_from_correlation_object
-            )
-        );
+        // check whether correlation input into object is same as 
+        // direct correlation. It is checked to be ok
+        //dbg!(
+        //    &(
+        //        nusselt_number_direct_from_correlation,
+        //        nusselt_from_correlation_object,
+        //        shell_side_fluid_bulk_prandtl,
+        //        shell_side_fluid_wall_prandtl
+        //    )
+        //);
 
 
     };

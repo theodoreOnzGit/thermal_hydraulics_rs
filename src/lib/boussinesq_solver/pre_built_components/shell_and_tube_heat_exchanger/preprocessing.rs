@@ -729,6 +729,14 @@ impl SimpleShellAndTubeHeatExchanger {
     /// obtains shell side fluid to *single* pipe shell conductance
     /// you'll have to multiply by the number of tubes to obtain 
     /// the whole conductance bit
+    ///
+    ///
+    /// See diagram below:
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|-outer shell-|-insulation-| ambient
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
     #[inline]
     pub fn get_shell_side_fluid_to_single_inner_pipe_shell_nodal_conductance(
         &mut self,
@@ -938,6 +946,15 @@ impl SimpleShellAndTubeHeatExchanger {
     }
 
 
+    /// this calculates the conductance on a per node basis 
+    /// from shell side fluid to the outer shell.
+    ///
+    /// See diagram below:
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|-outer shell-|-insulation-| ambient
+    /// |            |            |               |             |            |
+    /// |            |            |               |             |            |
     #[inline]
     pub fn get_shell_side_fluid_to_outer_pipe_shell_nodal_conductance(
         &mut self,

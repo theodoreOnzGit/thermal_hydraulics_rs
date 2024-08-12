@@ -331,10 +331,10 @@ impl SimpleShellAndTubeHeatExchanger {
                 one_over_hs;
 
             // overall heat transfer coeff shell side
-            let shell_side_u: HeatTransfer = 
+            let u_based_on_shell_side_area: HeatTransfer = 
                 1.0 as f64 / one_over_u;
 
-            Ok(shell_side_u)
+            Ok(u_based_on_shell_side_area)
         }
 
     /// provides the tube bundle side heat transfer area 
