@@ -250,7 +250,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             shell_side_id, 
             shell_side_od, 
             shell_side_flow_area, 
-            shell_side_nusselt_correlation_to_tubes, 
+            shell_side_nusselt_correlation_to_tubes: shell_side_nusselt_correlation_to_tubes.clone(), 
             shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation: tube_side_nusselt_correlation.clone(), 
             insulation_thickness: dummy_insulation_thickness,
@@ -737,6 +737,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 shell_side_length_to_diameter
                 );
 
+        let nusselt_from_correlation_object = 
+            shell_side_nusselt_correlation_to_tubes
+            .estimate_based_on_prandtl_reynolds_and_wall_correction(
+                shell_side_fluid_bulk_prandtl, 
+                shell_side_fluid_wall_prandtl, 
+                reynolds_shell_side).unwrap();
+
 
 
         dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
@@ -752,6 +759,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         nusselt_number_shell_calculated,
         nusselt_number_direct_from_correlation
         ));
+
+        dbg!(
+            &(
+                nusselt_number_direct_from_correlation,
+                nusselt_from_correlation_object
+            )
+        );
 
 
     };
