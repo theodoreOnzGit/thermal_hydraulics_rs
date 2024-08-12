@@ -313,7 +313,8 @@ impl SimpleShellAndTubeHeatExchanger {
             dbg!(
                 &(nusselt_estimate_shell_side,
                     nusselt_estimate_tube_side,
-                    shell_side_fluid_temperature.get::<uom::si::thermodynamic_temperature::degree_celsius>())
+                    shell_side_fluid_temperature.get::<uom::si::thermodynamic_temperature::degree_celsius>(),
+                    reynolds_number_shell_side_abs_for_nusselt_estimate)
             );
 
             // 1/h_s 

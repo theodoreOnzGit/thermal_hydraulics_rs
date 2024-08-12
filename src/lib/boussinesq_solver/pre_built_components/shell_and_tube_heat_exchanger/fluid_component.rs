@@ -94,8 +94,6 @@ impl SimpleShellAndTubeHeatExchanger {
         // D_i 
         let shell_side_id = self.shell_side_id;
         
-        //d_i 
-        let tube_side_id = self.tube_side_id;
 
         //d_o 
         let tube_side_od = self.tube_side_od;
@@ -113,7 +111,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let denominator: f64 = 
             shell_side_id.get::<meter>() 
             + number_of_tubes as f64 * 
-            tube_side_id.get::<meter>();
+            tube_side_od.get::<meter>();
 
         // hydraulic diameter is in meters 
 
