@@ -450,16 +450,16 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 shell_inlet_temperature, 
                 m_t, 
                 m_s);
-        let correct_for_prandtl_wall_temperatures = false;
+        let correct_for_prandtl_wall_temperatures_u_and_ua = false;
 
         let ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
-                correct_for_prandtl_wall_temperatures).unwrap() * 
+                correct_for_prandtl_wall_temperatures_u_and_ua).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
 
-        let u: HeatTransfer = 
+        let u_calc_from_postprocess: HeatTransfer = 
             sthe.overall_heat_transfer_coeff_u_shell_side(
-                correct_for_prandtl_wall_temperatures).unwrap();
+                correct_for_prandtl_wall_temperatures_u_and_ua).unwrap();
 
 
         // shell side outlet temperature and inlet cv temperature
@@ -585,7 +585,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         let shell_side_area: Area = 
             number_of_tubes as f64 * PI * tube_side_od * pipe_length;
 
-        let u: HeatTransfer = q_avg / shell_side_area / lmtd ;
+        let u_calc_using_lmtd: HeatTransfer = q_avg / shell_side_area / lmtd ;
 
         // next, I want the nusselt number of the tube side, 
         //
@@ -661,7 +661,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         // + 1/h_s
 
         // 1/u
-        let one_over_u = u.recip();
+        let one_over_u = u_calc_using_lmtd.recip();
 
         // 1/h_t d_o/d_i
         let reciprocal_tube_side_fluid_term = h_t.recip() * 
@@ -752,10 +752,11 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         shell_side_inlet_cv_temperature.get::<degree_celsius>(),
         tube_side_outlet_temperature.get::<degree_celsius>(),
         shell_side_outlet_temperature.get::<degree_celsius>(),
-        m_t,
-        m_s,
+        //m_t,
+        //m_s,
         // ua, 
-        u,
+        u_calc_from_postprocess,
+        u_calc_using_lmtd,
         reynolds_shell_side,
         nusselt_number_shell_calculated,
         nusselt_number_direct_from_correlation

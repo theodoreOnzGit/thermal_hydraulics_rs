@@ -4,6 +4,7 @@ use super::SimpleShellAndTubeHeatExchanger;
 use uom::si::f64::*;
 use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
+use uom::si::thermodynamic_temperature::kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData;
@@ -137,9 +138,19 @@ impl SimpleShellAndTubeHeatExchanger {
 
             if correct_for_prandtl_wall_temperatures {
 
-                let wall_prandtl_number: Ratio 
+                // then wall prandtl number (partially corrected)
+
+                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                    ThermodynamicTemperature::new::<kelvin>(
+                        0.1 * (
+                            3.0 * wall_temperature.get::<kelvin>() + 
+                            7.0 * tube_fluid_temperature.get::<kelvin>()
+                        )
+                    );
+
+                let wall_prandtl_number_part_correct: Ratio 
                     = tube_fluid_material.try_get_prandtl_liquid(
-                        wall_temperature,
+                        part_correct_wall_temperature,
                         atmospheric_pressure
                     )?;
 
@@ -147,7 +158,7 @@ impl SimpleShellAndTubeHeatExchanger {
                     self.tube_side_nusselt_correlation
                     .estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
-                        wall_prandtl_number, 
+                        wall_prandtl_number_part_correct, 
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             } else {
                 nusselt_estimate_tube_side = 
@@ -274,20 +285,28 @@ impl SimpleShellAndTubeHeatExchanger {
 
             if correct_for_prandtl_wall_temperatures {
 
-                // then wall prandtl number
+                // then wall prandtl number (partially corrected)
 
-                let wall_prandtl_number: Ratio 
+                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                    ThermodynamicTemperature::new::<kelvin>(
+                        0.1 * (
+                            3.0 * wall_temperature.get::<kelvin>() + 
+                            7.0 * shell_side_fluid_temperature.get::<kelvin>()
+                        )
+                    );
+
+                let wall_prandtl_number_part_correct: Ratio 
                     = fluid_material.try_get_prandtl_liquid(
-                        wall_temperature,
+                        part_correct_wall_temperature,
                         atmospheric_pressure
                     )?;
 
-                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
+                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number_part_correct;
 
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
-                        wall_prandtl_number,
+                        wall_prandtl_number_part_correct,
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             } else {
