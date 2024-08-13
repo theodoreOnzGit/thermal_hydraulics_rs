@@ -1,3 +1,5 @@
+use approx::assert_relative_eq;
+
 
 
 
@@ -436,11 +438,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
 
     // now I want to speed up this process using parallel threads
 
+    // this will return Re_shell 
+    // Pr_shell_fluid 
+    // Pr_shell_wall 
+    // Nu_shell
     let test_thread = move |mut sthe: SimpleShellAndTubeHeatExchanger,
     tube_inlet_temperature: ThermodynamicTemperature,
     shell_inlet_temperature: ThermodynamicTemperature,
     m_t: MassRate,
-    m_s: MassRate,| {
+    m_s: MassRate,| -> (Ratio,Ratio, Ratio, Ratio) {
 
 
         let tube_side_outlet_temperature: ThermodynamicTemperature 
@@ -755,7 +761,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         //m_t,
         //m_s,
         // ua, 
-        nusselt_tube_side,
+        u_calc_from_postprocess,
         u_calc_using_lmtd,
         reynolds_shell_side,
         nusselt_number_shell_calculated,
@@ -773,6 +779,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         //    )
         //);
 
+        return (reynolds_shell_side,
+            shell_side_fluid_bulk_prandtl,
+            shell_side_fluid_wall_prandtl,
+            nusselt_number_shell_calculated);
 
     };
 
@@ -781,11 +791,38 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     let clone_for_test_one: SimpleShellAndTubeHeatExchanger = 
         sthe_one_shell_one_tube.clone();
 
-    test_thread(clone_for_test_one,
+    let (reynolds_num_a1,
+        bulk_prandtl_a1,
+        wall_prandtl_a1,
+        nusselt_number_a1) = test_thread(clone_for_test_one,
         tube_inlet_temperature,
         shell_inlet_temperature,
         m_t,
         m_s);
+
+    assert_relative_eq!(
+        reynolds_num_a1.get::<ratio>(),
+        3483.0,
+        max_relative = 0.01,
+        );
+
+    assert_relative_eq!(
+        bulk_prandtl_a1.get::<ratio>(),
+        12.32,
+        max_relative = 0.01,
+        );
+
+    assert_relative_eq!(
+        wall_prandtl_a1.get::<ratio>(),
+        23.4,
+        max_relative = 0.01,
+        );
+
+    assert_relative_eq!(
+        nusselt_number_a1.get::<ratio>(),
+        37.2,
+        max_relative = 0.01,
+        );
 
     let one_test_only: bool = false;
 
