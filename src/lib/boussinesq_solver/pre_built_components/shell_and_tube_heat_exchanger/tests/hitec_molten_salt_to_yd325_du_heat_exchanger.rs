@@ -1184,12 +1184,42 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                test_thread(
+                let (reynolds_num_a7,
+                    bulk_prandtl_a7,
+                    wall_prandtl_a7,
+                    nusselt_number_a7) = test_thread(
                     clone_for_test_seven,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) 
+                    tube_inlet_temperature,
+                    shell_inlet_temperature,
+                    m_t,
+                    m_s);
+
+                // assert that the Reynolds, Prandtl bulk and 
+                // Prandtl wall are equal to some amount
+
+                assert_relative_eq!(
+                    reynolds_num_a7.get::<ratio>(),
+                    4187.0,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    bulk_prandtl_a7.get::<ratio>(),
+                    11.4,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    wall_prandtl_a7.get::<ratio>(),
+                    19.9,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    nusselt_number_a7.get::<ratio>(),
+                    45.4,
+                    max_relative = 0.01,
+                );
             }
         );
 
@@ -1204,8 +1234,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     }
 
 
-    // note: use a panic to reveal the dbg! information 
-    todo!();
+    // note: I'm using a panic to reveal the dbg! information 
+    todo!("using panic for debug info");
 
 
 }
