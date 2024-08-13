@@ -107,6 +107,8 @@ pub fn du_correlation_empirical_test(){
     // Pr_w = Pr_w/Pr_f * Pr_f
     let wall_prandtl_number = bulk_prandtl_number / 0.5;
 
+    let film_prandtl_number = bulk_prandtl_number;
+
 
     // define a test closure so I can easily test
     let test_fn = |reynolds_float: f64, expected_nusselt_float: f64,
@@ -116,6 +118,7 @@ pub fn du_correlation_empirical_test(){
             let nusselt = custom_gnielinski_turbulent_nusselt_correlation(
                 c, 
                 m, 
+                film_prandtl_number,
                 bulk_prandtl_number, 
                 wall_prandtl_number, 
                 reynolds_num, 
@@ -286,6 +289,8 @@ pub fn du_interpolated_correlation_empirical_test(){
     // Pr_w = Pr_w/Pr_f * Pr_f
     let wall_prandtl_number = bulk_prandtl_number / 0.5;
 
+    let film_prandtl_number = Ratio::new::<ratio>(22.0);
+
 
     // define a test closure so I can easily test
     let test_fn = |reynolds_float: f64, expected_nusselt_float: f64,
@@ -296,6 +301,7 @@ pub fn du_interpolated_correlation_empirical_test(){
                 custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
                 c, 
                 m, 
+                film_prandtl_number,
                 bulk_prandtl_number, 
                 wall_prandtl_number, 
                 reynolds_num, 

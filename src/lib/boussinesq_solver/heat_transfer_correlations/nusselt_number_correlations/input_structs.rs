@@ -249,6 +249,9 @@ impl GnielinskiData {
     /// the transition regime is around Re = 2300 - 4000 
     /// this is taken from the Re for transition in pipes 
     /// IT MAY NOT BE APPLICABLE IN THIS CASE
+    ///
+    /// for the prandtl number of the film, I just took 
+    /// Pr_film = 0.5 * (prandtl_number_wall + prandtl_number_bulk_fluid)
     #[inline]
     pub fn get_nusselt_for_custom_developing_flow(&self,
         correlation_coefficient_c: Ratio,
@@ -259,11 +262,14 @@ impl GnielinskiData {
         let prandtl_wall: Ratio = self.prandtl_wall;
         let length_to_diameter = self.length_to_diameter;
 
+        let prandtl_film_estimate = 0.5 * (prandtl_wall + prandtl_bulk);
+
 
         let nusselt_value = 
         custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
             correlation_coefficient_c,
             reynolds_exponent_m,
+            prandtl_film_estimate,
             prandtl_bulk,
             prandtl_wall,
             reynolds,

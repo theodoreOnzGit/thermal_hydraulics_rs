@@ -736,7 +736,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             LiquidMaterial::YD325.try_get_prandtl_liquid(
                 wall_side_bulk_temp, fluid_pressure).unwrap();
 
-        // Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+        let shell_side_fluid_film_prandtl_estimate = 
+            0.5 * (shell_side_fluid_wall_prandtl + shell_side_fluid_bulk_prandtl);
+        // Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
         // For Du's Heat exchanger, 
         // C = 0.04318,
         // m = 0.7797
@@ -744,6 +746,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             custom_gnielinski_turbulent_nusselt_correlation(
                 Ratio::new::<ratio>(0.04318),
                 0.7797,
+                shell_side_fluid_film_prandtl_estimate,
                 shell_side_fluid_bulk_prandtl,
                 shell_side_fluid_wall_prandtl,
                 reynolds_shell_side,

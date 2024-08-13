@@ -1063,7 +1063,22 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 /// we have a generic Gnielinski type correlation, 
 /// empirically fitted to experimental data. This is in the form:
 ///
-/// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+/// Nu = C (Re^m - 280.0) Pr^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+///
+/// Du did not mention which Pr to use 
+/// I'm going to assume this is Pr_film 
+///
+/// Technically this Pr is Pr(T_film) where 
+/// T_film = (T_wall + T_bulkfluid)/2 
+///
+/// a simpler estimate is:
+/// Pr_film = (Pr_wall + Pr_fluid)/2
+///
+/// However, the simplest is just to use Pr_bulk as Pr 
+/// this may underestimate Nusselt number, as Pr in the bulk fluid is 
+/// usually lower, but it may well work
+///
+/// anyway, I just forced the user to give another argument
 ///
 /// For Du's Heat exchanger, 
 /// C = 0.04318,
@@ -1073,6 +1088,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 pub fn custom_gnielinski_turbulent_nusselt_correlation(
     correlation_coefficient_c: Ratio,
     reynolds_exponent_m: f64,
+    prandtl_number_film: Ratio,
     prandtl_number_fluid: Ratio,
     prandtl_number_wall: Ratio,
     reynolds_number: Ratio,
@@ -1085,9 +1101,10 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
     let reynolds_bracket_term: f64 = 
         reynolds_num_float.powf(reynolds_exponent_m) - 280.0;
 
-    // Pr_f^0.4
+    // Pr_film^0.4
+    // 
     let prandtl_term = 
-        prandtl_number_fluid.get::<ratio>().powf(0.4);
+        prandtl_number_film.get::<ratio>().powf(0.4);
 
     // ( 1.0 + (D_e/l)^(2/3) )
     // I'm providing l/d rather than d/l
@@ -1165,6 +1182,7 @@ pub fn custom_gnielinski_turbulent_nusselt_correlation(
 pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     correlation_coefficient_c: Ratio,
     reynolds_exponent_m: f64,
+    prandtl_number_film: Ratio,
     prandtl_number_fluid: Ratio,
     prandtl_number_wall: Ratio,
     reynolds_number: Ratio,
@@ -1195,6 +1213,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
             custom_gnielinski_turbulent_nusselt_correlation(
                 correlation_coefficient_c,
                 reynolds_exponent_m,
+                prandtl_number_film,
                 prandtl_number_fluid, 
                 prandtl_number_wall, 
                 reynolds_number, 
@@ -1227,6 +1246,7 @@ pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_deve
         custom_gnielinski_turbulent_nusselt_correlation(
             correlation_coefficient_c,
             reynolds_exponent_m,
+            prandtl_number_film,
             prandtl_number_fluid, 
             prandtl_number_wall, 
             reynolds_number, 
