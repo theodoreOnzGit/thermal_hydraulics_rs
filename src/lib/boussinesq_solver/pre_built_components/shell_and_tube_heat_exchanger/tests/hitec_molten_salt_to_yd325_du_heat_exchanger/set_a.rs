@@ -801,6 +801,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         m_t,
         m_s);
 
+    dbg!(&(reynolds_num_a1,
+            bulk_prandtl_a1,
+            wall_prandtl_a1,
+            nusselt_number_a1));
     assert_relative_eq!(
         reynolds_num_a1.get::<ratio>(),
         3483.0,
@@ -865,6 +869,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a2,
+                        bulk_prandtl_a2,
+                        wall_prandtl_a2,
+                        nusselt_number_a2));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
@@ -931,6 +939,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a3,
+                        bulk_prandtl_a3,
+                        wall_prandtl_a3,
+                        nusselt_number_a3));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
@@ -997,6 +1009,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a4,
+                        bulk_prandtl_a4,
+                        wall_prandtl_a4,
+                        nusselt_number_a4));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
@@ -1063,6 +1079,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a5,
+                        bulk_prandtl_a5,
+                        wall_prandtl_a5,
+                        nusselt_number_a5));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
@@ -1129,6 +1149,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a6,
+                        bulk_prandtl_a6,
+                        wall_prandtl_a6,
+                        nusselt_number_a6));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
@@ -1195,6 +1219,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_a7,
+                        bulk_prandtl_a7,
+                        wall_prandtl_a7,
+                        nusselt_number_a7));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
