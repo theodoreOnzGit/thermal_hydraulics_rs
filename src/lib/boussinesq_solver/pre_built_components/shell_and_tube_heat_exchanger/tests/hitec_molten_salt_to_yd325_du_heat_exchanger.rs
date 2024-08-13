@@ -755,7 +755,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
         //m_t,
         //m_s,
         // ua, 
-        u_calc_from_postprocess,
+        nusselt_tube_side,
         u_calc_using_lmtd,
         reynolds_shell_side,
         nusselt_number_shell_calculated,

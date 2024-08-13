@@ -330,13 +330,13 @@ impl SimpleShellAndTubeHeatExchanger {
             shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average / shell_side_fluid_hydraulic_diameter;
 
             // this was for debugging
-            //dbg!(
-            //    &(nusselt_estimate_shell_side,
-            //        nusselt_estimate_tube_side,
-            //        shell_side_fluid_temperature.get::<uom::si::thermodynamic_temperature::degree_celsius>(),
-            //        reynolds_number_shell_side_abs_for_nusselt_estimate,
-            //        reynolds_number_single_tube_abs_for_nusselt_estimate)
-            //);
+            dbg!(
+                &(nusselt_estimate_shell_side,
+                    nusselt_estimate_tube_side,
+                    shell_side_fluid_temperature.get::<uom::si::thermodynamic_temperature::degree_celsius>(),
+                    reynolds_number_shell_side_abs_for_nusselt_estimate,
+                    reynolds_number_single_tube_abs_for_nusselt_estimate)
+            );
 
             // 1/h_s 
             let one_over_hs = 1.0 as f64  / shell_side_h_to_fluid;
@@ -351,6 +351,8 @@ impl SimpleShellAndTubeHeatExchanger {
                 one_over_ht_times_do_by_di + 
                 do_by_2_lambda_w_times_ln_do_by_di +
                 one_over_hs;
+
+
 
             // overall heat transfer coeff shell side
             let u_based_on_shell_side_area: HeatTransfer = 
