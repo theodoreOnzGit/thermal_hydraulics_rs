@@ -460,7 +460,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                 m_s);
         let correct_for_prandtl_wall_temperatures_u_and_ua = false;
 
-        let ua: ThermalConductance 
+        let _ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
                 correct_for_prandtl_wall_temperatures_u_and_ua).unwrap() * 
             sthe.tube_bundle_heat_transfer_area_shell_side();
@@ -679,7 +679,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         // d_o/(2 lambda_w) ln (d_o/d_i)
         //
         // lambda_w, based on 16.3 W/(m K) in Du's paper
-        let lambda_wall: ThermalConductivity = 
+        let _lambda_wall_du_paper: ThermalConductivity = 
             ThermalConductivity::new::<watt_per_meter_kelvin>(
                 16.3);
         let lambda_wall: ThermalConductivity = 
