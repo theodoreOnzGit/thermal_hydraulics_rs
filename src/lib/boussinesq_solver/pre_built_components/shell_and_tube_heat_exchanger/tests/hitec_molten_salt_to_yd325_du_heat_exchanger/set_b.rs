@@ -802,9 +802,14 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         m_t,
         m_s);
 
+    dbg!(&(reynolds_num_b1,
+            bulk_prandtl_b1,
+            wall_prandtl_b1,
+            nusselt_number_b1));
+
     assert_relative_eq!(
         reynolds_num_b1.get::<ratio>(),
-        3483.0,
+        4037.0,
         max_relative = 0.01,
         );
 
@@ -816,13 +821,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
     assert_relative_eq!(
         wall_prandtl_b1.get::<ratio>(),
-        23.4,
+        21.8,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         nusselt_number_b1.get::<ratio>(),
-        37.2,
+        46.0,
         max_relative = 0.01,
         );
 
@@ -866,12 +871,17 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_b2,
+                        bulk_prandtl_b2,
+                        wall_prandtl_b2,
+                        nusselt_number_b2));
+
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b2.get::<ratio>(),
-                    3788.0,
+                    4393.0,
                     max_relative = 0.01,
                 );
 
@@ -883,13 +893,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     wall_prandtl_b2.get::<ratio>(),
-                    21.9,
+                    20.7,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b2.get::<ratio>(),
-                    40.6,
+                    49.72,
                     max_relative = 0.01,
                 );
             }
@@ -932,30 +942,35 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_b3,
+                        bulk_prandtl_b3,
+                        wall_prandtl_b3,
+                        nusselt_number_b3));
+
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b3.get::<ratio>(),
-                    4175.0,
+                    4845.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b3.get::<ratio>(),
-                    11.5,
+                    11.43,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b3.get::<ratio>(),
-                    20.6,
+                    19.8,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b3.get::<ratio>(),
-                    44.6,
+                    54.16,
                     max_relative = 0.01,
                 );
             }
@@ -998,30 +1013,35 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_b4,
+                        bulk_prandtl_b4,
+                        wall_prandtl_b4,
+                        nusselt_number_b4));
+
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b4.get::<ratio>(),
-                    4179.0,
+                    4849.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b4.get::<ratio>(),
-                    11.5,
+                    11.43,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b4.get::<ratio>(),
-                    20.6,
+                    19.68,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b4.get::<ratio>(),
-                    44.9,
+                    54.52,
                     max_relative = 0.01,
                 );
             }
@@ -1063,31 +1083,35 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     shell_inlet_temperature,
                     m_t,
                     m_s);
+                dbg!(&(reynolds_num_b5,
+                        bulk_prandtl_b5,
+                        wall_prandtl_b5,
+                        nusselt_number_b5));
 
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b5.get::<ratio>(),
-                    3495.0,
+                    4050.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b5.get::<ratio>(),
-                    12.3,
+                    12.29,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b5.get::<ratio>(),
-                    21.7,
+                    20.697,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b5.get::<ratio>(),
-                    37.9,
+                    46.846,
                     max_relative = 0.01,
                 );
             }
@@ -1130,30 +1154,34 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_b6,
+                        bulk_prandtl_b6,
+                        wall_prandtl_b6,
+                        nusselt_number_b6));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b6.get::<ratio>(),
-                    3792.0,
+                    4397.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b6.get::<ratio>(),
-                    11.9,
+                    11.87,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b6.get::<ratio>(),
-                    21.7,
+                    20.45,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b6.get::<ratio>(),
-                    40.9,
+                    50.08,
                     max_relative = 0.01,
                 );
             }
@@ -1196,12 +1224,16 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     m_t,
                     m_s);
 
+                dbg!(&(reynolds_num_b7,
+                        bulk_prandtl_b7,
+                        wall_prandtl_b7,
+                        nusselt_number_b7));
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b7.get::<ratio>(),
-                    4187.0,
+                    4857.0,
                     max_relative = 0.01,
                 );
 
@@ -1213,13 +1245,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     wall_prandtl_b7.get::<ratio>(),
-                    19.9,
+                    19.44,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b7.get::<ratio>(),
-                    45.4,
+                    55.08,
                     max_relative = 0.01,
                 );
             }

@@ -1237,7 +1237,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
 
     // note: I'm using a panic to reveal the dbg! information 
-    todo!("using panic for debug info");
+    //todo!("using panic for debug info");
 
 
 }
