@@ -920,12 +920,42 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                test_thread(
+                let (reynolds_num_a3,
+                    bulk_prandtl_a3,
+                    wall_prandtl_a3,
+                    nusselt_number_a3) = test_thread(
                     clone_for_test_three,
-                    tube_inlet_temperature, 
-                    shell_inlet_temperature, 
-                    m_t, 
-                    m_s,) 
+                    tube_inlet_temperature,
+                    shell_inlet_temperature,
+                    m_t,
+                    m_s);
+
+                // assert that the Reynolds, Prandtl bulk and 
+                // Prandtl wall are equal to some amount
+
+                assert_relative_eq!(
+                    reynolds_num_a3.get::<ratio>(),
+                    4175.0,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    bulk_prandtl_a3.get::<ratio>(),
+                    11.5,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    wall_prandtl_a3.get::<ratio>(),
+                    20.6,
+                    max_relative = 0.01,
+                );
+
+                assert_relative_eq!(
+                    nusselt_number_a3.get::<ratio>(),
+                    44.6,
+                    max_relative = 0.01,
+                );
             }
         );
 
