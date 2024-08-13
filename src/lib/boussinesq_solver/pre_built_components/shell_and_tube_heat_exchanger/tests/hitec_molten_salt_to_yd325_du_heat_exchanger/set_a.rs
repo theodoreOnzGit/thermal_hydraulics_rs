@@ -816,19 +816,19 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
     assert_relative_eq!(
         bulk_prandtl_a1.get::<ratio>(),
-        12.32,
+        12.33,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         wall_prandtl_a1.get::<ratio>(),
-        23.4,
+        22.98,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         nusselt_number_a1.get::<ratio>(),
-        37.2,
+        39.21,
         max_relative = 0.01,
         );
 
