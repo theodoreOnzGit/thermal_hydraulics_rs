@@ -1,10 +1,12 @@
-use approx::assert_relative_eq;
-
-
-
-
-
-
+/// shell and tube heat exchanger test set B,
+///
+/// This is where 
+/// salt volumetric flowrate is 14.63 m3/s 
+/// oil volumetic flowrate is 15.635 m3/s 
+/// temperatures of oil and salt are varied
+/// from 74.49  - 90.41 C  (YD325 oil)
+/// and 214.93 - 236.91 C (HITEC salt)
+/// respectively
 
 /// this is a test for shell and tube heat exchanger in Du's paper 
 /// HITEC flows through the shell side while heat transfer oil 
@@ -14,7 +16,7 @@ use approx::assert_relative_eq;
 /// and switching off the insulation boolean
 ///
 #[test]
-pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
+pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
     use std::f64::consts::PI;
 
@@ -29,6 +31,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     use crate::boussinesq_solver::boundary_conditions::BCType;
 
 
+    use approx::assert_relative_eq;
     use uom::si::angle::degree;
     //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::length::{meter, millimeter};
@@ -36,7 +39,6 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
     use uom::ConstZero;
-    use uom::si::mass_rate::kilogram_per_second;
     use uom::si::temperature_interval;
     use uom::si::thermal_conductivity::watt_per_meter_kelvin;
     //use uom::si::area::square_meter;
@@ -258,14 +260,14 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
             insulation_thickness: dummy_insulation_thickness,
         };
 
-    // from data, is set A1 
-    // salt flow rate is 12.63 m3/h 
+    // from data, is set B1
+    // salt flow rate is 14.63 m3/h 
     // oil flow rate is 15.635 m3/h
     // T in salt is 214.93
     // T in oil is 74.49
 
     let vol_flowrate_salt = 
-        VolumeRate::new::<cubic_meter_per_hour>(12.63);
+        VolumeRate::new::<cubic_meter_per_hour>(14.63);
     let vol_flowrate_oil = 
         VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -791,35 +793,35 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
     let clone_for_test_one: SimpleShellAndTubeHeatExchanger = 
         sthe_one_shell_one_tube.clone();
 
-    let (reynolds_num_a1,
-        bulk_prandtl_a1,
-        wall_prandtl_a1,
-        nusselt_number_a1) = test_thread(clone_for_test_one,
+    let (reynolds_num_b1,
+        bulk_prandtl_b1,
+        wall_prandtl_b1,
+        nusselt_number_b1) = test_thread(clone_for_test_one,
         tube_inlet_temperature,
         shell_inlet_temperature,
         m_t,
         m_s);
 
     assert_relative_eq!(
-        reynolds_num_a1.get::<ratio>(),
+        reynolds_num_b1.get::<ratio>(),
         3483.0,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
-        bulk_prandtl_a1.get::<ratio>(),
+        bulk_prandtl_b1.get::<ratio>(),
         12.32,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
-        wall_prandtl_a1.get::<ratio>(),
+        wall_prandtl_b1.get::<ratio>(),
         23.4,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
-        nusselt_number_a1.get::<ratio>(),
+        nusselt_number_b1.get::<ratio>(),
         37.2,
         max_relative = 0.01,
         );
@@ -838,7 +840,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(74.49);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -855,10 +857,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a2,
-                    bulk_prandtl_a2,
-                    wall_prandtl_a2,
-                    nusselt_number_a2) = test_thread(clone_for_test_two,
+                let (reynolds_num_b2,
+                    bulk_prandtl_b2,
+                    wall_prandtl_b2,
+                    nusselt_number_b2) = test_thread(clone_for_test_two,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
                     m_t,
@@ -868,25 +870,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a2.get::<ratio>(),
+                    reynolds_num_b2.get::<ratio>(),
                     3788.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a2.get::<ratio>(),
+                    bulk_prandtl_b2.get::<ratio>(),
                     11.9,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a2.get::<ratio>(),
+                    wall_prandtl_b2.get::<ratio>(),
                     21.9,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a2.get::<ratio>(),
+                    nusselt_number_b2.get::<ratio>(),
                     40.6,
                     max_relative = 0.01,
                 );
@@ -903,7 +905,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(74.49);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -920,10 +922,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a3,
-                    bulk_prandtl_a3,
-                    wall_prandtl_a3,
-                    nusselt_number_a3) = test_thread(
+                let (reynolds_num_b3,
+                    bulk_prandtl_b3,
+                    wall_prandtl_b3,
+                    nusselt_number_b3) = test_thread(
                     clone_for_test_three,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
@@ -934,25 +936,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a3.get::<ratio>(),
+                    reynolds_num_b3.get::<ratio>(),
                     4175.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a3.get::<ratio>(),
+                    bulk_prandtl_b3.get::<ratio>(),
                     11.5,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a3.get::<ratio>(),
+                    wall_prandtl_b3.get::<ratio>(),
                     20.6,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a3.get::<ratio>(),
+                    nusselt_number_b3.get::<ratio>(),
                     44.6,
                     max_relative = 0.01,
                 );
@@ -969,7 +971,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(80.41);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -986,10 +988,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a4,
-                    bulk_prandtl_a4,
-                    wall_prandtl_a4,
-                    nusselt_number_a4) = test_thread(
+                let (reynolds_num_b4,
+                    bulk_prandtl_b4,
+                    wall_prandtl_b4,
+                    nusselt_number_b4) = test_thread(
                     clone_for_test_four,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
@@ -1000,25 +1002,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a4.get::<ratio>(),
+                    reynolds_num_b4.get::<ratio>(),
                     4179.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a4.get::<ratio>(),
+                    bulk_prandtl_b4.get::<ratio>(),
                     11.5,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a4.get::<ratio>(),
+                    wall_prandtl_b4.get::<ratio>(),
                     20.6,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a4.get::<ratio>(),
+                    nusselt_number_b4.get::<ratio>(),
                     44.9,
                     max_relative = 0.01,
                 );
@@ -1035,7 +1037,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(90.41);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -1052,10 +1054,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a5,
-                    bulk_prandtl_a5,
-                    wall_prandtl_a5,
-                    nusselt_number_a5) = test_thread(
+                let (reynolds_num_b5,
+                    bulk_prandtl_b5,
+                    wall_prandtl_b5,
+                    nusselt_number_b5) = test_thread(
                     clone_for_test_five,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
@@ -1066,25 +1068,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a5.get::<ratio>(),
+                    reynolds_num_b5.get::<ratio>(),
                     3495.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a5.get::<ratio>(),
+                    bulk_prandtl_b5.get::<ratio>(),
                     12.3,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a5.get::<ratio>(),
+                    wall_prandtl_b5.get::<ratio>(),
                     21.7,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a5.get::<ratio>(),
+                    nusselt_number_b5.get::<ratio>(),
                     37.9,
                     max_relative = 0.01,
                 );
@@ -1101,7 +1103,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(80.49);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -1118,10 +1120,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a6,
-                    bulk_prandtl_a6,
-                    wall_prandtl_a6,
-                    nusselt_number_a6) = test_thread(
+                let (reynolds_num_b6,
+                    bulk_prandtl_b6,
+                    wall_prandtl_b6,
+                    nusselt_number_b6) = test_thread(
                     clone_for_test_six,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
@@ -1132,25 +1134,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a6.get::<ratio>(),
+                    reynolds_num_b6.get::<ratio>(),
                     3792.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a6.get::<ratio>(),
+                    bulk_prandtl_b6.get::<ratio>(),
                     11.9,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a6.get::<ratio>(),
+                    wall_prandtl_b6.get::<ratio>(),
                     21.7,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a6.get::<ratio>(),
+                    nusselt_number_b6.get::<ratio>(),
                     40.9,
                     max_relative = 0.01,
                 );
@@ -1167,7 +1169,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let inlet_temp_oil = 
                     ThermodynamicTemperature::new::<degree_celsius>(90.49);
                 let vol_flowrate_salt = 
-                    VolumeRate::new::<cubic_meter_per_hour>(12.63);
+                    VolumeRate::new::<cubic_meter_per_hour>(14.63);
                 let vol_flowrate_oil = 
                     VolumeRate::new::<cubic_meter_per_hour>(15.635);
 
@@ -1184,10 +1186,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 let tube_inlet_temperature = inlet_temp_oil;
                 let shell_inlet_temperature = inlet_temp_salt;
 
-                let (reynolds_num_a7,
-                    bulk_prandtl_a7,
-                    wall_prandtl_a7,
-                    nusselt_number_a7) = test_thread(
+                let (reynolds_num_b7,
+                    bulk_prandtl_b7,
+                    wall_prandtl_b7,
+                    nusselt_number_b7) = test_thread(
                     clone_for_test_seven,
                     tube_inlet_temperature,
                     shell_inlet_temperature,
@@ -1198,25 +1200,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_one(){
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
-                    reynolds_num_a7.get::<ratio>(),
+                    reynolds_num_b7.get::<ratio>(),
                     4187.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    bulk_prandtl_a7.get::<ratio>(),
+                    bulk_prandtl_b7.get::<ratio>(),
                     11.4,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    wall_prandtl_a7.get::<ratio>(),
+                    wall_prandtl_b7.get::<ratio>(),
                     19.9,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
-                    nusselt_number_a7.get::<ratio>(),
+                    nusselt_number_b7.get::<ratio>(),
                     45.4,
                     max_relative = 0.01,
                 );
