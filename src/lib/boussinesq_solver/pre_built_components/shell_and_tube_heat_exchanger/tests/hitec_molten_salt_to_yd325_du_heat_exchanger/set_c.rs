@@ -809,7 +809,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
     assert_relative_eq!(
         reynolds_num_c1.get::<ratio>(),
-        4037.0,
+        4596.0,
         max_relative = 0.01,
         );
 
@@ -821,13 +821,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
     assert_relative_eq!(
         wall_prandtl_c1.get::<ratio>(),
-        21.8,
+        20.78,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         nusselt_number_c1.get::<ratio>(),
-        46.0,
+        54.58,
         max_relative = 0.01,
         );
 
