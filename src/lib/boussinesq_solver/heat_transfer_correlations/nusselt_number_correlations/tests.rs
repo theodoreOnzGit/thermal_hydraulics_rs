@@ -100,14 +100,28 @@ pub fn du_correlation_empirical_test(){
 
 
 
-    let bulk_prandtl_number = Ratio::new::<ratio>(22.0);
-    // Pr_f/Pr_w  is about 0.5, hence 
-    // Pr_w/Pr_f = 2.0 approx 
+    let film_prandtl_number = Ratio::new::<ratio>(22.0);
+    // Pr_bulk/Pr_w  is about 0.5, or
+    // Pr_f/Pr_w  is about 0.5, 
+    // Pr_f in these comments is Pr_bulk_fluid, or Pr_bulk
     //
-    // Pr_w = Pr_w/Pr_f * Pr_f
-    let wall_prandtl_number = bulk_prandtl_number / 0.5;
+    // and i made it such that 
+    //
+    // Pr_film = 0.5 * (Pr_bulk + Pr_wall)
+    //
+    // and Pr_bulk/Pr_wall = 0.5 
+    //
+    // Pr_bulk = 0.5 Pr_wall
+    // substituting:
+    // Pr_film = 0.5 * (1.5 Pr_wall)
+    //
+    // Pr_film = 22
+    // 22 = 0.5 * (1.5 Pr_wall)
+    //
+    // based on these substitutions:
+    let wall_prandtl_number = film_prandtl_number * 2.0 / 1.5;
+    let bulk_prandtl_number = 0.5 * wall_prandtl_number;
 
-    let film_prandtl_number = bulk_prandtl_number;
 
 
     // define a test closure so I can easily test
@@ -218,15 +232,12 @@ pub fn du_correlation_empirical_test(){
 #[test] 
 pub fn du_interpolated_correlation_empirical_test(){
     use uom::si::length::meter;
-    use uom::{si::ratio::ratio, ConstZero};
+    use uom::si::ratio::ratio;
     use uom::si::f64::*;
 
     use crate::boussinesq_solver::heat_transfer_correlations::
         nusselt_number_correlations::pipe_correlations::
         custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing;
-
-    use super::input_structs::GnielinskiData;
-    use super::enums::NusseltCorrelation;
 
     let c = Ratio::new::<ratio>(0.04318);
     let m = 0.7797_f64;
@@ -267,29 +278,29 @@ pub fn du_interpolated_correlation_empirical_test(){
     // let me use now the D_e/l of 0.009
     //let length_to_diameter = 1.0 / Ratio::new::<ratio>(0.009);
 
-    let gnielinski_params: GnielinskiData = 
-        GnielinskiData { 
-            reynolds: Ratio::ZERO, 
-            prandtl_bulk: Ratio::ZERO, 
-            prandtl_wall: Ratio::ZERO, 
-            darcy_friction_factor: Ratio::ZERO, 
-            length_to_diameter,
-        };
 
-
-
-    let du_nusselt_correlation: NusseltCorrelation 
-        = NusseltCorrelation::CustomGnielinskiGeneric(
-            gnielinski_params, c, m);
-
-    let bulk_prandtl_number = Ratio::new::<ratio>(22.0);
-    // Pr_f/Pr_w  is about 0.5, hence 
-    // Pr_w/Pr_f = 2.0 approx 
-    //
-    // Pr_w = Pr_w/Pr_f * Pr_f
-    let wall_prandtl_number = bulk_prandtl_number / 0.5;
 
     let film_prandtl_number = Ratio::new::<ratio>(22.0);
+    // Pr_bulk/Pr_w  is about 0.5, or
+    // Pr_f/Pr_w  is about 0.5, 
+    // Pr_f in these comments is Pr_bulk_fluid, or Pr_bulk
+    //
+    // and i made it such that 
+    //
+    // Pr_film = 0.5 * (Pr_bulk + Pr_wall)
+    //
+    // and Pr_bulk/Pr_wall = 0.5 
+    //
+    // Pr_bulk = 0.5 Pr_wall
+    // substituting:
+    // Pr_film = 0.5 * (1.5 Pr_wall)
+    //
+    // Pr_film = 22
+    // 22 = 0.5 * (1.5 Pr_wall)
+    //
+    // based on these substitutions:
+    let wall_prandtl_number = film_prandtl_number * 2.0 / 1.5;
+    let bulk_prandtl_number = 0.5 * wall_prandtl_number;
 
 
     // define a test closure so I can easily test
