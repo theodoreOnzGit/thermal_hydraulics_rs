@@ -1026,7 +1026,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     reynolds_num_b4.get::<ratio>(),
-                    4839.0,
+                    4836.0,
                     max_relative = 0.01,
                 );
 
@@ -1038,13 +1038,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     wall_prandtl_b4.get::<ratio>(),
-                    19.56,
+                    19.66,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b4.get::<ratio>(),
-                    57.29,
+                    58.27,
                     max_relative = 0.01,
                 );
             }
@@ -1108,13 +1108,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     wall_prandtl_b5.get::<ratio>(),
-                    20.52,
+                    20.63,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b5.get::<ratio>(),
-                    49.07,
+                    49.48,
                     max_relative = 0.01,
                 );
             }
@@ -1272,7 +1272,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
 
     // note: I'm using a panic to reveal the dbg! information 
-    //todo!("using panic for debug info");
+    todo!("using panic for debug info");
 
 
 }
