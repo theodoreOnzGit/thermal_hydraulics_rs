@@ -1,15 +1,14 @@
 use uom::si::f64::*;
-use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use uom::si::thermodynamic_temperature::kelvin;
 
 use super::liquid_database;
 use super::liquid_database::flibe::get_flibe_thermal_conductivity;
 use super::liquid_database::flinak::get_flinak_thermal_conductivity;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_thermal_conductivity;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_thermal_conductivity;
-use super::range_check;
+use super::solid_database::copper::copper_thermal_conductivity_zou_zweibaum_spline;
 use super::solid_database::custom_solid_material;
+use super::solid_database::fiberglass::fiberglass_thermal_conductivity_zou_zweibaum_spline;
 use super::solid_database::ss_304_l::steel_304_l_libreoffice_spline_thermal_conductivity_zweibaum;
 use super::solid_database::ss_304_l::steel_304_l_spline_thermal_conductivity;
 use super::LiquidMaterial;
@@ -19,7 +18,6 @@ use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use super::liquid_database::dowtherm_a::get_dowtherm_a_thermal_conductivity;
 
-use peroxide::prelude::*;
 
 /// returns thermal conductivity for a given material 
 ///
@@ -102,8 +100,8 @@ impl LiquidMaterial {
         -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
 
         let thermal_conductivity: ThermalConductivity = match self {
-            DowthermA => dowtherm_a_thermal_conductivity(fluid_temp)?,
-            TherminolVP1 => dowtherm_a_thermal_conductivity(fluid_temp)?,
+            DowthermA => get_dowtherm_a_thermal_conductivity(fluid_temp)?,
+            TherminolVP1 => get_dowtherm_a_thermal_conductivity(fluid_temp)?,
             HITEC => get_hitec_thermal_conductivity(fluid_temp)?,
             YD325 => get_yd325_thermal_conductivity(fluid_temp)?,
             FLiBe => get_flibe_thermal_conductivity(fluid_temp)?,
@@ -130,7 +128,7 @@ impl SolidMaterial {
         -> Result<ThermalConductivity, ThermalHydraulicsLibError>{
 
             let thermal_conductivity: ThermalConductivity = match self {
-                Fiberglass => fiberglass_thermal_conductivity(solid_temp)?,
+                Fiberglass => fiberglass_thermal_conductivity_zou_zweibaum_spline(solid_temp)?,
                 SteelSS304L => {
 
                     let conductivity_result = 
@@ -151,7 +149,7 @@ impl SolidMaterial {
 
 
                 },
-                Copper => copper_thermal_conductivity(solid_temp)?,
+                Copper => copper_thermal_conductivity_zou_zweibaum_spline(solid_temp)?,
                 CustomSolid((low_bound_temp,high_bound_temp),
                     _cp,k_fn,_rho_fn,_roughness) => {
                     custom_solid_material::get_custom_solid_thermal_conductivity(
@@ -188,87 +186,16 @@ fn liquid_thermal_conductivity(material: Material,
     liquid_material.try_get_thermal_conductivity(fluid_temp)
 }
 
-/// returns thermal conductivity of fiberglass
-/// cited from:
-/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
-/// validation using the compact integral effects test (CIET) experimental 
-/// data (No. ANL/NSE-19/11). Argonne National 
-/// Lab.(ANL), Argonne, IL (United States).
-#[inline]
-fn fiberglass_thermal_conductivity(
-    temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::Fiberglass),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(600.0), 
-        ThermodynamicTemperature::new::<kelvin>(250.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    // here we use a cubic spline to interpolate the values
-    // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(250.0, 293.15, 350.0, 
-        400.0, 500.0, 600.0);
-    let thermal_conductivity_values_watt_per_meter_kelin = c!(0.028616,
-        0.033060, 0.038916, 0.044066, 0.054366, 0.064666);
-
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
-        &thermal_conductivity_values_watt_per_meter_kelin);
-
-    let fiberglass_thermal_conductivity_value = s.eval(
-        temperature_value_kelvin);
-
-    return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
-        fiberglass_thermal_conductivity_value));
-}
 
 
-/// returns thermal conductivity of copper
-/// cited from:
-/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
-/// validation using the compact integral effects test (CIET) experimental 
-/// data (No. ANL/NSE-19/11). Argonne National 
-/// Lab.(ANL), Argonne, IL (United States).
-#[inline]
-fn copper_thermal_conductivity(
-    temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
-
-    range_check(
-        &Material::Solid(SolidMaterial::Copper),
-        temperature, 
-        ThermodynamicTemperature::new::<kelvin>(1000.0), 
-        ThermodynamicTemperature::new::<kelvin>(250.0))?;
-
-    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
-    // here we use a cubic spline to interpolate the values
-    // it's a little calculation heavy, but don't really care now
-    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
-        400.0, 500.0, 1000.0);
-    let thermal_conductivity_values_watt_per_meter_kelin = c!(406.0,
-        401.0, 369.0, 393.0, 386.0, 352.0);
-
-    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
-        &thermal_conductivity_values_watt_per_meter_kelin);
-
-    let copper_thermal_conductivity_value = s.
-        eval(temperature_value_kelvin);
-
-    Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
-        copper_thermal_conductivity_value))
-
-}
 
 
-#[inline]
-fn dowtherm_a_thermal_conductivity(
-    fluid_temp: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError>{
-    return get_dowtherm_a_thermal_conductivity(fluid_temp);
-}
 
 #[test]
 pub fn thermal_conductivity_test_steel(){
 
     use super::solid_database::ss_304_l::steel_ss_304_l_ornl_thermal_conductivity;
+    use uom::si::thermodynamic_temperature::kelvin;
     // we're going to test thermal conductivity for steel,
     // first at 500K for both the spline and the correlation 
     // thermal conductivity, we expect at 350K 

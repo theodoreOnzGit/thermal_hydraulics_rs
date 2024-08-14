@@ -66,3 +66,37 @@ pub fn copper_specific_heat_capacity_zou_zweibaum_spline(
         copper_specific_heat_capacity_value))
 
 }
+/// returns thermal conductivity of copper
+/// cited from:
+/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
+/// validation using the compact integral effects test (CIET) experimental 
+/// data (No. ANL/NSE-19/11). Argonne National 
+/// Lab.(ANL), Argonne, IL (United States).
+#[inline]
+pub fn copper_thermal_conductivity_zou_zweibaum_spline(
+    temperature: ThermodynamicTemperature) -> Result<ThermalConductivity,ThermalHydraulicsLibError> {
+
+    range_check(
+        &Material::Solid(SolidMaterial::Copper),
+        temperature, 
+        ThermodynamicTemperature::new::<kelvin>(1000.0), 
+        ThermodynamicTemperature::new::<kelvin>(250.0))?;
+
+    let temperature_value_kelvin: f64 = temperature.get::<kelvin>();
+    // here we use a cubic spline to interpolate the values
+    // it's a little calculation heavy, but don't really care now
+    let thermal_cond_temperature_values_kelvin = c!(250.0, 300.0, 350.0, 
+        400.0, 500.0, 1000.0);
+    let thermal_conductivity_values_watt_per_meter_kelin = c!(406.0,
+        401.0, 369.0, 393.0, 386.0, 352.0);
+
+    let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
+        &thermal_conductivity_values_watt_per_meter_kelin);
+
+    let copper_thermal_conductivity_value = s.
+        eval(temperature_value_kelvin);
+
+    Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
+        copper_thermal_conductivity_value))
+
+}
