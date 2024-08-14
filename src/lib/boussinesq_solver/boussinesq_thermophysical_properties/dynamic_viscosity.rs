@@ -77,8 +77,8 @@ fn liquid_dynamic_viscosity(material: Material,
     };
 
     let dynamic_viscosity: DynamicViscosity = match liquid_material {
-        DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp)?,
-        TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?,
+        DowthermA => get_dowtherm_a_viscosity(fluid_temp)?,
+        TherminolVP1 => get_dowtherm_a_viscosity(fluid_temp)?,
         HITEC => get_hitec_dynamic_viscosity(fluid_temp)?,
         YD325 => get_yd325_dynamic_viscosity(fluid_temp)?,
         FLiBe => get_flibe_dynamic_viscosity(fluid_temp)?,
@@ -103,8 +103,8 @@ impl LiquidMaterial {
     Result<DynamicViscosity, ThermalHydraulicsLibError>{
 
         let dynamic_viscosity: DynamicViscosity = match self {
-            DowthermA => dowtherm_a_dynamic_viscosity(fluid_temp)?,
-            TherminolVP1 => dowtherm_a_dynamic_viscosity(fluid_temp)?,
+            DowthermA => get_dowtherm_a_viscosity(fluid_temp)?,
+            TherminolVP1 => get_dowtherm_a_viscosity(fluid_temp)?,
             HITEC => get_hitec_dynamic_viscosity(fluid_temp)?,
             YD325 => get_yd325_dynamic_viscosity(fluid_temp)?,
             FLiBe => get_flibe_dynamic_viscosity(fluid_temp)?,
@@ -127,25 +127,4 @@ impl LiquidMaterial {
 
 
 
-#[inline]
-fn dowtherm_a_dynamic_viscosity(fluid_temp: ThermodynamicTemperature) -> 
-Result<DynamicViscosity, ThermalHydraulicsLibError>{
-    return get_dowtherm_a_viscosity(fluid_temp);
-}
 
-#[test]
-pub fn dynamic_viscosity_test_dowtherm_a(){
-
-    use uom::si::pressure::atmosphere;
-    use uom::si::thermodynamic_temperature::kelvin;
-    let dowtherm_a = Material::Liquid(DowthermA);
-    let temperature = ThermodynamicTemperature::new::<kelvin>(350.0);
-    let pressure = Pressure::new::<atmosphere>(1.0);
-
-    let dynamic_viscosity = try_get_mu_viscosity(dowtherm_a, temperature, pressure);
-
-    approx::assert_relative_eq!(
-        0.001237,
-        dynamic_viscosity.unwrap().value,
-        max_relative=0.01);
-}

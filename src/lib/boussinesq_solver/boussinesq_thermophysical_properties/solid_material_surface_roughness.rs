@@ -1,7 +1,9 @@
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use uom::si::{f64::*, length::{micrometer, millimeter}};
+use uom::si::f64::*;
 
-use super::{SolidMaterial, Material};
+use super::{solid_database::{copper::copper_surf_roughness, fiberglass::fiberglass_surf_roughness}, Material};
+use super::SolidMaterial;
+use super::solid_database::ss_304_l::steel_surf_roughness;
 
 impl SolidMaterial {
 
@@ -15,7 +17,7 @@ impl SolidMaterial {
             // Perry’s chemical engineers’ handbook, 
             // 8th illustrated ed. New York: McGraw-Hill.
             SolidMaterial::SteelSS304L => {
-                Length::new::<millimeter>(0.0457)
+                steel_surf_roughness()
             },
             // Arenales, M. R. M., Kumar, S., 
             // Kuo, L. S., & Chen, P. H. (2020). 
@@ -23,7 +25,7 @@ impl SolidMaterial {
             // pool boiling of water. International Journal of 
             // Heat and Mass Transfer, 151, 119399.
             SolidMaterial::Copper => {
-                Length::new::<micrometer>(0.544)
+                copper_surf_roughness()
             },
             // Value from: Perry's chemical Engineering handbook 
             // 8th edition Table 6-1 
@@ -32,7 +34,7 @@ impl SolidMaterial {
             // Perry’s chemical engineers’ handbook, 
             // 8th illustrated ed. New York: McGraw-Hill.
             SolidMaterial::Fiberglass => {
-                Length::new::<millimeter>(0.00152)
+                fiberglass_surf_roughness()
             },
             // user defined surface roughness
             SolidMaterial::CustomSolid(
