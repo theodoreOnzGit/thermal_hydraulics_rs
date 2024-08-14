@@ -194,12 +194,47 @@ pub fn test_flinak_thermal_conductivity_correlation_unit_in_kelvin(){
 }
 
 
+/// returns flinak specific enthalpy 
+///
+/// based on reference temperature at the minimum correlation temperature 
+/// of flinak (h = 0 J/kg at that point)
+///
+///
 pub fn get_flinak_specific_enthalpy(
     fluid_temp: ThermodynamicTemperature) -> 
 Result<AvailableEnergy,ThermalHydraulicsLibError>{
     range_check_flinak_salt(fluid_temp)?;
-    todo!()
+
+    // find cp at this temperature first
+    //
+    // delta h = cp (delta T)
+    let cp = get_flinak_constant_pressure_specific_heat_capacity(fluid_temp)?;
+
+    // we'll have a reference temperature:
+    let reference_temperature_kelvin = min_temp_flinak().get::<kelvin>();
+
+    // calculate delta T 
+    let delta_t_from_ref_temperature: TemperatureInterval = 
+        TemperatureInterval::new::<uom::si::temperature_interval::kelvin>
+        (
+            fluid_temp.get::<kelvin>()
+            -reference_temperature_kelvin
+        );
+
+    let delta_h: AvailableEnergy = 
+        cp * delta_t_from_ref_temperature;
+
+    return Ok(delta_h);
+
 }
+
+/// returns flinak temperature from specific enthalpy 
+///
+/// the specific enthalpy is 
+/// based on reference temperature at the minimum correlation temperature 
+/// of flinak (h = 0 J/kg at that point)
+///
+///
 pub fn get_temperature_from_enthalpy(
     fluid_enthalpy: AvailableEnergy) -> Result<ThermodynamicTemperature,ThermalHydraulicsLibError> {
 
