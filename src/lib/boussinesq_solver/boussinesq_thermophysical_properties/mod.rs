@@ -252,10 +252,17 @@ pub mod prandtl;
 /// surface roughness 
 pub mod solid_material_surface_roughness;
 
+
+/// functions for temperature ranges
+/// this gives the max or min temperatures for each material
+pub mod temperature_ranges;
+
 /// database for liquids 
 pub mod liquid_database;
 
 /// database for solids 
 pub mod solid_database;
+
+
 
 
