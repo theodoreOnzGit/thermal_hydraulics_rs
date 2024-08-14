@@ -295,10 +295,23 @@ pub fn range_check_flinak_salt(fluid_temp: ThermodynamicTemperature)
 
         range_check(&Material::Liquid(LiquidMaterial::FLiNaK), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(1073.0), 
-            ThermodynamicTemperature::new::<kelvin>(940.0))?;
+            max_temp_flinak(), 
+            min_temp_flinak()
+            )?;
 
         return Ok(true);
 
     }
 
+
+#[inline]
+/// flinak max temp 
+pub fn max_temp_flinak() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(1073.0)
+
+}
+#[inline]
+/// flinak min temp 
+pub fn min_temp_flinak() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(940.0)
+}

@@ -569,3 +569,14 @@ pub fn range_check_flibe_salt(fluid_temp: ThermodynamicTemperature)
 
     }
 
+
+
+/// flibe max temp 
+pub fn max_temp_flibe() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(1573.0)
+
+}
+/// flibe min temp 
+pub fn min_temp_flibe() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(732.2)
+}

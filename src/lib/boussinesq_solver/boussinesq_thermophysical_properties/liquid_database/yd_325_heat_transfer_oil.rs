@@ -422,9 +422,23 @@ pub fn range_check_yd325_oil(fluid_temp: ThermodynamicTemperature)
         // TBD with range checking
         range_check(&Material::Liquid(LiquidMaterial::YD325), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(523.0), 
-            ThermodynamicTemperature::new::<kelvin>(323.0))?;
+            max_temp_yd325_oil(), 
+            min_temp_yd325_oil()
+            )?;
 
         return Ok(true);
 
     }
+
+
+#[inline]
+/// yd325_oil max temp 
+pub fn max_temp_yd325_oil() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(523.0)
+
+}
+#[inline]
+/// yd325_oil min temp 
+pub fn min_temp_yd325_oil() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(323.0)
+}

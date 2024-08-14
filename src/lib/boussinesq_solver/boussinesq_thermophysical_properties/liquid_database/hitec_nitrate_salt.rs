@@ -515,9 +515,23 @@ pub fn range_check_hitec_salt(fluid_temp: ThermodynamicTemperature)
 
         range_check(&Material::Liquid(LiquidMaterial::HITEC), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<kelvin>(800.0), 
-            ThermodynamicTemperature::new::<kelvin>(440.0))?;
+            max_temp_hitec(), 
+            min_temp_hitec()
+            )?;
 
         return Ok(true);
 
     }
+
+
+#[inline]
+/// hitec max temp 
+pub fn max_temp_hitec() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(800.0)
+
+}
+#[inline]
+/// hitec min temp 
+pub fn min_temp_hitec() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(440.0)
+}

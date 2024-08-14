@@ -364,9 +364,23 @@ pub fn range_check_sodium_potassium_nitrate_equimolar(fluid_temp: ThermodynamicT
 
         range_check(&Material::Liquid(LiquidMaterial::DowthermA), 
             fluid_temp, 
-            ThermodynamicTemperature::new::<degree_celsius>(630.0), 
-            ThermodynamicTemperature::new::<degree_celsius>(220.0))?;
+            max_temp_sodium_potassium_nitrate_equimolar(), 
+            min_temp_sodium_potassium_nitrate_equimolar()
+            )?;
 
         return Ok(true);
 
     }
+
+
+#[inline]
+/// sodium_potassium_nitrate_equimolar max temp 
+pub fn max_temp_sodium_potassium_nitrate_equimolar() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(630.0)
+
+}
+#[inline]
+/// sodium_potassium_nitrate_equimolar min temp 
+pub fn min_temp_sodium_potassium_nitrate_equimolar() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(220.0)
+}

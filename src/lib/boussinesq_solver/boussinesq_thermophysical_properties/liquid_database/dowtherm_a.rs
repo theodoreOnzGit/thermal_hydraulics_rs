@@ -322,3 +322,13 @@ pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature)
         return Ok(true);
 
     }
+
+/// dowtherm a max temp 
+pub fn max_temp_dowtherm_a() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(180.0)
+
+}
+/// dowtherm a min temp 
+pub fn min_temp_dowtherm_a() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(20.0)
+}
