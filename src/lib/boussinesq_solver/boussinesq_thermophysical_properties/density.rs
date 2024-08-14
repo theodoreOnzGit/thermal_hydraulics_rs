@@ -1,7 +1,6 @@
 use uom::si::f64::MassDensity;
 use uom::si::f64::Pressure;
 use uom::si::f64::ThermodynamicTemperature;
-use uom::si::mass_density::kilogram_per_cubic_meter;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::liquid_database;
@@ -9,7 +8,10 @@ use super::liquid_database::flibe::get_flibe_density;
 use super::liquid_database::flinak::get_flinak_density;
 use super::liquid_database::hitec_nitrate_salt::get_hitec_density;
 use super::liquid_database::yd_325_heat_transfer_oil::get_yd325_density;
+use super::solid_database::copper::copper_density;
 use super::solid_database::custom_solid_material;
+use super::solid_database::fiberglass::fiberglass_density;
+use super::solid_database::ss_304_l::steel_ss_304_l_density;
 use super::LiquidMaterial;
 use super::Material;
 use super::SolidMaterial;
@@ -132,8 +134,8 @@ fn liquid_density(material: Material,
     };
 
     let density: MassDensity = match liquid_material {
-        DowthermA => dowtherm_a_density(fluid_temp)?,
-        TherminolVP1 => dowtherm_a_density(fluid_temp)?,
+        DowthermA => get_dowtherm_a_density(fluid_temp)?,
+        TherminolVP1 => get_dowtherm_a_density(fluid_temp)?,
         HITEC => get_hitec_density(fluid_temp)?,
         YD325 => get_yd325_density(fluid_temp)?,
         FLiBe => get_flibe_density(fluid_temp)?,
@@ -158,8 +160,8 @@ impl LiquidMaterial {
     Result<MassDensity,ThermalHydraulicsLibError> {
 
         let density: MassDensity = match &self.clone() {
-            DowthermA => dowtherm_a_density(fluid_temp)?,
-            TherminolVP1 => dowtherm_a_density(fluid_temp)?,
+            DowthermA => get_dowtherm_a_density(fluid_temp)?,
+            TherminolVP1 => get_dowtherm_a_density(fluid_temp)?,
             HITEC => get_hitec_density(fluid_temp)?,
             YD325 => get_yd325_density(fluid_temp)?,
             FLiBe => get_flibe_density(fluid_temp)?,
@@ -178,55 +180,4 @@ impl LiquidMaterial {
     }
 }
 
-#[inline]
-fn fiberglass_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
-    // density ranges not quite given in original text 
-    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
-    // using the compact integral effects test (CIET) experimental data. 
-    // No. ANL/NSE-19/11. 
-    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
-    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(20.0));
-}
 
-#[inline]
-fn steel_ss_304_l_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
-    // density ranges not quite given in original text 
-    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
-    // using the compact integral effects test (CIET) experimental data. 
-    // No. ANL/NSE-19/11. 
-    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
-    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8030.0));
-}
-
-#[inline]
-fn copper_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
-    // density ranges not quite given in original text 
-    // Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
-    // using the compact integral effects test (CIET) experimental data. 
-    // No. ANL/NSE-19/11. 
-    // Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
-    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8940.0));
-}
-
-#[inline]
-fn dowtherm_a_density(fluid_temp: ThermodynamicTemperature) -> 
-Result<MassDensity,ThermalHydraulicsLibError>{
-    return get_dowtherm_a_density(fluid_temp);
-}
-
-#[test]
-pub fn density_test_steel(){
-
-    use uom::si::thermodynamic_temperature::kelvin;
-    use uom::si::pressure::atmosphere;
-    let steel = Material::Solid(SteelSS304L);
-    let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
-    let pressure = Pressure::new::<atmosphere>(1.0);
-
-    let density = try_get_rho(steel, temperature, pressure);
-
-    approx::assert_relative_eq!(
-        8030_f64,
-        density.unwrap().value,
-        max_relative=0.01);
-}

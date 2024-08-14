@@ -1,4 +1,5 @@
 use uom::si::f64::*;
+use uom::si::mass_density::kilogram_per_cubic_meter;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::*;
@@ -313,3 +314,32 @@ pub fn verify_libreoffice_splines_work(){
 
 }
 
+/// density ranges not quite given in original text 
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
+/// using the compact integral effects test (CIET) experimental data. 
+/// No. ANL/NSE-19/11. 
+/// Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
+#[inline]
+pub fn steel_ss_304_l_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8030.0));
+}
+
+
+
+#[test]
+pub fn density_test_steel(){
+
+    use uom::si::thermodynamic_temperature::kelvin;
+    use uom::si::pressure::atmosphere;
+    use density::try_get_rho;
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
+    let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+
+    let density = try_get_rho(steel, temperature, pressure);
+
+    approx::assert_relative_eq!(
+        8030_f64,
+        density.unwrap().value,
+        max_relative=0.01);
+}
