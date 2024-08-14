@@ -73,3 +73,16 @@ pub fn fiberglass_thermal_conductivity_zou_zweibaum_spline(
     return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(
         fiberglass_thermal_conductivity_value));
 }
+
+
+#[inline]
+/// fiberglass max temp 
+pub fn max_temp_fiberglass_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(600.0)
+
+}
+#[inline]
+/// fiberglass min temp 
+pub fn min_temp_fiberglass_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(250.0)
+}

@@ -100,3 +100,16 @@ pub fn copper_thermal_conductivity_zou_zweibaum_spline(
         copper_thermal_conductivity_value))
 
 }
+
+
+#[inline]
+/// copper max temp 
+pub fn max_temp_copper_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(1000.0)
+
+}
+#[inline]
+/// copper min temp 
+pub fn min_temp_copper_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(250.0)
+}

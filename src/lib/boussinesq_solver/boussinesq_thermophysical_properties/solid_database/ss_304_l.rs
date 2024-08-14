@@ -353,3 +353,16 @@ pub fn density_test_steel(){
         density.unwrap().value,
         max_relative=0.01);
 }
+
+
+#[inline]
+/// ss_304l max temp 
+pub fn max_temp_ss_304l_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(1000.0)
+
+}
+#[inline]
+/// ss_304l min temp 
+pub fn min_temp_ss_304l_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(250.0)
+}

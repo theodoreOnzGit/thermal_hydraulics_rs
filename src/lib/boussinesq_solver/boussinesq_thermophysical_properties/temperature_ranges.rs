@@ -9,6 +9,12 @@ use super::liquid_database::hitec_nitrate_salt::max_temp_hitec;
 use super::liquid_database::hitec_nitrate_salt::min_temp_hitec;
 use super::liquid_database::yd_325_heat_transfer_oil::max_temp_yd325_oil;
 use super::liquid_database::yd_325_heat_transfer_oil::min_temp_yd325_oil;
+use super::solid_database::copper::max_temp_copper_zou_zweibaum_spline;
+use super::solid_database::copper::min_temp_copper_zou_zweibaum_spline;
+use super::solid_database::fiberglass::max_temp_fiberglass_zou_zweibaum_spline;
+use super::solid_database::fiberglass::min_temp_fiberglass_zou_zweibaum_spline;
+use super::solid_database::ss_304_l::max_temp_ss_304l_zou_zweibaum_spline;
+use super::solid_database::ss_304_l::min_temp_ss_304l_zou_zweibaum_spline;
 use super::SolidMaterial;
 use super::Material;
 use super::LiquidMaterial;
@@ -109,9 +115,9 @@ impl SolidMaterial {
     /// given material
     pub fn max_temperature(&self) -> ThermodynamicTemperature {
         match self {
-            SolidMaterial::SteelSS304L => todo!(),
-            SolidMaterial::Copper => todo!(),
-            SolidMaterial::Fiberglass => todo!(),
+            SolidMaterial::SteelSS304L => max_temp_ss_304l_zou_zweibaum_spline(),
+            SolidMaterial::Copper => max_temp_copper_zou_zweibaum_spline(),
+            SolidMaterial::Fiberglass => max_temp_fiberglass_zou_zweibaum_spline(),
             SolidMaterial::CustomSolid((_lower_bound,upper_bound), 
                 _, _, _, _) => {
                 *upper_bound
@@ -122,9 +128,9 @@ impl SolidMaterial {
     /// given material
     pub fn min_temperature(&self) -> ThermodynamicTemperature {
         match self {
-            SolidMaterial::SteelSS304L => todo!(),
-            SolidMaterial::Copper => todo!(),
-            SolidMaterial::Fiberglass => todo!(),
+            SolidMaterial::SteelSS304L => min_temp_ss_304l_zou_zweibaum_spline(),
+            SolidMaterial::Copper => min_temp_copper_zou_zweibaum_spline(),
+            SolidMaterial::Fiberglass => min_temp_fiberglass_zou_zweibaum_spline(),
             SolidMaterial::CustomSolid((lower_bound, _upper_bound), 
                 _, _, _, _) => {
                 *lower_bound
