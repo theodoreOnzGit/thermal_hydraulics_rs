@@ -441,12 +441,30 @@ pub fn du_nusselt_enum_correlation_empirical_test(){
     // let me use now the D_e/l of 0.009
     //let length_to_diameter = 1.0 / Ratio::new::<ratio>(0.009);
 
-    let bulk_prandtl_number = Ratio::new::<ratio>(22.0);
-    // Pr_f/Pr_w  is about 0.5, hence 
+    let film_prandtl_number = Ratio::new::<ratio>(22.0);
+
+    // Pr_bulk/Pr_w  is about 0.5, or
+    // Pr_f/Pr_w  is about 0.5, 
+    // Pr_f in these comments is Pr_bulk_fluid, or Pr_bulk
+    //
+    // and i made it such that 
+    //
+    // Pr_film = 0.5 * (Pr_bulk + Pr_wall)
+    //
+    // and Pr_bulk/Pr_wall = 0.5 
+    //
+    // Pr_bulk = 0.5 Pr_wall
+    // substituting:
+    // Pr_film = 0.5 * (1.5 Pr_wall)
+    //
+    // Pr_film = 22
+    // 22 = 0.5 * (1.5 Pr_wall)
+    //
+    // based on these substitutions:
+    let wall_prandtl_number = film_prandtl_number * 2.0 / 1.5;
+    let bulk_prandtl_number = 0.5 * wall_prandtl_number;
     // Pr_w/Pr_f = 2.0 approx 
     //
-    // Pr_w = Pr_w/Pr_f * Pr_f
-    let wall_prandtl_number = bulk_prandtl_number / 0.5;
 
     let gnielinski_params: GnielinskiData = 
         GnielinskiData { 
