@@ -26,3 +26,16 @@ pub fn fiberglass_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
 pub fn fiberglass_surf_roughness() -> Length {
     Length::new::<millimeter>(0.00152)
 }
+/// returns thermal conductivity of fiberglass
+/// cited from:
+/// Zou, L., Hu, R., & Charpentier, A. (2019). SAM code 
+/// validation using the compact integral effects test (CIET) experimental 
+/// data (No. ANL/NSE-19/11). Argonne National 
+/// Lab.(ANL), Argonne, IL (United States).
+#[inline]
+pub fn fiberglass_specific_heat_capacity(
+    _temperature: ThermodynamicTemperature) -> SpecificHeatCapacity {
+
+    return SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
+        844.0);
+}
