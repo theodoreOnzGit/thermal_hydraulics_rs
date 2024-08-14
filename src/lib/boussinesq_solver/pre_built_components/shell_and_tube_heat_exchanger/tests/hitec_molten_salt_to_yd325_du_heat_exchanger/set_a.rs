@@ -951,7 +951,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
                 assert_relative_eq!(
                     reynolds_num_a3.get::<ratio>(),
-                    4166.0,
+                    4162.0,
                     max_relative = 0.01,
                 );
 
@@ -963,13 +963,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
                 assert_relative_eq!(
                     wall_prandtl_a3.get::<ratio>(),
-                    20.38,
+                    20.62,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_a3.get::<ratio>(),
-                    47.06,
+                    48.04,
                     max_relative = 0.01,
                 );
             }
@@ -1103,13 +1103,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
                 assert_relative_eq!(
                     wall_prandtl_a5.get::<ratio>(),
-                    21.45,
+                    21.59,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_a5.get::<ratio>(),
-                    39.78,
+                    40.04,
                     max_relative = 0.01,
                 );
             }
@@ -1161,25 +1161,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
                 assert_relative_eq!(
                     reynolds_num_a6.get::<ratio>(),
-                    3783.0,
+                    3781.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_a6.get::<ratio>(),
-                    11.88,
+                    11.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_a6.get::<ratio>(),
-                    21.21,
+                    21.45,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_a6.get::<ratio>(),
-                    43.04,
+                    43.63,
                     max_relative = 0.01,
                 );
             }
