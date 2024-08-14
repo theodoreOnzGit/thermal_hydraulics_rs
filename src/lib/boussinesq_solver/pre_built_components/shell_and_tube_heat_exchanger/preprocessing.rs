@@ -623,7 +623,7 @@ impl SimpleShellAndTubeHeatExchanger {
             // to correct for prandtl number
 
 
-            let part_correct_wall_temperature: ThermodynamicTemperature = 
+            let _part_correct_wall_temperature: ThermodynamicTemperature = 
                 ThermodynamicTemperature::new::<kelvin>(
                     0.1 * (
                         3.0 * wall_temperature.get::<kelvin>() + 
@@ -631,9 +631,25 @@ impl SimpleShellAndTubeHeatExchanger {
                     )
                 );
 
+            // the other method is to just use the wall prandtl number 
+            // if the number falls outside the range of correlations,
+            // then use the prandtl number at the max or min 
+
+            let mut wall_temperature_estimate = wall_temperature;
+
+            if wall_temperature_estimate > fluid_material.max_temperature() {
+
+                wall_temperature_estimate = fluid_material.max_temperature();
+
+            } else if wall_temperature_estimate < fluid_material.min_temperature() {
+
+                wall_temperature_estimate = fluid_material.min_temperature();
+
+            }
+
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    part_correct_wall_temperature,
+                    wall_temperature_estimate,
                     atmospheric_pressure
                 )?;
 
@@ -849,7 +865,7 @@ impl SimpleShellAndTubeHeatExchanger {
             // in this case, we partially correct because wall temperatures 
             // may be outside range of correlation
 
-            let part_correct_wall_temperature: ThermodynamicTemperature = 
+            let _part_correct_wall_temperature: ThermodynamicTemperature = 
                 ThermodynamicTemperature::new::<kelvin>(
                     0.1 * (
                         3.0 * wall_temperature.get::<kelvin>() + 
@@ -857,9 +873,26 @@ impl SimpleShellAndTubeHeatExchanger {
                     )
                 );
 
+            // the other method is to just use the wall prandtl number 
+            // if the number falls outside the range of correlations,
+            // then use the prandtl number at the max or min 
+
+            let mut wall_temperature_estimate = wall_temperature;
+
+            if wall_temperature_estimate > fluid_material.max_temperature() {
+
+                wall_temperature_estimate = fluid_material.max_temperature();
+
+            } else if wall_temperature_estimate < fluid_material.min_temperature() {
+
+                wall_temperature_estimate = fluid_material.min_temperature();
+
+            }
+
+
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    part_correct_wall_temperature,
+                    wall_temperature_estimate,
                     atmospheric_pressure
                 )?;
 
@@ -1063,7 +1096,12 @@ impl SimpleShellAndTubeHeatExchanger {
             // stop gap measure is to partly correct for wall temperatures 
             // 30% wall temp and 70% fluid temp
 
-            let part_correct_wall_temperature: ThermodynamicTemperature = 
+            // then wall prandtl number
+            //
+            // in this case, we partially correct because wall temperatures 
+            // may be outside range of correlation
+
+            let _part_correct_wall_temperature: ThermodynamicTemperature = 
                 ThermodynamicTemperature::new::<kelvin>(
                     0.1 * (
                         3.0 * wall_temperature.get::<kelvin>() + 
@@ -1071,9 +1109,25 @@ impl SimpleShellAndTubeHeatExchanger {
                     )
                 );
 
+            // the other method is to just use the wall prandtl number 
+            // if the number falls outside the range of correlations,
+            // then use the prandtl number at the max or min 
+
+            let mut wall_temperature_estimate = wall_temperature;
+
+            if wall_temperature_estimate > fluid_material.max_temperature() {
+
+                wall_temperature_estimate = fluid_material.max_temperature();
+
+            } else if wall_temperature_estimate < fluid_material.min_temperature() {
+
+                wall_temperature_estimate = fluid_material.min_temperature();
+
+            }
+
             let wall_prandtl_number: Ratio 
                 = fluid_material.try_get_prandtl_liquid(
-                    part_correct_wall_temperature,
+                    wall_temperature_estimate,
                     atmospheric_pressure
                 )?;
 
