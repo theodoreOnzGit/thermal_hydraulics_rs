@@ -109,7 +109,7 @@ impl FluidArray {
         };
 
         let pipe_nusselt: NusseltCorrelation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             pipe_data
         );
 
@@ -255,7 +255,7 @@ impl FluidArray {
         };
 
         let pipe_nusselt: NusseltCorrelation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             pipe_data
         );
 
@@ -512,7 +512,7 @@ impl FluidArray {
         };
 
         let pipe_nusselt: NusseltCorrelation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             pipe_data
         );
 
@@ -628,7 +628,7 @@ impl FluidArray {
         };
 
         let pipe_nusselt: NusseltCorrelation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             pipe_data
         );
 

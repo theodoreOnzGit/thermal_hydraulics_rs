@@ -19,7 +19,20 @@ pub enum NusseltCorrelation {
     /// for laminar, turbulent and transition region
     ///
     /// laminar flow assumes constant heat flux
-    PipeGnielinskiGeneric(GnielinskiData),
+    ///
+    /// For this correlation, two prandtl numbers are used for Nusselt number 
+    /// estimation
+    /// Pr_bulk and Pr_wall 
+    /// 
+    /// of course, you may use your own Pr_film instead of Pr_bulk 
+    /// and obtain your Nusselt number based on Pr_film, but the 
+    /// correction factor will become 
+    ///
+    /// (Pr_film/Pr_wall)^0.11
+    ///
+    /// for more fine grained control, please use another enum
+    ///
+    PipeGnielinskiGenericPrandtlBulk(GnielinskiData),
 
     /// pipe nusselt number using custom Gnielinski correlation 
     /// for laminar, turbulent and transition region 
@@ -27,14 +40,17 @@ pub enum NusseltCorrelation {
     /// laminar flow assumes constant heat flux  (Nu = 4.354)
     ///
     /// Correlation be like:
-    /// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+    /// Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
     /// User must supply C and m 
     ///
     /// For low Re flows, Nu = 4.36 is used. 
-    /// Turbulence is assumed at Re = 4000 taking pipes as a reference.
-    /// The transition regime is around Re = 2300 - 4000 
-    /// this is taken from the Re for transition in pipes 
-    /// THESE MAY NOT BE APPLICABLE IN THIS CASE
+    /// The transition regime is around Re = 40-100
+    /// This was totally random and arbitrary assuming that low Re 
+    /// results in turbulent transition so to speak, 
+    /// THESE MAY NOT BE APPLICABLE IN THIS CASE, so be careful 
+    ///
+    /// film prandtl numbers are used in this equation where 
+    /// Pr_film = (Pr_bulk + Pr_wall)/2
     CustomGnielinskiGeneric(GnielinskiData, Ratio, f64),
 
     /// nusselt number only for turbulent
@@ -94,7 +110,7 @@ impl NusseltCorrelation {
     pub fn try_get(&self) -> Result<Ratio, ThermalHydraulicsLibError> {
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
                 return data.get_nusselt_for_developing_flow();
             },
             NusseltCorrelation::CustomGnielinskiGeneric(
@@ -143,7 +159,7 @@ impl NusseltCorrelation {
 
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
@@ -217,7 +233,7 @@ impl NusseltCorrelation {
 
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = wall_prandtl_number_input;

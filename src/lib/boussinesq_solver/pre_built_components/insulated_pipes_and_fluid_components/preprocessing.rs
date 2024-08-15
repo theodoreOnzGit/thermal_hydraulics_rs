@@ -600,7 +600,7 @@ impl InsulatedFluidComponent {
 
 
         let heater_nusselt_correlation: NusseltCorrelation 
-        =  NusseltCorrelation::PipeGnielinskiGeneric(
+        =  NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             pipe_prandtl_reynolds_data
         );
 

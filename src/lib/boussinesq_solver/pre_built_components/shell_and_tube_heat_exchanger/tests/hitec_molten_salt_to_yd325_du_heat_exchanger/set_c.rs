@@ -224,7 +224,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
         };
 
     let tube_side_nusselt_correlation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
 
     let shell_side_nusselt_correlation_to_outer_shell = 
         NusseltCorrelation::FixedNusselt(Ratio::ZERO);

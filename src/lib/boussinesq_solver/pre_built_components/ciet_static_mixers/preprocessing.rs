@@ -354,7 +354,7 @@ impl StaticMixers {
 
 
         let heater_nusselt_correlation: NusseltCorrelation 
-        =  NusseltCorrelation::PipeGnielinskiGeneric(
+        =  NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
             mx10_prandtl_reynolds_data
         );
 
