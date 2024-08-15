@@ -785,7 +785,7 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// let mut darcy_friction_factor :f64 = 
 /// darcy(Re, 0.0).unwrap();
 ///
-/// let mut nu_test = pipe_correlations::gnielinski_correlation_liquids_developing(
+/// let mut nu_test = pipe_correlations::gnielinski_turbulent_correlation_liquids_developing_bulk_fluid_prandtl(
 /// Re,
 /// Pr,
 /// Pr_wall,
@@ -798,7 +798,7 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// max_relative=0.02);
 /// ```
 ///
-pub fn gnielinski_turbulent_correlation_liquids_developing(
+pub fn gnielinski_turbulent_correlation_liquids_developing_bulk_fluid_prandtl(
     reynolds_number: f64, prandtl_number_bulk_fluid: f64, 
     prandtl_number_wall: f64,
     darcy_friction_factor: f64,
@@ -950,7 +950,7 @@ pub fn gnielinski_turbulent_correlation_liquids_developing(
 ///
 /// let mut nu_test =
 /// pipe_correlations::
-/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
 /// Re,
 /// Pr,
 /// Pr_wall,
@@ -962,7 +962,7 @@ pub fn gnielinski_turbulent_correlation_liquids_developing(
 /// approx::assert_relative_eq!(nu_reference, nu_test, 
 /// max_relative=0.02);
 /// ```
-pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
     reynolds: f64, 
     prandtl_number_fluid: f64, 
     prandtl_number_wall: f64,
@@ -1000,7 +1000,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     // turbulent correlation
     if reynolds > 4000_f64 {
         let fluid_nusselt_number = 
-            gnielinski_turbulent_correlation_liquids_developing(
+            gnielinski_turbulent_correlation_liquids_developing_bulk_fluid_prandtl(
                 reynolds, 
                 prandtl_number_fluid, 
                 prandtl_number_wall, 
@@ -1031,7 +1031,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
                 length_to_diameter_ratio);
 
     let turbulent_nusselt = 
-        gnielinski_turbulent_correlation_liquids_developing(
+        gnielinski_turbulent_correlation_liquids_developing_bulk_fluid_prandtl(
             4000_f64, 
             prandtl_number_fluid, 
             prandtl_number_wall, 
