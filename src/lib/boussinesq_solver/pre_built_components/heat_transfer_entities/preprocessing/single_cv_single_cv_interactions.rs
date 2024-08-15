@@ -102,6 +102,16 @@ pub fn calculate_between_two_singular_cv_nodes(
                 single_cv_2,
                 advection_data)
         },
+        HeatTransferInteractionType::SimpleRadiation
+            (_area_coeff, _hot_temperature, _cold_temperature) => 
+            {
+
+                calculate_conductance_interaction_between_two_singular_cv_nodes(
+                    single_cv_1,
+                    single_cv_2,
+                    interaction)
+            }
+        ,
     }
 
 }

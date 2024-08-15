@@ -1,6 +1,9 @@
 use crate::boussinesq_solver::control_volume_dimensions::*;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material};
-use uom::si::f64::*;
+use uom::si::area::square_meter;
+use uom::si::power::watt;
+use uom::si::{f64::*, temperature_interval};
+use uom::si::thermodynamic_temperature::kelvin;
 
 use super::heat_transfer_geometry::*;
 
@@ -267,13 +270,77 @@ pub enum HeatTransferInteractionType {
     /// 
     /// this interaction calculates power based on a given h and A 
     UserSpecifiedConvectionResistance(
-        DataUserSpecifiedConvectionResistance),
+        DataUserSpecifiedConvectionResistance
+    ),
 
 
-        /// For advection one would only specify the mass flowrate 
-        /// from one control volume to another
-        Advection(DataAdvection),
+    /// For advection one would only specify the mass flowrate 
+    /// from one control volume to another
+    Advection(DataAdvection),
+
+
+    /// for radiation heat transfer 
+    /// The basic thing is that RHT power scales with 
+    /// temperature 
+    ///
+    /// P = coefficient * (T_hot^4 - T_cold^4)
+    ///
+    /// If we wanted to calculate a conductance, we would note that 
+    /// P = h A (T_hot - T_cold)
+    ///
+    /// h A = conductance 
+    /// or we can use 
+    /// H = conductance 
+    ///
+    /// H (T_hot - T_cold) = coefficient * (T_hot^4 - T_cold^4)
+    ///
+    /// note that temperatures are necessarily in kelvin
+    ///
+    /// decompose the power 4 relation 
+    /// (a^2 - b^2) = (a+b)(a-b)
+    ///
+    /// (T_hot^4 - T_cold^4) = 
+    /// (T_hot^2 + T_cold^2) 
+    /// (T_hot^2 - T_cold^2)
+    ///
+    /// Decomposing again:
+    /// (T_hot^4 - T_cold^4) = 
+    /// (T_hot^2 + T_cold^2) 
+    /// (T_hot + T_cold) 
+    /// (T_hot - T_cold)
+    ///
+    ///
+    /// H (T_hot - T_cold) = 
+    /// coefficient * 
+    /// (T_hot^2 + T_cold^2) 
+    /// (T_hot + T_cold) 
+    /// (T_hot - T_cold)
+    ///
+    /// Therefore, conductance can be expressed as:
+    ///
+    ///
+    /// H = coefficient * (T_hot^2 + T_cold^2)*(T_hot + T_cold) 
+    ///
+    /// If one wants to be more precise with units,
+    /// then we should use:
+    ///
+    /// P = sigma * coefficient * (T_hot^4 - T_cold^4)
+    ///
+    /// where sigma is the stefan boltzmann constant
+    /// in W m^(-2) T^(-4)
+    ///
+    /// H = sigma * coefficient * (T_hot^2 + T_cold^2)*(T_hot + T_cold) 
+    ///
+    /// the coefficient is in units of area, so provide it yourself
+    ///  
+    SimpleRadiation(
+        Area, 
+        ThermodynamicTemperature,
+        ThermodynamicTemperature,
+    ),
 }
+
+
 
 /// here we have a struct for simple convection resistance
 /// in three dimensions
@@ -635,6 +702,16 @@ impl HeatTransferInteractionType {
                 }
                 ,
 
+                HeatTransferInteractionType::
+                    SimpleRadiation
+                    (area_coeff, hot_temperature, cold_temperature) => 
+                    {
+                        simple_radiation_conductance(
+                            area_coeff, 
+                            hot_temperature, 
+                            cold_temperature)
+                    }
+                ,
             };
 
         return Ok(conductance);

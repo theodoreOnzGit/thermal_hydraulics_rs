@@ -322,3 +322,32 @@ pub fn range_check_dowtherm_a(fluid_temp: ThermodynamicTemperature)
         return Ok(true);
 
     }
+
+/// dowtherm a max temp 
+pub fn max_temp_dowtherm_a() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(180.0)
+
+}
+/// dowtherm a min temp 
+pub fn min_temp_dowtherm_a() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<degree_celsius>(20.0)
+}
+
+
+#[test]
+pub fn dynamic_viscosity_test_dowtherm_a(){
+
+    use uom::si::pressure::atmosphere;
+    use uom::si::thermodynamic_temperature::kelvin;
+    use crate::prelude::beta_testing::try_get_mu_viscosity;
+    let dowtherm_a = Material::Liquid(LiquidMaterial::DowthermA);
+    let temperature = ThermodynamicTemperature::new::<kelvin>(350.0);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+
+    let dynamic_viscosity = try_get_mu_viscosity(dowtherm_a, temperature, pressure);
+
+    approx::assert_relative_eq!(
+        0.001237,
+        dynamic_viscosity.unwrap().value,
+        max_relative=0.01);
+}

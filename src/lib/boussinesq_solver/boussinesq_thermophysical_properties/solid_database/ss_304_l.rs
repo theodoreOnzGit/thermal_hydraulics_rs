@@ -1,4 +1,6 @@
 use uom::si::f64::*;
+use uom::si::length::millimeter;
+use uom::si::mass_density::kilogram_per_cubic_meter;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::*;
@@ -313,3 +315,54 @@ pub fn verify_libreoffice_splines_work(){
 
 }
 
+/// density ranges not quite given in original text 
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code validation 
+/// using the compact integral effects test (CIET) experimental data. 
+/// No. ANL/NSE-19/11. 
+/// Argonne National Lab.(ANL), Argonne, IL (United States), 2019.
+#[inline]
+pub fn steel_ss_304_l_density() -> Result<MassDensity,ThermalHydraulicsLibError> {
+    return Ok(MassDensity::new::<kilogram_per_cubic_meter>(8030.0));
+}
+
+
+/// Value from: Perry's chemical Engineering handbook 
+/// 8th edition Table 6-1 
+/// commercial steel or wrought iron 
+/// Perry, R. H., & DW, G. (2007). 
+/// Perry’s chemical engineers’ handbook, 
+/// 8th illustrated ed. New York: McGraw-Hill.
+pub fn steel_surf_roughness() -> Length{
+    Length::new::<millimeter>(0.0457)
+}
+
+#[test]
+pub fn density_test_steel(){
+
+    use uom::si::thermodynamic_temperature::kelvin;
+    use uom::si::pressure::atmosphere;
+    use density::try_get_rho;
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
+    let temperature = ThermodynamicTemperature::new::<kelvin>(396.0);
+    let pressure = Pressure::new::<atmosphere>(1.0);
+
+    let density = try_get_rho(steel, temperature, pressure);
+
+    approx::assert_relative_eq!(
+        8030_f64,
+        density.unwrap().value,
+        max_relative=0.01);
+}
+
+
+#[inline]
+/// ss_304l max temp 
+pub fn max_temp_ss_304l_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(1000.0)
+
+}
+#[inline]
+/// ss_304l min temp 
+pub fn min_temp_ss_304l_zou_zweibaum_spline() -> ThermodynamicTemperature {
+    ThermodynamicTemperature::new::<kelvin>(250.0)
+}

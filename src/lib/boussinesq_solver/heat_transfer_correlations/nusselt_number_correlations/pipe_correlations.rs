@@ -1,3 +1,6 @@
+use uom::si::f64::*;
+use uom::si::ratio::ratio;
+
 
 /// A nusselt correlation for CIET heater v1.0
 ///
@@ -795,7 +798,7 @@ pub fn laminar_nusselt_uniform_heat_flux_developing(
 /// max_relative=0.02);
 /// ```
 ///
-pub fn gnielinski_correlation_liquids_developing(
+pub fn gnielinski_turbulent_correlation_liquids_developing(
     reynolds_number: f64, prandtl_number_bulk_fluid: f64, 
     prandtl_number_wall: f64,
     darcy_friction_factor: f64,
@@ -997,7 +1000,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
     // turbulent correlation
     if reynolds > 4000_f64 {
         let fluid_nusselt_number = 
-            gnielinski_correlation_liquids_developing(
+            gnielinski_turbulent_correlation_liquids_developing(
                 reynolds, 
                 prandtl_number_fluid, 
                 prandtl_number_wall, 
@@ -1028,7 +1031,7 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
                 length_to_diameter_ratio);
 
     let turbulent_nusselt = 
-        gnielinski_correlation_liquids_developing(
+        gnielinski_turbulent_correlation_liquids_developing(
             4000_f64, 
             prandtl_number_fluid, 
             prandtl_number_wall, 
@@ -1049,3 +1052,218 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 
 }
 
+
+/// from Du's paper
+///
+/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
+/// Investigation on heat transfer characteristics of molten salt in 
+/// a shell-and-tube heat exchanger. International Communications 
+/// in Heat and Mass Transfer, 96, 61-68.
+///
+/// we have a generic Gnielinski type correlation, 
+/// empirically fitted to experimental data. This is in the form:
+///
+/// Nu = C (Re^m - 280.0) Pr^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+///
+/// Du did not mention which Pr to use 
+/// I'm going to assume this is Pr_film 
+///
+/// Technically this Pr is Pr(T_film) where 
+/// T_film = (T_wall + T_bulkfluid)/2 
+///
+/// a simpler estimate is:
+/// Pr_film = (Pr_wall + Pr_fluid)/2
+///
+/// However, the simplest is just to use Pr_bulk as Pr 
+/// this may underestimate Nusselt number, as Pr in the bulk fluid is 
+/// usually lower, but it may well work
+///
+/// anyway, I just forced the user to give another argument
+///
+/// For Du's Heat exchanger, 
+/// C = 0.04318,
+/// m = 0.7797
+/// 
+/// No specific bounds are given
+pub fn custom_gnielinski_turbulent_nusselt_correlation(
+    correlation_coefficient_c: Ratio,
+    reynolds_exponent_m: f64,
+    prandtl_number_film: Ratio,
+    prandtl_number_fluid: Ratio,
+    prandtl_number_wall: Ratio,
+    reynolds_number: Ratio,
+    length_to_diameter_ratio: Ratio,
+    ) -> Ratio {
+
+    let reynolds_num_float: f64 = reynolds_number.get::<ratio>();
+
+    // (Re^m - 280.0)
+    let reynolds_bracket_term: f64 = 
+        reynolds_num_float.powf(reynolds_exponent_m) - 280.0;
+
+    // Pr_film^0.4
+    // 
+    let prandtl_term = 
+        prandtl_number_film.get::<ratio>().powf(0.4);
+
+    // ( 1.0 + (D_e/l)^(2/3) )
+    // I'm providing l/d rather than d/l
+    // so it is raised to -2/3, which I approximate as 
+    // -0.6666666667
+    let length_to_diameter_term = 
+        1.0 + length_to_diameter_ratio.get::<ratio>().powf(-0.6666666667);
+
+    // (Pr_f/Pr_w)^0.25
+    let prandtl_correction_term: f64 = 
+        (prandtl_number_fluid/prandtl_number_wall).get::<ratio>().powf(0.25);
+
+
+    let nusselt_number = 
+        correlation_coefficient_c * 
+        reynolds_bracket_term *
+        prandtl_term *
+        length_to_diameter_term * 
+        prandtl_correction_term;
+
+
+
+    return nusselt_number;
+}
+
+
+/// from Du's paper
+///
+/// Du, B. C., He, Y. L., Qiu, Y., Liang, Q., & Zhou, Y. P. (2018). 
+/// Investigation on heat transfer characteristics of molten salt in 
+/// a shell-and-tube heat exchanger. International Communications 
+/// in Heat and Mass Transfer, 96, 61-68.
+///
+/// we have a generic Gnielinski type correlation, 
+/// empirically fitted to experimental data. This is in the form:
+///
+/// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+///
+/// For Du's Heat exchanger, 
+/// C = 0.04318,
+/// m = 0.7797
+/// 
+/// 
+/// However, this does not cover the transition or laminar regimes,
+/// I used Gnielinski correlation for developing
+/// flow regimes (both thermally and hydrodynamically)
+/// for pipe flows with liquids
+///
+/// and for turbulent, developing and lamianr regimes
+/// uses uniform heat flux correlations in laminar regime
+///
+/// Gnielinski, V. (2013). On heat 
+/// transfer in tubes. International Journal 
+/// of Heat and Mass Transfer, 63, 134-140.
+///
+/// No specific bounds are given for Prandtl number or otherwise
+/// 
+///
+/// the transition regime for pipes is around Re = 2300 - 4000 
+/// this is taken from the Re for transition in pipes 
+///
+/// However, for transitions in tube bundles, we expect them 
+/// for around Re = 40-100 
+///
+/// Takemoto, Y., Kawanishi, K., & Mizushima, J. (2010). Heat transfer 
+/// in the flow through a bundle of tubes and transitions of the flow. 
+/// International journal of heat and mass transfer, 53(23-24), 5411-5419.
+///
+/// I will use the Re from 40-100 as the transition regime
+/// at Re of 40 and below, Nu is the same as for pipe lamniar flow
+///
+/// IT MAY NOT BE APPLICABLE IN THIS CASE, but its a decent estimate
+///
+/// darcy friction factor is not used for this case
+pub fn custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+    correlation_coefficient_c: Ratio,
+    reynolds_exponent_m: f64,
+    prandtl_number_film: Ratio,
+    prandtl_number_fluid: Ratio,
+    prandtl_number_wall: Ratio,
+    reynolds_number: Ratio,
+    length_to_diameter_ratio: Ratio,
+    ) -> f64 {
+
+    let transition_regime_reynolds_high_bound_float = 
+        100_f64;
+
+    let transition_regime_reynolds_low_bound_float = 
+        40_f64;
+        
+
+
+
+    if length_to_diameter_ratio.get::<ratio>() <= 0_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error lengthToDiameterRatio < 0");
+    }
+
+    let reynolds = reynolds_number.get::<ratio>();
+    
+
+    // if this is turbulent flow, use the
+    // turbulent correlation
+    if reynolds > transition_regime_reynolds_high_bound_float {
+        let fluid_nusselt_number: f64 = 
+            custom_gnielinski_turbulent_nusselt_correlation(
+                correlation_coefficient_c,
+                reynolds_exponent_m,
+                prandtl_number_film,
+                prandtl_number_fluid, 
+                prandtl_number_wall, 
+                reynolds_number, 
+                length_to_diameter_ratio).get::<ratio>();
+
+        return fluid_nusselt_number;
+    }
+
+    // if this is laminar flow, 
+    // use laminar flow correlation for uniform heat flux
+    if reynolds < transition_regime_reynolds_low_bound_float {
+        let fluid_nusselt_number = 
+            laminar_nusselt_uniform_heat_flux_developing(
+                reynolds, 
+                prandtl_number_fluid.get::<ratio>(), 
+                length_to_diameter_ratio.get::<ratio>());
+
+        return fluid_nusselt_number;
+    }
+
+    // if in transition region, then interpolate
+
+    let laminar_nusselt = 
+            laminar_nusselt_uniform_heat_flux_developing(
+                transition_regime_reynolds_low_bound_float, 
+                prandtl_number_fluid.get::<ratio>(), 
+                length_to_diameter_ratio.get::<ratio>());
+
+    let turbulent_nusselt = 
+        custom_gnielinski_turbulent_nusselt_correlation(
+            correlation_coefficient_c,
+            reynolds_exponent_m,
+            prandtl_number_film,
+            prandtl_number_fluid, 
+            prandtl_number_wall, 
+            reynolds_number, 
+            length_to_diameter_ratio).get::<ratio>();
+
+
+    // the interpolation factor is known as gamma
+    // in gnielinski's paper
+    let gamma = (reynolds - transition_regime_reynolds_low_bound_float)
+        /(transition_regime_reynolds_high_bound_float 
+            - transition_regime_reynolds_low_bound_float);
+
+    let fluid_nusselt_number = 
+        (1_f64 - gamma) * laminar_nusselt +
+        gamma * turbulent_nusselt;
+    
+    return fluid_nusselt_number;
+
+
+}

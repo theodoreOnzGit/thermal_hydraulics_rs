@@ -68,7 +68,8 @@ impl NonInsulatedParallelFluidComponent {
         = self.get_single_tube_fluid_array_node_pipe_shell_conductance_no_wall_temp_correction()?;
 
 
-        // other stuff 
+        // temperature array and fraction of 
+        // heat transfer array for each of the nodes
         let number_of_temperature_nodes = self.inner_nodes + 2;
         let q_fraction_per_node: f64 = 1.0/ number_of_temperature_nodes as f64;
         let mut q_frac_arr: Array1<f64> = Array::default(number_of_temperature_nodes);
@@ -143,8 +144,6 @@ impl NonInsulatedParallelFluidComponent {
                 q_frac_arr
             )?;
 
-            // now fluid to twisted tape interaction
-            
 
             // now that lateral connections are done, 
             // modify the heat transfer entity 
@@ -188,7 +187,7 @@ impl NonInsulatedParallelFluidComponent {
         let interaction: HeatTransferInteractionType = 
         HeatTransferInteractionType::UserSpecifiedHeatAddition;
 
-        // now connect the twisted tape 
+        // now connect the fluid arrays and pipe shells
 
 
         self.pipe_fluid_array.link_to_front(&mut zero_power_bc,
@@ -304,11 +303,11 @@ impl NonInsulatedParallelFluidComponent {
 
         // flow area and hydraulic diameter are ok
 
-        let mut fluid_array_clone: FluidArray = 
-            self.pipe_fluid_array.clone().try_into()?;
-
         let fluid_material: LiquidMaterial
             = fluid_array_clone.material_control_volume.try_into()?;
+
+        let solid_material: SolidMaterial 
+            = pipe_shell_clone.material_control_volume.try_into()?;
 
         let viscosity: DynamicViscosity = 
             fluid_material.try_get_dynamic_viscosity(fluid_temperature)?;
@@ -345,18 +344,14 @@ impl NonInsulatedParallelFluidComponent {
             self.get_component_length_immutable()/
             self.get_hydraulic_diameter_immutable();
 
+
         // I need to use Nusselt correlations present in this struct 
         //
         // no wall correction is done here
-        let mut fluid_array: FluidArray 
-            = self.pipe_fluid_array.clone().try_into()?;
 
         let nusselt_estimate = 
-            fluid_array
-            .get_nusselt(
-                reynolds_number_single_tube, 
-                bulk_prandtl_number, 
-                bulk_prandtl_number)?;
+            pipe_prandtl_reynolds_data.
+            get_nusselt_for_developing_flow()?;
 
 
 
@@ -387,12 +382,14 @@ impl NonInsulatedParallelFluidComponent {
 
         let cylinder_mid_diameter: Length = 0.5*(id+od);
 
+        
+
 
 
         let fluid_pipe_shell_conductance_interaction: HeatTransferInteractionType
         = HeatTransferInteractionType::
             CylindricalConductionConvectionLiquidInside(
-                (SolidMaterial::SteelSS304L.into(), 
+                (solid_material.into(), 
                     (cylinder_mid_diameter - id).into(),
                     pipe_shell_surf_temperature,
                     atmospheric_pressure),

@@ -123,6 +123,13 @@ impl FluidArray {
                     UserSpecifiedHeatFluxCustomArea or Similar".to_string()
                 ));
             },
+            HeatTransferInteractionType:: SimpleRadiation(_,_,_) => 
+            {
+                return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
+                        "please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
+                ));
+            },
         };
 
         // once area is calculated, we can calculate heat flowrate into 
@@ -264,6 +271,16 @@ impl FluidArray {
                     UserSpecifiedHeatFluxCustomArea or Similar".to_string()
                 ));
             },
+            HeatTransferInteractionType::
+                SimpleRadiation
+                (_area_coeff, _hot_temperature, _cold_temperature) => 
+                {
+                    return Err(ThermalHydraulicsLibError::NotImplementedForBoundaryConditions(
+                            "please specify interaction type as \n 
+                    UserSpecifiedHeatFluxCustomArea or Similar".to_string()
+                    ));
+                }
+            ,
         };
 
         // once area is calculated, we can calculate heat flowrate into 

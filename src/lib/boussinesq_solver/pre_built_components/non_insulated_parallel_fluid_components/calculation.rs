@@ -484,7 +484,7 @@ impl NonInsulatedParallelFluidComponent {
                 try_get_h(
                     fluid_array_clone.back_single_cv.material_control_volume,
                     fluid_array_clone.temperature_array_current_timestep[1],
-                    fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                    fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
                 // now if mass flowrate is less than zero, then 
                 // we receive enthalpy from the front cv 
@@ -528,7 +528,7 @@ impl NonInsulatedParallelFluidComponent {
                 try_get_h(
                     fluid_array_clone.back_single_cv.material_control_volume,
                     fluid_array_clone.temperature_array_current_timestep[i],
-                    fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                    fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
                 // basically, all the power terms remain 
                 power_source_vector[i] = 
@@ -548,7 +548,7 @@ impl NonInsulatedParallelFluidComponent {
                     try_get_h(
                         fluid_array_clone.back_single_cv.material_control_volume,
                         fluid_array_clone.temperature_array_current_timestep[i-1],
-                        fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                        fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
 
                     power_source_vector[i] += 
@@ -561,7 +561,7 @@ impl NonInsulatedParallelFluidComponent {
                     try_get_h(
                         fluid_array_clone.back_single_cv.material_control_volume,
                         fluid_array_clone.temperature_array_current_timestep[i+1],
-                        fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                        fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
 
                     power_source_vector[i] += 
@@ -618,7 +618,7 @@ impl NonInsulatedParallelFluidComponent {
                 try_get_h(
                     fluid_array_clone.back_single_cv.material_control_volume,
                     fluid_array_clone.temperature_array_current_timestep[i-1],
-                    fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+                    fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
                 // now if mass flowrate is less than zero, then 
                 // we receive enthalpy from the front cv 
@@ -807,7 +807,7 @@ impl NonInsulatedParallelFluidComponent {
         try_get_h(
             fluid_array_clone.back_single_cv.material_control_volume,
             new_temperature_array[0],
-            fluid_array_clone.back_single_cv.pressure_control_volume).unwrap();
+            fluid_array_clone.back_single_cv.pressure_control_volume)?;
 
         fluid_array_clone.back_single_cv.current_timestep_control_volume_specific_enthalpy 
             = back_node_enthalpy_next_timestep;
@@ -816,7 +816,7 @@ impl NonInsulatedParallelFluidComponent {
         try_get_h(
             fluid_array_clone.front_single_cv.material_control_volume,
             new_temperature_array[number_of_nodes-1],
-            fluid_array_clone.front_single_cv.pressure_control_volume).unwrap();
+            fluid_array_clone.front_single_cv.pressure_control_volume)?;
 
         fluid_array_clone.front_single_cv.current_timestep_control_volume_specific_enthalpy 
             = front_node_enthalpy_next_timestep;
@@ -1204,7 +1204,6 @@ impl NonInsulatedParallelFluidComponent {
         }
         // end if for lateral_power_sources_connected
 
-
         // now that we've gotten all the important properties, we can 
         // start matrix construction
 
@@ -1457,7 +1456,7 @@ impl NonInsulatedParallelFluidComponent {
         try_get_h(
             pipe_shell_clone.back_single_cv.material_control_volume,
             new_temperature_array[0],
-            pipe_shell_clone.back_single_cv.pressure_control_volume).unwrap();
+            pipe_shell_clone.back_single_cv.pressure_control_volume)?;
 
         pipe_shell_clone.back_single_cv.current_timestep_control_volume_specific_enthalpy 
             = back_node_enthalpy_next_timestep;
@@ -1466,7 +1465,7 @@ impl NonInsulatedParallelFluidComponent {
         try_get_h(
             pipe_shell_clone.front_single_cv.material_control_volume,
             new_temperature_array[number_of_nodes-1],
-            pipe_shell_clone.front_single_cv.pressure_control_volume).unwrap();
+            pipe_shell_clone.front_single_cv.pressure_control_volume)?;
 
         pipe_shell_clone.front_single_cv.current_timestep_control_volume_specific_enthalpy 
             = front_node_enthalpy_next_timestep;
