@@ -55,7 +55,18 @@ pub enum NusseltCorrelation {
 
     /// nusselt number only for turbulent
     /// flow in pipes
-    PipeGnielinskiTurbulent(GnielinskiData),
+    /// For this correlation, two prandtl numbers are used for Nusselt number 
+    /// estimation
+    /// Pr_bulk and Pr_wall 
+    /// 
+    /// of course, you may use your own Pr_film instead of Pr_bulk 
+    /// and obtain your Nusselt number based on Pr_film, but the 
+    /// correction factor will become 
+    ///
+    /// (Pr_film/Pr_wall)^0.11
+    ///
+    /// for more fine grained control, please use another enum
+    PipeGnielinskiTurbulentPrandtlBulk(GnielinskiData),
 
     /// nusselt number for porous media 
     /// especially packed beds
@@ -66,6 +77,9 @@ pub enum NusseltCorrelation {
     /// of fluid dispersion coefficients on particle-to-fluid mass 
     /// transfer coefficients in packed beds: correlation of 
     /// Sherwood numbers. Chemical Engineering Science, 33(10), 1375-1384.
+    ///
+    /// only one prandtl number is required here, so you can use 
+    /// bulk fluid prandtl number or film prandtl number as you wish
     Wakao(WakaoData),
 
     /// generic reynolds prandtl power correlation
@@ -78,6 +92,24 @@ pub enum NusseltCorrelation {
     /// c is the reynolds_power,
     /// d is the prandtl_power,
     /// e is the prandtl_correction_factor_power
+    ///
+    ///
+    /// For this correlation, two prandtl numbers are used for Nusselt number 
+    /// estimation
+    /// Pr and Pr_wall 
+    /// 
+    /// for Pr, you may use your own Pr_film instead of Pr_bulk 
+    /// and obtain your Nusselt number
+    /// 
+    /// just beware that if you use Pr_film, the correction factor becomes
+    /// (Pr_film/Pr_wall)^0.11
+    /// and if you use Pr_bulk, the correction factor becomes
+    /// (Pr_bulk/Pr_wall)^0.11
+    ///
+    /// for more fine grained control, please use another enum
+    ///
+    /// only one reynolds number is given, so it is up to you what 
+    /// reynolds number you want to supply
     ReynoldsPrandtl(NusseltPrandtlReynoldsData),
 
     /// returns a nusselt number of 4.36 for fully developed 
@@ -90,8 +122,28 @@ pub enum NusseltCorrelation {
 
     /// ciet heater correlation for version 2, 
     ///
-    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
-    /// * (Pr_wall/Pr_bulk)^0.11
+    /// Nu = 0.04179 * reynolds^0.836 * Pr_bulk^0.333
+    /// * (Pr_bulk/Pr_wall)^0.11
+    ///
+    /// for Pr_bulk, you may use your own Pr_film instead of Pr_bulk 
+    /// and obtain your Nusselt number
+    /// 
+    /// just beware that if you use Pr_film, the correction factor becomes
+    /// (Pr_film/Pr_wall)^0.11
+    /// and if you use Pr_bulk, the correction factor becomes
+    /// (Pr_bulk/Pr_wall)^0.11
+    ///
+    /// for more fine grained control, please use another enum
+    ///
+    /// or you may choose to ignore the correction factor completely
+    /// as I did in my dissertation 
+    ///
+    /// Ong, T. K. C. (2024). Digital Twins as Testbeds for 
+    /// Iterative Simulated Neutronics Feedback Controller 
+    /// Development (Doctoral dissertation, UC Berkeley).
+    ///
+    /// only one reynolds number is given, so it is up to you what 
+    /// reynolds number you want to supply
     CIETHeaterVersion2(NusseltPrandtlReynoldsData),
 
     /// Ideal 1e9 
@@ -120,7 +172,7 @@ impl NusseltCorrelation {
                 return data.get_nusselt_for_custom_developing_flow
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
-            NusseltCorrelation::PipeGnielinskiTurbulent(data) => {
+            NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
                 return data.get_nusselt_for_developing_flow();
             },
             NusseltCorrelation::Wakao(wakao_data) => {
@@ -178,7 +230,7 @@ impl NusseltCorrelation {
                 return modified_data.get_nusselt_for_custom_developing_flow
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
-            NusseltCorrelation::PipeGnielinskiTurbulent(data) => {
+            NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;
@@ -252,7 +304,7 @@ impl NusseltCorrelation {
                 return modified_data.get_nusselt_for_custom_developing_flow
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
-            NusseltCorrelation::PipeGnielinskiTurbulent(data) => {
+            NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = wall_prandtl_number_input;
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;

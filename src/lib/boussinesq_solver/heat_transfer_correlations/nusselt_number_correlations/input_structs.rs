@@ -89,8 +89,8 @@ impl NusseltPrandtlReynoldsData {
 
     /// ciet heater correlation for version 2, 
     ///
-    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
-    /// * (Pr_wall/Pr_bulk)^0.11
+    /// Nu = 0.04179 * reynolds^0.836 * Pr_bulk^0.333
+    /// * (Pr_bulk/Pr_wall)^0.11
     ///
     /// ignores the coefficients, a,b,c,d,e in the struct
     ///
@@ -118,7 +118,7 @@ impl NusseltPrandtlReynoldsData {
         let prandtl_wall = self.prandtl_wall;
         let prandtl_bulk = self.prandtl_bulk;
 
-        let prandtl_bulk_to_wall_ratio = prandtl_wall/prandtl_bulk;
+        let prandtl_bulk_to_wall_ratio = prandtl_bulk/prandtl_wall;
 
         let correction_factor: f64 
         = prandtl_bulk_to_wall_ratio.get::<ratio>().powf(0.11);
