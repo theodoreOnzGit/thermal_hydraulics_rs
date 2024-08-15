@@ -1134,6 +1134,128 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_
 
 }
 
+/// Gnielinski correlation for developing
+/// flow regimes (both thermally and hydrodynamically)
+/// for pipe flows with liquids
+///
+/// and for turbulent, developing and lamianr regimes
+/// uses uniform heat flux correlations in laminar regime
+///
+/// Gnielinski, V. (2013). On heat 
+/// transfer in tubes. International Journal 
+/// of Heat and Mass Transfer, 63, 134-140.
+///
+/// rather than use only the bulk and wall prandt number
+/// for nusselt calculation,
+/// a film prandtl number is also used here. 
+/// This film prandtl number will be used to calculate the nusselt
+/// number in all regimes, 
+///
+/// Whereas the bulk and wall prandtl number are only used in the 
+/// correction factor in the turbulent and transition regime.
+///
+pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+    reynolds_number_film: f64, 
+    prandtl_number_bulk_fluid: f64, 
+    prandtl_number_film: f64,
+    prandtl_number_wall: f64,
+    darcy_friction_factor: f64,
+    length_to_diameter_ratio: f64) -> f64 {
+
+
+
+    if prandtl_number_bulk_fluid < 0.46_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_fluid < 0.46, out of experimental data range");
+    }
+
+    if prandtl_number_film < 0.46_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_film < 0.46, out of experimental data range");
+    }
+
+    if prandtl_number_wall < 0.46_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_wall < 0.46, out of experimental data range");
+    }
+
+    if prandtl_number_bulk_fluid > 346_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_fluid > 346, out of experimental data range");
+    }
+
+    if prandtl_number_film > 346_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_film > 346, out of experimental data range");
+    }
+
+    if prandtl_number_wall > 346_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error Pr_wall > 346, out of experimental data range");
+    }
+
+    if length_to_diameter_ratio <= 0_f64 {
+        panic!("gnielinski_correlation_liquids_developing \n
+               error lengthToDiameterRatio < 0");
+    }
+
+    // if this is turbulent flow, use the
+    // turbulent correlation
+    if reynolds_number_film > 4000_f64 {
+        let fluid_nusselt_number = 
+            gnielinski_turbulent_correlation_liquids_developing(
+                reynolds_number_film, 
+                prandtl_number_bulk_fluid, 
+                prandtl_number_film,
+                prandtl_number_wall, 
+                darcy_friction_factor, 
+                length_to_diameter_ratio);
+
+        return fluid_nusselt_number;
+    }
+
+    // if this is laminar flow, 
+    // use laminar flow correlation for uniform heat flux
+    if reynolds_number_film < 2300_f64 {
+        let fluid_nusselt_number = 
+            laminar_nusselt_uniform_heat_flux_developing(
+                reynolds_number_film, 
+                prandtl_number_film, 
+                length_to_diameter_ratio);
+
+        return fluid_nusselt_number;
+    }
+
+    // if in transition region, then interpolate
+
+    let laminar_nusselt = 
+            laminar_nusselt_uniform_heat_flux_developing(
+                2300_f64, 
+                prandtl_number_film, 
+                length_to_diameter_ratio);
+
+    let turbulent_nusselt = 
+        gnielinski_turbulent_correlation_liquids_developing(
+            4000_f64, 
+            prandtl_number_bulk_fluid, 
+            prandtl_number_film,
+            prandtl_number_wall, 
+            darcy_friction_factor, 
+            length_to_diameter_ratio);
+
+
+    // the interpolation factor is known as gamma
+    // in gnielinski's paper
+    let gamma = (reynolds_number_film - 2300_f64)/(4000_f64 - 2300_f64);
+
+    let fluid_nusselt_number = 
+        (1_f64 - gamma) * laminar_nusselt +
+        gamma * turbulent_nusselt;
+    
+    return fluid_nusselt_number;
+
+
+}
 
 /// from Du's paper
 ///
