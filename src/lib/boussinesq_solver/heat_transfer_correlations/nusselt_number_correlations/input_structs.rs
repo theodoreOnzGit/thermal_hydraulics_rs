@@ -218,8 +218,12 @@ impl GnielinskiData {
     /// Gnielinski correlation but for developing flows 
     ///
     /// suitable for laminar, turbulent and transition flows
+    ///
+    /// for this, only bulk prandtl number and wall prandtl 
+    /// numbers are used to calculate Nusselt rather than film 
+    /// prandtl number
     #[inline]
-    pub fn get_nusselt_for_developing_flow(&self) 
+    pub fn get_nusselt_for_developing_flow_bulk_fluid_prandtl(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
         let reynolds: Ratio =  self.reynolds;
         let prandtl_bulk: Ratio = self.prandtl_bulk;
@@ -231,6 +235,38 @@ impl GnielinskiData {
         gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
             reynolds.get::<ratio>(),
             prandtl_bulk.get::<ratio>(),
+            prandtl_wall.get::<ratio>(),
+            darcy_friction_factor.get::<ratio>(),
+            length_to_diameter.get::<ratio>(),
+        );
+
+        return Ok(
+            Ratio::new::<ratio>(nusselt_value)
+        );
+
+    }
+    /// Gnielinski correlation but for developing flows 
+    ///
+    /// suitable for laminar, turbulent and transition flows
+    ///
+    /// for this, film prandtl numbers, bulk prandtl number and wall prandtl 
+    /// numbers are used to calculate Nusselt number
+    /// prandtl_film: Ratio = (prandtl_wall + prandtl_bulk)/2.0;
+    #[inline]
+    pub fn get_nusselt_for_developing_flow(&self) 
+    -> Result<Ratio,ThermalHydraulicsLibError>{
+        let reynolds: Ratio =  self.reynolds;
+        let prandtl_bulk: Ratio = self.prandtl_bulk;
+        let prandtl_wall: Ratio = self.prandtl_wall;
+        let prandtl_film: Ratio = (prandtl_wall + prandtl_bulk)/2.0;
+        let darcy_friction_factor = self.darcy_friction_factor;
+        let length_to_diameter = self.length_to_diameter;
+
+        let nusselt_value = 
+        gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+            reynolds.get::<ratio>(),
+            prandtl_bulk.get::<ratio>(),
+            prandtl_film.get::<ratio>(),
             prandtl_wall.get::<ratio>(),
             darcy_friction_factor.get::<ratio>(),
             length_to_diameter.get::<ratio>(),

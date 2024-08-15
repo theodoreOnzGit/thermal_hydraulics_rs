@@ -351,7 +351,7 @@ impl NonInsulatedParallelFluidComponent {
 
         let nusselt_estimate = 
             pipe_prandtl_reynolds_data.
-            get_nusselt_for_developing_flow()?;
+            get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
 
 
 
