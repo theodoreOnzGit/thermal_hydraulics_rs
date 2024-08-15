@@ -4,7 +4,6 @@
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
 use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
 use crate::boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
@@ -213,15 +212,6 @@ pub fn calculate_conductance_interaction_between_two_singular_cv_nodes(
     // let's get the two temperatures of the control volumes first
     // so let me get the enthalpies, and then their respective 
     // temperatures 
-
-    let single_cv_1_enthalpy = single_cv_1.
-        current_timestep_control_volume_specific_enthalpy;
-    let single_cv_2_enthalpy = single_cv_2.
-        current_timestep_control_volume_specific_enthalpy;
-
-    // to get the temperatures, we'll need the material as well 
-    let single_cv_1_material = single_cv_1.material_control_volume;
-    let single_cv_2_material = single_cv_2.material_control_volume;
 
     // we'll also need to get their pressures 
     let single_cv_1_pressure = single_cv_1.pressure_control_volume;
