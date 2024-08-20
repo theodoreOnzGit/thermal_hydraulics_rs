@@ -764,8 +764,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                 shell_side_fluid_bulk_temp, fluid_pressure).unwrap();
 
         let mut est_wall_temp_hitec = wall_side_bulk_temp;
-        if wall_side_bulk_temp < LiquidMaterial::HITEC.max_temperature() {
-            est_wall_temp_hitec = LiquidMaterial::HITEC.max_temperature();
+        if wall_side_bulk_temp < LiquidMaterial::HITEC.min_temperature() {
+            est_wall_temp_hitec = LiquidMaterial::HITEC.min_temperature();
         }
 
 

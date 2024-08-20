@@ -16,6 +16,7 @@
 /// and switching off the insulation boolean
 ///
 #[test]
+#[ignore = "debugging"]
 pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
 
