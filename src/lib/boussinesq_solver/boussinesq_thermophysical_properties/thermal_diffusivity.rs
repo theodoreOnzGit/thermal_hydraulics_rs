@@ -1,6 +1,6 @@
 use uom::si::f64::*;
 
-use super::{Material, thermal_conductivity, density, specific_heat_capacity};
+use super::{density, specific_heat_capacity, thermal_conductivity, LiquidMaterial, Material, SolidMaterial};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
@@ -54,6 +54,7 @@ pub fn try_get_alpha_thermal_diffusivity(material: Material,
         temperature, 
         pressure)?;
     
+    
     let material_density: MassDensity = 
     density::try_get_rho(
         material, 
@@ -74,3 +75,37 @@ pub fn try_get_alpha_thermal_diffusivity(material: Material,
     return Ok(alpha);
 }
 
+impl LiquidMaterial {
+    /// wrapper that 
+    /// returns the liquid cp in a result enum 
+    #[inline]
+    pub fn try_get_alpha_thermal_diffusivity(&self,
+        fluid_temp: ThermodynamicTemperature,
+        pressure: Pressure) 
+        -> Result<DiffusionCoefficient, ThermalHydraulicsLibError>{
+
+            try_get_alpha_thermal_diffusivity(
+                self.clone().into(),
+                fluid_temp,
+                pressure)
+        }
+
+
+}
+impl SolidMaterial {
+    /// wrapper that 
+    /// returns the solid cp in a result enum 
+    #[inline]
+    pub fn try_get_alpha_thermal_diffusivity(&self,
+        solid_temp: ThermodynamicTemperature,
+        pressure: Pressure) 
+        -> Result<DiffusionCoefficient, ThermalHydraulicsLibError>{
+
+            try_get_alpha_thermal_diffusivity(
+                self.clone().into(),
+                solid_temp,
+                pressure)
+        }
+
+
+}
