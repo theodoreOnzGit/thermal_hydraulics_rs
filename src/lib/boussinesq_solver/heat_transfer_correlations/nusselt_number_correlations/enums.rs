@@ -71,7 +71,7 @@ pub enum NusseltCorrelation {
     ///
     /// film prandtl numbers are used in this equation where 
     /// Pr_film = (Pr_bulk + Pr_wall)/2
-    CustomGnielinskiGeneric(GnielinskiData, Ratio, f64),
+    CustomGnielinskiGenericPrandtlFilm(GnielinskiData, Ratio, f64),
 
     /// nusselt number only for turbulent
     /// flow in pipes
@@ -185,7 +185,7 @@ impl NusseltCorrelation {
             NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
                 return data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
-            NusseltCorrelation::CustomGnielinskiGeneric(
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
             ) => 
             {
@@ -243,7 +243,7 @@ impl NusseltCorrelation {
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
-            NusseltCorrelation::CustomGnielinskiGeneric(
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
             ) => 
             {
@@ -325,7 +325,7 @@ impl NusseltCorrelation {
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
-            NusseltCorrelation::CustomGnielinskiGeneric(
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
             ) => 
             {
@@ -391,6 +391,8 @@ impl NusseltCorrelation {
 
         return Ok(nusselt_number);
     }
+
+
 
     /// Returns `true` if the nusselt correlation is [`PipeConstantHeatFlux`].
     ///

@@ -206,7 +206,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
     let c: Ratio = Ratio::new::<ratio>(0.04318);
     let m: f64 = 0.7797;
     let shell_side_nusselt_correlation_to_tubes = 
-        NusseltCorrelation::CustomGnielinskiGeneric(
+        NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
             shell_side_gnielinski_data, c, m);
 
     let tube_side_length_to_diameter: Ratio = 

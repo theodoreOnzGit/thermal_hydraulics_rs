@@ -670,7 +670,11 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // but I allow the user to set the nusselt correlation 
 
-        
+        let darcy_friction_factor: Ratio = self.
+            tube_side_custom_component_loss_correlation.
+            darcy_friction_factor_fldk(reynolds_number_single_tube)
+            .unwrap();
+
 
         let nusselt_estimate = 
             self.tube_side_nusselt_correlation

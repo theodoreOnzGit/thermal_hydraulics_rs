@@ -1,4 +1,3 @@
-use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor::darcy;
 
 /// shell and tube heat exchanger test set A,
 ///
@@ -31,6 +30,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         ::HeatTransferInteractionType;
     use crate::boussinesq_solver::boundary_conditions::BCType;
 
+    use crate::boussinesq_solver::fluid_mechanics_correlations::
+        churchill_friction_factor::darcy;
 
     use approx::assert_relative_eq;
     use uom::si::angle::degree;
@@ -179,10 +180,12 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         );
 
 
+    // for tube loss correlations, we need to use the 
+    // darcy_friction_factor
     let tube_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             tube_side_id, 
             form_loss
         );
@@ -207,7 +210,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
     let c: Ratio = Ratio::new::<ratio>(0.04318);
     let m: f64 = 0.7797;
     let shell_side_nusselt_correlation_to_tubes = 
-        NusseltCorrelation::CustomGnielinskiGeneric(
+        NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
             shell_side_gnielinski_data, c, m);
 
     let tube_side_length_to_diameter: Ratio = 

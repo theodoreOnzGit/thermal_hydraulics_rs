@@ -488,7 +488,7 @@ pub fn du_nusselt_enum_correlation_empirical_test(){
 
 
     let du_nusselt_correlation: NusseltCorrelation 
-        = NusseltCorrelation::CustomGnielinskiGeneric(
+        = NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
             gnielinski_params, c, m);
 
 
