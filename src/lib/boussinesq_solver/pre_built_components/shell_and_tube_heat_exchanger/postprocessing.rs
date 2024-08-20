@@ -257,11 +257,11 @@ impl SimpleShellAndTubeHeatExchanger {
             // flow area and hydraulic diameter are ok
 
 
-            let fluid_material: LiquidMaterial
+            let shell_fluid_material: LiquidMaterial
                 = shell_side_fluid_array_clone.material_control_volume.try_into()?;
 
             let viscosity: DynamicViscosity = 
-                fluid_material.try_get_dynamic_viscosity(shell_side_fluid_temperature)?;
+                shell_fluid_material.try_get_dynamic_viscosity(shell_side_fluid_temperature)?;
 
             // need to convert hydraulic diameter to an equivalent 
             // spherical diameter
@@ -277,7 +277,7 @@ impl SimpleShellAndTubeHeatExchanger {
             // next, bulk prandtl number 
 
             let bulk_prandtl_number: Ratio 
-                = fluid_material.try_get_prandtl_liquid(
+                = shell_fluid_material.try_get_prandtl_liquid(
                     shell_side_fluid_temperature,
                     atmospheric_pressure
                 )?;
@@ -315,7 +315,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
                 // then wall prandtl number (partially corrected)
 
-                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                let _part_correct_wall_temperature: ThermodynamicTemperature = 
                     ThermodynamicTemperature::new::<kelvin>(
                         0.1 * (
                             3.0 * wall_temperature.get::<kelvin>() + 
@@ -323,18 +323,34 @@ impl SimpleShellAndTubeHeatExchanger {
                         )
                     );
 
-                let wall_prandtl_number_part_correct: Ratio 
-                    = fluid_material.try_get_prandtl_liquid(
-                        part_correct_wall_temperature,
+                // the other method is to just use the wall prandtl number 
+                // if the number falls outside the range of correlations,
+                // then use the prandtl number at the max or min 
+
+                let mut wall_temperature_estimate = wall_temperature;
+
+                if wall_temperature_estimate > shell_fluid_material.max_temperature() {
+
+                    wall_temperature_estimate = shell_fluid_material.max_temperature();
+
+                } else if wall_temperature_estimate < shell_fluid_material.min_temperature() {
+
+                    wall_temperature_estimate = shell_fluid_material.min_temperature();
+
+                }
+
+                let wall_prandtl_number_estimate: Ratio 
+                    = shell_fluid_material.try_get_prandtl_liquid(
+                        wall_temperature_estimate,
                         atmospheric_pressure
                     )?;
 
-                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number_part_correct;
+                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number_estimate;
 
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_reynolds_and_wall_correction(
                         bulk_prandtl_number, 
-                        wall_prandtl_number_part_correct,
+                        wall_prandtl_number_estimate,
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             } else {
@@ -352,7 +368,7 @@ impl SimpleShellAndTubeHeatExchanger {
             let shell_side_h_to_fluid: HeatTransfer;
 
             let k_fluid_average: ThermalConductivity = 
-                fluid_material.try_get_thermal_conductivity(
+                shell_fluid_material.try_get_thermal_conductivity(
                     shell_side_fluid_temperature)?;
 
             shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average / shell_side_fluid_hydraulic_diameter;
