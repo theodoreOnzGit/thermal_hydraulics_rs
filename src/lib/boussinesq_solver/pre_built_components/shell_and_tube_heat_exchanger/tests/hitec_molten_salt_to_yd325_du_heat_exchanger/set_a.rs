@@ -1,3 +1,5 @@
+use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor::darcy;
+
 /// shell and tube heat exchanger test set A,
 ///
 /// This is where 
@@ -641,6 +643,28 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             / tube_side_flow_area
             / tube_side_dynamic_viscosity
             / number_of_tubes as f64;
+
+        let darcy_friction_factor: f64 = 
+            darcy(
+                reynolds_tube_side.get::<ratio>(), 
+                (SolidMaterial::SteelSS304L.surface_roughness().unwrap()/
+                 pipe_length).get::<ratio>()
+                ).unwrap();
+
+        let gnielinski_data = match tube_side_nusselt_correlation {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(mut data) => {
+                data.darcy_friction_factor = 
+                    darcy_friction_factor.into();
+
+                data
+            },
+            _ => todo!()
+        };
+
+        let tube_side_nusselt_correlation = 
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
+                gnielinski_data);
+
 
         nusselt_tube_side = tube_side_nusselt_correlation
             .estimate_based_on_prandtl_reynolds_and_wall_correction
