@@ -36,7 +36,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
     use approx::assert_relative_eq;
     use uom::si::angle::degree;
     //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-    use uom::si::length::{meter, millimeter};
+    use uom::si::length::meter;
     use uom::si::pressure::atmosphere;
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
@@ -210,7 +210,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
     let c: Ratio = Ratio::new::<ratio>(0.04318);
     let m: f64 = 0.7797;
     let shell_side_nusselt_correlation_to_tubes = 
-        NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
+        NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
             shell_side_gnielinski_data, c, m);
 
     let tube_side_length_to_diameter: Ratio = 

@@ -18,6 +18,7 @@
 #[test]
 pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
+
     use std::f64::consts::PI;
 
     use std::thread;
@@ -30,11 +31,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         ::HeatTransferInteractionType;
     use crate::boussinesq_solver::boundary_conditions::BCType;
 
+    use crate::boussinesq_solver::fluid_mechanics_correlations::
+        churchill_friction_factor::darcy;
 
     use approx::assert_relative_eq;
     use uom::si::angle::degree;
     //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-    use uom::si::length::{meter, millimeter};
+    use uom::si::length::meter;
     use uom::si::pressure::atmosphere;
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
@@ -172,16 +175,18 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
     let shell_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             shell_side_fluid_hydraulic_diameter, 
             form_loss
         );
 
 
+    // for tube loss correlations, we need to use the 
+    // darcy_friction_factor
     let tube_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             tube_side_id, 
             form_loss
         );
@@ -206,7 +211,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
     let c: Ratio = Ratio::new::<ratio>(0.04318);
     let m: f64 = 0.7797;
     let shell_side_nusselt_correlation_to_tubes = 
-        NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
+        NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
             shell_side_gnielinski_data, c, m);
 
     let tube_side_length_to_diameter: Ratio = 
@@ -642,6 +647,28 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
             / tube_side_flow_area
             / tube_side_dynamic_viscosity
             / number_of_tubes as f64;
+
+        let darcy_friction_factor: f64 = 
+            darcy(
+                reynolds_tube_side.get::<ratio>(), 
+                (SolidMaterial::SteelSS304L.surface_roughness().unwrap()/
+                 pipe_length).get::<ratio>()
+                ).unwrap();
+
+        let gnielinski_data = match tube_side_nusselt_correlation {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(mut data) => {
+                data.darcy_friction_factor = 
+                    darcy_friction_factor.into();
+
+                data
+            },
+            _ => todo!()
+        };
+
+        let tube_side_nusselt_correlation = 
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
+                gnielinski_data);
+
 
         nusselt_tube_side = tube_side_nusselt_correlation
             .estimate_based_on_prandtl_reynolds_and_wall_correction
