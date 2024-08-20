@@ -678,9 +678,10 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let nusselt_estimate = 
             self.tube_side_nusselt_correlation
-            .estimate_based_on_prandtl_reynolds_and_wall_correction(
+            .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
                 pipe_prandtl_reynolds_data.prandtl_wall, 
+                darcy_friction_factor,
                 pipe_prandtl_reynolds_data.reynolds)?;
 
 
@@ -844,11 +845,19 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
             = self.shell_side_nusselt_correlation_to_tubes;
 
+        let darcy_friction_factor: Ratio = self.
+            shell_side_custom_component_loss_correlation.
+            darcy_friction_factor_fldk(reynolds_number_shell_side)
+            .unwrap();
+
+
         let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
         = GnielinskiData::default();
         pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_abs_for_nusselt_estimate;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.darcy_friction_factor = 
+            darcy_friction_factor;
         pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
             shell_side_fluid_array_clone.get_component_length_immutable()/
             shell_side_fluid_hydraulic_diameter;
