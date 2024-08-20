@@ -760,12 +760,12 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             .unwrap();
 
         let shell_side_fluid_bulk_prandtl = 
-            LiquidMaterial::YD325.try_get_prandtl_liquid(
+            LiquidMaterial::HITEC.try_get_prandtl_liquid(
                 shell_side_fluid_bulk_temp, fluid_pressure).unwrap();
 
 
         let shell_side_fluid_wall_prandtl = 
-            LiquidMaterial::YD325.try_get_prandtl_liquid(
+            LiquidMaterial::HITEC.try_get_prandtl_liquid(
                 wall_side_bulk_temp, fluid_pressure).unwrap();
 
         let shell_side_fluid_film_prandtl_estimate = 
