@@ -39,3 +39,8 @@ pub mod thermophsyical_property_checks;
 /// in debugging, I suspected dimensions were
 /// coded wrongly
 pub mod dimension_checks;
+
+/// in debugging, I suspected that heat transfer correlations 
+/// calculated the heat transfer coefficient wrongly
+/// this is to ensure they are calculated right 
+pub mod heat_transfer_correlations_checks;

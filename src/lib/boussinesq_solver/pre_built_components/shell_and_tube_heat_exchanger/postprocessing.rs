@@ -144,7 +144,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
                 // then wall prandtl number (partially corrected)
 
-                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                let _part_correct_wall_temperature: ThermodynamicTemperature = 
                     ThermodynamicTemperature::new::<kelvin>(
                         0.1 * (
                             3.0 * wall_temperature.get::<kelvin>() + 
@@ -152,9 +152,25 @@ impl SimpleShellAndTubeHeatExchanger {
                         )
                     );
 
-                let wall_prandtl_number_part_correct: Ratio 
+                // the other method is to just use the wall prandtl number 
+                // if the number falls outside the range of correlations,
+                // then use the prandtl number at the max or min 
+
+                let mut wall_temperature_estimate = wall_temperature;
+
+                if wall_temperature_estimate > tube_fluid_material.max_temperature() {
+
+                    wall_temperature_estimate = tube_fluid_material.max_temperature();
+
+                } else if wall_temperature_estimate < tube_fluid_material.min_temperature() {
+
+                    wall_temperature_estimate = tube_fluid_material.min_temperature();
+
+                }
+
+                let wall_prandtl_number: Ratio 
                     = tube_fluid_material.try_get_prandtl_liquid(
-                        part_correct_wall_temperature,
+                        wall_temperature_estimate,
                         atmospheric_pressure
                     )?;
 
@@ -162,7 +178,7 @@ impl SimpleShellAndTubeHeatExchanger {
                     self.tube_side_nusselt_correlation
                     .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                         bulk_prandtl_number, 
-                        wall_prandtl_number_part_correct, 
+                        wall_prandtl_number, 
                         darcy_friction_factor_tube_side,
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             } else {
