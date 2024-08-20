@@ -36,4 +36,6 @@ pub mod set_c;
 pub mod thermophsyical_property_checks;
 
 
-
+/// in debugging, I suspected dimensions were
+/// coded wrongly
+pub mod dimension_checks;
