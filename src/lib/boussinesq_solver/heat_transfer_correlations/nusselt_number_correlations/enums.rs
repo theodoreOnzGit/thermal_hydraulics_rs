@@ -225,10 +225,45 @@ impl NusseltCorrelation {
         return Ok(nusselt_number);
     }
 
+    /// gets an estimate for nusselt number based on friction factor,
+    /// bulk prandtl and reynolds number
+    /// important for pipe gnielinski type nusseltcorrelations
+    pub fn estimate_based_on_prandtl_darcy_and_reynolds_no_wall_correction(&self,
+        bulk_prandtl_number_input: Ratio,
+        darcy_friction_factor: Ratio,
+        reynolds_number_input: Ratio,) -> Result<Ratio, ThermalHydraulicsLibError>{
+
+        match self {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            _ => return self.estimate_based_on_prandtl_and_reynolds_no_wall_correction(
+                bulk_prandtl_number_input, reynolds_number_input),
+
+        };
+
+
+    }
+
     /// gets an estimate for the nusselt number based on user choice 
     /// of correlation, ignores wall temperature 
     ///
     /// note that this uses clone, so it's quite resource heavy
+    #[inline]
     pub fn estimate_based_on_prandtl_and_reynolds_no_wall_correction(&self,
     bulk_prandtl_number_input: Ratio,
     reynolds_number_input: Ratio,) -> Result<Ratio, ThermalHydraulicsLibError>{
@@ -392,6 +427,41 @@ impl NusseltCorrelation {
         return Ok(nusselt_number);
     }
 
+    /// gets an estimate for nusselt number based on friction factor,
+    /// bulk prandtl and reynolds number
+    /// important for pipe gnielinski type nusseltcorrelations
+    pub fn estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(&self,
+        bulk_prandtl_number_input: Ratio,
+        wall_prandtl_number_input: Ratio,
+        darcy_friction_factor: Ratio,
+        reynolds_number_input: Ratio,) -> Result<Ratio, ThermalHydraulicsLibError>{
+
+        match self {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = wall_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = wall_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            _ => return self.estimate_based_on_prandtl_reynolds_and_wall_correction(
+                bulk_prandtl_number_input, 
+                wall_prandtl_number_input, reynolds_number_input),
+
+        };
+
+
+    }
 
 
     /// Returns `true` if the nusselt correlation is [`PipeConstantHeatFlux`].
