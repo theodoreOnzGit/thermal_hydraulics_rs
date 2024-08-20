@@ -174,7 +174,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
     let shell_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             shell_side_fluid_hydraulic_diameter, 
             form_loss
         );

@@ -1272,6 +1272,8 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 /// Du did not mention which Pr to use 
 /// I'm going to assume this is Pr_film 
 ///
+/// Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+///
 /// Technically this Pr is Pr(T_film) where 
 /// T_film = (T_wall + T_bulkfluid)/2 
 ///
@@ -1282,7 +1284,9 @@ pub fn gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
 /// this may underestimate Nusselt number, as Pr in the bulk fluid is 
 /// usually lower, but it may well work
 ///
-/// anyway, I just forced the user to give another argument
+/// anyway, I just forced the user to give another argument (Pr_film)
+/// After some debugging however, i found this unnecessary.
+/// Pr_film should equal Pr_bulk by default
 ///
 /// For Du's Heat exchanger, 
 /// C = 0.04318,

@@ -52,7 +52,7 @@ pub enum NusseltCorrelation {
     /// so Pr_film is estimated using
     ///
     /// Pr_film = (Pr_bulk + Pr_wall)/2
-    PipeGnielinskiGeneric(GnielinskiData),
+    PipeGnielinskiGenericPrandtlFilm(GnielinskiData),
 
     /// pipe nusselt number using custom Gnielinski correlation 
     /// for laminar, turbulent and transition region 
@@ -72,6 +72,23 @@ pub enum NusseltCorrelation {
     /// film prandtl numbers are used in this equation where 
     /// Pr_film = (Pr_bulk + Pr_wall)/2
     CustomGnielinskiGenericPrandtlFilm(GnielinskiData, Ratio, f64),
+
+    /// pipe nusselt number using custom Gnielinski correlation 
+    /// for laminar, turbulent and transition region 
+    ///
+    /// laminar flow assumes constant heat flux  (Nu = 4.354)
+    ///
+    /// Correlation be like:
+    /// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+    /// User must supply C and m 
+    ///
+    /// For low Re flows, Nu = 4.36 is used. 
+    /// The transition regime is around Re = 40-100
+    /// This was totally random and arbitrary assuming that low Re 
+    /// results in turbulent transition so to speak, 
+    /// THESE MAY NOT BE APPLICABLE IN THIS CASE, so be careful 
+    ///
+    CustomGnielinskiGenericPrandtlBulk(GnielinskiData, Ratio, f64),
 
     /// nusselt number only for turbulent
     /// flow in pipes
@@ -189,7 +206,7 @@ impl NusseltCorrelation {
                 data, correlation_coefficient_c, reynolds_exponent_m
             ) => 
             {
-                return data.get_nusselt_for_custom_developing_flow
+                return data.get_nusselt_for_custom_developing_flow_prandtl_film
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
             NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
@@ -216,8 +233,15 @@ impl NusseltCorrelation {
             NusseltCorrelation::FixedNusselt(value) => {
                 *value
             },
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlFilm(data) => {
                 return data.get_nusselt_for_developing_flow();
+            },
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
+                data, correlation_coefficient_c, reynolds_exponent_m
+            ) => 
+            {
+                return data.get_nusselt_for_custom_developing_flow_prandtl_bulk
+                    (*correlation_coefficient_c,*reynolds_exponent_m)
             },
 
         };
@@ -286,7 +310,18 @@ impl NusseltCorrelation {
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;
                 modified_data.reynolds = reynolds_number_input;
-                return modified_data.get_nusselt_for_custom_developing_flow
+                return modified_data.get_nusselt_for_custom_developing_flow_prandtl_film
+                    (*correlation_coefficient_c,*reynolds_exponent_m)
+            },
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
+                data, correlation_coefficient_c, reynolds_exponent_m
+            ) => 
+            {
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_custom_developing_flow_prandtl_bulk
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
             NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
@@ -330,7 +365,7 @@ impl NusseltCorrelation {
             NusseltCorrelation::FixedNusselt(value) => {
                 *value
             },
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlFilm(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
@@ -338,6 +373,7 @@ impl NusseltCorrelation {
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
+
         };
 
         return Ok(nusselt_number);
@@ -368,7 +404,18 @@ impl NusseltCorrelation {
                 modified_data.prandtl_wall = wall_prandtl_number_input;
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;
                 modified_data.reynolds = reynolds_number_input;
-                return modified_data.get_nusselt_for_custom_developing_flow
+                return modified_data.get_nusselt_for_custom_developing_flow_prandtl_film
+                    (*correlation_coefficient_c,*reynolds_exponent_m)
+            },
+            NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
+                data, correlation_coefficient_c, reynolds_exponent_m
+            ) => 
+            {
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = wall_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.reynolds = reynolds_number_input;
+                return modified_data.get_nusselt_for_custom_developing_flow_prandtl_bulk
                     (*correlation_coefficient_c,*reynolds_exponent_m)
             },
             NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
@@ -412,7 +459,7 @@ impl NusseltCorrelation {
             NusseltCorrelation::FixedNusselt(value) => {
                 *value
             },
-            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlFilm(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = wall_prandtl_number_input;
