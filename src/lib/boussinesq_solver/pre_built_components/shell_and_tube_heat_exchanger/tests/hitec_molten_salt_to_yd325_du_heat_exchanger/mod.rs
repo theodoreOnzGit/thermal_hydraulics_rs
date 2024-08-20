@@ -30,7 +30,10 @@ pub mod set_b;
 pub mod set_c;
 
 
-
+/// in debugging, I suspected my prandtl number of hitec 
+/// salt was coded wrongly 
+/// This ensures things are coded correctly
+pub mod thermophsyical_property_checks;
 
 
 

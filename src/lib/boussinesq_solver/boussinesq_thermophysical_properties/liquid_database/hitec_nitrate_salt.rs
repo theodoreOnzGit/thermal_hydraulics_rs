@@ -352,7 +352,7 @@ pub fn get_hitec_thermal_conductivity(
         // + 2.551e-5 T(K)^2 
         // - 1.863e-8 T(K)^3
         a = 0.7663;
-        b = - 2.551e-5;
+        b = - 6.47e-4;
         c = 0.0;
         d = 0.0;
         e = 0.0;

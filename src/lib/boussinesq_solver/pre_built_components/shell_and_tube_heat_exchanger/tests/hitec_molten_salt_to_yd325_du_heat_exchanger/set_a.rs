@@ -654,6 +654,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                  pipe_length).get::<ratio>()
                 ).unwrap();
 
+        let darcy_friction_factor: Ratio = 
+            Ratio::new::<ratio>(darcy_friction_factor);
+
+
         let gnielinski_data = match tube_side_nusselt_correlation {
             NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(mut data) => {
                 data.darcy_friction_factor = 
@@ -670,10 +674,11 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
 
         nusselt_tube_side = tube_side_nusselt_correlation
-            .estimate_based_on_prandtl_reynolds_and_wall_correction
+            .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction
             (
                 tube_side_prandtl,
                 tube_wall_side_prandtl,
+                darcy_friction_factor,
                 reynolds_tube_side
             ).unwrap();
 
