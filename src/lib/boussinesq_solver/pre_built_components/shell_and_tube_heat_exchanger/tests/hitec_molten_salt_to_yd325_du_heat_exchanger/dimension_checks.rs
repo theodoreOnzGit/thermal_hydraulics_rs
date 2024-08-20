@@ -1,6 +1,7 @@
 
 
 
+
 #[test]
 pub fn check_shell_side_fluid_hydraulic_diameter(){
     use uom::si::f64::*;
@@ -28,4 +29,39 @@ pub fn check_shell_side_fluid_hydraulic_diameter(){
         shell_side_fluid_hydraulic_diameter.get::<meter>(),
         max_relative = 0.03,
         );
+}
+
+/// basically, for a tube bundle, 
+/// reynolds number is 
+/// Re = 4/pi * V/(N_t d_i) 1/nu 
+///
+/// in Du's paper,
+/// V is volumetric flowrate of 15.635 m^3/h 
+/// N_t is number of tubes (19)
+/// d_i = 0.01 m
+///
+/// The factor
+/// 4/pi * V/(N_t d_i) should be 0.0291 m^2/s
+#[test]
+pub fn check_tube_side_reynolds_number_diffusivity(){
+    use std::f64::consts::PI;
+
+    use uom::si::{f64::*, ratio::ratio, volume_rate::cubic_meter_per_hour};
+    use uom::si::length::meter;
+    use uom::si::diffusion_coefficient::square_meter_per_second;
+    
+    let four_over_pi: Ratio = Ratio::new::<ratio>(4.0/PI);
+    let vol_flowrate = VolumeRate::new::<cubic_meter_per_hour>(15.635);
+    let d_i = Length::new::<meter>(0.01);
+    let number_of_tubes: f64 = 19.0;
+
+    let viscosity_scale: DiffusionCoefficient = 
+        four_over_pi * vol_flowrate / (number_of_tubes * d_i);
+
+    approx::assert_relative_eq!(
+        viscosity_scale.get::<square_meter_per_second>(),
+        0.0291,
+        max_relative = 0.01
+        );
+
 }
