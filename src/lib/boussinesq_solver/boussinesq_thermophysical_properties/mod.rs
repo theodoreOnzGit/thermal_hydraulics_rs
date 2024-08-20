@@ -243,6 +243,9 @@ pub mod specific_enthalpy;
 /// thermal diffusivity 
 pub mod thermal_diffusivity;
 
+/// momentum diffusivity (or kinematic viscosity)
+pub mod momentum_diffusivity;
+
 /// volumetric_heat_capacity 
 pub mod volumetric_heat_capacity;
 
