@@ -763,17 +763,23 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             LiquidMaterial::HITEC.try_get_prandtl_liquid(
                 shell_side_fluid_bulk_temp, fluid_pressure).unwrap();
 
+        let mut est_wall_temp_hitec = wall_side_bulk_temp;
+        if wall_side_bulk_temp < LiquidMaterial::HITEC.max_temperature() {
+            est_wall_temp_hitec = LiquidMaterial::HITEC.max_temperature();
+        }
+
 
         let shell_side_fluid_wall_prandtl = 
             LiquidMaterial::HITEC.try_get_prandtl_liquid(
-                wall_side_bulk_temp, fluid_pressure).unwrap();
+                est_wall_temp_hitec, fluid_pressure).unwrap();
 
         let shell_side_fluid_film_prandtl_estimate = 
-            0.5 * (shell_side_fluid_wall_prandtl + shell_side_fluid_bulk_prandtl);
+            shell_side_fluid_bulk_prandtl;
         // Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
         // For Du's Heat exchanger, 
         // C = 0.04318,
         // m = 0.7797
+        // Pr_film = Pr_bulk
         let nusselt_number_direct_from_correlation = 
             custom_gnielinski_turbulent_nusselt_correlation(
                 Ratio::new::<ratio>(0.04318),
