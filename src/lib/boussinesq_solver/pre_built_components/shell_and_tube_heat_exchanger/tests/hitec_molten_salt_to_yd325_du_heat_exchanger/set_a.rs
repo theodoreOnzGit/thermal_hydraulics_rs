@@ -16,6 +16,7 @@
 /// and switching off the insulation boolean
 ///
 #[test]
+//#[ignore = "debugging"]
 pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
     use std::f64::consts::PI;
@@ -651,7 +652,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             darcy(
                 reynolds_tube_side.get::<ratio>(), 
                 (SolidMaterial::SteelSS304L.surface_roughness().unwrap()/
-                 pipe_length).get::<ratio>()
+                 tube_side_id).get::<ratio>()
                 ).unwrap();
 
         let darcy_friction_factor: Ratio = 
