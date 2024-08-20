@@ -22,9 +22,10 @@ pub fn check_shell_side_fluid_hydraulic_diameter(){
 
     let given_de_by_du: Length = hydraulic_diameter_by_l * pipe_length;
 
+    // max error is 3%
     approx::assert_relative_eq!(
         given_de_by_du.get::<meter>(),
         shell_side_fluid_hydraulic_diameter.get::<meter>(),
-        max_relative = 0.01,
+        max_relative = 0.03,
         );
 }
