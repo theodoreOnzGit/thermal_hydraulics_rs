@@ -1,6 +1,3 @@
-
-
-
 /// from 212.7 C to 279.6 C prandtl number of 
 /// hitec salt should vary from 14.2 to 23.3
 #[test]
@@ -39,6 +36,4 @@ pub fn prandtl_number_range_check(){
         23.3,
         max_relative=0.01
         );
-
-    todo!();
 }
