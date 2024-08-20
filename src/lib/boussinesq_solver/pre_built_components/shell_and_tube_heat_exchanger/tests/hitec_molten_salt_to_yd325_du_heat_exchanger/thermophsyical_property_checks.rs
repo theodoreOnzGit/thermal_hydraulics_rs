@@ -1,3 +1,4 @@
+
 /// from 212.7 C to 279.6 C prandtl number of 
 /// hitec salt should vary from 14.2 to 23.3
 #[test]
@@ -79,5 +80,40 @@ pub fn prandtl_number_range_from_200_to_240_celsius(){
     check_prandtl_at_temp(230.0, 19.97);
     check_prandtl_at_temp(235.0, 19.19);
     check_prandtl_at_temp(240.0, 18.46);
+
+}
+
+
+/// thermal conductivity of HITEC at 200C and 240C 
+#[test]
+pub fn thermal_cond_at_200_and_240_celsius(){
+
+    use uom::si::f64::*;
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use uom::si::thermal_conductivity::watt_per_meter_kelvin;
+    use crate::prelude::beta_testing::LiquidMaterial;
+
+
+    // test function
+    fn check_conductivity_at_temp(temp_celsius: f64,
+        thermal_cond_watt_per_m_k: f64){
+
+        let temp: ThermodynamicTemperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(temp_celsius);
+        let hitec = LiquidMaterial::HITEC;
+        let calculated_conductivity: ThermalConductivity = 
+            hitec.try_get_thermal_conductivity(temp)
+            .unwrap();
+
+            approx::assert_relative_eq!(
+                calculated_conductivity.get::<watt_per_meter_kelvin>(),
+                thermal_cond_watt_per_m_k,
+                max_relative=0.01
+            );
+
+    }
+
+    check_conductivity_at_temp(200.0, 0.43602);
+    check_conductivity_at_temp(240.0, 0.42806);
 
 }
