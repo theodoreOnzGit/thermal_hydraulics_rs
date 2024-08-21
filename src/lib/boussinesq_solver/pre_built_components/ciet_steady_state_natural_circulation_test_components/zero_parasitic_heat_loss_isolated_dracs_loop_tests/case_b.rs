@@ -26,6 +26,7 @@
 /// Table 3 also provides the data 
 /// 
 #[test]
+//#[ignore = "comment out for debugging"]
 pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 

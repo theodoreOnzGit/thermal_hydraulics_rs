@@ -194,7 +194,7 @@ impl SimpleShellAndTubeHeatExchanger {
                     atmospheric_pressure
                 )?;
 
-            let mut wall_prandtl_number_tube_side: Ratio = Ratio::default();
+            let wall_prandtl_number_tube_side: Ratio;
 
             let nusselt_estimate_tube_side: Ratio; 
             
