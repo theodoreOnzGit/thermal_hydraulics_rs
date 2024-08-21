@@ -688,7 +688,8 @@ impl SimpleShellAndTubeHeatExchanger {
                 darcy_friction_factor,
                 pipe_prandtl_reynolds_data.reynolds)?;
 
-        dbg!(&nusselt_estimate_tube_side);
+        // for debugging
+        //dbg!(&nusselt_estimate_tube_side);
 
 
         // now we can get the heat transfer coeff, 
