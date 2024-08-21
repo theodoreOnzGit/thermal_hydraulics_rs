@@ -695,6 +695,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let h_t: HeatTransfer = 
             nusselt_tube_side * lambda_tube / tube_side_id;
 
+        // debug tube side parameters
+        dbg!(&(
+                reynolds_tube_side,
+                tube_side_prandtl,
+                tube_wall_side_prandtl,
+                nusselt_tube_side
+        )
+        );
+
         // now to calculate for h_s 
         //
         // 1/u = 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
@@ -722,7 +731,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             tube_side_od/(2.0 as f64 * lambda_wall) 
             * (tube_side_od/tube_side_id).get::<ratio>().ln();
 
-        // 1/h_s = 1/u - 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
+        dbg!(&(reciprocal_tube_side_solid_term,
+                h_t));
+
+        // 1/h_s = 1/u - 1/h_t d_o/d_i - d_o/(2 lambda_w) ln (d_o/d_i) 
         let one_over_hs = 
             one_over_u - reciprocal_tube_side_fluid_term - 
             reciprocal_tube_side_solid_term;
