@@ -680,7 +680,7 @@ impl SimpleShellAndTubeHeatExchanger {
             .unwrap();
 
 
-        let nusselt_estimate = 
+        let nusselt_estimate_tube_side = 
             self.tube_side_nusselt_correlation
             .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
@@ -688,16 +688,18 @@ impl SimpleShellAndTubeHeatExchanger {
                 darcy_friction_factor,
                 pipe_prandtl_reynolds_data.reynolds)?;
 
+        dbg!(&nusselt_estimate_tube_side);
+
 
         // now we can get the heat transfer coeff, 
 
-        let h_to_fluid: HeatTransfer;
+        let tube_h_to_fluid: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
             fluid_material.try_get_thermal_conductivity(
                 fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / single_tube_hydraulic_diameter;
+        tube_h_to_fluid = nusselt_estimate_tube_side * k_fluid_average / single_tube_hydraulic_diameter;
 
 
         // and then get the convective resistance
@@ -725,7 +727,7 @@ impl SimpleShellAndTubeHeatExchanger {
                  (cylinder_mid_diameter - id).into(),
                  pipe_shell_surf_temperature,
                  atmospheric_pressure),
-                 (h_to_fluid,
+                 (tube_h_to_fluid,
                   id.into(),
                   node_length.into())
             );
@@ -849,6 +851,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
             = self.shell_side_nusselt_correlation_to_tubes;
 
+        // todo, darcy probably needs to change
         let darcy_friction_factor: Ratio = self.
             shell_side_custom_component_loss_correlation.
             fldk_based_on_darcy_friction_factor(reynolds_number_shell_side)
@@ -873,7 +876,7 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // this uses the gnielinski correlation for pipes or tubes
 
-        let nusselt_estimate: Ratio;
+        let nusselt_estimate_shell: Ratio;
 
         if correct_prandtl_for_wall_temperatures {
 
@@ -915,31 +918,34 @@ impl SimpleShellAndTubeHeatExchanger {
 
             pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
 
-            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
+            nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_reynolds_and_wall_correction(
                 bulk_prandtl_number, 
                 wall_prandtl_number,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         } else {
-            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
+            nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_and_reynolds_no_wall_correction(
                 bulk_prandtl_number, 
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         }
 
+        // for debugging
+        //dbg!(&nusselt_estimate_shell);
+
 
 
         // now we can get the heat transfer coeff, 
 
-        let h_to_fluid: HeatTransfer;
+        let shell_h_to_fluid: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
             fluid_material.try_get_thermal_conductivity(
                 fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / shell_side_fluid_hydraulic_diameter;
+        shell_h_to_fluid = nusselt_estimate_shell * k_fluid_average / shell_side_fluid_hydraulic_diameter;
 
 
         // and then get the convective resistance from shell side fluid 
@@ -970,7 +976,7 @@ impl SimpleShellAndTubeHeatExchanger {
                  (od - cylinder_mid_diameter).into(),
                  pipe_shell_surf_temperature,
                  atmospheric_pressure),
-                 (h_to_fluid,
+                 (shell_h_to_fluid,
                   od.into(),
                   node_length.into())
             );

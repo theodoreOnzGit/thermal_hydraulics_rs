@@ -518,7 +518,7 @@ impl HeatTransferInteractionType {
                             outer_diameter,
                             cylinder_length,
                             CylindricalAndSphericalSolidFluidArrangement::
-                            FluidOnInnerSurfaceOfSolidShell ,
+                            FluidOnOuterSurfaceOfSolidShell ,
                         )?
                     }
                 ,

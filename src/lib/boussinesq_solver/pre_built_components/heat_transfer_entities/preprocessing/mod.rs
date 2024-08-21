@@ -626,7 +626,7 @@ fn try_get_thermal_conductance_based_on_interaction(
                         outer_diameter,
                         cylinder_length,
                         CylindricalAndSphericalSolidFluidArrangement::
-                        FluidOnInnerSurfaceOfSolidShell ,
+                        FluidOnOuterSurfaceOfSolidShell ,
                     )?
                 },
             // note: actually function signatures are a little more 

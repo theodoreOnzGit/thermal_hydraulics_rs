@@ -823,6 +823,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                 shell_side_length_to_diameter
             );
 
+        // for debugging, get u from conductances 
+
+        let u_from_conductance = 
+            sthe.overall_htc_based_on_conductance(
+                correct_for_prandtl_wall_temperatures_u_and_ua,
+                m_t.abs(),
+                m_s.abs()
+                );
+
 
 
 
@@ -837,7 +846,8 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         // ua, 
         u_calc_from_postprocess,
         u_calc_using_lmtd,
-        reynolds_shell_side,
+        u_from_conductance,
+        //reynolds_shell_side,
         nusselt_number_shell_calculated,
         nusselt_number_direct_from_correlation
         ));

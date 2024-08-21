@@ -52,6 +52,66 @@ impl SimpleShellAndTubeHeatExchanger {
             }
     }
 
+
+    /// provides overall heat transfer coeff using conductance 
+    /// calculations 
+    /// |            |            |               |
+    /// |            |            |               |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|
+    /// |            |            |               |
+    /// |            |            |               |
+    ///
+    /// 1/(u a_shell_node) = 1/H_tube + 1/H_shell
+    pub fn overall_htc_based_on_conductance(&mut self,
+        correct_for_prandtl_wall_temperatures: bool,
+        tube_side_total_mass_flowrate: MassRate,
+        shell_side_total_mass_flowrate: MassRate,) -> HeatTransfer {
+
+        self.set_tube_side_total_mass_flowrate(tube_side_total_mass_flowrate);
+        self.set_shell_side_total_mass_flowrate(shell_side_total_mass_flowrate);
+
+
+        let single_tube_to_shell_side_fluid_conductance: ThermalConductance
+            = self.get_shell_side_fluid_to_single_inner_pipe_shell_nodal_conductance(
+                correct_for_prandtl_wall_temperatures).unwrap();
+        let single_tube_to_tube_side_fluid_conductance: ThermalConductance
+            = self.get_single_tube_side_fluid_array_node_to_inner_pipe_shell_nodal_conductance(
+                correct_for_prandtl_wall_temperatures).unwrap();
+
+        let one_over_ua_shell_node: ThermalResistance = 
+            single_tube_to_shell_side_fluid_conductance.recip() +
+            single_tube_to_tube_side_fluid_conductance.recip();
+
+        let ua_shell_node: ThermalConductance = 
+            one_over_ua_shell_node.recip();
+
+        // a_shell for one node
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let mut single_inner_tube_fluid_arr_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
+        let heated_length = single_inner_tube_fluid_arr_clone
+            .get_component_length();
+
+        let od = self.tube_side_od;
+
+
+        let node_length = heated_length / 
+            number_of_temperature_nodes as f64;
+
+        // area of shell for one node is PI D l 
+
+        let area_shell_for_one_node: Area = PI * od * node_length;
+
+        // obtain u
+
+        let u_from_conductance: HeatTransfer = 
+            ua_shell_node/area_shell_for_one_node;
+
+        return u_from_conductance;
+
+
+    }
+
     /// provides the overall heat transfer coefficient based on the 
     /// shell side area
     ///
