@@ -1,11 +1,13 @@
 use std::thread::JoinHandle;
 use std::thread;
 
+use uom::si::ratio::ratio;
 use uom::ConstZero;
 use uom::si::pressure::atmosphere;
 use uom::si::f64::*;
 use ndarray::*;
 use super::NonInsulatedParallelFluidComponent;
+use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor::darcy;
 use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
@@ -331,6 +333,21 @@ impl NonInsulatedParallelFluidComponent {
             atmospheric_pressure
         )?;
 
+        // darcy_friction_factor 
+
+        let surface_roughness: Length = 
+            solid_material.surface_roughness().unwrap();
+
+        let pipe_length: Length = self.get_component_length();
+        let roughness_ratio: Ratio = surface_roughness/pipe_length;
+
+        let darcy_friction_factor: Ratio = 
+            Ratio::new::<ratio>(
+                darcy(reynolds_number_single_tube.get::<ratio>(), 
+                    roughness_ratio.get::<ratio>()
+                ).unwrap()
+            );
+
 
 
         let mut pipe_prandtl_reynolds_data: GnielinskiData 
@@ -340,18 +357,30 @@ impl NonInsulatedParallelFluidComponent {
         pipe_prandtl_reynolds_data.reynolds = reynolds_number_single_tube;
         pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
         pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_data.darcy_friction_factor = darcy_friction_factor;
         pipe_prandtl_reynolds_data.length_to_diameter = 
             self.get_component_length_immutable()/
             self.get_hydraulic_diameter_immutable();
 
+        // no wall correction is done here
+        let mut fluid_array: FluidArray 
+            = self.pipe_fluid_array.clone().try_into()?;
+
+        let nusselt_estimate = 
+            fluid_array.get_nusselt(
+                reynolds_number_single_tube, 
+                bulk_prandtl_number, 
+                bulk_prandtl_number)?;
 
         // I need to use Nusselt correlations present in this struct 
         //
         // no wall correction is done here
+        //
+        // it's hard coded to a tube 
 
-        let nusselt_estimate = 
-            pipe_prandtl_reynolds_data.
-            get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+        //let nusselt_estimate = 
+        //    pipe_prandtl_reynolds_data.
+        //    get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
 
 
 

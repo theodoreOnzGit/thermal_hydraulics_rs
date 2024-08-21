@@ -1,36 +1,4 @@
-use uom::si::{heat_transfer::watt_per_square_meter_kelvin, thermal_conductivity::watt_per_meter_kelvin};
 
-/// 
-/// As mentioned by Du:
-/// 1/U = 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
-/// + 1/h_s
-///
-/// I want to check if my tube nusselt number is correct 
-/// so I'll need to obtain the heat trf coeff first
-#[test]
-pub fn check_high_bound_and_low_bound_tube_heat_trf_coeff(){
-    use uom::si::f64::*;
-    use uom::si::ratio::ratio;
-
-    use uom::si::thermodynamic_temperature::degree_celsius;
-    use uom::si::length::meter;
-    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-
-    use crate::prelude::beta_testing::LiquidMaterial;
-
-    let lambda_wall_du_paper: ThermalConductivity = 
-        ThermalConductivity::new::<watt_per_meter_kelvin>(
-            16.3);
-    // from Du's heat exchanger type, except we use one inner tube
-    let tube_side_od = Length::new::<meter>(0.014);
-    let tube_side_id = Length::new::<meter>(0.01);
-    let shell_side_od = Length::new::<meter>(0.108);
-    let shell_side_id = Length::new::<meter>(0.1);
-    let pipe_length = Length::new::<meter>(1.95);
-    let reciprocal_tube_side_solid_term = 
-        tube_side_od/(2.0 as f64 * lambda_wall_du_paper) 
-        * (tube_side_od/tube_side_id).get::<ratio>().ln();
-}
 /// 
 /// As mentioned by Du:
 /// 1/U = 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
@@ -48,6 +16,7 @@ pub fn check_wall_side_htc(){
     use uom::si::f64::*;
     use uom::si::ratio::ratio;
 
+    use uom::si::{heat_transfer::watt_per_square_meter_kelvin, thermal_conductivity::watt_per_meter_kelvin};
     use uom::si::length::meter;
 
     let lambda_wall_du_paper: ThermalConductivity = 
