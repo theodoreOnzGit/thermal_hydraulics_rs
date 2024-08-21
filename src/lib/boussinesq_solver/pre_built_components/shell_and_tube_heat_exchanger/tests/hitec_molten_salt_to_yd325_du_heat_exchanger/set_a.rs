@@ -598,6 +598,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let shell_side_area: Area = 
             number_of_tubes as f64 * PI * tube_side_od * pipe_length;
 
+        dbg!(&
+            (
+                q_avg,
+                q_tube,
+                q_shell,
+                lmtd,
+                shell_side_area
+            ));
+
         let u_calc_using_lmtd: HeatTransfer = q_avg / shell_side_area / lmtd ;
 
         // next, I want the nusselt number of the tube side, 
@@ -730,11 +739,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let reciprocal_tube_side_solid_term = 
             tube_side_od/(2.0 as f64 * lambda_wall) 
             * (tube_side_od/tube_side_id).get::<ratio>().ln();
+        
+        let one_over_u_postprocess = u_calc_from_postprocess.recip();
 
 
         // 1/h_s = 1/u - 1/h_t d_o/d_i - d_o/(2 lambda_w) ln (d_o/d_i) 
         let one_over_hs = 
-            one_over_u - reciprocal_tube_side_fluid_term - 
+            one_over_u_postprocess - reciprocal_tube_side_fluid_term - 
             reciprocal_tube_side_solid_term;
 
 
@@ -746,8 +757,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                 h_s,
                 u_calc_using_lmtd,
                 one_over_u,
-                reciprocal_tube_side_solid_term,
-                reciprocal_tube_side_fluid_term));
+                reciprocal_tube_side_fluid_term,
+                h_t,
+                lambda_wall,
+                wall_side_bulk_temp));
         // now for shell side nusselt
         // Nu_s = h_s D_e/k_s
 

@@ -544,7 +544,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
         let pipe_shell_surf_temperature: ThermodynamicTemperature 
-            = pipe_shell_clone.try_get_bulk_temperature()?;
+            = wall_temperature;
 
         let single_tube_hydraulic_diameter = 
             self.get_tube_side_hydraulic_diameter();

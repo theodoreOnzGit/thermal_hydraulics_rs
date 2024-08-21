@@ -197,15 +197,6 @@ impl SimpleShellAndTubeHeatExchanger {
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             }
 
-            dbg!(&(
-                    reynolds_number_single_tube_abs_for_nusselt_estimate,
-                    self.tube_side_custom_component_loss_correlation,
-                    darcy_friction_factor_tube_side,
-                    bulk_prandtl_number_tube_side,
-                    wall_prandtl_number_tube_side,
-                    nusselt_estimate_tube_side
-            )
-            );
 
             let k_fluid_average_tube_side: ThermalConductivity = 
                 tube_fluid_material.try_get_thermal_conductivity(
@@ -412,6 +403,27 @@ impl SimpleShellAndTubeHeatExchanger {
                 do_by_2_lambda_w_times_ln_do_by_di +
                 one_over_hs;
 
+            dbg!(&(
+                    reynolds_number_single_tube_abs_for_nusselt_estimate,
+                    self.tube_side_custom_component_loss_correlation,
+                    darcy_friction_factor_tube_side,
+                    bulk_prandtl_number_tube_side,
+                    wall_prandtl_number_tube_side,
+                    nusselt_estimate_tube_side
+            )
+            );
+
+            dbg!(&(
+                    reynolds_number_shell_side_abs_for_nusselt_estimate,
+                    bulk_prandtl_number_shell_side,
+                    nusselt_estimate_shell_side,
+                    one_over_u,
+                    one_over_ht_times_do_by_di,
+                    tube_side_h,
+                    shell_conductivity_average,
+                    pipe_shell_surf_temperature,
+            )
+            );
 
 
             // overall heat transfer coeff shell side

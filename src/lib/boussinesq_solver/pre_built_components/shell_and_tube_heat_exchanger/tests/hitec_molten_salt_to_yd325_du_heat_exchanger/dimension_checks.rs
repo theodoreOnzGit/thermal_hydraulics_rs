@@ -2,6 +2,8 @@
 
 
 
+
+
 #[test]
 pub fn check_shell_side_fluid_hydraulic_diameter(){
     use uom::si::f64::*;
@@ -64,4 +66,31 @@ pub fn check_tube_side_reynolds_number_diffusivity(){
         max_relative = 0.01
         );
 
+}
+
+
+
+/// shell side heat transfer area should be 1.63 m^2
+#[test]
+pub fn check_shell_side_heat_trf_area(){
+    use uom::si::f64::*;
+    use uom::si::length::meter;
+    use uom::si::area::square_meter;
+    use std::f64::consts::PI;
+
+    // from Du's heat exchanger type, except we use one inner tube
+    let tube_side_od = Length::new::<meter>(0.014);
+    let number_of_tubes = 19_u32;
+    let pipe_length = Length::new::<meter>(1.95);
+
+    let shell_heat_trf_area: Area = 
+        number_of_tubes as f64 * PI * tube_side_od * pipe_length;
+
+
+    // max error is 1%
+    approx::assert_relative_eq!(
+        1.63,
+        shell_heat_trf_area.get::<square_meter>(),
+        max_relative = 0.01,
+        );
 }
