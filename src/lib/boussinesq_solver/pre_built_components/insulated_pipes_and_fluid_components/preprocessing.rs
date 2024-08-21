@@ -592,7 +592,7 @@ impl InsulatedFluidComponent {
         pipe_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
 
         pipe_prandtl_reynolds_data.darcy_friction_factor = 
-            self.darcy_loss_correlation.darcy_friction_factor_fldk(
+            self.darcy_loss_correlation.fldk_based_on_darcy_friction_factor(
                 reynolds_number).unwrap();
 
         pipe_prandtl_reynolds_data.length_to_diameter = 

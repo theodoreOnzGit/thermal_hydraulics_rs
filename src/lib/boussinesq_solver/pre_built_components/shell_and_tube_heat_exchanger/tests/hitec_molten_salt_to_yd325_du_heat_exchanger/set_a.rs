@@ -463,7 +463,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
                 shell_inlet_temperature, 
                 m_t, 
                 m_s);
-        let correct_for_prandtl_wall_temperatures_u_and_ua = false;
+        let correct_for_prandtl_wall_temperatures_u_and_ua = true;
 
         let _ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(

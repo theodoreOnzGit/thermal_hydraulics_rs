@@ -211,11 +211,18 @@ pub fn yd325_tube_reynolds_prandtl_nusselt(){
 
         let roughness_ratio: Ratio = steel_surface_roughness/d_i;
 
+        
+
         let darcy_friction_factor_calculated: f64 
             = darcy(reynolds_calculated.get::<ratio>(), 
                 roughness_ratio.get::<ratio>()
                 ).unwrap();
 
+        dbg!(&(roughness_ratio,
+                (pipe_length/d_i),
+                darcy_friction_factor_calculated
+                )
+            );
         
         let tube_side_gnielinski_data: GnielinskiData = 
             GnielinskiData {

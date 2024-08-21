@@ -670,9 +670,13 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // but I allow the user to set the nusselt correlation 
 
+        // darcy friction factor
+        // todo: this only works for things in a pipe form
+        //
+        // for other correlations, it doesn't work
         let darcy_friction_factor: Ratio = self.
             tube_side_custom_component_loss_correlation.
-            darcy_friction_factor_fldk(reynolds_number_single_tube)
+            darcy_friction_factor(reynolds_number_single_tube)
             .unwrap();
 
 
@@ -847,7 +851,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let darcy_friction_factor: Ratio = self.
             shell_side_custom_component_loss_correlation.
-            darcy_friction_factor_fldk(reynolds_number_shell_side)
+            fldk_based_on_darcy_friction_factor(reynolds_number_shell_side)
             .unwrap();
 
 

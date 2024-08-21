@@ -82,14 +82,14 @@ impl DimensionlessDarcyLossCorrelations {
             a, b, c);
     }
 
-    /// gets the darcy friction factor based on reynolds number and 
+    /// gets the (f L/D + K) based on reynolds number and 
     /// other fluid component properties
     ///
     /// the convention is to disregard directionality,
     /// so reverse flow will also return a positive friction_factor
     /// value
     #[inline]
-    pub fn darcy_friction_factor_fldk(&self, reynolds_input: Ratio) -> 
+    pub fn fldk_based_on_darcy_friction_factor(&self, reynolds_input: Ratio) -> 
     Result<Ratio, ThermalHydraulicsLibError> {
 
         // check for reverse flow
@@ -115,7 +115,7 @@ impl DimensionlessDarcyLossCorrelations {
         }
 
 
-        let darcy_value: f64 = match self {
+        let fldk_value: f64 = match self {
             // uses churchill_friction_factor here
             DimensionlessDarcyLossCorrelations::Pipe(roughness_ratio,
                 length_to_diameter,
@@ -146,9 +146,64 @@ impl DimensionlessDarcyLossCorrelations {
             },
         };
 
-        Ok(Ratio::new::<ratio>(darcy_value))
+        Ok(Ratio::new::<ratio>(fldk_value))
     }
 
+    /// gets the darcy friction factor based on reynolds number and 
+    /// other fluid component properties
+    ///
+    /// the convention is to disregard directionality,
+    /// so reverse flow will also return a positive friction_factor
+    /// value
+    #[inline]
+    pub fn darcy_friction_factor(&self, reynolds_input: Ratio) -> 
+    Result<Ratio, ThermalHydraulicsLibError> {
+
+        // check for reverse flow
+        let mut reverse_flow = false;
+        if reynolds_input.value < 0.0 {
+            reverse_flow = true;
+        }
+
+        let reynolds: Ratio;
+        if reverse_flow {
+            reynolds = reynolds_input * -1.0;
+        } else {
+            reynolds = reynolds_input;
+        }
+
+        // check for zero flow 
+        
+        if reynolds_input.is_zero() {
+            // return zero friction factor
+            // to ensure that pressure losses are zero
+
+            return Ok(Ratio::new::<ratio>(0.0))
+        }
+
+
+        let darcy_value: f64 = match self {
+            // uses churchill_friction_factor here
+            DimensionlessDarcyLossCorrelations::Pipe(roughness_ratio,
+                _length_to_diameter,
+                _form_loss) => {
+
+                    // total friction factor is 
+                    // = (f L/D + K)
+                    //
+                    let darcy_friction_factor = 
+                    churchill_friction_factor::darcy(
+                        reynolds.get::<ratio>(),
+                        roughness_ratio.get::<ratio>())?;
+
+                    darcy_friction_factor
+            },
+            // this is not implemented for other correlations
+            _ => todo!()
+        };
+
+        Ok(Ratio::new::<ratio>(darcy_value))
+    }
 
     /// obtains bejan number given a reynolds number 
     /// this time, we consider directionality, so if reynolds number is 
@@ -166,7 +221,7 @@ impl DimensionlessDarcyLossCorrelations {
 
         // this is the fldk term
         // it will take care of Re = 0 but not directionality
-        let total_losses_coeff = self.darcy_friction_factor_fldk(reynolds_input)?;
+        let total_losses_coeff = self.fldk_based_on_darcy_friction_factor(reynolds_input)?;
 
         // bejan number is 0.5 * fldk * Re^2
         //

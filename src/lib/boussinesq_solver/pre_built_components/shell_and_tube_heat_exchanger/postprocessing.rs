@@ -128,17 +128,23 @@ impl SimpleShellAndTubeHeatExchanger {
 
             // next, bulk prandtl number 
 
-            let bulk_prandtl_number: Ratio 
+            let bulk_prandtl_number_tube_side: Ratio 
                 = tube_fluid_material.try_get_prandtl_liquid(
                     tube_fluid_temperature,
                     atmospheric_pressure
                 )?;
 
+            let mut wall_prandtl_number_tube_side: Ratio = Ratio::default();
+
             let nusselt_estimate_tube_side: Ratio; 
+            
+            // darcy friction factor
+            // todo: this only works for things in a pipe form
             let darcy_friction_factor_tube_side: Ratio = self.
                 tube_side_custom_component_loss_correlation.
-                darcy_friction_factor_fldk(reynolds_number_single_tube_abs_for_nusselt_estimate)
+                darcy_friction_factor(reynolds_number_single_tube_abs_for_nusselt_estimate)
                 .unwrap();
+
 
             if correct_for_prandtl_wall_temperatures {
 
@@ -168,7 +174,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
                 }
 
-                let wall_prandtl_number: Ratio 
+                wall_prandtl_number_tube_side
                     = tube_fluid_material.try_get_prandtl_liquid(
                         wall_temperature_estimate,
                         atmospheric_pressure
@@ -177,27 +183,37 @@ impl SimpleShellAndTubeHeatExchanger {
                 nusselt_estimate_tube_side = 
                     self.tube_side_nusselt_correlation
                     .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
-                        bulk_prandtl_number, 
-                        wall_prandtl_number, 
+                        bulk_prandtl_number_tube_side, 
+                        wall_prandtl_number_tube_side, 
                         darcy_friction_factor_tube_side,
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             } else {
                 nusselt_estimate_tube_side = 
                     self.tube_side_nusselt_correlation
                     .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
-                        bulk_prandtl_number, 
-                        bulk_prandtl_number, 
+                        bulk_prandtl_number_tube_side, 
+                        bulk_prandtl_number_tube_side, 
                         darcy_friction_factor_tube_side,
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             }
 
-            let k_fluid_average: ThermalConductivity = 
+            dbg!(&(
+                    reynolds_number_single_tube_abs_for_nusselt_estimate,
+                    self.tube_side_custom_component_loss_correlation,
+                    darcy_friction_factor_tube_side,
+                    bulk_prandtl_number_tube_side,
+                    wall_prandtl_number_tube_side,
+                    nusselt_estimate_tube_side
+            )
+            );
+
+            let k_fluid_average_tube_side: ThermalConductivity = 
                 tube_fluid_material.try_get_thermal_conductivity(
                     tube_fluid_temperature)?;
 
             let tube_side_h
                 = nusselt_estimate_tube_side 
-                * k_fluid_average / single_tube_hydraulic_diameter;
+                * k_fluid_average_tube_side / single_tube_hydraulic_diameter;
             
             let d_o_by_d_i: Ratio = 
                 self.tube_side_od/self.tube_side_id;
@@ -276,7 +292,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
             // next, bulk prandtl number 
 
-            let bulk_prandtl_number: Ratio 
+            let bulk_prandtl_number_shell_side: Ratio 
                 = shell_fluid_material.try_get_prandtl_liquid(
                     shell_side_fluid_temperature,
                     atmospheric_pressure
@@ -288,14 +304,14 @@ impl SimpleShellAndTubeHeatExchanger {
                 = self.shell_side_nusselt_correlation_to_tubes;
             let darcy_friction_factor_shell_side: Ratio = self.
                 shell_side_custom_component_loss_correlation.
-                darcy_friction_factor_fldk(reynolds_number_shell_side_abs_for_nusselt_estimate)
+                fldk_based_on_darcy_friction_factor(reynolds_number_shell_side_abs_for_nusselt_estimate)
                 .unwrap();
 
             let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
                 = GnielinskiData::default();
             pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side_abs_for_nusselt_estimate;
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number_shell_side;
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number_shell_side;
             pipe_prandtl_reynolds_gnielinksi_data.darcy_friction_factor = 
                 darcy_friction_factor_shell_side;
             pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
@@ -349,14 +365,14 @@ impl SimpleShellAndTubeHeatExchanger {
 
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_reynolds_and_wall_correction(
-                        bulk_prandtl_number, 
+                        bulk_prandtl_number_shell_side, 
                         wall_prandtl_number_estimate,
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             } else {
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_and_reynolds_no_wall_correction(
-                        bulk_prandtl_number, 
+                        bulk_prandtl_number_shell_side, 
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             }
@@ -367,11 +383,11 @@ impl SimpleShellAndTubeHeatExchanger {
 
             let shell_side_h_to_fluid: HeatTransfer;
 
-            let k_fluid_average: ThermalConductivity = 
+            let k_fluid_average_shell_side: ThermalConductivity = 
                 shell_fluid_material.try_get_thermal_conductivity(
                     shell_side_fluid_temperature)?;
 
-            shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average / shell_side_fluid_hydraulic_diameter;
+            shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average_shell_side / shell_side_fluid_hydraulic_diameter;
 
             //// this was for debugging
             //dbg!(
