@@ -120,6 +120,10 @@ use uom::si::f64::*;
 /// correlations
 ///
 /// The axial sides are adiabatic unless otherwise stated
+///
+/// TODO: the nusselt number correlations for the shell and tube side 
+/// are not yet capable of handling nusselt number correlations other 
+/// than those provided by Du (Gnielinski type correlations)
 #[derive(Clone,Debug,PartialEq)]
 pub struct SimpleShellAndTubeHeatExchanger {
 

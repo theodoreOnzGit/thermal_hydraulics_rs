@@ -14,6 +14,10 @@ use uom::si::f64::*;
 ///
 /// the standard assumption is that at each boundary of this pipe,
 /// there is no conduction heat transfer in the axial direction
+/// TODO: the nusselt number correlations for the shell and tube side 
+/// are not yet capable/tested of handling nusselt number correlations other 
+/// than Gnielinski type correlations
+///
 #[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedFluidComponent {
 
