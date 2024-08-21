@@ -981,7 +981,7 @@ pub fn gnielinski_turbulent_correlation_liquids_developing(
 ///
 /// let mut nu_test =
 /// pipe_correlations::
-/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
 /// Re,
 /// Pr,
 /// Pr_wall,
@@ -1007,7 +1007,7 @@ pub fn gnielinski_turbulent_correlation_liquids_developing(
 ///
 /// let mut nu_test =
 /// pipe_correlations::
-/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+/// gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
 /// Re,
 /// Pr,
 /// Pr_wall,
