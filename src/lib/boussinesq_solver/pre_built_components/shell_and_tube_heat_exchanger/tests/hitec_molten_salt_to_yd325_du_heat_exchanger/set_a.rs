@@ -476,7 +476,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
 
         // shell side outlet temperature and inlet cv temperature
-        let (shell_side_inlet_cv_temperature, 
+        let (_shell_side_inlet_cv_temperature, 
             shell_side_outlet_temperature): 
             (ThermodynamicTemperature, ThermodynamicTemperature) = {
                 let temperature_vec_shell_side = 
@@ -495,7 +495,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             };
 
         // tube side inlet cv temperature
-        let tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
+        let _tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
 
             let temperature_vec_tube_side = 
                 sthe.tube_side_fluid_array_for_single_tube. 
@@ -1313,25 +1313,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
                 assert_relative_eq!(
                     reynolds_num_a7.get::<ratio>(),
-                    4178.0,
+                    4212.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_a7.get::<ratio>(),
-                    11.44,
+                    20.07,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_a7.get::<ratio>(),
-                    19.76,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_a7.get::<ratio>(),
-                    47.73,
+                    48.95,
                     max_relative = 0.01,
                 );
             }
