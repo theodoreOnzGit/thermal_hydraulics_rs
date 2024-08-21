@@ -598,14 +598,14 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let shell_side_area: Area = 
             number_of_tubes as f64 * PI * tube_side_od * pipe_length;
 
-        dbg!(&
-            (
-                q_avg,
-                q_tube,
-                q_shell,
-                lmtd,
-                shell_side_area
-            ));
+        //dbg!(&
+        //    (
+        //        q_avg,
+        //        q_tube,
+        //        q_shell,
+        //        lmtd,
+        //        shell_side_area
+        //    ));
 
         let u_calc_using_lmtd: HeatTransfer = q_avg / shell_side_area / lmtd ;
 
@@ -704,14 +704,14 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let h_t: HeatTransfer = 
             nusselt_tube_side * lambda_tube / tube_side_id;
 
-        // debug tube side parameters
-        dbg!(&(
-                reynolds_tube_side,
-                tube_side_prandtl,
-                tube_wall_side_prandtl,
-                nusselt_tube_side
-        )
-        );
+        //// debug tube side parameters
+        //dbg!(&(
+        //        reynolds_tube_side,
+        //        tube_side_prandtl,
+        //        tube_wall_side_prandtl,
+        //        nusselt_tube_side
+        //)
+        //);
 
         // now to calculate for h_s 
         //
@@ -807,11 +807,10 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
         let shell_side_fluid_film_prandtl_estimate = 
             shell_side_fluid_bulk_prandtl;
-        // Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+        // Nu = C (Re^m - 280.0) Pr_bulk^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
         // For Du's Heat exchanger, 
         // C = 0.04318,
         // m = 0.7797
-        // Pr_film = Pr_bulk
         let nusselt_number_direct_from_correlation = 
             custom_gnielinski_turbulent_nusselt_correlation(
                 Ratio::new::<ratio>(0.04318),
@@ -825,7 +824,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
         // for debugging, get u from conductances 
 
-        let u_from_conductance = 
+        let _u_from_conductance = 
             sthe.overall_htc_based_on_conductance(
                 correct_for_prandtl_wall_temperatures_u_and_ua,
                 m_t.abs(),
@@ -835,21 +834,24 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
 
 
-        dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
-        tube_side_inlet_cv_temperature.get::<degree_celsius>(),
-        shell_inlet_temperature.get::<degree_celsius>(),
-        shell_side_inlet_cv_temperature.get::<degree_celsius>(),
-        tube_side_outlet_temperature.get::<degree_celsius>(),
-        shell_side_outlet_temperature.get::<degree_celsius>(),
-        //m_t,
-        //m_s,
-        // ua, 
-        u_calc_from_postprocess,
-        u_calc_using_lmtd,
-        u_from_conductance,
-        //reynolds_shell_side,
-        nusselt_number_shell_calculated,
-        nusselt_number_direct_from_correlation
+        dbg!(&(
+                shell_inlet_temperature.get::<degree_celsius>(),
+                tube_inlet_temperature.get::<degree_celsius>(),
+                //tube_side_inlet_cv_temperature.get::<degree_celsius>(),
+                //shell_side_inlet_cv_temperature.get::<degree_celsius>(),
+                shell_side_outlet_temperature.get::<degree_celsius>(),
+                tube_side_outlet_temperature.get::<degree_celsius>(),
+                //m_t,
+                //m_s,
+                // ua, 
+                u_calc_using_lmtd,
+                //u_from_conductance,
+                reynolds_shell_side,
+                shell_side_fluid_bulk_prandtl,
+                shell_side_fluid_wall_prandtl,
+                nusselt_number_shell_calculated,
+                nusselt_number_direct_from_correlation,
+                u_calc_from_postprocess,
         ));
 
         // check whether correlation input into object is same as 
@@ -890,25 +892,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
             nusselt_number_a1));
     assert_relative_eq!(
         reynolds_num_a1.get::<ratio>(),
-        3474.0,
+        3496.0,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         bulk_prandtl_a1.get::<ratio>(),
-        12.33,
+        24.16,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         wall_prandtl_a1.get::<ratio>(),
-        23.38,
+        37.89,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         nusselt_number_a1.get::<ratio>(),
-        39.90,
+        42.47,
         max_relative = 0.01,
         );
 
