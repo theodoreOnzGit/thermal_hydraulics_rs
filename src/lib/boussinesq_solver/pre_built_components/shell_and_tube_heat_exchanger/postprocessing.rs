@@ -52,6 +52,66 @@ impl SimpleShellAndTubeHeatExchanger {
             }
     }
 
+
+    /// provides overall heat transfer coeff using conductance 
+    /// calculations 
+    /// |            |            |               |
+    /// |            |            |               |
+    /// |-tube fluid-|-inner tube-|- shell fluid -|
+    /// |            |            |               |
+    /// |            |            |               |
+    ///
+    /// 1/(u a_shell_node) = 1/H_tube + 1/H_shell
+    pub fn overall_htc_based_on_conductance(&mut self,
+        correct_for_prandtl_wall_temperatures: bool,
+        tube_side_total_mass_flowrate: MassRate,
+        shell_side_total_mass_flowrate: MassRate,) -> HeatTransfer {
+
+        self.set_tube_side_total_mass_flowrate(tube_side_total_mass_flowrate);
+        self.set_shell_side_total_mass_flowrate(shell_side_total_mass_flowrate);
+
+
+        let single_tube_to_shell_side_fluid_conductance: ThermalConductance
+            = self.get_shell_side_fluid_to_single_inner_pipe_shell_nodal_conductance(
+                correct_for_prandtl_wall_temperatures).unwrap();
+        let single_tube_to_tube_side_fluid_conductance: ThermalConductance
+            = self.get_single_tube_side_fluid_array_node_to_inner_pipe_shell_nodal_conductance(
+                correct_for_prandtl_wall_temperatures).unwrap();
+
+        let one_over_ua_shell_node: ThermalResistance = 
+            single_tube_to_shell_side_fluid_conductance.recip() +
+            single_tube_to_tube_side_fluid_conductance.recip();
+
+        let ua_shell_node: ThermalConductance = 
+            one_over_ua_shell_node.recip();
+
+        // a_shell for one node
+        let number_of_temperature_nodes = self.inner_nodes + 2;
+        let mut single_inner_tube_fluid_arr_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
+        let heated_length = single_inner_tube_fluid_arr_clone
+            .get_component_length();
+
+        let od = self.tube_side_od;
+
+
+        let node_length = heated_length / 
+            number_of_temperature_nodes as f64;
+
+        // area of shell for one node is PI D l 
+
+        let area_shell_for_one_node: Area = PI * od * node_length;
+
+        // obtain u
+
+        let u_from_conductance: HeatTransfer = 
+            ua_shell_node/area_shell_for_one_node;
+
+        return u_from_conductance;
+
+
+    }
+
     /// provides the overall heat transfer coefficient based on the 
     /// shell side area
     ///
@@ -128,19 +188,29 @@ impl SimpleShellAndTubeHeatExchanger {
 
             // next, bulk prandtl number 
 
-            let bulk_prandtl_number: Ratio 
+            let bulk_prandtl_number_tube_side: Ratio 
                 = tube_fluid_material.try_get_prandtl_liquid(
                     tube_fluid_temperature,
                     atmospheric_pressure
                 )?;
 
+            let wall_prandtl_number_tube_side: Ratio;
+
             let nusselt_estimate_tube_side: Ratio; 
+            
+            // darcy friction factor
+            // todo: this only works for things in a pipe form
+            let darcy_friction_factor_tube_side: Ratio = self.
+                tube_side_custom_component_loss_correlation.
+                darcy_friction_factor(reynolds_number_single_tube_abs_for_nusselt_estimate)
+                .unwrap();
+
 
             if correct_for_prandtl_wall_temperatures {
 
                 // then wall prandtl number (partially corrected)
 
-                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                let _part_correct_wall_temperature: ThermodynamicTemperature = 
                     ThermodynamicTemperature::new::<kelvin>(
                         0.1 * (
                             3.0 * wall_temperature.get::<kelvin>() + 
@@ -148,34 +218,53 @@ impl SimpleShellAndTubeHeatExchanger {
                         )
                     );
 
-                let wall_prandtl_number_part_correct: Ratio 
+                // the other method is to just use the wall prandtl number 
+                // if the number falls outside the range of correlations,
+                // then use the prandtl number at the max or min 
+
+                let mut wall_temperature_estimate = wall_temperature;
+
+                if wall_temperature_estimate > tube_fluid_material.max_temperature() {
+
+                    wall_temperature_estimate = tube_fluid_material.max_temperature();
+
+                } else if wall_temperature_estimate < tube_fluid_material.min_temperature() {
+
+                    wall_temperature_estimate = tube_fluid_material.min_temperature();
+
+                }
+
+                wall_prandtl_number_tube_side
                     = tube_fluid_material.try_get_prandtl_liquid(
-                        part_correct_wall_temperature,
+                        wall_temperature_estimate,
                         atmospheric_pressure
                     )?;
 
                 nusselt_estimate_tube_side = 
                     self.tube_side_nusselt_correlation
-                    .estimate_based_on_prandtl_reynolds_and_wall_correction(
-                        bulk_prandtl_number, 
-                        wall_prandtl_number_part_correct, 
+                    .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
+                        bulk_prandtl_number_tube_side, 
+                        wall_prandtl_number_tube_side, 
+                        darcy_friction_factor_tube_side,
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             } else {
                 nusselt_estimate_tube_side = 
                     self.tube_side_nusselt_correlation
-                    .estimate_based_on_prandtl_reynolds_and_wall_correction(
-                        bulk_prandtl_number, 
-                        bulk_prandtl_number, 
+                    .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
+                        bulk_prandtl_number_tube_side, 
+                        bulk_prandtl_number_tube_side, 
+                        darcy_friction_factor_tube_side,
                         reynolds_number_single_tube_abs_for_nusselt_estimate)?;
             }
 
-            let k_fluid_average: ThermalConductivity = 
+
+            let k_fluid_average_tube_side: ThermalConductivity = 
                 tube_fluid_material.try_get_thermal_conductivity(
                     tube_fluid_temperature)?;
 
             let tube_side_h
                 = nusselt_estimate_tube_side 
-                * k_fluid_average / single_tube_hydraulic_diameter;
+                * k_fluid_average_tube_side / single_tube_hydraulic_diameter;
             
             let d_o_by_d_i: Ratio = 
                 self.tube_side_od/self.tube_side_id;
@@ -235,11 +324,11 @@ impl SimpleShellAndTubeHeatExchanger {
             // flow area and hydraulic diameter are ok
 
 
-            let fluid_material: LiquidMaterial
+            let shell_fluid_material: LiquidMaterial
                 = shell_side_fluid_array_clone.material_control_volume.try_into()?;
 
             let viscosity: DynamicViscosity = 
-                fluid_material.try_get_dynamic_viscosity(shell_side_fluid_temperature)?;
+                shell_fluid_material.try_get_dynamic_viscosity(shell_side_fluid_temperature)?;
 
             // need to convert hydraulic diameter to an equivalent 
             // spherical diameter
@@ -254,8 +343,8 @@ impl SimpleShellAndTubeHeatExchanger {
 
             // next, bulk prandtl number 
 
-            let bulk_prandtl_number: Ratio 
-                = fluid_material.try_get_prandtl_liquid(
+            let bulk_prandtl_number_shell_side: Ratio 
+                = shell_fluid_material.try_get_prandtl_liquid(
                     shell_side_fluid_temperature,
                     atmospheric_pressure
                 )?;
@@ -264,12 +353,18 @@ impl SimpleShellAndTubeHeatExchanger {
 
             let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
                 = self.shell_side_nusselt_correlation_to_tubes;
+            let darcy_friction_factor_shell_side: Ratio = self.
+                shell_side_custom_component_loss_correlation.
+                fldk_based_on_darcy_friction_factor(reynolds_number_shell_side_abs_for_nusselt_estimate)
+                .unwrap();
 
             let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
                 = GnielinskiData::default();
             pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_shell_side_abs_for_nusselt_estimate;
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number_shell_side;
+            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number_shell_side;
+            pipe_prandtl_reynolds_gnielinksi_data.darcy_friction_factor = 
+                darcy_friction_factor_shell_side;
             pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
                 shell_side_fluid_array_clone.get_component_length_immutable()/
                 shell_side_fluid_hydraulic_diameter;
@@ -287,7 +382,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
                 // then wall prandtl number (partially corrected)
 
-                let part_correct_wall_temperature: ThermodynamicTemperature = 
+                let _part_correct_wall_temperature: ThermodynamicTemperature = 
                     ThermodynamicTemperature::new::<kelvin>(
                         0.1 * (
                             3.0 * wall_temperature.get::<kelvin>() + 
@@ -295,24 +390,40 @@ impl SimpleShellAndTubeHeatExchanger {
                         )
                     );
 
-                let wall_prandtl_number_part_correct: Ratio 
-                    = fluid_material.try_get_prandtl_liquid(
-                        part_correct_wall_temperature,
+                // the other method is to just use the wall prandtl number 
+                // if the number falls outside the range of correlations,
+                // then use the prandtl number at the max or min 
+
+                let mut wall_temperature_estimate = wall_temperature;
+
+                if wall_temperature_estimate > shell_fluid_material.max_temperature() {
+
+                    wall_temperature_estimate = shell_fluid_material.max_temperature();
+
+                } else if wall_temperature_estimate < shell_fluid_material.min_temperature() {
+
+                    wall_temperature_estimate = shell_fluid_material.min_temperature();
+
+                }
+
+                let wall_prandtl_number_estimate: Ratio 
+                    = shell_fluid_material.try_get_prandtl_liquid(
+                        wall_temperature_estimate,
                         atmospheric_pressure
                     )?;
 
-                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number_part_correct;
+                pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number_estimate;
 
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_reynolds_and_wall_correction(
-                        bulk_prandtl_number, 
-                        wall_prandtl_number_part_correct,
+                        bulk_prandtl_number_shell_side, 
+                        wall_prandtl_number_estimate,
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             } else {
                 nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
                     estimate_based_on_prandtl_and_reynolds_no_wall_correction(
-                        bulk_prandtl_number, 
+                        bulk_prandtl_number_shell_side, 
                         reynolds_number_shell_side_abs_for_nusselt_estimate)?;
 
             }
@@ -323,11 +434,11 @@ impl SimpleShellAndTubeHeatExchanger {
 
             let shell_side_h_to_fluid: HeatTransfer;
 
-            let k_fluid_average: ThermalConductivity = 
-                fluid_material.try_get_thermal_conductivity(
+            let k_fluid_average_shell_side: ThermalConductivity = 
+                shell_fluid_material.try_get_thermal_conductivity(
                     shell_side_fluid_temperature)?;
 
-            shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average / shell_side_fluid_hydraulic_diameter;
+            shell_side_h_to_fluid = nusselt_estimate_shell_side * k_fluid_average_shell_side / shell_side_fluid_hydraulic_diameter;
 
             //// this was for debugging
             //dbg!(
@@ -352,6 +463,28 @@ impl SimpleShellAndTubeHeatExchanger {
                 do_by_2_lambda_w_times_ln_do_by_di +
                 one_over_hs;
 
+            // used in debugging tube side nusselt
+            //dbg!(&(
+            //        reynolds_number_single_tube_abs_for_nusselt_estimate,
+            //        self.tube_side_custom_component_loss_correlation,
+            //        darcy_friction_factor_tube_side,
+            //        bulk_prandtl_number_tube_side,
+            //        wall_prandtl_number_tube_side,
+            //        nusselt_estimate_tube_side
+            //)
+            //);
+
+            //dbg!(&(
+            //        reynolds_number_shell_side_abs_for_nusselt_estimate,
+            //        bulk_prandtl_number_shell_side,
+            //        nusselt_estimate_shell_side,
+            //        one_over_u,
+            //        one_over_ht_times_do_by_di,
+            //        tube_side_h,
+            //        shell_conductivity_average,
+            //        pipe_shell_surf_temperature,
+            //)
+            //);
 
 
             // overall heat transfer coeff shell side

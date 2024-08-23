@@ -89,8 +89,8 @@ impl NusseltPrandtlReynoldsData {
 
     /// ciet heater correlation for version 2, 
     ///
-    /// Nu = 0.04179 * reynolds^0.836 * prandtl^0.333
-    /// * (Pr_wall/Pr_bulk)^0.11
+    /// Nu = 0.04179 * reynolds^0.836 * Pr_bulk^0.333
+    /// * (Pr_bulk/Pr_wall)^0.11
     ///
     /// ignores the coefficients, a,b,c,d,e in the struct
     ///
@@ -118,7 +118,7 @@ impl NusseltPrandtlReynoldsData {
         let prandtl_wall = self.prandtl_wall;
         let prandtl_bulk = self.prandtl_bulk;
 
-        let prandtl_bulk_to_wall_ratio = prandtl_wall/prandtl_bulk;
+        let prandtl_bulk_to_wall_ratio = prandtl_bulk/prandtl_wall;
 
         let correction_factor: f64 
         = prandtl_bulk_to_wall_ratio.get::<ratio>().powf(0.11);
@@ -218,8 +218,12 @@ impl GnielinskiData {
     /// Gnielinski correlation but for developing flows 
     ///
     /// suitable for laminar, turbulent and transition flows
+    ///
+    /// for this, only bulk prandtl number and wall prandtl 
+    /// numbers are used to calculate Nusselt rather than film 
+    /// prandtl number
     #[inline]
-    pub fn get_nusselt_for_developing_flow(&self) 
+    pub fn get_nusselt_for_developing_flow_bulk_fluid_prandtl(&self) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
         let reynolds: Ratio =  self.reynolds;
         let prandtl_bulk: Ratio = self.prandtl_bulk;
@@ -228,9 +232,41 @@ impl GnielinskiData {
         let length_to_diameter = self.length_to_diameter;
 
         let nusselt_value = 
+        gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing_bulk_fluid_prandtl(
+            reynolds.get::<ratio>(),
+            prandtl_bulk.get::<ratio>(),
+            prandtl_wall.get::<ratio>(),
+            darcy_friction_factor.get::<ratio>(),
+            length_to_diameter.get::<ratio>(),
+        );
+
+        return Ok(
+            Ratio::new::<ratio>(nusselt_value)
+        );
+
+    }
+    /// Gnielinski correlation but for developing flows 
+    ///
+    /// suitable for laminar, turbulent and transition flows
+    ///
+    /// for this, film prandtl numbers, bulk prandtl number and wall prandtl 
+    /// numbers are used to calculate Nusselt number
+    /// prandtl_film: Ratio = (prandtl_wall + prandtl_bulk)/2.0;
+    #[inline]
+    pub fn get_nusselt_for_developing_flow(&self) 
+    -> Result<Ratio,ThermalHydraulicsLibError>{
+        let reynolds: Ratio =  self.reynolds;
+        let prandtl_bulk: Ratio = self.prandtl_bulk;
+        let prandtl_wall: Ratio = self.prandtl_wall;
+        let prandtl_film: Ratio = (prandtl_wall + prandtl_bulk)/2.0;
+        let darcy_friction_factor = self.darcy_friction_factor;
+        let length_to_diameter = self.length_to_diameter;
+
+        let nusselt_value = 
         gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
             reynolds.get::<ratio>(),
             prandtl_bulk.get::<ratio>(),
+            prandtl_film.get::<ratio>(),
             prandtl_wall.get::<ratio>(),
             darcy_friction_factor.get::<ratio>(),
             length_to_diameter.get::<ratio>(),
@@ -253,7 +289,7 @@ impl GnielinskiData {
     /// for the prandtl number of the film, I just took 
     /// Pr_film = 0.5 * (prandtl_number_wall + prandtl_number_bulk_fluid)
     #[inline]
-    pub fn get_nusselt_for_custom_developing_flow(&self,
+    pub fn get_nusselt_for_custom_developing_flow_prandtl_film(&self,
         correlation_coefficient_c: Ratio,
         reynolds_exponent_m: f64) 
     -> Result<Ratio,ThermalHydraulicsLibError>{
@@ -263,6 +299,58 @@ impl GnielinskiData {
         let length_to_diameter = self.length_to_diameter;
 
         let prandtl_film_estimate = 0.5 * (prandtl_wall + prandtl_bulk);
+
+
+        let nusselt_value = 
+        custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing(
+            correlation_coefficient_c,
+            reynolds_exponent_m,
+            prandtl_film_estimate,
+            prandtl_bulk,
+            prandtl_wall,
+            reynolds,
+            length_to_diameter,
+        );
+
+        return Ok(
+            Ratio::new::<ratio>(nusselt_value)
+        );
+
+    }
+    /// Custom Gnielinski correlation but for developing flows 
+    ///
+    /// suitable for laminar, turbulent and transition flows
+    /// the transition regime is around Re = 2300 - 4000 
+    /// this is taken from the Re for transition in pipes 
+    /// IT MAY NOT BE APPLICABLE IN THIS CASE
+    ///
+    /// the custom gnielinski correlation has an extra prandtl_film_estimate 
+    /// argument in it based on Du's original correlation:
+    /// Nu = C (Re^m - 280.0) Pr^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+    ///
+    /// Du did not mention which Pr to use 
+    /// I'm going to assume this is Pr_film 
+    ///
+    /// Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+    /// 
+    /// Now, since this unidentified prandtl number (just thought to be 
+    /// prandtl film) is an extra argument, 
+    /// I could assume it is the same as prandtl bulk:
+    /// 
+    /// Nu = C (Re^m - 280.0) Pr_f^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+    ///
+    /// This is what this function does
+    #[inline]
+    pub fn get_nusselt_for_custom_developing_flow_prandtl_bulk(&self,
+        correlation_coefficient_c: Ratio,
+        reynolds_exponent_m: f64) 
+    -> Result<Ratio,ThermalHydraulicsLibError>{
+        let reynolds: Ratio =  self.reynolds;
+        let prandtl_bulk: Ratio = self.prandtl_bulk;
+        let prandtl_wall: Ratio = self.prandtl_wall;
+        let length_to_diameter = self.length_to_diameter;
+
+        let prandtl_film_estimate = prandtl_bulk;
 
 
         let nusselt_value = 

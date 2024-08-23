@@ -17,6 +17,9 @@ use uom::si::f64::*;
 /// This is good for the tube side of heat exchangers, or for air cooled 
 /// pipes modelled as bundled arrays
 ///
+/// TODO: the nusselt number correlations for the shell and tube side 
+/// are not yet capable/tested of handling nusselt number correlations other 
+/// than Gnielinski type correlations
 ///
 #[derive(Clone,Debug,PartialEq)]
 pub struct NonInsulatedParallelFluidComponent {

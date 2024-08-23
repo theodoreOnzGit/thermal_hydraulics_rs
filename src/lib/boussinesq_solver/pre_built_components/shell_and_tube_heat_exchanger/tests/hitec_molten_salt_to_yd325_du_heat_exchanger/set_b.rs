@@ -16,6 +16,7 @@
 /// and switching off the insulation boolean
 ///
 #[test]
+//#[ignore = "debugging"]
 pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
     use std::f64::consts::PI;
@@ -30,11 +31,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         ::HeatTransferInteractionType;
     use crate::boussinesq_solver::boundary_conditions::BCType;
 
+    use crate::boussinesq_solver::fluid_mechanics_correlations::
+        churchill_friction_factor::darcy;
 
     use approx::assert_relative_eq;
     use uom::si::angle::degree;
     //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-    use uom::si::length::{meter, millimeter};
+    use uom::si::length::meter;
     use uom::si::pressure::atmosphere;
     use uom::si::ratio::ratio;
     use uom::si::thermodynamic_temperature::degree_celsius;
@@ -172,16 +175,18 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
     let shell_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             shell_side_fluid_hydraulic_diameter, 
             form_loss
         );
 
 
+    // for tube loss correlations, we need to use the 
+    // darcy_friction_factor
     let tube_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
-            Length::new::<millimeter>(0.001), 
+            SolidMaterial::SteelSS304L.surface_roughness().unwrap(), 
             tube_side_id, 
             form_loss
         );
@@ -206,7 +211,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
     let c: Ratio = Ratio::new::<ratio>(0.04318);
     let m: f64 = 0.7797;
     let shell_side_nusselt_correlation_to_tubes = 
-        NusseltCorrelation::CustomGnielinskiGeneric(
+        NusseltCorrelation::CustomGnielinskiGenericPrandtlBulk(
             shell_side_gnielinski_data, c, m);
 
     let tube_side_length_to_diameter: Ratio = 
@@ -224,7 +229,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         };
 
     let tube_side_nusselt_correlation = 
-        NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
+        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
 
     let shell_side_nusselt_correlation_to_outer_shell = 
         NusseltCorrelation::FixedNusselt(Ratio::ZERO);
@@ -312,7 +317,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         let mut outlet_bc: HeatTransferEntity = 
             BCType::new_adiabatic_bc().into();
 
-        let max_time = Time::new::<second>(800_f64);
+        let max_time = Time::new::<second>(1500_f64);
 
         let number_of_nodes = sthe.inner_nodes + 2;
         let timestep = Time::new::<second>(0.05 * 10.0 / number_of_nodes as f64);
@@ -458,7 +463,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                 shell_inlet_temperature, 
                 m_t, 
                 m_s);
-        let correct_for_prandtl_wall_temperatures_u_and_ua = false;
+        let correct_for_prandtl_wall_temperatures_u_and_ua = true;
 
         let _ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
@@ -471,7 +476,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
 
         // shell side outlet temperature and inlet cv temperature
-        let (shell_side_inlet_cv_temperature, 
+        let (_shell_side_inlet_cv_temperature, 
             shell_side_outlet_temperature): 
             (ThermodynamicTemperature, ThermodynamicTemperature) = {
                 let temperature_vec_shell_side = 
@@ -490,7 +495,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
             };
 
         // tube side inlet cv temperature
-        let tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
+        let _tube_side_inlet_cv_temperature: ThermodynamicTemperature = {
 
             let temperature_vec_tube_side = 
                 sthe.tube_side_fluid_array_for_single_tube. 
@@ -593,6 +598,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         let shell_side_area: Area = 
             number_of_tubes as f64 * PI * tube_side_od * pipe_length;
 
+        //dbg!(&
+        //    (
+        //        q_avg,
+        //        q_tube,
+        //        q_shell,
+        //        lmtd,
+        //        shell_side_area
+        //    ));
+
         let u_calc_using_lmtd: HeatTransfer = q_avg / shell_side_area / lmtd ;
 
         // next, I want the nusselt number of the tube side, 
@@ -643,11 +657,38 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
             / tube_side_dynamic_viscosity
             / number_of_tubes as f64;
 
+        let darcy_friction_factor: f64 = 
+            darcy(
+                reynolds_tube_side.get::<ratio>(), 
+                (SolidMaterial::SteelSS304L.surface_roughness().unwrap()/
+                 tube_side_id).get::<ratio>()
+                ).unwrap();
+
+        let darcy_friction_factor: Ratio = 
+            Ratio::new::<ratio>(darcy_friction_factor);
+
+
+        let gnielinski_data = match tube_side_nusselt_correlation {
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(mut data) => {
+                data.darcy_friction_factor = 
+                    darcy_friction_factor.into();
+
+                data
+            },
+            _ => todo!()
+        };
+
+        let tube_side_nusselt_correlation = 
+            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
+                gnielinski_data);
+
+
         nusselt_tube_side = tube_side_nusselt_correlation
-            .estimate_based_on_prandtl_reynolds_and_wall_correction
+            .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction
             (
                 tube_side_prandtl,
                 tube_wall_side_prandtl,
+                darcy_friction_factor,
                 reynolds_tube_side
             ).unwrap();
 
@@ -662,6 +703,15 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
         let h_t: HeatTransfer = 
             nusselt_tube_side * lambda_tube / tube_side_id;
+
+        //// debug tube side parameters
+        //dbg!(&(
+        //        reynolds_tube_side,
+        //        tube_side_prandtl,
+        //        tube_wall_side_prandtl,
+        //        nusselt_tube_side
+        //)
+        //);
 
         // now to calculate for h_s 
         //
@@ -689,8 +739,11 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         let reciprocal_tube_side_solid_term = 
             tube_side_od/(2.0 as f64 * lambda_wall) 
             * (tube_side_od/tube_side_id).get::<ratio>().ln();
+        
+        let _one_over_u_postprocess = u_calc_from_postprocess.recip();
 
-        // 1/h_s = 1/u - 1/h_t d_o/d_i + d_o/(2 lambda_w) ln (d_o/d_i) 
+
+        // 1/h_s = 1/u - 1/h_t d_o/d_i - d_o/(2 lambda_w) ln (d_o/d_i) 
         let one_over_hs = 
             one_over_u - reciprocal_tube_side_fluid_term - 
             reciprocal_tube_side_solid_term;
@@ -699,6 +752,16 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
         // shell side heat trf coeff
         let h_s: HeatTransfer = one_over_hs.recip();
 
+        // used to debug tube side nusselt
+        //dbg!(&(reciprocal_tube_side_solid_term,
+        //        h_t,
+        //        h_s,
+        //        u_calc_using_lmtd,
+        //        one_over_u,
+        //        reciprocal_tube_side_fluid_term,
+        //        h_t,
+        //        lambda_wall,
+        //        wall_side_bulk_temp));
         // now for shell side nusselt
         // Nu_s = h_s D_e/k_s
 
@@ -729,17 +792,22 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
             .unwrap();
 
         let shell_side_fluid_bulk_prandtl = 
-            LiquidMaterial::YD325.try_get_prandtl_liquid(
+            LiquidMaterial::HITEC.try_get_prandtl_liquid(
                 shell_side_fluid_bulk_temp, fluid_pressure).unwrap();
+
+        let mut est_wall_temp_hitec = wall_side_bulk_temp;
+        if wall_side_bulk_temp < LiquidMaterial::HITEC.min_temperature() {
+            est_wall_temp_hitec = LiquidMaterial::HITEC.min_temperature();
+        }
 
 
         let shell_side_fluid_wall_prandtl = 
-            LiquidMaterial::YD325.try_get_prandtl_liquid(
-                wall_side_bulk_temp, fluid_pressure).unwrap();
+            LiquidMaterial::HITEC.try_get_prandtl_liquid(
+                est_wall_temp_hitec, fluid_pressure).unwrap();
 
         let shell_side_fluid_film_prandtl_estimate = 
-            0.5 * (shell_side_fluid_wall_prandtl + shell_side_fluid_bulk_prandtl);
-        // Nu = C (Re^m - 280.0) Pr_film^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
+            shell_side_fluid_bulk_prandtl;
+        // Nu = C (Re^m - 280.0) Pr_bulk^0.4 ( 1.0 + (D_e/l)^(2/3) ) ( Pr_f / Pr_w )^0.25
         // For Du's Heat exchanger, 
         // C = 0.04318,
         // m = 0.7797
@@ -754,23 +822,36 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                 shell_side_length_to_diameter
             );
 
+        // for debugging, get u from conductances 
+
+        let _u_from_conductance = 
+            sthe.overall_htc_based_on_conductance(
+                correct_for_prandtl_wall_temperatures_u_and_ua,
+                m_t.abs(),
+                m_s.abs()
+                );
 
 
 
-        dbg!(&(tube_inlet_temperature.get::<degree_celsius>(),
-        tube_side_inlet_cv_temperature.get::<degree_celsius>(),
-        shell_inlet_temperature.get::<degree_celsius>(),
-        shell_side_inlet_cv_temperature.get::<degree_celsius>(),
-        tube_side_outlet_temperature.get::<degree_celsius>(),
-        shell_side_outlet_temperature.get::<degree_celsius>(),
-        //m_t,
-        //m_s,
-        // ua, 
-        u_calc_from_postprocess,
-        u_calc_using_lmtd,
-        reynolds_shell_side,
-        nusselt_number_shell_calculated,
-        nusselt_number_direct_from_correlation
+
+        dbg!(&(
+                shell_inlet_temperature.get::<degree_celsius>(),
+                tube_inlet_temperature.get::<degree_celsius>(),
+                //tube_side_inlet_cv_temperature.get::<degree_celsius>(),
+                //shell_side_inlet_cv_temperature.get::<degree_celsius>(),
+                shell_side_outlet_temperature.get::<degree_celsius>(),
+                tube_side_outlet_temperature.get::<degree_celsius>(),
+                //m_t,
+                //m_s,
+                // ua, 
+                u_calc_using_lmtd,
+                //u_from_conductance,
+                reynolds_shell_side,
+                shell_side_fluid_bulk_prandtl,
+                shell_side_fluid_wall_prandtl,
+                nusselt_number_shell_calculated,
+                nusselt_number_direct_from_correlation,
+                u_calc_from_postprocess,
         ));
 
         // check whether correlation input into object is same as 
@@ -809,28 +890,27 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
             bulk_prandtl_b1,
             wall_prandtl_b1,
             nusselt_number_b1));
-
     assert_relative_eq!(
         reynolds_num_b1.get::<ratio>(),
-        4027.0,
+        4057.0,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         bulk_prandtl_b1.get::<ratio>(),
-        12.33,
+        24.19,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         wall_prandtl_b1.get::<ratio>(),
-        21.79,
+        37.89,
         max_relative = 0.01,
         );
 
     assert_relative_eq!(
         nusselt_number_b1.get::<ratio>(),
-        49.39,
+        52.56,
         max_relative = 0.01,
         );
 
@@ -878,31 +958,30 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                         bulk_prandtl_b2,
                         wall_prandtl_b2,
                         nusselt_number_b2));
-
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b2.get::<ratio>(),
-                    4381.0,
+                    4422.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b2.get::<ratio>(),
-                    11.88,
+                    22.13,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b2.get::<ratio>(),
-                    20.69,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b2.get::<ratio>(),
-                    53.43,
+                    55.76,
                     max_relative = 0.01,
                 );
             }
@@ -949,31 +1028,30 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                         bulk_prandtl_b3,
                         wall_prandtl_b3,
                         nusselt_number_b3));
-
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b3.get::<ratio>(),
-                    4836.0,
+                    4883.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b3.get::<ratio>(),
-                    11.44,
+                    20.06,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b3.get::<ratio>(),
-                    19.65,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b3.get::<ratio>(),
-                    58.29,
+                    59.39,
                     max_relative = 0.01,
                 );
             }
@@ -1020,31 +1098,30 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                         bulk_prandtl_b4,
                         wall_prandtl_b4,
                         nusselt_number_b4));
-
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b4.get::<ratio>(),
-                    4836.0,
+                    4885.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b4.get::<ratio>(),
-                    11.44,
+                    20.05,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b4.get::<ratio>(),
-                    19.66,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b4.get::<ratio>(),
-                    58.27,
+                    59.33,
                     max_relative = 0.01,
                 );
             }
@@ -1086,35 +1163,35 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
                     shell_inlet_temperature,
                     m_t,
                     m_s);
+
                 dbg!(&(reynolds_num_b5,
                         bulk_prandtl_b5,
                         wall_prandtl_b5,
                         nusselt_number_b5));
-
                 // assert that the Reynolds, Prandtl bulk and 
                 // Prandtl wall are equal to some amount
 
                 assert_relative_eq!(
                     reynolds_num_b5.get::<ratio>(),
-                    4043.0,
+                    4067.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b5.get::<ratio>(),
-                    12.30,
+                    24.05,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b5.get::<ratio>(),
-                    20.63,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b5.get::<ratio>(),
-                    49.48,
+                    52.54,
                     max_relative = 0.01,
                 );
             }
@@ -1166,25 +1243,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     reynolds_num_b6.get::<ratio>(),
-                    4386.0,
+                    4425.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b6.get::<ratio>(),
-                    11.88,
+                    22.11,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b6.get::<ratio>(),
-                    20.42,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b6.get::<ratio>(),
-                    53.44,
+                    55.73,
                     max_relative = 0.01,
                 );
             }
@@ -1236,25 +1313,25 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_b(){
 
                 assert_relative_eq!(
                     reynolds_num_b7.get::<ratio>(),
-                    4848.0,
+                    4891.0,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     bulk_prandtl_b7.get::<ratio>(),
-                    11.43,
+                    20.02,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     wall_prandtl_b7.get::<ratio>(),
-                    19.36,
+                    37.89,
                     max_relative = 0.01,
                 );
 
                 assert_relative_eq!(
                     nusselt_number_b7.get::<ratio>(),
-                    57.79,
+                    59.27,
                     max_relative = 0.01,
                 );
             }

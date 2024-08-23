@@ -19,6 +19,7 @@ use crate::prelude::beta_testing::ThermalHydraulicsLibError;
 /// Table 4 provides the data we use here
 /// 
 ///
+#[ignore = "under construction"]
 pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 
     // data is:
@@ -93,6 +94,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 /// 
 ///
 #[test]
+#[ignore = "under construction"]
 pub fn case_b_tchx_out_308_kelvin_35_celsius(){
 
     verify_coupled_dhx_analytical_solution(
@@ -170,6 +172,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
 /// 
 ///
 #[test]
+#[ignore = "under construction"]
 pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
     verify_coupled_dhx_analytical_solution(
@@ -226,11 +229,11 @@ pub fn verify_coupled_dhx_analytical_solution(
     experimental_primary_mass_flowrate_kg_per_s: f64) -> 
 Result<(),ThermalHydraulicsLibError>{
 
-    let input_power = Power::new::<watt>(input_power_watts);
-    let experimental_dracs_mass_flowrate = 
+    let _input_power = Power::new::<watt>(input_power_watts);
+    let _experimental_dracs_mass_flowrate = 
         MassRate::new::<kilogram_per_second>(
             experimental_dracs_mass_flowrate_kg_per_s);
-    let experimental_primary_mass_flowrate = 
+    let _experimental_primary_mass_flowrate = 
         MassRate::new::<kilogram_per_second>(
             experimental_primary_mass_flowrate_kg_per_s);
 

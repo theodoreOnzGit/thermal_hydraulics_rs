@@ -1,9 +1,6 @@
 use crate::boussinesq_solver::control_volume_dimensions::*;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material};
-use uom::si::area::square_meter;
-use uom::si::power::watt;
-use uom::si::{f64::*, temperature_interval};
-use uom::si::thermodynamic_temperature::kelvin;
+use uom::si::f64::*;
 
 use super::heat_transfer_geometry::*;
 
@@ -521,7 +518,7 @@ impl HeatTransferInteractionType {
                             outer_diameter,
                             cylinder_length,
                             CylindricalAndSphericalSolidFluidArrangement::
-                            FluidOnInnerSurfaceOfSolidShell ,
+                            FluidOnOuterSurfaceOfSolidShell ,
                         )?
                     }
                 ,

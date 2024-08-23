@@ -544,7 +544,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
 
         let pipe_shell_surf_temperature: ThermodynamicTemperature 
-            = pipe_shell_clone.try_get_bulk_temperature()?;
+            = wall_temperature;
 
         let single_tube_hydraulic_diameter = 
             self.get_tube_side_hydraulic_diameter();
@@ -670,25 +670,37 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // but I allow the user to set the nusselt correlation 
 
-        
+        // darcy friction factor
+        // todo: this only works for things in a pipe form
+        //
+        // for other correlations, it doesn't work
+        let darcy_friction_factor: Ratio = self.
+            tube_side_custom_component_loss_correlation.
+            darcy_friction_factor(reynolds_number_single_tube)
+            .unwrap();
 
-        let nusselt_estimate = 
+
+        let nusselt_estimate_tube_side = 
             self.tube_side_nusselt_correlation
-            .estimate_based_on_prandtl_reynolds_and_wall_correction(
+            .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
                 pipe_prandtl_reynolds_data.prandtl_wall, 
+                darcy_friction_factor,
                 pipe_prandtl_reynolds_data.reynolds)?;
+
+        // for debugging
+        //dbg!(&nusselt_estimate_tube_side);
 
 
         // now we can get the heat transfer coeff, 
 
-        let h_to_fluid: HeatTransfer;
+        let tube_h_to_fluid: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
             fluid_material.try_get_thermal_conductivity(
                 fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / single_tube_hydraulic_diameter;
+        tube_h_to_fluid = nusselt_estimate_tube_side * k_fluid_average / single_tube_hydraulic_diameter;
 
 
         // and then get the convective resistance
@@ -716,7 +728,7 @@ impl SimpleShellAndTubeHeatExchanger {
                  (cylinder_mid_diameter - id).into(),
                  pipe_shell_surf_temperature,
                  atmospheric_pressure),
-                 (h_to_fluid,
+                 (tube_h_to_fluid,
                   id.into(),
                   node_length.into())
             );
@@ -840,11 +852,20 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
             = self.shell_side_nusselt_correlation_to_tubes;
 
+        // todo, darcy probably needs to change
+        let darcy_friction_factor: Ratio = self.
+            shell_side_custom_component_loss_correlation.
+            fldk_based_on_darcy_friction_factor(reynolds_number_shell_side)
+            .unwrap();
+
+
         let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
         = GnielinskiData::default();
         pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_abs_for_nusselt_estimate;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
         pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
+        pipe_prandtl_reynolds_gnielinksi_data.darcy_friction_factor = 
+            darcy_friction_factor;
         pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
             shell_side_fluid_array_clone.get_component_length_immutable()/
             shell_side_fluid_hydraulic_diameter;
@@ -856,7 +877,7 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // this uses the gnielinski correlation for pipes or tubes
 
-        let nusselt_estimate: Ratio;
+        let nusselt_estimate_shell: Ratio;
 
         if correct_prandtl_for_wall_temperatures {
 
@@ -898,31 +919,34 @@ impl SimpleShellAndTubeHeatExchanger {
 
             pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
 
-            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
+            nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_reynolds_and_wall_correction(
                 bulk_prandtl_number, 
                 wall_prandtl_number,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         } else {
-            nusselt_estimate = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
+            nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_and_reynolds_no_wall_correction(
                 bulk_prandtl_number, 
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         }
 
+        // for debugging
+        //dbg!(&nusselt_estimate_shell);
+
 
 
         // now we can get the heat transfer coeff, 
 
-        let h_to_fluid: HeatTransfer;
+        let shell_h_to_fluid: HeatTransfer;
 
         let k_fluid_average: ThermalConductivity = 
             fluid_material.try_get_thermal_conductivity(
                 fluid_temperature)?;
 
-        h_to_fluid = nusselt_estimate * k_fluid_average / shell_side_fluid_hydraulic_diameter;
+        shell_h_to_fluid = nusselt_estimate_shell * k_fluid_average / shell_side_fluid_hydraulic_diameter;
 
 
         // and then get the convective resistance from shell side fluid 
@@ -953,7 +977,7 @@ impl SimpleShellAndTubeHeatExchanger {
                  (od - cylinder_mid_diameter).into(),
                  pipe_shell_surf_temperature,
                  atmospheric_pressure),
-                 (h_to_fluid,
+                 (shell_h_to_fluid,
                   od.into(),
                   node_length.into())
             );
