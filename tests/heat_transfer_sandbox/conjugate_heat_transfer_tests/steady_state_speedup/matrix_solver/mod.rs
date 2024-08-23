@@ -5,7 +5,7 @@ use std::time::SystemTime;
 
 use csv::Writer;
 
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use thermal_hydraulics_rs::prelude::beta_testing::*;
 
 
 
@@ -20,6 +20,7 @@ use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
+use uom::si::f64::*;
 
 
 
@@ -325,7 +326,7 @@ pub fn matrix_calculation_initial_test(){
             // interaction object
 
             let therminol_steel_nodal_thermal_conductance: ThermalConductance = 
-            therminol_steel_conductance_interaction.try_get_thermal_conductance(
+            therminol_steel_conductance_interaction.get_thermal_conductance_based_on_interaction(
                 fluid_average_temp,
                 solid_average_temp,
                 atmospheric_pressure,
@@ -360,7 +361,7 @@ pub fn matrix_calculation_initial_test(){
             );
 
             let steel_air_nodal_thermal_conductance: ThermalConductance = 
-            steel_air_conductance_interaction.try_get_thermal_conductance(
+            steel_air_conductance_interaction.get_thermal_conductance_based_on_interaction(
                 fluid_average_temp,
                 solid_average_temp,
                 atmospheric_pressure,
@@ -450,10 +451,10 @@ pub fn matrix_calculation_initial_test(){
                 // now I'm going to make adiabatic bcs and ambient temp 
                 // bcs 
                 let mut adiabatic_bc: HeatTransferEntity 
-                = BCType::new_adiabatic_bc();
+                = BCType::new_adiabatic_bc().into();
                 let mut inlet_temperature_bc: HeatTransferEntity 
                 = BCType::new_const_temperature(
-                    inlet_temperature);
+                    inlet_temperature).into();
 
                 // the axial interactions are constant power heat addition
                 // and then advection

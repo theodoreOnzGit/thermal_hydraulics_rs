@@ -3,23 +3,22 @@ use std::f64::consts::PI;
 use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
-
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataUserSpecifiedConvectionResistance;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::SteelSS304L;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::Material;
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, OuterDiameterThermalConduction, SurfaceArea, SingleCVNode, CVType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::CVType::SingleCV;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::specific_enthalpy::{try_get_h, try_get_temperature_from_h};
+use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::{OuterDiameterThermalConduction, SurfaceArea};
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
+use thermal_hydraulics_rs::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
 
+
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{Material, SolidMaterial};
 use uom::si::f64::*;
 use uom::si::length::centimeter;
 use uom::si::power::watt;
@@ -28,8 +27,6 @@ use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
 
 //#[test]
 //pub fn meant_to_fail(){
@@ -311,12 +308,12 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 ///
 #[test]
-#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
-fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
+//#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
+fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), ThermalHydraulicsLibError>{
 
     // first, a steel control vol
     // determine parameters first
-    let steel = Material::Solid(SteelSS304L);
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let pressure = Pressure::new::<atmosphere>(1.0);
     let steel_initial_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(150.0);
@@ -330,11 +327,16 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
         steel_initial_temperature, 
         pressure)?;
 
+
+
     let steel_ball_diameter = OuterDiameterThermalConduction::from(
         Length::new::<centimeter>(2.0));
     let diameter: Length = steel_ball_diameter.into();
     let steel_ball_radius: Length = diameter/2.0;
 
+    // mass = rho * V 
+    //
+    // V = 4/3 pi R^3
     let steel_ball_volume: Volume = 4.0/3.0 * PI * 
         steel_ball_radius * steel_ball_radius * steel_ball_radius;
 
@@ -347,11 +349,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
     let steel_control_vol = 
     HeatTransferEntity::ControlVolume(
-        SingleCV(
-            thermal_hydraulics_rs::
-                heat_transfer_lib::
-                control_volume_calculations::
-                heat_transfer_entities::
+        CVType::SingleCV(
                 SingleCVNode { 
                 current_timestep_control_volume_specific_enthalpy: 
                 steel_initial_enthalpy, 
@@ -383,7 +381,7 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 
     let ambient_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(ambient_temperature));
+        BCType::UserSpecifiedTemperature(ambient_temperature));
 
     // we will be running this using async code similar to what 
     // is used in ciet's opc-ua server
@@ -500,6 +498,8 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
                 single_cv.current_timestep_control_volume_specific_enthalpy, 
                 pressure).unwrap();
 
+            //panic!("{:?}",temperature_for_export);
+
             let time_string = current_time_simulation_time.value.to_string();
             let temperature_string = temperature_for_export.value.to_string();
 
@@ -563,6 +563,10 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
             // clear the vector 
 
             single_cv.rate_enthalpy_change_vector.clear();
+
+            // update temperature
+            single_cv.temperature = temperature_for_export;
+
             // increase timestep (last step)
 
 
@@ -619,13 +623,13 @@ fn lumped_heat_capacitance_steel_ball_in_air() -> Result<(), String>{
 /// test of lumped_heat_capacitance_steel_ball_in_air 
 /// with improved API for conveneince
 #[test]
-#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
+//#[ignore = "lumped lumped-capacitance-test takes about 1 min, too long"]
 fn lumped_heat_capacitance_steel_ball_in_air_improved_api() 
--> Result<(), String>{
+-> Result<(), ThermalHydraulicsLibError>{
 
     // first, a steel control vol
     // determine parameters first
-    let steel = Material::Solid(SteelSS304L);
+    let steel = Material::Solid(SolidMaterial::SteelSS304L);
     let pressure = Pressure::new::<atmosphere>(1.0);
     let steel_initial_temperature = 
     ThermodynamicTemperature::new::<degree_celsius>(150.0);
@@ -647,6 +651,9 @@ fn lumped_heat_capacitance_steel_ball_in_air_improved_api()
     SingleCVNode::new_sphere(diameter, steel, steel_initial_temperature, 
         pressure)?;
 
+    let steel_control_vol: HeatTransferEntity = 
+        steel_control_vol.into();
+
     // next thing is the boundary condition 
     // Programming feature comment 2:
     // might want another constructor here too
@@ -656,7 +663,7 @@ fn lumped_heat_capacitance_steel_ball_in_air_improved_api()
 
     let ambient_temperature_boundary_condition = 
     HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(ambient_temperature));
+        BCType::UserSpecifiedTemperature(ambient_temperature));
 
     // we will be running this using async code similar to what 
     // is used in ciet's opc-ua server

@@ -69,11 +69,16 @@
 #![warn(missing_docs)]
 extern crate uom;
 
-/// Fluid Mechanics Module
-pub mod fluid_mechanics_lib;
+/// Heat Transfer Module (testing)
+//pub mod heat_transfer_lib;
 
-/// Heat Transfer Module
-pub mod heat_transfer_lib;
+/// for mostly incompressible fluids using the Boussinesq Approximation
+/// that is, density doesn't change much except for natural convection
+///
+/// also, radiation heat transfer is NOT included in this one (yet)
+/// though to be honest, it is not too different in implementation compared 
+/// to conduction
+pub mod boussinesq_solver;
 
 /// use peroxide macros 
 #[macro_use]
@@ -84,3 +89,10 @@ pub mod thermal_hydraulics_error;
 
 /// prelude, for easy importing 
 pub mod prelude;
+
+// to do:
+// 1. transfer heat transfer sandbox to use boussinesq solver 
+// 2. test the infinite medium test case using the pre built components
+// 3. build and validate natural circulation loop
+// 4. update the steel ss304L libraries to use correlation rather than spline building
+// this is because graves correlation steel temperature range is too small

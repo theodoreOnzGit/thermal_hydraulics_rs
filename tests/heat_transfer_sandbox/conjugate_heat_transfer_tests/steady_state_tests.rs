@@ -4,22 +4,20 @@ use std::thread;
 use std::time::SystemTime;
 
 use csv::Writer;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::data_enum_structs::DataAdvection;
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations::heat_transfer_interactions::{link_heat_transfer_entity, HeatTransferInteractionType};
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::SolidMaterial::{self};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::prandtl::try_get_prandtl;
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
-use thermal_hydraulics_rs::heat_transfer_lib::
-thermophysical_properties::{Material, LiquidMaterial};
-use thermal_hydraulics_rs::heat_transfer_lib::
-control_volume_calculations::heat_transfer_entities::{HeatTransferEntity, 
-    SingleCVNode, BCType, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction, CylinderLengthThermalConduction};
-use thermal_hydraulics_rs::heat_transfer_lib::thermophysical_properties::density::try_get_rho;
 
 
 
+use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::prandtl::try_get_prandtl;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material, SolidMaterial};
+use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::{CylinderLengthThermalConduction, InnerDiameterThermalConduction, OuterDiameterThermalConduction, RadialCylindricalThicknessThermalConduction};
+use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
+use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_meter;
@@ -33,8 +31,6 @@ use uom::si::heat_transfer::watt_per_square_meter_kelvin;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::time::second;
 
-use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
-::heat_transfer_entities::BCType::*;
 
 
 /// In this test, we have a nodalised representation of the 
@@ -45,7 +41,7 @@ use thermal_hydraulics_rs::heat_transfer_lib::control_volume_calculations
 ///
 ///
 #[test]
-#[ignore = "data collected"]
+//#[ignore = "data collected"]
 pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
 
 
@@ -105,7 +101,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
                 therminol,
                 initial_temperature,
                 pressure,
-            ).unwrap();
+            ).unwrap().into();
 
             fluid_node_vec.push(therminol_node);
         }
@@ -152,7 +148,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
                 steel, 
                 initial_temperature,
                 pressure,
-            ).unwrap();
+            ).unwrap().into();
 
             steel_shell_node_vec.push(steel_shell_node);
         }
@@ -206,7 +202,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(79.12)
         ));
 
@@ -215,7 +211,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
     );
 
     let ambient_temperature_bc = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ambient_air_temp
         ));
 
@@ -541,7 +537,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
                     }
 
                     let mut electrical_heat_bc: HeatTransferEntity = 
-                    BCType::new_const_heat_addition(node_heater_power);
+                    BCType::new_const_heat_addition(node_heater_power).into();
 
                     let heat_addition_interaction = 
                     HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -909,10 +905,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
                     st_11_node).unwrap()
                     .get::<degree_celsius>().to_string();
 
-                // drop the mutable references manually
+                //// I once did this to deal with Mutex locking,
+                ////
+                //// but for mutable references, this may not be necessary 
+                //// as they aren't shared between threads
+                //// drop the mutable references manually
 
-                drop(thermoinol_outlet_node);
-                drop(st_11_node);
+                //drop(thermoinol_outlet_node);
+                //drop(st_11_node);
 
                 // then I want to get the max timestep
                 //
@@ -929,48 +929,56 @@ pub fn ciet_heater_v_2_0_test_steady_state_v_1_0(){
 
                 for therminol_node in fluid_vec_in_loop.iter_mut() {
 
+                    let mut therminol_node_clone_single_cv: SingleCVNode = 
+                        therminol_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(therminol_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = therminol_node_clone_single_cv.get_max_timestep(
+                        TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
+
+                    *therminol_node = therminol_node_clone_single_cv.into();
 
                 }
 
                 for steel_inner_node in steel_shell_inner_node_vec_in_loop.iter_mut() {
 
+                    let mut steel_inner_node_clone_single_cv: SingleCVNode = 
+                        steel_inner_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(steel_inner_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = steel_inner_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
+
+                    *steel_inner_node = steel_inner_node_clone_single_cv.into();
 
                 }
 
 
                 for steel_outer_node in steel_shell_outer_node_vec_in_loop.iter_mut() {
 
+                    let mut steel_outer_node_clone_single_cv: SingleCVNode = 
+                        steel_outer_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(steel_outer_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = steel_outer_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
+
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
 
+                    *steel_outer_node = steel_outer_node_clone_single_cv.into();
                 }
 
                 
@@ -1148,7 +1156,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
                 therminol,
                 initial_temperature,
                 pressure,
-            ).unwrap();
+            ).unwrap().into();
 
             fluid_node_vec.push(therminol_node);
         }
@@ -1189,13 +1197,13 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
 
         for _index in 0..number_of_nodes {
 
-            let steel_shell_node = SingleCVNode::new_cylindrical_shell(
+            let steel_shell_node: HeatTransferEntity = SingleCVNode::new_cylindrical_shell(
                 node_length,
                 id, od,
                 steel, 
                 initial_temperature,
                 pressure,
-            ).unwrap();
+            ).unwrap().into();
 
             steel_shell_node_vec.push(steel_shell_node);
         }
@@ -1249,7 +1257,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
     // need two boundary conditions 
 
     let inlet_const_temp = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ThermodynamicTemperature::new::<degree_celsius>(79.12)
         ));
 
@@ -1258,7 +1266,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
     );
 
     let ambient_temperature_bc = HeatTransferEntity::BoundaryConditions(
-        UserSpecifiedTemperature(
+        BCType::UserSpecifiedTemperature(
             ambient_air_temp
         ));
 
@@ -1325,7 +1333,6 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
         // it needs a simulation time, computation time elapsed, 
         // and a temperature for the outer surface temperature node 
         // for all nodes 
-
         let mut temp_profile_wtr = Writer::from_path("ciet_heater_v_2_0_steady_state_temp_profile.csv")
             .unwrap();
 
@@ -1584,7 +1591,7 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
                     }
 
                     let mut electrical_heat_bc: HeatTransferEntity = 
-                    BCType::new_const_heat_addition(node_heater_power);
+                    BCType::new_const_heat_addition(node_heater_power).into();
 
                     let heat_addition_interaction = 
                     HeatTransferInteractionType::UserSpecifiedHeatAddition;
@@ -1952,10 +1959,14 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
                     st_11_node).unwrap()
                     .get::<degree_celsius>().to_string();
 
-                // drop the mutable references manually
+                //// I once did this to deal with Mutex locking,
+                ////
+                //// but for mutable references, this may not be necessary 
+                //// as they aren't shared between threads
+                //// drop the mutable references manually
 
-                drop(thermoinol_outlet_node);
-                drop(st_11_node);
+                //drop(thermoinol_outlet_node);
+                //drop(st_11_node);
 
                 // then I want to get the max timestep
                 //
@@ -1968,52 +1979,58 @@ pub fn ciet_heater_v_2_0_test_steady_state_functional_test_v_1_0(){
                 // timestep
 
 
-                // now loop over all nodes, get its temperature 
-
                 for therminol_node in fluid_vec_in_loop.iter_mut() {
 
+                    let mut therminol_node_clone_single_cv: SingleCVNode = 
+                        therminol_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(therminol_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = therminol_node_clone_single_cv.get_max_timestep(
+                        TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
+
+                    *therminol_node = therminol_node_clone_single_cv.into();
 
                 }
 
                 for steel_inner_node in steel_shell_inner_node_vec_in_loop.iter_mut() {
 
+                    let mut steel_inner_node_clone_single_cv: SingleCVNode = 
+                        steel_inner_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(steel_inner_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = steel_inner_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
+
+                    *steel_inner_node = steel_inner_node_clone_single_cv.into();
 
                 }
 
 
                 for steel_outer_node in steel_shell_outer_node_vec_in_loop.iter_mut() {
 
+                    let mut steel_outer_node_clone_single_cv: SingleCVNode = 
+                        steel_outer_node.clone().try_into().unwrap();
 
-                    let local_timestep: Time = HeatTransferEntity::
-                        get_max_timestep(steel_outer_node,
-                            TemperatureInterval::new::<
-                                uom::si::temperature_interval::kelvin>(5.0))
+                    let local_timestep: Time = steel_outer_node_clone_single_cv.
+                        get_max_timestep( 
+                            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(5.0))
                         .unwrap();
+
 
                     if local_timestep < auto_calculated_timestep {
                         auto_calculated_timestep = local_timestep
                     }
 
+                    *steel_outer_node = steel_outer_node_clone_single_cv.into();
                 }
 
                 
