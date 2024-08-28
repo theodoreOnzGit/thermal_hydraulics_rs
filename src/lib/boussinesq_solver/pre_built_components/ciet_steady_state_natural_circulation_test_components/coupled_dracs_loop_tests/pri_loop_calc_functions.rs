@@ -32,19 +32,15 @@ heat_transfer_interaction_enums::HeatTransferInteractionType;
 ///
 /// In actual fact though, it is just one branch and we are getting 
 /// the mass flowrate through that branch,
-///
-/// can be used for DRACS 
-/// or the 
+/// can be used for
 /// DHX + Heater branch (both branches form one loop)
-///
-/// but its use is primarily for the DRACS branch
-pub fn get_mass_flowrate_across_two_branches(dracs_branches: &FluidComponentSuperCollection) -> 
+pub fn get_mass_flowrate_across_two_branches(dhx_and_heater_branches: &FluidComponentSuperCollection) -> 
 MassRate {
     let pressure_change_across_each_branch = 
-        dracs_branches.get_pressure_change(MassRate::ZERO);
+        dhx_and_heater_branches.get_pressure_change(MassRate::ZERO);
 
     let mass_flowrate_across_each_branch: Vec<MassRate> = 
-        dracs_branches.
+        dhx_and_heater_branches.
         get_mass_flowrate_across_each_parallel_branch(
             pressure_change_across_each_branch
         );
@@ -60,59 +56,69 @@ MassRate {
 
 }
 
-/// fluid mechanics calcs, specific to the DRACS loop
+/// fluid mechanics calcs, specific to the primary (DHX plus Heater branch) loop
 /// note that this only works if the components are correct
-/// obtains mass flowrate across the DRACS loop
+/// obtains mass flowrate across the primary (DHX plus Heater branch) loop
+///
+/// Todo: check that components are correctly insulated or noninsulated
 pub fn dracs_fluid_mechanics_calc_mass_rate(
-    pipe_34: &InsulatedFluidComponent,
-    pipe_33: &InsulatedFluidComponent,
-    pipe_32: &InsulatedFluidComponent,
-    pipe_31a: &InsulatedFluidComponent,
-    static_mixer_61_label_31: &InsulatedFluidComponent,
-    dhx_tube_side_30b: &NonInsulatedFluidComponent,
-    dhx_tube_side_heat_exchanger_30: &NonInsulatedFluidComponent,
-    dhx_tube_side_30a: &NonInsulatedFluidComponent,
-    tchx_35a: &NonInsulatedFluidComponent,
-    tchx_35b: &NonInsulatedFluidComponent,
-    static_mixer_60_label_36: &InsulatedFluidComponent,
-    pipe_36a: &InsulatedFluidComponent,
-    pipe_37: &InsulatedFluidComponent,
-    flowmeter_60_37a: &NonInsulatedFluidComponent,
-    pipe_38: &InsulatedFluidComponent,
-    pipe_39: &InsulatedFluidComponent,
+    pipe_4: &InsulatedFluidComponent,
+    pipe_3: &InsulatedFluidComponent,
+    pipe_2a: &InsulatedFluidComponent,
+    static_mixer_10_label_2: &InsulatedFluidComponent,
+    heater_top_head_1a: &InsulatedFluidComponent,
+    heater_version1_1: &InsulatedFluidComponent,
+    heater_bottom_head_1b: &InsulatedFluidComponent,
+    pipe_18: &InsulatedFluidComponent,
+    pipe_5a: &NonInsulatedFluidComponent,
+    pipe_26: &InsulatedFluidComponent,
+    pipe_25a: &NonInsulatedFluidComponent,
+    static_mixer_21_label_25: &InsulatedFluidComponent,
+    pipe_24: &InsulatedFluidComponent,
+    static_mixer_20_label_23: &InsulatedFluidComponent,
+    pipe_23a: &NonInsulatedFluidComponent,
+    flowmeter_20_21a: &NonInsulatedFluidComponent,
+    pipe_21: &InsulatedFluidComponent,
+    pipe_20: &InsulatedFluidComponent,
+    pipe_19: &InsulatedFluidComponent,
+    pipe_17b: &InsulatedFluidComponent,
 )-> MassRate {
 
-    let mut dracs_hot_branch = 
+    let mut heater_branch = 
         FluidComponentCollection::new_series_component_collection();
 
-    dracs_hot_branch.clone_and_add_component(pipe_34);
-    dracs_hot_branch.clone_and_add_component(pipe_33);
-    dracs_hot_branch.clone_and_add_component(pipe_32);
-    dracs_hot_branch.clone_and_add_component(pipe_31a);
-    dracs_hot_branch.clone_and_add_component(static_mixer_61_label_31);
-    dracs_hot_branch.clone_and_add_component(dhx_tube_side_30b);
-    dracs_hot_branch.clone_and_add_component(dhx_tube_side_heat_exchanger_30);
-    dracs_hot_branch.clone_and_add_component(dhx_tube_side_30a);
+    heater_branch.clone_and_add_component(pipe_4);
+    heater_branch.clone_and_add_component(pipe_3);
+    heater_branch.clone_and_add_component(pipe_2a);
+    heater_branch.clone_and_add_component(static_mixer_10_label_2);
+    heater_branch.clone_and_add_component(heater_top_head_1a);
+    heater_branch.clone_and_add_component(heater_version1_1);
+    heater_branch.clone_and_add_component(heater_bottom_head_1b);
+    heater_branch.clone_and_add_component(pipe_18);
 
 
-    let mut dracs_cold_branch = 
+    let mut dhx_branch = 
         FluidComponentCollection::new_series_component_collection();
 
-    dracs_cold_branch.clone_and_add_component(tchx_35a);
-    dracs_cold_branch.clone_and_add_component(tchx_35b);
-    dracs_cold_branch.clone_and_add_component(static_mixer_60_label_36);
-    dracs_cold_branch.clone_and_add_component(pipe_36a);
-    dracs_cold_branch.clone_and_add_component(pipe_37);
-    dracs_cold_branch.clone_and_add_component(flowmeter_60_37a);
-    dracs_cold_branch.clone_and_add_component(pipe_38);
-    dracs_cold_branch.clone_and_add_component(pipe_39);
+    dhx_branch.clone_and_add_component(pipe_5a);
+    dhx_branch.clone_and_add_component(pipe_26);
+    dhx_branch.clone_and_add_component(pipe_25a);
+    dhx_branch.clone_and_add_component(static_mixer_21_label_25);
+    dhx_branch.clone_and_add_component(pipe_24);
+    dhx_branch.clone_and_add_component(static_mixer_20_label_23);
+    dhx_branch.clone_and_add_component(pipe_23a);
+    dhx_branch.clone_and_add_component(flowmeter_20_21a);
+    dhx_branch.clone_and_add_component(pipe_21);
+    dhx_branch.clone_and_add_component(pipe_20);
+    dhx_branch.clone_and_add_component(pipe_19);
+    dhx_branch.clone_and_add_component(pipe_17b);
 
     let mut dracs_branches = 
         FluidComponentSuperCollection::default();
 
     dracs_branches.set_orientation_to_parallel();
-    dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
-    dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
+    dracs_branches.fluid_component_super_vector.push(heater_branch);
+    dracs_branches.fluid_component_super_vector.push(dhx_branch);
 
     let mass_rate = get_mass_flowrate_across_two_branches(&dracs_branches);
 
@@ -126,6 +132,8 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
 ///
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
+///
+/// TODO: change this to actual DHX and Heater 
 pub fn calculate_dracs_thermal_hydraulics(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_dhx: Power,
@@ -453,5 +461,7 @@ pub fn calculate_dracs_thermal_hydraulics(
 
         // we do it in serial, so it keeps things simple 
         // now we are done
+        //
+        todo!()
 
 }
