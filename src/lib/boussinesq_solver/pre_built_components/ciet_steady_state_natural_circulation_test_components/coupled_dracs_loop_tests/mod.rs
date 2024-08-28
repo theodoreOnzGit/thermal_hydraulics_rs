@@ -1,8 +1,10 @@
 use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
 use crate::prelude::beta_testing::ThermalHydraulicsLibError;
-#[test]
 
+pub mod dracs_loop_calc_functions;
+
+#[test]
 /// We use:
 ///
 /// Zou, L., Hu, G., O'Grady, D., & Hu, R. (2021). Code validation of 
