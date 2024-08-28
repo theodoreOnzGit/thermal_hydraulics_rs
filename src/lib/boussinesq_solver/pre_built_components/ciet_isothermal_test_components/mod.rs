@@ -1274,10 +1274,10 @@ pub fn new_branch_17b(initial_temperature: ThermodynamicTemperature) -> Insulate
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 6 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is 6-2
-    let user_specified_inner_nodes = 6-2; 
+    // number of inner nodes is 2-2
+    let user_specified_inner_nodes = 2-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -1335,10 +1335,10 @@ pub fn new_branch_17a(initial_temperature: ThermodynamicTemperature) -> Insulate
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 6 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is 6-2
-    let user_specified_inner_nodes = 6-2; 
+    // number of inner nodes is 2-2
+    let user_specified_inner_nodes = 2-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -1411,10 +1411,10 @@ pub fn new_branch_5a(initial_temperature: ThermodynamicTemperature) -> Insulated
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 9 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is 9-2
-    let user_specified_inner_nodes = 9-2; 
+    // number of inner nodes is 2-2
+    let user_specified_inner_nodes = 2-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
@@ -1489,10 +1489,10 @@ pub fn new_branch_5b(initial_temperature: ThermodynamicTemperature) -> Insulated
     let insulation_material = SolidMaterial::Fiberglass;
     let pipe_fluid = LiquidMaterial::TherminolVP1;
     let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
-    // from SAM nodalisation, we have 9 nodes only, 
+    // from SAM nodalisation, we have 2 nodes only, 
     // now because there are two outer nodes, the 
-    // number of inner nodes is 9-2
-    let user_specified_inner_nodes = 9-2; 
+    // number of inner nodes is 2-2
+    let user_specified_inner_nodes = 2-2; 
 
     let insulated_component = InsulatedFluidComponent::new_insulated_pipe(
         initial_temperature, 
