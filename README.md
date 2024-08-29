@@ -29,14 +29,20 @@ If you want the full thermal hydraulics library:
 
 ```rust 
 extern crate thermal_hydraulics_rs;
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use thermal_hydraulics_rs::prelude::beta_testing::*;
 ```
 
 Do note that the alpha nightly API 
-is still highly unstable and subject to change.
+is still highly unstable and subject to change. The beta testing 
+library is more stable, but still subject to change
 
 Please refer to crate documentation for more details,
-especially the prelude documentation for more examples
+especially the prelude documentation for more examples.
+
+Right now, only the boussinesq_solver, or what I call the
+Coding and Homogeneous fluid simulation ENvironment for Gen IV molten 
+salt Thermal hydraulics and Natural circulation Governed flows (CHENG TNG),
+is available. 
 
 ## Prerequisites
 
@@ -57,7 +63,7 @@ sudo pacman -S openblas
 
 Tested on Arch Linux and Linux Mint distros. 
 
-# tests 
+# Tests and Examples
 If you want to use cargo watch for testing, 
 this is because you will likely run into csv files. When Rust 
 produces csv files, cargo watch catches those new csv files and thinks 
