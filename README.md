@@ -12,7 +12,7 @@ in development and not fully featured yet.
 The crate contains many useful traits and examples of how to use 
 those traits for your own projects.
 
-## Add to Cargo
+## Adding to Cargo
 
 An easy way to start is to use cargo to add the fluid mechanics rust
 package
@@ -44,6 +44,7 @@ Coding and Homogeneous fluid simulation ENvironment for Gen IV molten
 salt Thermal hydraulics and Natural circulation Governed flows (CHENG TNG),
 is available. 
 
+
 ## Prerequisites
 
 
@@ -61,7 +62,32 @@ For Arch Linux based distros, eg. endeavourOS and Arch Linux:
 sudo pacman -S openblas
 ```
 
+
 Tested on Arch Linux and Linux Mint distros. 
+
+
+## Development to do list:
+
+So far, I'm thinking of the following features:
+
+1. DHX heat exchanger is not properly incorporated into loop solver for 
+Shell side pri loop or tube side DRACS loop for coupled natural circulation 
+for CIET.
+2. Du's heat exchanger needs a constructor. In fact, shell and tube heat
+exchanger needs a constructor.
+3. Gnielinski correlation requires a darcy friction factor. But for components 
+such as the flowmeter or ctah, the friction factor is presented as 
+(f L/D + K) = 400 + 52000/Re or something like that. There is no friction 
+factor. One workaround is to scale (f L/D + K) by D/L  so that the 
+darcy friction factor substituted into the Gnielinski correlation is:
+f + K d/L. In this manner, we have something workable if we use the 
+Gnielinski correlation. May not be correct though. But an extra K d/L 
+factor makes sense in turbulent flows because more friction means more 
+boundary layer mixing.
+4. the (f L/D + K) issue for the Gnielinski correlation applies to 
+Insulated fluid components, non insulated fluid components, shell and 
+tube heat exchangers, and parallel no insulated fluid tubes.
+
 
 # Tests and Examples
 If you want to use cargo watch for testing, 

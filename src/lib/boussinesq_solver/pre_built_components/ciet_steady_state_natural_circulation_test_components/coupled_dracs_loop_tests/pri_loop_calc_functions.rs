@@ -113,14 +113,14 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
     dhx_branch.clone_and_add_component(pipe_19);
     dhx_branch.clone_and_add_component(pipe_17b);
 
-    let mut dracs_branches = 
+    let mut pri_loop_branches = 
         FluidComponentSuperCollection::default();
 
-    dracs_branches.set_orientation_to_parallel();
-    dracs_branches.fluid_component_super_vector.push(heater_branch);
-    dracs_branches.fluid_component_super_vector.push(dhx_branch);
+    pri_loop_branches.set_orientation_to_parallel();
+    pri_loop_branches.fluid_component_super_vector.push(heater_branch);
+    pri_loop_branches.fluid_component_super_vector.push(dhx_branch);
 
-    let mass_rate = get_mass_flowrate_across_two_branches(&dracs_branches);
+    let mass_rate = get_mass_flowrate_across_two_branches(&pri_loop_branches);
 
     mass_rate
 
