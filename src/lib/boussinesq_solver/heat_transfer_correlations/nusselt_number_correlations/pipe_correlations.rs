@@ -551,6 +551,8 @@ pub fn laminar_nusselt_uniform_wall_temperature_developing(
 /// Re, Pr is measured at bulk temp
 /// T_bulk = (T_in + T_out)/2
 ///
+/// note that wall temperatures are not required in this case
+///
 /// for fully developed flow, we need L/D to be about 20 or more
 ///
 /// in Gnielinsiki's paper, when we have Pr = 0.7, we then have

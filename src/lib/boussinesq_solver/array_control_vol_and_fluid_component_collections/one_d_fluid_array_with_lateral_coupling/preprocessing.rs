@@ -252,8 +252,18 @@ impl FluidArray {
     }
 
     /// gets the nusselt number based on reynolds number 
-    /// and 
-    /// prandtl number
+    /// and prandtl number
+    ///
+    /// also the darcy friction factor in case gnielinski correlation 
+    /// requires 
+    ///
+    /// However, if there is a form loss, note that 
+    /// the darcy friction factor used is:
+    ///
+    /// f_darcy_modified = f + d/L K
+    ///
+    /// Where d/L is diameter to length ratio and K is form loss
+    ///
     #[inline]
     pub fn get_nusselt(&mut self,
         reynolds: Ratio, 
