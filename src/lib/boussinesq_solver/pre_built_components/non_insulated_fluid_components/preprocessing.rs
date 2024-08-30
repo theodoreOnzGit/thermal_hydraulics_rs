@@ -37,7 +37,7 @@ impl NonInsulatedFluidComponent {
     ///
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
-    pub fn lateral_and_miscellaneous_connections(&mut self,
+    pub fn lateral_and_miscellaneous_connections_no_wall_correction(&mut self,
         mass_flowrate: MassRate,
         heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
 
@@ -458,7 +458,7 @@ impl NonInsulatedFluidComponent {
 
                 // carry out the connection calculations
                 heater_clone.
-                    lateral_and_miscellaneous_connections(
+                    lateral_and_miscellaneous_connections_no_wall_correction(
                         mass_flowrate,
                         heater_steady_state_power).unwrap();
                 

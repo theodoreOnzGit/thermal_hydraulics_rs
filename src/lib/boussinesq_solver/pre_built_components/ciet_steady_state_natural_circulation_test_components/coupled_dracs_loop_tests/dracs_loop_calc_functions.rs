@@ -307,17 +307,17 @@ pub fn calculate_dracs_thermal_hydraulics(
             // we add heat in through dhx 30 
             // everywhere else is zero heater power
             dhx_tube_side_30a
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_counter_clockwise, 
                     zero_power)
                 .unwrap();
             dhx_tube_side_heat_exchanger_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_counter_clockwise, 
                     heat_rate_through_dhx)
                 .unwrap();
             dhx_tube_side_30b
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_counter_clockwise, 
                     zero_power)
                 .unwrap();
@@ -356,12 +356,12 @@ pub fn calculate_dracs_thermal_hydraulics(
                 ThermodynamicTemperature::new::<degree_celsius>(20.0);
 
             tchx_35a
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_counter_clockwise, 
                     zero_power)
                 .unwrap();
             tchx_35b
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_counter_clockwise, 
                     zero_power)
                 .unwrap();

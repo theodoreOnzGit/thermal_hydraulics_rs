@@ -197,7 +197,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
         // add 9 kW as a heater power for reference 
         {
             adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate, 
                     heater_power).unwrap();
         }
@@ -568,7 +568,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
         // add 9 kW as a heater power for reference 
         {
             adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate, 
                     heater_power).unwrap();
         }
@@ -950,7 +950,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         // add 9 kW as a heater power for reference 
         {
             adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_single_tube, 
                     heater_power).unwrap();
         }
