@@ -327,7 +327,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
         // times 20 for the bundle
         {
             parallel_adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_through_tube_bundle, 
                     heater_power_for_tube_bundle).unwrap();
         }
@@ -698,7 +698,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
         // times 20 for the bundle
         {
             parallel_adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_through_tube_bundle, 
                     heater_power_for_tube_bundle).unwrap();
         }
@@ -1081,7 +1081,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
         // times 20 for the bundle
         {
             parallel_adiabatic_dhx_tube_side_30
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_through_tube_bundle, 
                     heater_power_for_tube_bundle).unwrap();
         }

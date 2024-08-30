@@ -275,7 +275,7 @@ pub fn steel_properties_debugging(){
             // turns out i forgot to switch thermal conductivity over to 
             // the Zweibaum version
             static_mixer_61_label_31
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();

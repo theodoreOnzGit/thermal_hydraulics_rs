@@ -505,27 +505,27 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
                 .unwrap();
 
             static_mixer_61_label_31
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_31a
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_32
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_33
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_34
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
@@ -550,28 +550,28 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
 
 
             static_mixer_60_label_36
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_36a
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
 
             pipe_37
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_38
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
             pipe_39
-                .lateral_and_miscellaneous_connections(
+                .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
                 zero_power)
                 .unwrap();
