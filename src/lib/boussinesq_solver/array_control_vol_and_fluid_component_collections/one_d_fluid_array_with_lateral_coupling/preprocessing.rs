@@ -252,18 +252,47 @@ impl FluidArray {
     }
 
     /// gets the nusselt number based on reynolds number 
-    /// prandtl u
+    /// and 
+    /// prandtl number
     #[inline]
     pub fn get_nusselt(&mut self,
         reynolds: Ratio, 
         prandtl_bulk: Ratio,
         prandtl_wall: Ratio) -> Result<Ratio, ThermalHydraulicsLibError>{
 
+        // first we need the darcy friction factor in case the Nusselt 
+        // correlation is the Gnielinski type 
+        //
+        // but sometimes, we don't have f_darcy alone, we have:
+        //
+        // (f L/D + K)
+        //
+        // So i'm getting that first
+        let fldk: Ratio = self
+            .fluid_component_loss_properties
+            .fldk_based_on_darcy_friction_factor(reynolds)?
+            ;
+
+        // I don't really have f_darcy by itself in this case,
+        // but I can get the diamter to length and multiply:
+        //
+        // f + D/L K = (f L/D + K) * D/L
+
+        let length_to_diameter: Ratio = 
+            self.get_component_length()/
+            self.get_hydraulic_diameter();
+
+        // f + D/L K
+        // this is the darcy plus a bit a little bit of form loss
+
+        let darcy_plus_normalised_form_loss: Ratio = 
+            fldk/length_to_diameter;
 
         self.nusselt_correlation.
-            estimate_based_on_prandtl_reynolds_and_wall_correction(
-            prandtl_bulk,
-            prandtl_wall,
-            reynolds)
+            estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
+                prandtl_bulk,
+                prandtl_wall,
+                darcy_plus_normalised_form_loss,
+                reynolds)
     }
 }
