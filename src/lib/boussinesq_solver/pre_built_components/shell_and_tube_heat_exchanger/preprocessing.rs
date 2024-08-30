@@ -617,21 +617,8 @@ impl SimpleShellAndTubeHeatExchanger {
             // if that is the case, then just go for a partial correction
             // temperature of the range or go for the lowest temperature 
             // possible
-            //
-            // though, the easiest code wise is to just go for partial 
-            // correction all the way (ie just use film temperature 
-            // to correct for prandtl number
 
-
-            let _part_correct_wall_temperature: ThermodynamicTemperature = 
-                ThermodynamicTemperature::new::<kelvin>(
-                    0.1 * (
-                        3.0 * wall_temperature.get::<kelvin>() + 
-                        7.0 * fluid_temperature.get::<kelvin>()
-                    )
-                );
-
-            // the other method is to just use the wall prandtl number 
+            // The method I use is to just use the wall prandtl number 
             // if the number falls outside the range of correlations,
             // then use the prandtl number at the max or min 
 
@@ -670,14 +657,30 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // but I allow the user to set the nusselt correlation 
 
+        // now, for gnielinski type correlations, we require the 
         // darcy friction factor
-        // todo: this only works for things in a pipe form
         //
-        // for other correlations, it doesn't work
-        let darcy_friction_factor: Ratio = self.
-            tube_side_custom_component_loss_correlation.
-            darcy_friction_factor(reynolds_number_single_tube)
+        // However, the darcy friction factor for other components 
+        // will come in the form:
+        //
+        // (f_darcy L/D + K)
+        //
+        // the next best thing we can get is:
+        //
+        // (f_darcy + D/L  K)
+
+        // (f_darcy L/D + K)
+        let fldk: Ratio = self
+            .tube_side_custom_component_loss_correlation
+            .fldk_based_on_darcy_friction_factor(reynolds_number_single_tube)
             .unwrap();
+
+        // (f_darcy + D/L  K)
+        // then let's scale it by length to diameter 
+        let modified_darcy_friction_factor: Ratio = 
+            fldk/pipe_prandtl_reynolds_data.length_to_diameter;
+
+
 
 
         let nusselt_estimate_tube_side = 
@@ -685,7 +688,7 @@ impl SimpleShellAndTubeHeatExchanger {
             .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
                 pipe_prandtl_reynolds_data.prandtl_wall, 
-                darcy_friction_factor,
+                modified_darcy_friction_factor,
                 pipe_prandtl_reynolds_data.reynolds)?;
 
         // for debugging
@@ -852,24 +855,33 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_to_inner_tube_surf_nusselt_correlation: NusseltCorrelation
             = self.shell_side_nusselt_correlation_to_tubes;
 
-        // todo, darcy probably needs to change
-        let darcy_friction_factor: Ratio = self.
-            shell_side_custom_component_loss_correlation.
-            fldk_based_on_darcy_friction_factor(reynolds_number_shell_side)
+
+        // now, for gnielinski type correlations, we require the 
+        // darcy friction factor
+        //
+        // However, the darcy friction factor for other components 
+        // will come in the form:
+        //
+        // (f_darcy L/D + K)
+        //
+        // the next best thing we can get is:
+        //
+        // (f_darcy + D/L  K)
+
+        // (f_darcy L/D + K)
+        let fldk: Ratio = self
+            .tube_side_custom_component_loss_correlation
+            .fldk_based_on_darcy_friction_factor(reynolds_number_abs_for_nusselt_estimate)
             .unwrap();
 
-
-        let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
-        = GnielinskiData::default();
-        pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_abs_for_nusselt_estimate;
-        pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
-        pipe_prandtl_reynolds_gnielinksi_data.darcy_friction_factor = 
-            darcy_friction_factor;
-        pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
+        let length_to_diameter: Ratio = 
             shell_side_fluid_array_clone.get_component_length_immutable()/
             shell_side_fluid_hydraulic_diameter;
 
+        // (f_darcy + D/L  K)
+        // then let's scale it by length to diameter 
+        let modified_darcy_friction_factor: Ratio = 
+            fldk/length_to_diameter;
 
         // I need to use Nusselt correlations present in this struct 
         //
@@ -917,18 +929,18 @@ impl SimpleShellAndTubeHeatExchanger {
                     atmospheric_pressure
                 )?;
 
-            pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = wall_prandtl_number;
-
             nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
-            estimate_based_on_prandtl_reynolds_and_wall_correction(
+            estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 bulk_prandtl_number, 
                 wall_prandtl_number,
+                modified_darcy_friction_factor,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         } else {
             nusselt_estimate_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
-            estimate_based_on_prandtl_and_reynolds_no_wall_correction(
+            estimate_based_on_prandtl_darcy_and_reynolds_no_wall_correction(
                 bulk_prandtl_number, 
+                modified_darcy_friction_factor,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         }
@@ -1107,6 +1119,32 @@ impl SimpleShellAndTubeHeatExchanger {
         // wall correction is optionally done here
         //
         // this uses the gnielinski correlation for pipes or tubes
+        // now, for gnielinski type correlations, we require the 
+        // darcy friction factor
+        //
+        // However, the darcy friction factor for other components 
+        // will come in the form:
+        //
+        // (f_darcy L/D + K)
+        //
+        // the next best thing we can get is:
+        //
+        // (f_darcy + D/L  K)
+
+        // (f_darcy L/D + K)
+        let fldk: Ratio = self
+            .tube_side_custom_component_loss_correlation
+            .fldk_based_on_darcy_friction_factor(reynolds_number_abs_for_nusselt_estimate)
+            .unwrap();
+
+        let length_to_diameter: Ratio = 
+            shell_side_fluid_array_clone.get_component_length_immutable()/
+            shell_side_fluid_hydraulic_diameter;
+
+        // (f_darcy + D/L  K)
+        // then let's scale it by length to diameter 
+        let modified_darcy_friction_factor: Ratio = 
+            fldk/length_to_diameter;
 
         let nusselt_estimate: Ratio;
 
@@ -1114,26 +1152,8 @@ impl SimpleShellAndTubeHeatExchanger {
 
             // then wall prandtl number
             //
-            // in this case, we partially correct because wall temperatures 
-            // may be outside range of correlation
-            //
-            // stop gap measure is to partly correct for wall temperatures 
-            // 30% wall temp and 70% fluid temp
 
-            // then wall prandtl number
-            //
-            // in this case, we partially correct because wall temperatures 
-            // may be outside range of correlation
-
-            let _part_correct_wall_temperature: ThermodynamicTemperature = 
-                ThermodynamicTemperature::new::<kelvin>(
-                    0.1 * (
-                        3.0 * wall_temperature.get::<kelvin>() + 
-                        7.0 * fluid_temperature.get::<kelvin>()
-                    )
-                );
-
-            // the other method is to just use the wall prandtl number 
+            // method I use is to just use the wall prandtl number 
             // if the number falls outside the range of correlations,
             // then use the prandtl number at the max or min 
 
@@ -1156,15 +1176,17 @@ impl SimpleShellAndTubeHeatExchanger {
                 )?;
 
             nusselt_estimate = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
-            estimate_based_on_prandtl_reynolds_and_wall_correction(
+            estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 bulk_prandtl_number, 
                 wall_prandtl_number,
+                modified_darcy_friction_factor,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         } else {
             nusselt_estimate = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
-            estimate_based_on_prandtl_and_reynolds_no_wall_correction(
+            estimate_based_on_prandtl_darcy_and_reynolds_no_wall_correction(
                 bulk_prandtl_number, 
+                modified_darcy_friction_factor,
                 reynolds_number_abs_for_nusselt_estimate)?;
 
         }

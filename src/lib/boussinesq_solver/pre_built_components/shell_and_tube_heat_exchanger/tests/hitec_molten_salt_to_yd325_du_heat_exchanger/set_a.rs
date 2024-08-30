@@ -128,6 +128,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
     // shell side fluid_array
     // the nusselt correlation here is a standard pipe correlation 
     // but I don't use that
+    //
+    // the reason is because for the shell side, the heat transfer 
+    // to the outer shell and heat transfer to inner tubes will 
+    // be different. 
+    //
+    // The fluid array, unfortunately, only has one nusselt correlation 
+    // by default.
     let shell_side_fluid_array: FluidArray = 
         FluidArray::new_odd_shaped_pipe(
             pipe_length,
@@ -171,7 +178,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
 
     // loss correlations, use pipe by default 
     // but none are used in calculations depending on 
-    // nusselt correlaitons
+    // nusselt correlations
     let shell_loss_correlations: DimensionlessDarcyLossCorrelations
         = DimensionlessDarcyLossCorrelations::new_pipe(
             pipe_length, 
