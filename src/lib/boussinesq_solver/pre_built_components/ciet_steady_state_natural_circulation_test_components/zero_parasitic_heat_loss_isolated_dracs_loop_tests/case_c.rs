@@ -101,9 +101,9 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
             // but without calibration, usually, we'll have overestimation
             //
             // setup 
-            // set point is 308 kelvin (35C)
+            // set point is 313 kelvin (40C)
             let tchx_outlet_temperature_set_point = 
-                ThermodynamicTemperature::new::<degree_celsius>(35.0);
+                ThermodynamicTemperature::new::<degree_celsius>(40.0);
             let initial_temperature = tchx_outlet_temperature_set_point;
 
             let timestep = Time::new::<second>(0.5);
@@ -114,11 +114,11 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // let's calculate 3800 seconds of simulated time 
+            // let's calculate 4000 seconds of simulated time 
             // it takes about that long for the temperature to settle down
 
             let mut current_simulation_time = Time::ZERO;
-            let max_simulation_time = Time::new::<second>(3800.0);
+            let max_simulation_time = Time::new::<second>(4000.0);
 
             // PID controller settings
             let controller_gain = Ratio::new::<ratio>(1.75);
@@ -774,7 +774,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
             approx::assert_relative_eq!(
                 boussinesq_solver_flowrate_kg_per_s_at_4000s_time,
                 final_mass_flowrate.get::<kilogram_per_second>(),
-                max_relative = 0.44e-2 // this is the max error between SAM and analytical
+                max_relative = 1e-4 // this is the max error between SAM and analytical
             );
             // final assertion 
 
