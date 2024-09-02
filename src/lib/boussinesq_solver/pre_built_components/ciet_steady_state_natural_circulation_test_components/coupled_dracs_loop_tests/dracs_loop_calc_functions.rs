@@ -151,11 +151,6 @@ pub fn calculate_dracs_thermal_hydraulics(
     pipe_39: &mut InsulatedFluidComponent,
     ){
 
-        // for an ideal situation, we have zero parasitic heat losses
-        // therefore, for each component, except tchx, heat transfer 
-        // coeff is zero
-
-        let adiabatic_heat_transfer_coeff = ambient_htc;
 
         // create the heat transfer interaction 
         let advection_heat_transfer_interaction: HeatTransferInteractionType;
@@ -263,27 +258,26 @@ pub fn calculate_dracs_thermal_hydraulics(
 
             }
         // set the relevant heat transfer coefficients 
-        // all zero except for tchx
         {
             // hot branch
             dhx_tube_side_30a.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             dhx_tube_side_heat_exchanger_30.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             dhx_tube_side_30b.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
 
             static_mixer_61_label_31.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_31a.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
 
             pipe_32.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_33.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_34.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
 
             // cold branch 
             tchx_35a.heat_transfer_to_ambient = 
@@ -292,16 +286,16 @@ pub fn calculate_dracs_thermal_hydraulics(
                 tchx_heat_transfer_coeff;
 
             static_mixer_60_label_36.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_36a.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
 
             pipe_37.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_38.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
             pipe_39.heat_transfer_to_ambient = 
-                adiabatic_heat_transfer_coeff;
+                ambient_htc;
 
         }
         // add lateral heat losses and power through dhx
