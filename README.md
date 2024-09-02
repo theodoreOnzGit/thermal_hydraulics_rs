@@ -19,11 +19,6 @@ package
 ```bash
 cargo add thermal_hydraulics_rs
 ```
-If you want the fluid mechanics library, 
-```rust
-extern crate thermal_hydraulics_rs;
-use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::*;
-```
 
 If you want the full thermal hydraulics library: 
 
@@ -75,18 +70,12 @@ Shell side pri loop or tube side DRACS loop for coupled natural circulation
 for CIET.
 2. Du's heat exchanger needs a constructor. In fact, shell and tube heat
 exchanger needs a constructor.
-3. Gnielinski correlation requires a darcy friction factor. But for components 
-such as the flowmeter or ctah, the friction factor is presented as 
-(f L/D + K) = 400 + 52000/Re or something like that. There is no friction 
-factor. One workaround is to scale (f L/D + K) by D/L  so that the 
-darcy friction factor substituted into the Gnielinski correlation is:
-f + K d/L. In this manner, we have something workable if we use the 
-Gnielinski correlation. May not be correct though. But an extra K d/L 
-factor makes sense in turbulent flows because more friction means more 
-boundary layer mixing.
-4. the (f L/D + K) issue for the Gnielinski correlation applies to 
-Insulated fluid components, non insulated fluid components, shell and 
-tube heat exchangers, and parallel no insulated fluid tubes.
+3. I wonder how to do things for heat exchanger calibration. Because the 
+Gnielinski correlation is already hard coded. To add a multiplicative factor,
+I need to either multiply the heat transfer area by a fixed amount, or 
+code a new nusselt number correlation. Either seems like quite the hassle.
+Perhaps I'll do a crude copy of the coupled loop first. Then think about 
+calibration later.
 
 
 # Tests and Examples

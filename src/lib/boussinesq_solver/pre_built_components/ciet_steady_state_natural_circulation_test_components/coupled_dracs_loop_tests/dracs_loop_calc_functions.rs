@@ -161,6 +161,12 @@ pub fn calculate_dracs_thermal_hydraulics(
         let advection_heat_transfer_interaction: HeatTransferInteractionType;
 
         // I'm going to create the advection interaction
+        //
+        // and probably for the sake of density calcs, I'll take the 
+        // average density using DHX outlet and 
+        // TCHX outlet temperatures, average them for the whole loop 
+        // doesn't make much diff tho based on Boussinesq approximation
+        // 
 
         let average_therminol_density = 
             LiquidMaterial::TherminolVP1.density(
