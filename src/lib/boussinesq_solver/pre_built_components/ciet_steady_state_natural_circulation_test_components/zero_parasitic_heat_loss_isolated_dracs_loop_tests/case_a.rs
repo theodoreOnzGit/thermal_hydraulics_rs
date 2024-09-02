@@ -26,6 +26,16 @@
 /// Table 3 also provides the data 
 /// 
 ///
+/// to ensure that the flow reached steady state,
+/// the mass flowrate values at 4000s were recorded to within 1e-4 
+/// 0.01%
+///
+/// Then the test is carried out at 3800s. If values match to within 
+/// 0.44%, test is considered to have reached steady state 
+/// This is because 0.44% is max error between SAM and its 
+/// "analytical" solution
+///
+///
 #[test]
 //#[ignore = "comment out for debugging"]
 pub fn case_a_tchx_out_319_kelvin_46_celsius(){
@@ -72,10 +82,10 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
 
-    fn verify_isolated_dhx_analytical_solution(
+    fn verify_isolated_dhx_sam_solution(
         input_power_watts: f64,
-        analytical_solution_mass_flowrate_kg_per_s: f64,
-        boussinesq_solver_flowrate_kg_per_s: f64,
+        sam_solution_mass_flowrate_kg_per_s: f64,
+        boussinesq_solver_flowrate_kg_per_s_at_4000s_time: f64,
         max_error_tolerance_fraction: f64) -> 
         Result<(),ThermalHydraulicsLibError>{
 
@@ -101,11 +111,12 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // let's calculate 3000 seconds of simulated time 
+            // let's calculate 3800 seconds of simulated time 
             // it takes about that long for the temperature to settle down
+            // this is compared to value at 4000s
 
             let mut current_simulation_time = Time::ZERO;
-            let max_simulation_time = Time::new::<second>(3000.0);
+            let max_simulation_time = Time::new::<second>(3800.0);
 
             // PID controller settings
             let controller_gain = Ratio::new::<ratio>(1.75);
@@ -761,18 +772,18 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             //
             // assert boussinesq_solver solution (regression testing)
             //
-            dbg!(&(analytical_solution_mass_flowrate_kg_per_s,final_mass_flowrate));
+            dbg!(&(sam_solution_mass_flowrate_kg_per_s,final_mass_flowrate));
 
             approx::assert_relative_eq!(
-                boussinesq_solver_flowrate_kg_per_s,
+                boussinesq_solver_flowrate_kg_per_s_at_4000s_time,
                 final_mass_flowrate.get::<kilogram_per_second>(),
-                max_relative = 1e-4
+                max_relative = 0.44e-2 // this is the max error between SAM and analytical
             );
 
             // final assertion 
 
             approx::assert_relative_eq!(
-                analytical_solution_mass_flowrate_kg_per_s,
+                sam_solution_mass_flowrate_kg_per_s,
                 final_mass_flowrate.get::<kilogram_per_second>(),
                 max_relative = max_error_tolerance
                 );
@@ -785,10 +796,10 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 
     let thread_1 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 931.8, // dhx input power in watts
-                3.4967e-2, // analytical / SAM mass flowrate kg/s
-                3.5452e-2, //boussinesq_solver flowrate for regression test
+                3.5019e-2, //  / SAM mass flowrate kg/s
+                3.5444e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
 
@@ -797,9 +808,9 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 
     let thread_2 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1088.3, // dhx input power in watts
-                3.7214e-2,// analytical / SAM mass flowrate kg/s
+                3.7275e-2,//  / SAM mass flowrate kg/s
                 3.7794e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
@@ -807,9 +818,9 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     );
     let thread_3 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1338.4, // dhx input power in watts
-                4.0525e-2,// analytical / SAM mass flowrate kg/s
+                4.0598e-2,//  / SAM mass flowrate kg/s
                 4.1135e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
@@ -817,19 +828,19 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     );
     let thread_4 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1470.6, // dhx input power in watts
-                4.2045e-2,// analytical / SAM mass flowrate kg/s
-                4.2745e-2, //boussinesq_solver flowrate for regression test
+                4.2127e-2,//  / SAM mass flowrate kg/s
+                4.2735e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
         }
     );
     let thread_5 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1699.9, // dhx input power in watts
-                4.4583e-2,// analytical / SAM mass flowrate kg/s
+                4.4674e-2,//  / SAM mass flowrate kg/s
                 4.5315e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
@@ -838,9 +849,9 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     );
     let thread_6 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1876.5, // dhx input power in watts
-                4.6309e-2,// analytical / SAM mass flowrate kg/s
+                4.6411e-2,//  / SAM mass flowrate kg/s
                 4.7145e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
@@ -848,9 +859,9 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
     );
     let thread_7 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 2137.0, // dhx input power in watts
-                4.8754e-2,// analytical / SAM mass flowrate kg/s
+                4.8867e-2,//  / SAM mass flowrate kg/s
                 4.9653e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();

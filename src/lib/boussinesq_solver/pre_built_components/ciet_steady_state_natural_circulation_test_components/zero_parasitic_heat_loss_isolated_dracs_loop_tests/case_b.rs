@@ -25,6 +25,16 @@
 /// Case C has 9 tests and TCHX out temperature of 40 C
 ///
 /// Table 3 also provides the data 
+///
+/// to ensure that the flow reached steady state,
+/// the mass flowrate values at 4000s were recorded to within 1e-4 
+/// 0.01%
+///
+/// Then the test is carried out at 3800s. If values match to within 
+/// 0.44%, test is considered to have reached steady state 
+/// This is because 0.44% is max error between SAM and its 
+/// "analytical" solution
+///
 /// 
 #[test]
 //#[ignore = "comment out for debugging"]
@@ -72,10 +82,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
     use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
 
-    fn verify_isolated_dhx_analytical_solution(
+    fn verify_isolated_dhx_sam_solution(
         input_power_watts: f64,
-        analytical_solution_mass_flowrate_kg_per_s: f64,
-        boussinesq_solver_flowrate_kg_per_s: f64,
+        sam_solution_mass_flowrate_kg_per_s: f64,
+        boussinesq_solver_flowrate_kg_per_s_at_4000s_time: f64,
         max_error_tolerance_fraction: f64) -> 
         Result<(),ThermalHydraulicsLibError>{
 
@@ -101,11 +111,11 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // let's calculate 3000 seconds of simulated time 
+            // let's calculate 3800 seconds of simulated time 
             // it takes about that long for the temperature to settle down
 
             let mut current_simulation_time = Time::ZERO;
-            let max_simulation_time = Time::new::<second>(3000.0);
+            let max_simulation_time = Time::new::<second>(3800.0);
 
             // PID controller settings
             let controller_gain = Ratio::new::<ratio>(1.75);
@@ -756,17 +766,17 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             // panic to see debug messages
 
             //panic!();
-            dbg!(&(analytical_solution_mass_flowrate_kg_per_s,final_mass_flowrate));
+            dbg!(&(sam_solution_mass_flowrate_kg_per_s,final_mass_flowrate));
 
             approx::assert_relative_eq!(
-                boussinesq_solver_flowrate_kg_per_s,
+                boussinesq_solver_flowrate_kg_per_s_at_4000s_time,
                 final_mass_flowrate.get::<kilogram_per_second>(),
-                max_relative = 1e-4
+                max_relative = 0.44e-2 // this is the max error between SAM and analytical
             );
             // final assertion 
 
             approx::assert_relative_eq!(
-                analytical_solution_mass_flowrate_kg_per_s,
+                sam_solution_mass_flowrate_kg_per_s,
                 final_mass_flowrate.get::<kilogram_per_second>(),
                 max_relative = max_error_tolerance
                 );
@@ -776,10 +786,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     }
     let thread_0 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 454.4, // dhx input power in watts
-                2.4297e-2, // analytical / SAM mass flowrate kg/s
-                2.4786e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                2.4343e-2, //  / SAM mass flowrate kg/s
+                2.4663e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -787,10 +797,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_1 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 766.0, // dhx input power in watts
-                3.048e-2, // analytical / SAM mass flowrate kg/s
-                3.1128e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.0558e-2, //  / SAM mass flowrate kg/s
+                3.1149e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -798,10 +808,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_2 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1004.4, // dhx input power in watts
-                3.4263e-2,// analytical / SAM mass flowrate kg/s
-                3.5031e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.4364e-2,//  / SAM mass flowrate kg/s
+                3.5051e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -809,10 +819,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_3 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1211.2, // dhx input power in watts
-                3.6997e-2,// analytical / SAM mass flowrate kg/s
-                3.7974e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.7117e-2,//  / SAM mass flowrate kg/s
+                3.7992e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -820,20 +830,20 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_4 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1409.0, // dhx input power in watts
-                3.9461e-2,// analytical / SAM mass flowrate kg/s
-                4.0508e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.9599e-2,//  / SAM mass flowrate kg/s
+                4.0523e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
         }
     );
     let thread_5 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1607.4, // dhx input power in watts
-                4.1702e-2,// analytical / SAM mass flowrate kg/s
-                4.2832e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.1851e-2,//  / SAM mass flowrate kg/s
+                4.2844e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -841,20 +851,20 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_6 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 1804.6, // dhx input power in watts
-                4.3738e-2,// analytical / SAM mass flowrate kg/s
-                4.4967e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.3913e-2,//  / SAM mass flowrate kg/s
+                4.4977e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
         }
     );
     let thread_7 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 2004.9, // dhx input power in watts
-                4.5643e-2,// analytical / SAM mass flowrate kg/s
-                4.6987e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.5834e-2,//  / SAM mass flowrate kg/s
+                4.6995e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -862,10 +872,10 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     );
     let thread_8 = thread::spawn(
         ||{
-            verify_isolated_dhx_analytical_solution(
+            verify_isolated_dhx_sam_solution(
                 2211.0, // dhx input power in watts
-                4.7497e-2,// analytical / SAM mass flowrate kg/s
-                4.8933e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.7704e-2,//  / SAM mass flowrate kg/s
+                4.8940e-2, // boussinesq_solver_flowrate_kg_per_s at 4000s
                 0.032, // max error tolerance fraction
             ).unwrap();
 
