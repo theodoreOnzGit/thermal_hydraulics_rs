@@ -147,27 +147,27 @@ pub fn calculate_pri_loop_dhx_heater_thermal_hydraulics(
     average_temperature_for_density_calcs: ThermodynamicTemperature,
     timestep: Time,
     ambient_htc: HeatTransfer,
-    pipe_4: &InsulatedFluidComponent,
-    pipe_3: &InsulatedFluidComponent,
-    pipe_2a: &InsulatedFluidComponent,
-    static_mixer_10_label_2: &InsulatedFluidComponent,
-    heater_top_head_1a: &InsulatedFluidComponent,
-    heater_version1_1: &InsulatedFluidComponent,
-    heater_bottom_head_1b: &InsulatedFluidComponent,
-    pipe_18: &InsulatedFluidComponent,
-    pipe_5a: &NonInsulatedFluidComponent,
-    pipe_26: &InsulatedFluidComponent,
-    pipe_25a: &NonInsulatedFluidComponent,
-    static_mixer_21_label_25: &InsulatedFluidComponent,
-    dhx_shell_side_pipe_24: &InsulatedFluidComponent,
-    static_mixer_20_label_23: &InsulatedFluidComponent,
-    pipe_23a: &InsulatedFluidComponent,
-    pipe_22: &InsulatedFluidComponent,
-    flowmeter_20_21a: &NonInsulatedFluidComponent,
-    pipe_21: &InsulatedFluidComponent,
-    pipe_20: &InsulatedFluidComponent,
-    pipe_19: &InsulatedFluidComponent,
-    pipe_17b: &InsulatedFluidComponent,
+    pipe_4: &mut InsulatedFluidComponent,
+    pipe_3: &mut InsulatedFluidComponent,
+    pipe_2a: &mut InsulatedFluidComponent,
+    static_mixer_10_label_2: &mut InsulatedFluidComponent,
+    heater_top_head_1a: &mut InsulatedFluidComponent,
+    heater_version1_1: &mut InsulatedFluidComponent,
+    heater_bottom_head_1b: &mut InsulatedFluidComponent,
+    pipe_18: &mut InsulatedFluidComponent,
+    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_26: &mut InsulatedFluidComponent,
+    pipe_25a: &mut NonInsulatedFluidComponent,
+    static_mixer_21_label_25: &mut InsulatedFluidComponent,
+    dhx_shell_side_pipe_24: &mut InsulatedFluidComponent,
+    static_mixer_20_label_23: &mut InsulatedFluidComponent,
+    pipe_23a: &mut InsulatedFluidComponent,
+    pipe_22: &mut InsulatedFluidComponent,
+    flowmeter_20_21a: &mut NonInsulatedFluidComponent,
+    pipe_21: &mut InsulatedFluidComponent,
+    pipe_20: &mut InsulatedFluidComponent,
+    pipe_19: &mut InsulatedFluidComponent,
+    pipe_17b: &mut InsulatedFluidComponent,
     ){
 
         // for an ideal situation, we have zero parasitic heat losses
@@ -199,6 +199,118 @@ pub fn calculate_pri_loop_dhx_heater_thermal_hydraulics(
         // now, let's link the fluid arrays using advection 
         // (no conduction here axially between arrays)
         {
+            // first is flow from heater branch to DHX branch
+            pipe_4.pipe_fluid_array.link_to_front(
+                &mut pipe_5a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            // then flow downwards in DHX branch
+
+            pipe_5a.pipe_fluid_array.link_to_front(
+                &mut pipe_26.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_26.pipe_fluid_array.link_to_front(
+                &mut pipe_25a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_25a.pipe_fluid_array.link_to_front(
+                &mut static_mixer_21_label_25.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            static_mixer_21_label_25.pipe_fluid_array.link_to_front(
+                &mut dhx_shell_side_pipe_24.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            dhx_shell_side_pipe_24.pipe_fluid_array.link_to_front(
+                &mut static_mixer_20_label_23.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            static_mixer_20_label_23.pipe_fluid_array.link_to_front(
+                &mut pipe_23a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_23a.pipe_fluid_array.link_to_front(
+                &mut pipe_22.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_22.pipe_fluid_array.link_to_front(
+                &mut flowmeter_20_21a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            flowmeter_20_21a.pipe_fluid_array.link_to_front(
+                &mut pipe_21.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_21.pipe_fluid_array.link_to_front(
+                &mut pipe_20.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+
+            pipe_20.pipe_fluid_array.link_to_front(
+                &mut pipe_19.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_19.pipe_fluid_array.link_to_front(
+                &mut pipe_17b.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            // now from DHX flow to heater branch
+            //
+            pipe_17b.pipe_fluid_array.link_to_front(
+                &mut pipe_18.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+            // heater branch
+
+            pipe_18.pipe_fluid_array.link_to_front(
+                &mut heater_bottom_head_1b.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            heater_bottom_head_1b.pipe_fluid_array.link_to_front(
+                &mut heater_version1_1.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            heater_version1_1.pipe_fluid_array.link_to_front(
+                &mut heater_top_head_1a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            heater_top_head_1a.pipe_fluid_array.link_to_front(
+                &mut static_mixer_10_label_2.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            static_mixer_10_label_2.pipe_fluid_array.link_to_front(
+                &mut pipe_2a.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_2a.pipe_fluid_array.link_to_front(
+                &mut pipe_3.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
+            pipe_3.pipe_fluid_array.link_to_front(
+                &mut pipe_4.pipe_fluid_array, 
+                advection_heat_transfer_interaction)
+                .unwrap();
+
         }
         // set the relevant heat transfer coefficients 
         // all zero except for tchx
