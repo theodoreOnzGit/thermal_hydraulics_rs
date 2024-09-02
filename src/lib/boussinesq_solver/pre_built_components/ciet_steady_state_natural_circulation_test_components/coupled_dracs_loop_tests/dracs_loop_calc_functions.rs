@@ -126,7 +126,7 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
 ///
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
-pub fn calculate_dracs_thermal_hydraulics(
+pub fn dracs_loop_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_dhx: Power,
     tchx_heat_transfer_coeff: HeatTransfer,
@@ -453,5 +453,88 @@ pub fn calculate_dracs_thermal_hydraulics(
 
         // we do it in serial, so it keeps things simple 
         // now we are done
+
+}
+
+
+/// now the heat transfer for the DRACS loop 
+/// for a single timestep, given mass flowrate in a counter clockwise 
+/// fashion in the DRACS
+///
+/// you also must specify the heat transfer coefficient to ambient 
+/// which is assumed to be the same throughout the loop
+pub fn dracs_loop_advance_timestep_except_dhx(
+    mass_flowrate_counter_clockwise: MassRate,
+    heat_rate_through_dhx: Power,
+    tchx_heat_transfer_coeff: HeatTransfer,
+    average_temperature_for_density_calcs: ThermodynamicTemperature,
+    timestep: Time,
+    ambient_htc: HeatTransfer,
+    pipe_34: &mut InsulatedFluidComponent,
+    pipe_33: &mut InsulatedFluidComponent,
+    pipe_32: &mut InsulatedFluidComponent,
+    pipe_31a: &mut InsulatedFluidComponent,
+    static_mixer_61_label_31: &mut InsulatedFluidComponent,
+    dhx_tube_side_30b: &mut NonInsulatedFluidComponent,
+    dhx_tube_side_30a: &mut NonInsulatedFluidComponent,
+    tchx_35a: &mut NonInsulatedFluidComponent,
+    tchx_35b: &mut NonInsulatedFluidComponent,
+    static_mixer_60_label_36: &mut InsulatedFluidComponent,
+    pipe_36a: &mut InsulatedFluidComponent,
+    pipe_37: &mut InsulatedFluidComponent,
+    flowmeter_60_37a: &mut NonInsulatedFluidComponent,
+    pipe_38: &mut InsulatedFluidComponent,
+    pipe_39: &mut InsulatedFluidComponent,
+    ){
+
+
+            dhx_tube_side_30a
+                .advance_timestep(timestep)
+                .unwrap();
+            dhx_tube_side_30b
+                .advance_timestep(timestep)
+                .unwrap();
+
+            static_mixer_61_label_31
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_31a
+                .advance_timestep(timestep)
+                .unwrap();
+
+            pipe_32
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_33
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_34
+                .advance_timestep(timestep)
+                .unwrap();
+
+            // cold branch 
+            tchx_35a
+                .advance_timestep(timestep)
+                .unwrap();
+            tchx_35b
+                .advance_timestep(timestep)
+                .unwrap();
+
+            static_mixer_60_label_36
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_36a
+                .advance_timestep(timestep)
+                .unwrap();
+
+            pipe_37
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_38
+                .advance_timestep(timestep)
+                .unwrap();
+            pipe_39
+                .advance_timestep(timestep)
+                .unwrap();
 
 }

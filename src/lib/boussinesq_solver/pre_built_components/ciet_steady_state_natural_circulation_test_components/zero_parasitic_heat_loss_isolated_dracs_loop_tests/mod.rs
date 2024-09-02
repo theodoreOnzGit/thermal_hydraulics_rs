@@ -560,6 +560,12 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
                 zero_power)
                 .unwrap();
 
+            flowmeter_60_37a.
+                lateral_and_miscellaneous_connections_no_wall_correction(
+                    mass_flowrate_counter_clockwise, 
+                    zero_power)
+                .unwrap();
+
             pipe_37
                 .lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, 
@@ -619,6 +625,10 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
                 .advance_timestep(timestep)
                 .unwrap();
             pipe_36a
+                .advance_timestep(timestep)
+                .unwrap();
+
+            flowmeter_60_37a
                 .advance_timestep(timestep)
                 .unwrap();
 

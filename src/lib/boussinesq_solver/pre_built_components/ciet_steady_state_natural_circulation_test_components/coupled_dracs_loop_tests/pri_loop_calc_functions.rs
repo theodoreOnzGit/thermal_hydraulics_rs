@@ -432,4 +432,54 @@ pub fn pri_loop_dhx_heater_link_up_components(
 
 }
 
-//todo: advance timestep for all other components other than DHX
+/// advances timestep for all components in primary loop except DHX
+pub fn pri_loop_advance_timestep_except_dhx(
+    timestep: Time,
+    pipe_4: &mut InsulatedFluidComponent,
+    pipe_3: &mut InsulatedFluidComponent,
+    pipe_2a: &mut InsulatedFluidComponent,
+    static_mixer_10_label_2: &mut InsulatedFluidComponent,
+    heater_top_head_1a: &mut InsulatedFluidComponent,
+    heater_version1_1: &mut InsulatedFluidComponent,
+    heater_bottom_head_1b: &mut InsulatedFluidComponent,
+    pipe_18: &mut InsulatedFluidComponent,
+    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_26: &mut InsulatedFluidComponent,
+    pipe_25a: &mut NonInsulatedFluidComponent,
+    static_mixer_21_label_25: &mut InsulatedFluidComponent,
+    static_mixer_20_label_23: &mut InsulatedFluidComponent,
+    pipe_23a: &mut InsulatedFluidComponent,
+    pipe_22: &mut InsulatedFluidComponent,
+    flowmeter_20_21a: &mut NonInsulatedFluidComponent,
+    pipe_21: &mut InsulatedFluidComponent,
+    pipe_20: &mut InsulatedFluidComponent,
+    pipe_19: &mut InsulatedFluidComponent,
+    pipe_17b: &mut InsulatedFluidComponent,
+){
+
+    // heater branch
+    pipe_4.advance_timestep(timestep).unwrap();
+    pipe_3.advance_timestep(timestep).unwrap();
+    pipe_2a.advance_timestep(timestep).unwrap();
+    static_mixer_10_label_2.advance_timestep(timestep).unwrap();
+    heater_top_head_1a.advance_timestep(timestep).unwrap();
+    heater_version1_1.advance_timestep(timestep).unwrap();
+    heater_bottom_head_1b.advance_timestep(timestep).unwrap();
+    pipe_18.advance_timestep(timestep).unwrap();
+
+
+    // DHX branch (except DHX shell side)
+    pipe_5a.advance_timestep(timestep).unwrap();
+    pipe_26.advance_timestep(timestep).unwrap();
+    pipe_25a.advance_timestep(timestep).unwrap();
+    static_mixer_21_label_25.advance_timestep(timestep).unwrap();
+    static_mixer_20_label_23.advance_timestep(timestep).unwrap();
+    pipe_23a.advance_timestep(timestep).unwrap();
+    pipe_22.advance_timestep(timestep).unwrap();
+    flowmeter_20_21a.advance_timestep(timestep).unwrap();
+    pipe_21.advance_timestep(timestep).unwrap();
+    pipe_20.advance_timestep(timestep).unwrap();
+    pipe_19.advance_timestep(timestep).unwrap();
+    pipe_17b.advance_timestep(timestep).unwrap();
+
+}
