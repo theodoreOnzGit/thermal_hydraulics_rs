@@ -178,7 +178,7 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
     // it takes about that long for the temperature to settle down
 
     let mut current_simulation_time = Time::ZERO;
-    let max_simulation_time = Time::new::<second>(2000.0);
+    let max_simulation_time = Time::new::<second>(2400.0);
 
     // PID controller settings
     let controller_gain = Ratio::new::<ratio>(1.75);
@@ -470,6 +470,8 @@ pub fn dracs_natural_circ_thermal_hydraulics_pid_test_prototype_2(){
             static_mixer_60_label_36.heat_transfer_to_ambient = 
                 adiabatic_heat_transfer_coeff;
             pipe_36a.heat_transfer_to_ambient = 
+                adiabatic_heat_transfer_coeff;
+            flowmeter_60_37a.heat_transfer_to_ambient = 
                 adiabatic_heat_transfer_coeff;
 
             pipe_37.heat_transfer_to_ambient = 

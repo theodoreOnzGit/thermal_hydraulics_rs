@@ -101,11 +101,11 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // let's calculate 2000 seconds of simulated time 
+            // let's calculate 3000 seconds of simulated time 
             // it takes about that long for the temperature to settle down
 
             let mut current_simulation_time = Time::ZERO;
-            let max_simulation_time = Time::new::<second>(2000.0);
+            let max_simulation_time = Time::new::<second>(3000.0);
 
             // PID controller settings
             let controller_gain = Ratio::new::<ratio>(1.75);
@@ -788,7 +788,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             verify_isolated_dhx_analytical_solution(
                 931.8, // dhx input power in watts
                 3.4967e-2, // analytical / SAM mass flowrate kg/s
-                3.5328e-2, //boussinesq_solver flowrate for regression test
+                3.5452e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
 
@@ -800,7 +800,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1088.3, // dhx input power in watts
                 3.7214e-2,// analytical / SAM mass flowrate kg/s
-                3.7929e-2, //boussinesq_solver flowrate for regression test
+                3.7794e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
         }
@@ -810,7 +810,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1338.4, // dhx input power in watts
                 4.0525e-2,// analytical / SAM mass flowrate kg/s
-                4.1123e-2, //boussinesq_solver flowrate for regression test
+                4.1135e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
         }
@@ -830,7 +830,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1699.9, // dhx input power in watts
                 4.4583e-2,// analytical / SAM mass flowrate kg/s
-                4.5328e-2, //boussinesq_solver flowrate for regression test
+                4.5315e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
         }
@@ -851,7 +851,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
             verify_isolated_dhx_analytical_solution(
                 2137.0, // dhx input power in watts
                 4.8754e-2,// analytical / SAM mass flowrate kg/s
-                4.9647e-2, //boussinesq_solver flowrate for regression test
+                4.9653e-2, //boussinesq_solver flowrate for regression test
                 0.02, // max error tolerance fraction
             ).unwrap();
         }

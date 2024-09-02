@@ -101,11 +101,11 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
                 HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
             let average_temperature_for_density_calcs = 
                 ThermodynamicTemperature::new::<degree_celsius>(80.0);
-            // let's calculate 2000 seconds of simulated time 
+            // let's calculate 3000 seconds of simulated time 
             // it takes about that long for the temperature to settle down
 
             let mut current_simulation_time = Time::ZERO;
-            let max_simulation_time = Time::new::<second>(2000.0);
+            let max_simulation_time = Time::new::<second>(3000.0);
 
             // PID controller settings
             let controller_gain = Ratio::new::<ratio>(1.75);
@@ -779,8 +779,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 454.4, // dhx input power in watts
                 2.4297e-2, // analytical / SAM mass flowrate kg/s
-                2.5507e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.05, // max error tolerance fraction
+                2.4786e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -790,8 +790,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 766.0, // dhx input power in watts
                 3.048e-2, // analytical / SAM mass flowrate kg/s
-                3.1325e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                3.1128e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -801,8 +801,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1004.4, // dhx input power in watts
                 3.4263e-2,// analytical / SAM mass flowrate kg/s
-                3.5141e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                3.5031e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -812,8 +812,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1211.2, // dhx input power in watts
                 3.6997e-2,// analytical / SAM mass flowrate kg/s
-                3.8122e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                3.7974e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -823,8 +823,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1409.0, // dhx input power in watts
                 3.9461e-2,// analytical / SAM mass flowrate kg/s
-                4.0644e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                4.0508e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
         }
     );
@@ -833,8 +833,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1607.4, // dhx input power in watts
                 4.1702e-2,// analytical / SAM mass flowrate kg/s
-                4.2962e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                4.2832e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -844,8 +844,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 1804.6, // dhx input power in watts
                 4.3738e-2,// analytical / SAM mass flowrate kg/s
-                4.5089e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                4.4967e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
         }
     );
@@ -854,8 +854,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 2004.9, // dhx input power in watts
                 4.5643e-2,// analytical / SAM mass flowrate kg/s
-                4.7098e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                4.6987e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
@@ -865,8 +865,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_analytical_solution(
                 2211.0, // dhx input power in watts
                 4.7497e-2,// analytical / SAM mass flowrate kg/s
-                4.9033e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
-                0.045, // max error tolerance fraction
+                4.8933e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                0.032, // max error tolerance fraction
             ).unwrap();
 
         }
