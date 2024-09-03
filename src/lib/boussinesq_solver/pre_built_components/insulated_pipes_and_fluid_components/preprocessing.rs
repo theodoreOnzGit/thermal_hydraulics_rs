@@ -22,6 +22,61 @@ use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 impl InsulatedFluidComponent {
 
 
+    /// Wrapper fn:
+    /// used to connect the arrays laterally 
+    /// you'll need to set the mass flowrate and heater power
+    ///
+    /// executes serially, and uses lots of cloning, so it's 
+    /// heavier in resource usage,
+    ///
+    /// unoptimised in this regard
+    /// at each timestep, you are allowed to set a heater power, where 
+    /// heat is dumped into the heated tube surrounding the pipe
+    /// you set it using the heater power input here.
+    ///
+    /// otherwise you set it to zero for an unpowered pipe
+    ///
+    /// wall correction setting turned off
+    #[inline]
+    pub fn lateral_and_miscellaneous_connections_no_wall_correction(&mut self,
+        mass_flowrate: MassRate,
+        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+
+        let correct_prandtl_for_wall_temperatures = false;
+
+        self.lateral_and_miscellaneous_connections(
+            mass_flowrate, 
+            heater_power, 
+            correct_prandtl_for_wall_temperatures)
+    }
+
+    /// Wrapper fn:
+    /// used to connect the arrays laterally 
+    /// you'll need to set the mass flowrate and heater power
+    ///
+    /// executes serially, and uses lots of cloning, so it's 
+    /// heavier in resource usage,
+    ///
+    /// unoptimised in this regard
+    /// at each timestep, you are allowed to set a heater power, where 
+    /// heat is dumped into the heated tube surrounding the pipe
+    /// you set it using the heater power input here.
+    ///
+    /// otherwise you set it to zero for an unpowered pipe
+    /// wall correction setting turned on
+    #[inline]
+    pub fn lateral_and_miscellaneous_connections_wall_correction(&mut self,
+        mass_flowrate: MassRate,
+        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+
+        let correct_prandtl_for_wall_temperatures = false;
+
+        self.lateral_and_miscellaneous_connections(
+            mass_flowrate, 
+            heater_power, 
+            correct_prandtl_for_wall_temperatures)
+    }
+
     /// used to connect the arrays laterally 
     /// you'll need to set the mass flowrate and heater power
     ///
@@ -35,9 +90,10 @@ impl InsulatedFluidComponent {
     ///
     /// otherwise you set it to zero for an unpowered pipe
     #[inline]
-    pub fn lateral_and_miscellaneous_connections_no_wall_correction(&mut self,
+    pub fn lateral_and_miscellaneous_connections(&mut self,
         mass_flowrate: MassRate,
-        heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
+        heater_power: Power,
+        correct_prandtl_for_wall_temperatures: bool) -> Result<(), ThermalHydraulicsLibError>{
 
 
         // first let's get all the conductances 
@@ -62,7 +118,7 @@ impl InsulatedFluidComponent {
         self.set_mass_flowrate(mass_flowrate);
 
         let pipe_shell_node_to_fluid_array_conductance: ThermalConductance 
-        = self.get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction()?;
+        = self.get_fluid_array_to_pipe_shell_conductance(correct_prandtl_for_wall_temperatures)?;
 
 
         // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
@@ -301,7 +357,9 @@ impl InsulatedFluidComponent {
 
     /// obtains fluid_array to pipe_shell shell conductance
     #[inline]
-    pub fn get_fluid_array_to_pipe_shell_conductance_no_wall_temp_correction(&mut self) 
+    pub fn get_fluid_array_to_pipe_shell_conductance(
+        &mut self,
+        correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
 
         // the thermal conductance here should be based on the 
@@ -407,12 +465,48 @@ impl InsulatedFluidComponent {
         let mut fluid_array: FluidArray 
             = self.pipe_fluid_array.clone().try_into()?;
 
-        let nusselt_estimate = 
-            fluid_array
-            .get_nusselt(
+        let nusselt_estimate: Ratio;
+
+        if !correct_prandtl_for_wall_temperatures {
+            nusselt_estimate = fluid_array.get_nusselt(
                 reynolds_number, 
                 bulk_prandtl_number, 
                 bulk_prandtl_number)?;
+        } else {
+
+            // in this case, we do wall correction, but must have a 
+            // bounded Prandtl number approach for the wall
+            // Firstly, get the shell temperature 
+
+            let mut wall_temperature_estimate = pipe_shell_clone
+                .try_get_bulk_temperature()?;
+
+            // then ensure that the wall temperature is within 
+            // the temperature bounds of the fluid properties
+            if wall_temperature_estimate > fluid_material.max_temperature() {
+
+                wall_temperature_estimate = fluid_material.max_temperature();
+
+            } else if wall_temperature_estimate < fluid_material.min_temperature() {
+
+                wall_temperature_estimate = fluid_material.min_temperature();
+
+            }
+            // then get the wall prandtl number
+
+            let wall_prandtl_number: Ratio 
+                = fluid_material.try_get_prandtl_liquid(
+                    wall_temperature_estimate,
+                    atmospheric_pressure
+                )?;
+
+
+            nusselt_estimate = fluid_array.get_nusselt(
+                reynolds_number, 
+                bulk_prandtl_number, 
+                wall_prandtl_number)?;
+
+        }
 
 
         // now we can get the heat transfer coeff, 
