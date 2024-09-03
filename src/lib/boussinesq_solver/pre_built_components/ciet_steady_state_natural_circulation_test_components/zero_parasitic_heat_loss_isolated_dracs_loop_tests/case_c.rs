@@ -37,7 +37,7 @@
 /// 
 ///
 #[test]
-//#[ignore = "comment out for debugging"]
+#[ignore = "comment out for debugging"]
 pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};

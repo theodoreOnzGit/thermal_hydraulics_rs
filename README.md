@@ -75,7 +75,10 @@ Gnielinski correlation is already hard coded. To add a multiplicative factor,
 I need to either multiply the heat transfer area by a fixed amount, or 
 code a new nusselt number correlation. Either seems like quite the hassle.
 Perhaps I'll do a crude copy of the coupled loop first. Then think about 
-calibration later.
+calibration later. 
+4. The InsulatedFluidComponent, NonInsulatedParallelFluidComponents 
+and NonInsulatedFluidComponent structs do not yet have wall correction. 
+This needs to be implemented, and preferably unit tested.
 
 
 # Tests and Examples
