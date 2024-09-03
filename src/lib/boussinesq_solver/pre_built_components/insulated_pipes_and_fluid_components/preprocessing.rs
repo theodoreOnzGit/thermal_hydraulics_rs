@@ -1,4 +1,4 @@
-use std::{f64::consts::PI, thread::JoinHandle};
+use std::thread::JoinHandle;
 use std::thread;
 
 use uom::ConstZero;
@@ -7,7 +7,7 @@ use uom::si::f64::*;
 use ndarray::*;
 use super::InsulatedFluidComponent;
 use crate::boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
-use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::{enums::NusseltCorrelation, input_structs::GnielinskiData}, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
+use crate::boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::boussinesq_solver::boundary_conditions::BCType;
@@ -69,7 +69,7 @@ impl InsulatedFluidComponent {
         mass_flowrate: MassRate,
         heater_power: Power) -> Result<(), ThermalHydraulicsLibError>{
 
-        let correct_prandtl_for_wall_temperatures = false;
+        let correct_prandtl_for_wall_temperatures = true;
 
         self.lateral_and_miscellaneous_connections(
             mass_flowrate, 
@@ -118,7 +118,7 @@ impl InsulatedFluidComponent {
         self.set_mass_flowrate(mass_flowrate);
 
         let pipe_shell_node_to_fluid_array_conductance: ThermalConductance 
-        = self.get_fluid_array_to_pipe_shell_conductance(correct_prandtl_for_wall_temperatures)?;
+        = self.get_fluid_array_node_to_pipe_shell_conductance(correct_prandtl_for_wall_temperatures)?;
 
 
         // 3. we'll need the shell midpoint to insulation midpoint thermal conductance
@@ -355,9 +355,9 @@ impl InsulatedFluidComponent {
     }
 
 
-    /// obtains fluid_array to pipe_shell shell conductance
+    /// obtains fluid_array node to pipe_shell shell conductance
     #[inline]
-    pub fn get_fluid_array_to_pipe_shell_conductance(
+    pub fn get_fluid_array_node_to_pipe_shell_conductance(
         &mut self,
         correct_prandtl_for_wall_temperatures: bool) 
         -> Result<ThermalConductance,ThermalHydraulicsLibError> {
@@ -604,166 +604,6 @@ impl InsulatedFluidComponent {
 
     }
 
-    /// obtains fluid to pipe_shell conductance
-    #[inline]
-    pub fn get_fluid_node_pipe_shell_conductance(&mut self) 
-        -> Result<ThermalConductance,ThermalHydraulicsLibError> {
-
-        // the thermal conductance here should be based on the 
-        // nusselt number correlation
-
-        // before any calculations, I will first need a clone of 
-        // the fluid array and pipe shell array
-        let mut fluid_array_clone: FluidArray = 
-        self.pipe_fluid_array.clone().try_into()?;
-
-        let mut pipe_shell_clone: SolidColumn = 
-        self.pipe_shell.clone().try_into().unwrap();
-
-        // also need to get basic temperatures and mass flowrates 
-        // only do this once because some of these methods involve 
-        // cloning, which is computationally expensive
-
-        let mass_flowrate: MassRate = 
-        fluid_array_clone.get_mass_flowrate();
-
-        let fluid_bulk_temperature: ThermodynamicTemperature 
-        = fluid_array_clone.try_get_bulk_temperature()?;
-
-        let solid_pressure = pipe_shell_clone.back_single_cv.pressure_control_volume;
-
-        let pipe_shell_surf_temperature: ThermodynamicTemperature 
-        = pipe_shell_clone.try_get_bulk_temperature()?;
-
-        let hydraulic_diameter = 
-        fluid_array_clone.get_hydraulic_diameter();
-
-        let length = fluid_array_clone.get_component_length();
-
-        // firstly, reynolds 
-
-        let reynolds_number: Ratio = 
-        self.get_reynolds_based_on_hydraulic_diameter_and_flow_area(
-            mass_flowrate,
-            fluid_bulk_temperature,
-        )?;
-
-        // materials
-        
-        let fluid_material: LiquidMaterial = 
-            fluid_array_clone.back_single_cv.material_control_volume.try_into()?;
-
-        let solid_material: SolidMaterial = 
-            pipe_shell_clone.back_single_cv.material_control_volume.try_into()?;
-
-        // next, bulk prandtl number 
-        let bulk_prandtl_number: Ratio 
-        = fluid_material.try_get_prandtl_liquid(
-            fluid_bulk_temperature,
-            solid_pressure
-        )?;
-
-        // surface prandtl number
-        //
-        let surface_prandtl_number: Ratio 
-        = fluid_material.try_get_prandtl_liquid(
-            pipe_shell_surf_temperature,
-            solid_pressure
-        )?;
-
-        // for this case, I will have the Gnielinksi 
-        // Correlation
-        //
-        // However, for that, I will need the length to diameter 
-        // ratio, and the darcy_friction_factor
-
-
-        let mut pipe_prandtl_reynolds_data: GnielinskiData 
-        = GnielinskiData::default();
-
-        pipe_prandtl_reynolds_data.reynolds = reynolds_number;
-        pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.prandtl_wall = surface_prandtl_number;
-
-        pipe_prandtl_reynolds_data.darcy_friction_factor = 
-            self.darcy_loss_correlation.fldk_based_on_darcy_friction_factor(
-                reynolds_number).unwrap();
-
-        pipe_prandtl_reynolds_data.length_to_diameter = 
-        length/hydraulic_diameter;
-
-
-        let heater_nusselt_correlation: NusseltCorrelation 
-        =  NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
-            pipe_prandtl_reynolds_data
-        );
-
-        let nusselt_estimate: Ratio = 
-        heater_nusselt_correlation.try_get()?;
-
-        // now we can get the heat transfer coeff, 
-
-        let h: HeatTransfer;
-
-        let k_fluid_average: ThermalConductivity = 
-        fluid_material.try_get_thermal_conductivity(
-            fluid_bulk_temperature)?;
-
-        h = nusselt_estimate * k_fluid_average / hydraulic_diameter;
-
-        // and then get the convective resistance
-        let number_of_temperature_nodes = self.inner_nodes + 2;
-        let length = fluid_array_clone.get_component_length();
-        let id = self.tube_id;
-        let od = self.tube_od;
-
-        let heat_transfer_area_total: Area = 
-        length * id * PI;
-
-        let heat_transfer_area_per_node: Area 
-        = heat_transfer_area_total / 
-        number_of_temperature_nodes as f64;
-
-        let node_length = length / 
-            number_of_temperature_nodes as f64;
-
-        let fluid_to_pipe_shell_shell_average_conductance: ThermalConductance 
-        = h * heat_transfer_area_per_node;
-
-        let fluid_to_pipe_shell_shell_surface_node_resistance = 
-        1.0/fluid_to_pipe_shell_shell_average_conductance;
-
-        // now I need to calculate resistance of the half length of the 
-        // pipe_shell shell, which is an annular cylinder
-
-        let cylinder_mid_diameter: Length = 0.5*(id+od);
-
-        let pipe_shell_conductivity = 
-        solid_material.try_get_thermal_conductivity(
-            pipe_shell_surf_temperature
-        )?;
-
-        let cylinder_node_conductance: ThermalConductance 
-        = try_get_thermal_conductance_annular_cylinder(
-            id,
-            cylinder_mid_diameter,
-            node_length,
-            pipe_shell_conductivity
-        )?;
-
-
-        let cylinder_node_resistance = 
-        1.0/cylinder_node_conductance;
-
-        let cylinder_to_fluid_resistance = 
-        cylinder_node_resistance + 
-        fluid_to_pipe_shell_shell_surface_node_resistance;
-
-        let cylinder_to_fluid_conductance: ThermalConductance 
-        = 1.0/cylinder_to_fluid_resistance;
-
-        return Ok(cylinder_to_fluid_conductance);
-    }
 
     /// obtains pipe shell to insulation conductance
     #[inline]
