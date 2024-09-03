@@ -47,8 +47,9 @@
 /// The key metric of testing is the DHX inlet temperature
 /// or the dhx_tube_side_30a bulk fluid temp
 ///
-/// For this case, wall correction does work, but is too small to be noticeable
-/// for insulated components, but it is noticeable for the non_insulated_fluid_components
+/// For this case, wall correction does work, but 
+/// it is not noticeable to within 0.5K, you have to go 1e-7K to see the 
+/// difference
 ///
 #[test]
 //#[ignore = "comment out for debugging"]
@@ -784,10 +785,11 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
 
         //
         // assert temperature of tchx and dhx tube side 30a
+        // note, regression test is quite sensitive
         approx::assert_abs_diff_eq!(
             dhx_tube_side_30a_ref_temp_celsius,
             dhx_tube_side_30a_temp.get::<degree_celsius>(),
-            epsilon = 1e-5
+            epsilon = 1e-7
         );
 
         Ok(())
@@ -802,7 +804,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
         verify_isolated_dhx_forced_circ(
             2000.0, // 2000 watts
             MassRate::new::<kilogram_per_second>(0.18),
-            31.67036, // dhx temp degree celsius at 800s to within 0.01K
+            31.67036379, // dhx temp degree celsius at 800s to within 0.01K
                    // comparing to that at 750s to within 0.3 K
             turn_on_non_insulated_fluid_components_wall_correction,
             turn_on_insulated_fluid_components_wall_correction,
@@ -819,7 +821,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
         verify_isolated_dhx_forced_circ(
             2000.0, // 2000 watts
             MassRate::new::<kilogram_per_second>(0.18),
-            31.67041, // dhx temp degree celsius to within 0.01K
+            31.670412189, // dhx temp degree celsius to within 0.01K
             turn_on_non_insulated_fluid_components_wall_correction,
             turn_on_insulated_fluid_components_wall_correction,
             "non_insulated_fluid_components wall correction"
@@ -835,7 +837,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
         verify_isolated_dhx_forced_circ(
             2000.0, // 2000 watts
             MassRate::new::<kilogram_per_second>(0.18),
-            31.67036, // dhx temp degree celsius to within 0.01K
+            31.67037098, // dhx temp degree celsius to within 0.01K
             turn_on_non_insulated_fluid_components_wall_correction,
             turn_on_insulated_fluid_components_wall_correction,
             "insulated_fluid_components wall correction"
@@ -851,7 +853,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
         verify_isolated_dhx_forced_circ(
             2000.0, // 2000 watts
             MassRate::new::<kilogram_per_second>(0.18),
-            31.60741, // dhx temp degree celsius to within 0.01K
+            31.67041937, // dhx temp degree celsius to within 0.01K
             turn_on_non_insulated_fluid_components_wall_correction,
             turn_on_insulated_fluid_components_wall_correction,
             "all components wall correction"
