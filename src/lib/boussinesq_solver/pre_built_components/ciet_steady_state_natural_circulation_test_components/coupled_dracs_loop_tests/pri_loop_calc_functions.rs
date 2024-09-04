@@ -1,5 +1,6 @@
 use uom::si::f64::*;
 
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::
 array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
@@ -10,7 +11,6 @@ array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
 fluid_component_collection::FluidComponentCollectionMethods;
 use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use uom::ConstZero;
 
 use uom::si::thermodynamic_temperature::degree_celsius;
@@ -83,7 +83,7 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
     pipe_26: &InsulatedFluidComponent,
     pipe_25a: &NonInsulatedFluidComponent,
     static_mixer_21_label_25: &InsulatedFluidComponent,
-    dhx_shell_side_pipe_24: &FluidArray,
+    dhx_shell_side_pipe_24: &FluidComponent,
     static_mixer_20_label_23: &InsulatedFluidComponent,
     pipe_23a: &InsulatedFluidComponent,
     pipe_22: &InsulatedFluidComponent,

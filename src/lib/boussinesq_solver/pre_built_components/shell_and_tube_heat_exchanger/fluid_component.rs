@@ -31,6 +31,20 @@ impl SimpleShellAndTubeHeatExchanger {
 
     }
 
+    /// clones the tube side fluid array and converts it into 
+    /// a fluid component 
+    pub fn get_clone_of_tube_side_parallel_tube_fluid_component
+        (&self) -> FluidComponent {
+
+            let fluid_array_heat_transfer_entity = self.tube_side_fluid_array_for_single_tube.clone();
+            let fluid_array: FluidArray = fluid_array_heat_transfer_entity.try_into().unwrap();
+
+            let number_of_parallel_tubes: u32 = self.number_of_tubes;
+
+            FluidComponent::ParallelUniformFluidArray(
+                fluid_array,number_of_parallel_tubes)
+    }
+
     /// sets the tube side mass flowrate 
     pub fn set_tube_side_total_mass_flowrate(&mut self,
         mass_flowrate_over_all_tubes: MassRate) {

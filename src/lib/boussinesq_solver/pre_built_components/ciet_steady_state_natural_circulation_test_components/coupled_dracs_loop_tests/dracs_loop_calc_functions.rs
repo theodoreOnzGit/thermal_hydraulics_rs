@@ -1,5 +1,6 @@
 use uom::si::f64::*;
 
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::
 array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
@@ -9,7 +10,6 @@ use crate::boussinesq_solver::
 array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
 fluid_component_collection::FluidComponentCollectionMethods;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use uom::ConstZero;
 
 use uom::si::thermodynamic_temperature::degree_celsius;
@@ -71,7 +71,7 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
     pipe_31a: &InsulatedFluidComponent,
     static_mixer_61_label_31: &InsulatedFluidComponent,
     dhx_tube_side_30b: &NonInsulatedFluidComponent,
-    dhx_tube_side_heat_exchanger_30: &FluidArray,
+    dhx_tube_side_heat_exchanger_30: &FluidComponent,
     dhx_tube_side_30a: &NonInsulatedFluidComponent,
     tchx_35a: &NonInsulatedFluidComponent,
     tchx_35b: &NonInsulatedFluidComponent,
