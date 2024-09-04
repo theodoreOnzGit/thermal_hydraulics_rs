@@ -68,17 +68,13 @@ So far, I'm thinking of the following features:
 1. DHX heat exchanger is not properly incorporated into loop solver for 
 Shell side pri loop or tube side DRACS loop for coupled natural circulation 
 for CIET.
-2. Du's heat exchanger needs a constructor. In fact, shell and tube heat
-exchanger needs a constructor.
+2. DHX needs to be calibrated. Not sure how though!
 3. I wonder how to do things for heat exchanger calibration. Because the 
 Gnielinski correlation is already hard coded. To add a multiplicative factor,
 I need to either multiply the heat transfer area by a fixed amount, or 
 code a new nusselt number correlation. Either seems like quite the hassle.
 Perhaps I'll do a crude copy of the coupled loop first. Then think about 
 calibration later. 
-4. The InsulatedFluidComponent, NonInsulatedParallelFluidComponents 
-and NonInsulatedFluidComponent structs do not yet have wall correction. 
-This needs to be implemented, and preferably unit tested.
 
 
 # Tests and Examples
