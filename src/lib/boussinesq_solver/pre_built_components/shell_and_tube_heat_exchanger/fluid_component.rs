@@ -105,36 +105,14 @@ impl SimpleShellAndTubeHeatExchanger {
     pub fn get_shell_side_hydraulic_diameter(&self) -> Length {
 
 
-        // D_i 
-        let shell_side_id = self.shell_side_id;
-        
-
-        //d_o 
-        let tube_side_od = self.tube_side_od;
-
-        // N_t 
-        let number_of_tubes = self.number_of_tubes;
-
-        // (D_i^2 - N_t d_o^2)
-
-        let numerator: f64 = shell_side_id.get::<meter>().powf(2.0)
-            - number_of_tubes as f64 
-            * tube_side_od.get::<meter>().powf(2.0);
-        
-        // (D_i + N_t d_i)
-        let denominator: f64 = 
-            shell_side_id.get::<meter>() 
-            + number_of_tubes as f64 * 
-            tube_side_od.get::<meter>();
-
-        // hydraulic diameter is in meters 
-
-        let hydraulic_diameter: Length 
-            = Length::new::<meter>(numerator/denominator);
-
         // or just take the hydraulic diameter from the 
         // shell side fluid array 
         // 
+        let shell_side_fluid_array: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into().unwrap();
+
+        let hydraulic_diameter: Length 
+            = shell_side_fluid_array.get_hydraulic_diameter_immutable();
 
         return hydraulic_diameter;
     }
@@ -149,26 +127,11 @@ impl SimpleShellAndTubeHeatExchanger {
     /// pi/4 * (D_i^2 - N_t d_o^2)
     pub fn get_shell_side_cross_sectional_area(&self) -> Area {
 
-        // D_i 
-        let shell_side_id = self.shell_side_id;
-        
-        //d_o 
-        let tube_side_od = self.tube_side_od;
-
-        // N_t 
-        let number_of_tubes = self.number_of_tubes;
-
-        // (D_i^2 - N_t d_o^2)
-
-        let d_square_term: f64 = shell_side_id.get::<meter>().powf(2.0)
-            - number_of_tubes as f64 
-            * tube_side_od.get::<meter>().powf(2.0);
-        
-        let area_meter_sq_value: f64 
-            = PI * 0.25 * d_square_term;
+        let shell_side_fluid_array: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into().unwrap();
 
         let shell_side_xs_area: Area 
-            = Area::new::<square_meter>(area_meter_sq_value);
+            = shell_side_fluid_array.get_cross_sectional_area_immutable();
 
         return shell_side_xs_area;
     }

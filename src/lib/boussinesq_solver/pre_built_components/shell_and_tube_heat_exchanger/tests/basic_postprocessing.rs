@@ -46,8 +46,9 @@ pub fn overall_htc_postprocessing_basic_test_shell_and_tube_heat_exchanger(){
         - PI * 0.25 * tube_side_od * tube_side_od;
 
     let shell_side_fluid_hydraulic_diameter: Length = 
-        (shell_side_id * shell_side_id - PI * tube_side_od * tube_side_od)/
-        (shell_side_id + PI * tube_side_od);
+        (shell_side_id * shell_side_id - tube_side_od * tube_side_od)/
+        (shell_side_id + tube_side_od);
+
 
     let hitec: LiquidMaterial = LiquidMaterial::HITEC;
     let steel: SolidMaterial = SolidMaterial::SteelSS304L;
