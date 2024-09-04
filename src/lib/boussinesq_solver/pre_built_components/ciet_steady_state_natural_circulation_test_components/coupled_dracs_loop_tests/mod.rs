@@ -1,4 +1,7 @@
-use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
+use uom::si::thermodynamic_temperature::degree_celsius;
+use uom::si::power::watt;
+use uom::si::mass_rate::kilogram_per_second;
+use uom::si::f64::*;
 
 use crate::prelude::beta_testing::ThermalHydraulicsLibError;
 
@@ -39,36 +42,43 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 
     verify_coupled_dhx_analytical_solution(
         1479.86, 
+        46.0,
         3.3410e-2,
         2.7380e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1653.90, 
+        46.0,
         3.5440e-2,
         2.8190e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2014.51, 
+        46.0,
         3.8770e-2,
         3.2360e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2178.49, 
+        46.0,
         4.0110e-2,
         3.2550e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2395.90, 
+        46.0,
         4.2770e-2,
         3.3900e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2491.87, 
+        46.0,
         4.4650e-2,
         3.3550e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2696.24, 
+        46.0,
         4.7100e-2,
         3.4620e-2,
         ).unwrap();
@@ -108,46 +118,55 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
 
     verify_coupled_dhx_analytical_solution(
         655.16, 
+        35.0,
         2.3290e-2,
         1.7310e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1054.32, 
+        35.0,
         2.9520e-2,
         2.1980e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1394.70, 
+        35.0,
         3.3240e-2,
         2.5700e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1685.62, 
+        35.0,
         3.6110e-2,
         2.8460e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1987.75, 
+        35.0,
         3.8410e-2,
         3.1180e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2282.01, 
+        35.0,
         4.0630e-2,
         3.3740e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2546.60, 
+        35.0,
         4.2700e-2,
         3.5770e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2874.03, 
+        35.0,
         4.4560e-2,
         3.7960e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         3031.16, 
+        35.0,
         4.6360e-2,
         3.8490e-2,
         ).unwrap();
@@ -186,46 +205,55 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 
     verify_coupled_dhx_analytical_solution(
         841.02, 
+        40.0,
         2.6860e-2,
         2.0030e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1158.69, 
+        40.0,
         3.0550e-2,
         2.3670e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1409.22, 
+        40.0,
         3.3450e-2,
         2.6350e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         1736.11, 
+        40.0,
         3.6490e-2,
         2.9490e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2026.29, 
+        40.0,
         3.8690e-2,
         3.1900e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2288.83, 
+        40.0,
         4.1150e-2,
         3.4120e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2508.71, 
+        40.0,
         4.3120e-2,
         3.5620e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2685.83, 
+        40.0,
         4.5090e-2,
         3.5930e-2,
         ).unwrap();
     verify_coupled_dhx_analytical_solution(
         2764.53, 
+        40.0,
         4.6990e-2,
         3.4570e-2,
         ).unwrap();
@@ -234,6 +262,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 /// function to verify the dhx analytical solution
 pub fn verify_coupled_dhx_analytical_solution(
     input_power_watts: f64,
+    tchx_outlet_temperature_set_point_degc: f64,
     experimental_dracs_mass_flowrate_kg_per_s: f64,
     experimental_primary_mass_flowrate_kg_per_s: f64) -> 
 Result<(),ThermalHydraulicsLibError>{
@@ -245,6 +274,10 @@ Result<(),ThermalHydraulicsLibError>{
     let _experimental_primary_mass_flowrate = 
         MassRate::new::<kilogram_per_second>(
             experimental_primary_mass_flowrate_kg_per_s);
+
+    let _tchx_outlet_temeprature = 
+        ThermodynamicTemperature::new::<degree_celsius>(
+            tchx_outlet_temperature_set_point_degc);
 
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway

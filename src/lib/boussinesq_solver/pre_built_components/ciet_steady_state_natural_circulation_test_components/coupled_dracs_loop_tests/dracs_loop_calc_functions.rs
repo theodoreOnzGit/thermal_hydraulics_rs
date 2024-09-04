@@ -465,12 +465,7 @@ pub fn dracs_loop_link_up_components(
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
 pub fn dracs_loop_advance_timestep_except_dhx(
-    mass_flowrate_counter_clockwise: MassRate,
-    heat_rate_through_dhx: Power,
-    tchx_heat_transfer_coeff: HeatTransfer,
-    average_temperature_for_density_calcs: ThermodynamicTemperature,
     timestep: Time,
-    ambient_htc: HeatTransfer,
     pipe_34: &mut InsulatedFluidComponent,
     pipe_33: &mut InsulatedFluidComponent,
     pipe_32: &mut InsulatedFluidComponent,
@@ -489,53 +484,56 @@ pub fn dracs_loop_advance_timestep_except_dhx(
     ){
 
 
-            dhx_tube_side_30a
-                .advance_timestep(timestep)
-                .unwrap();
-            dhx_tube_side_30b
-                .advance_timestep(timestep)
-                .unwrap();
+        dhx_tube_side_30a
+            .advance_timestep(timestep)
+            .unwrap();
+        dhx_tube_side_30b
+            .advance_timestep(timestep)
+            .unwrap();
 
-            static_mixer_61_label_31
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_31a
-                .advance_timestep(timestep)
-                .unwrap();
+        static_mixer_61_label_31
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_31a
+            .advance_timestep(timestep)
+            .unwrap();
 
-            pipe_32
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_33
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_34
-                .advance_timestep(timestep)
-                .unwrap();
+        pipe_32
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_33
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_34
+            .advance_timestep(timestep)
+            .unwrap();
 
-            // cold branch 
-            tchx_35a
-                .advance_timestep(timestep)
-                .unwrap();
-            tchx_35b
-                .advance_timestep(timestep)
-                .unwrap();
+        // cold branch 
+        tchx_35a
+            .advance_timestep(timestep)
+            .unwrap();
+        tchx_35b
+            .advance_timestep(timestep)
+            .unwrap();
 
-            static_mixer_60_label_36
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_36a
-                .advance_timestep(timestep)
-                .unwrap();
+        static_mixer_60_label_36
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_36a
+            .advance_timestep(timestep)
+            .unwrap();
+        flowmeter_60_37a
+            .advance_timestep(timestep)
+            .unwrap();
 
-            pipe_37
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_38
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_39
-                .advance_timestep(timestep)
-                .unwrap();
+        pipe_37
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_38
+            .advance_timestep(timestep)
+            .unwrap();
+        pipe_39
+            .advance_timestep(timestep)
+            .unwrap();
 
 }
