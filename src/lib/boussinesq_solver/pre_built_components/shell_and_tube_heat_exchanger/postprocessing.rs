@@ -208,17 +208,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
             if correct_for_prandtl_wall_temperatures {
 
-                // then wall prandtl number (partially corrected)
-
-                let _part_correct_wall_temperature: ThermodynamicTemperature = 
-                    ThermodynamicTemperature::new::<kelvin>(
-                        0.1 * (
-                            3.0 * wall_temperature.get::<kelvin>() + 
-                            7.0 * tube_fluid_temperature.get::<kelvin>()
-                        )
-                    );
-
-                // the other method is to just use the wall prandtl number 
+                // just use the wall prandtl number 
                 // if the number falls outside the range of correlations,
                 // then use the prandtl number at the max or min 
 
@@ -380,17 +370,8 @@ impl SimpleShellAndTubeHeatExchanger {
 
             if correct_for_prandtl_wall_temperatures {
 
-                // then wall prandtl number (partially corrected)
 
-                let _part_correct_wall_temperature: ThermodynamicTemperature = 
-                    ThermodynamicTemperature::new::<kelvin>(
-                        0.1 * (
-                            3.0 * wall_temperature.get::<kelvin>() + 
-                            7.0 * shell_side_fluid_temperature.get::<kelvin>()
-                        )
-                    );
-
-                // the other method is to just use the wall prandtl number 
+                // just use the wall prandtl number 
                 // if the number falls outside the range of correlations,
                 // then use the prandtl number at the max or min 
 

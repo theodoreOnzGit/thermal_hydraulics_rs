@@ -132,6 +132,10 @@ impl SimpleShellAndTubeHeatExchanger {
         let hydraulic_diameter: Length 
             = Length::new::<meter>(numerator/denominator);
 
+        // or just take the hydraulic diameter from the 
+        // shell side fluid array 
+        // 
+
         return hydraulic_diameter;
     }
 

@@ -1,15 +1,3 @@
-use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
-
-use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
-
-use crate::boussinesq_solver::pre_built_components::
-ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
-use uom::ConstZero;
-
-use uom::si::thermodynamic_temperature::degree_celsius;
-use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-use uom::si::time::second;
 
 /// functions used for calculating the thermal hydraulics inside the DRACS 
 /// loop
@@ -265,6 +253,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
         ).unwrap();
 }
 
+#[cfg(test)]
 /// function to verify the dhx analytical solution
 /// version 1,
 /// the DHX here uses uncalibrated Gnielinski correlations 
@@ -274,7 +263,18 @@ pub fn verify_coupled_dhx_analytical_solution_version_1(
     tchx_outlet_temperature_set_point_degc: f64,
     experimental_dracs_mass_flowrate_kg_per_s: f64,
     experimental_primary_mass_flowrate_kg_per_s: f64) -> 
-Result<(),ThermalHydraulicsLibError>{
+Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
+    use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
+
+    use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
+
+    use crate::boussinesq_solver::pre_built_components::
+        ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
+    use uom::ConstZero;
+
+    use uom::si::thermodynamic_temperature::degree_celsius;
+    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    use uom::si::time::second;
 
     let input_power = Power::new::<watt>(input_power_watts);
     let _experimental_dracs_mass_flowrate = 
@@ -287,6 +287,9 @@ Result<(),ThermalHydraulicsLibError>{
     let tchx_outlet_temperature_set_point = 
         ThermodynamicTemperature::new::<degree_celsius>(
             tchx_outlet_temperature_set_point_degc);
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::transfer_fn_wrapper_and_enums::TransferFnTraits;
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
+    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
 
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway
@@ -304,6 +307,28 @@ Result<(),ThermalHydraulicsLibError>{
 
     let mut current_simulation_time = Time::ZERO;
     let max_simulation_time = Time::new::<second>(3800.0);
+
+    // PID controller settings
+    let controller_gain = Ratio::new::<ratio>(1.75);
+    let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
+    let derivative_time: Time = Time::new::<second>(1.0);
+    // derivative time ratio
+    let alpha: Ratio = Ratio::new::<ratio>(1.0);
+
+    let mut pid_controller: AnalogController = 
+        AnalogController::new_filtered_pid_controller(controller_gain,
+            integral_time,
+            derivative_time,
+            alpha).unwrap();
+
+    // we also have a measurement delay of 0.0001 s 
+    // or 0.1 ms
+    let measurement_delay = Time::new::<millisecond>(0.1);
+
+    let mut measurement_delay_block: AnalogController = 
+        ProportionalController::new(Ratio::new::<ratio>(1.0)).unwrap().into();
+
+    measurement_delay_block.set_dead_time(measurement_delay);
 
 
 
@@ -331,6 +356,9 @@ Result<(),ThermalHydraulicsLibError>{
     todo!()
 
 }
+/// constructor for the dhx shell and tube heat exchanger 
+/// based on Zou's specifications
+pub mod dhx_constructor;
 
 /// debugging tests for functions to make natural circulation 
 /// testing easier 
