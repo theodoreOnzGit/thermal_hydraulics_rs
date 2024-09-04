@@ -272,6 +272,163 @@ pub mod tests;
 /// constructors here mostly
 impl SimpleShellAndTubeHeatExchanger {
 
+    /// heat exchanger constructor
+    /// for a generic shell and tube heat exchanger 
+    /// without baffles at near atmospheric pressure
+    ///
+    /// This is such that the hydraulic diameter on the 
+    /// shell side is 
+    /// D_e = (D_i^2 - N_t d_o^2)/(D_i + N_t d_o)
+    ///
+    /// N_t is number of tubes,
+    /// D_i is shell side id 
+    /// d_o is tube side od
+    ///
+    /// for fluid calculations, you will also define 
+    /// the shell side incline angle and tube side incline 
+    /// angle separately (for maximum flexibility)
+    ///
+    /// sthe will have insulation
+    ///
+    pub fn new_sthe_with_insulation(
+        number_of_tubes: u32,
+        number_of_inner_nodes: usize,
+        tube_side_od: Length,
+        tube_side_id: Length,
+        shell_side_od: Length,
+        shell_side_id: Length,
+        sthe_length: Length,
+        tube_side_form_loss: Ratio,
+        shell_side_form_loss: Ratio,
+        insulation_thickness: Length,
+        tube_side_incline_angle: Angle,
+        shell_side_incline_angle: Angle,
+        shell_side_liquid: LiquidMaterial,
+        tube_side_liquid: LiquidMaterial,
+        inner_tube_material: SolidMaterial,
+        outer_tube_material: SolidMaterial,
+        insulation_material: SolidMaterial,
+        ambient_temperature: ThermodynamicTemperature,
+        heat_transfer_to_ambient: HeatTransfer,
+        tube_side_initial_temperature: ThermodynamicTemperature,
+        shell_side_initial_temperature: ThermodynamicTemperature,
+        shell_loss_correlations: DimensionlessDarcyLossCorrelations,
+        tube_loss_correlations: DimensionlessDarcyLossCorrelations,
+        tube_side_nusselt_correlation: NusseltCorrelation,
+        shell_side_nusselt_correlation_to_tubes: NusseltCorrelation,
+        shell_side_nusselt_correlation_to_outer_shell: NusseltCorrelation,
+        ) -> SimpleShellAndTubeHeatExchanger {
+
+        let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+        let solid_pressure = Pressure::new::<atmosphere>(1.0);
+        let tube_side_flow_area: Area 
+            = PI * 0.25 * tube_side_id * tube_side_id;
+
+        let shell_side_flow_area: Area 
+            = PI * 0.25 * shell_side_id * shell_side_id 
+            - number_of_tubes as f64 *
+            PI * 0.25 * tube_side_od * tube_side_od;
+
+        let shell_side_fluid_hydraulic_diameter: Length = 
+            (shell_side_id * shell_side_id - number_of_tubes as f64 *
+             tube_side_od * tube_side_od)/
+            (shell_side_id + number_of_tubes as f64 * tube_side_od);
+
+
+        // inner fluid_array
+        // the nusselt correlation here is a standard pipe correlation 
+        // but I don't use that
+        let tube_side_fluid_array: FluidArray = 
+            FluidArray::new_odd_shaped_pipe(
+                sthe_length,
+                tube_side_id,
+                tube_side_flow_area,
+                tube_side_initial_temperature,
+                fluid_pressure,
+                inner_tube_material, // meant for surface roughness calcs
+                tube_side_liquid,
+                tube_side_form_loss,
+                number_of_inner_nodes,
+                tube_side_incline_angle
+            );
+        let shell_side_fluid_array: FluidArray = 
+            FluidArray::new_odd_shaped_pipe(
+                sthe_length,
+                shell_side_fluid_hydraulic_diameter,
+                shell_side_flow_area,
+                shell_side_initial_temperature,
+                fluid_pressure,
+                inner_tube_material, // meant for surface roughness calcs
+                shell_side_liquid,
+                shell_side_form_loss,
+                number_of_inner_nodes,
+                shell_side_incline_angle
+            );
+        let outer_shell: SolidColumn 
+            = SolidColumn::new_cylindrical_shell(
+                sthe_length, 
+                shell_side_id, 
+                shell_side_od, 
+                shell_side_initial_temperature, 
+                solid_pressure, 
+                outer_tube_material, 
+                number_of_inner_nodes
+            );
+
+        let inner_shell: SolidColumn 
+            = SolidColumn::new_cylindrical_shell(
+                sthe_length, 
+                tube_side_id, 
+                tube_side_od, 
+                tube_side_initial_temperature, 
+                solid_pressure, 
+                inner_tube_material, 
+                number_of_inner_nodes
+            );
+
+        let insulation_id = shell_side_od;
+        let insulation_od = shell_side_od + insulation_thickness;
+
+        let insulation_array: SolidColumn 
+            = SolidColumn::new_cylindrical_shell(
+                sthe_length, 
+                insulation_id, 
+                insulation_od, 
+                shell_side_initial_temperature, 
+                solid_pressure, 
+                insulation_material, 
+                number_of_inner_nodes
+            );
+
+        let sthe
+            = SimpleShellAndTubeHeatExchanger{ 
+                inner_nodes: number_of_inner_nodes, 
+                inner_pipe_shell_array_for_single_tube: inner_shell.into(), 
+                tube_side_fluid_array_for_single_tube: tube_side_fluid_array.into(), 
+                shell_side_fluid_array: shell_side_fluid_array.into(), 
+                outer_shell: outer_shell.into(), 
+                ambient_temperature: ambient_temperature.into(), 
+                heat_transfer_to_ambient, 
+                insulation_array: insulation_array.into(),
+                heat_exchanger_has_insulation: true, 
+                tube_side_od, 
+                tube_side_id, 
+                tube_side_flow_area, 
+                tube_side_custom_component_loss_correlation: tube_loss_correlations, 
+                shell_side_custom_component_loss_correlation: shell_loss_correlations, 
+                number_of_tubes, 
+                shell_side_id, 
+                shell_side_od, 
+                shell_side_flow_area, 
+                shell_side_nusselt_correlation_to_tubes: shell_side_nusselt_correlation_to_tubes.clone(), 
+                shell_side_nusselt_correlation_to_outer_shell, 
+                tube_side_nusselt_correlation: tube_side_nusselt_correlation.clone(), 
+                insulation_thickness,
+            };
+
+        sthe
+    }
+
 
     /// heat exchanger constructor
     /// using Du's paper 
