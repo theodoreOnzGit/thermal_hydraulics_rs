@@ -15,3 +15,7 @@ pub mod heat_transfer_verification;
 /// molten salt in a shell-and-tube heat exchanger. International 
 /// Communications in Heat and Mass Transfer, 96, 61-68.
 pub mod hitec_molten_salt_to_yd325_du_heat_exchanger;
+
+
+/// constructor tests
+pub mod constructor_tests;
