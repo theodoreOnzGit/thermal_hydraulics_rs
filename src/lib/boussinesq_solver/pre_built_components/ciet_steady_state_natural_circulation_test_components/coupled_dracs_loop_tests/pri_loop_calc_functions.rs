@@ -10,6 +10,7 @@ array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
 fluid_component_collection::FluidComponentCollectionMethods;
 use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use uom::ConstZero;
 
 use uom::si::thermodynamic_temperature::degree_celsius;
@@ -66,6 +67,9 @@ MassRate {
 /// note: only Flowmeter is  non insulated, all other components 
 /// should be insulated
 ///
+/// for hydrostatic pressure calculations, note that the angle 
+/// of the dhx shell side is going from top to bottom 
+///
 pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
     pipe_4: &InsulatedFluidComponent,
     pipe_3: &InsulatedFluidComponent,
@@ -79,7 +83,7 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
     pipe_26: &InsulatedFluidComponent,
     pipe_25a: &NonInsulatedFluidComponent,
     static_mixer_21_label_25: &InsulatedFluidComponent,
-    dhx_shell_side_pipe_24: &InsulatedFluidComponent,
+    dhx_shell_side_pipe_24: &FluidArray,
     static_mixer_20_label_23: &InsulatedFluidComponent,
     pipe_23a: &InsulatedFluidComponent,
     pipe_22: &InsulatedFluidComponent,
@@ -139,8 +143,8 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
 ///
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
-///
-/// TODO: change this to actual DHX and Heater 
+/// 
+/// flow goes downwards by default through the DHX
 pub fn pri_loop_dhx_heater_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_heater: Power,
