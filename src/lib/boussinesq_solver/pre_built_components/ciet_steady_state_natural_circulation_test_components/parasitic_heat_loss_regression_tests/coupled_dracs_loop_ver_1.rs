@@ -16,8 +16,8 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dhx_constructor::new_dhx_sthe_version_1;
-    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::coupled_dracs_fluid_mechanics_calc_abs_mass_rate;
-    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate;
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_loop_link_up_components, dracs_loop_advance_timestep_except_dhx};
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::{coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_pri_loop_dhx_heater_link_up_components, pri_loop_advance_timestep_except_dhx};
     use crate::boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
     use crate::prelude::beta_testing::FluidArray;
@@ -28,10 +28,10 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     use uom::si::time::second;
 
     let input_power = Power::new::<watt>(input_power_watts);
-    let _experimental_dracs_mass_flowrate = 
+    let experimental_dracs_mass_flowrate = 
         MassRate::new::<kilogram_per_second>(
             experimental_dracs_mass_flowrate_kg_per_s);
-    let _experimental_primary_mass_flowrate = 
+    let experimental_primary_mass_flowrate = 
         MassRate::new::<kilogram_per_second>(
             experimental_primary_mass_flowrate_kg_per_s);
 
@@ -45,19 +45,19 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway
     let timestep = Time::new::<second>(0.5);
-    let heat_rate_through_dhx = input_power;
+    let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
     let reference_tchx_htc = 
         HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
-    // let's calculate 3800 seconds of simulated time 
+    // let's calculate 400 seconds of simulated time 
     // it takes about that long for the temperature to settle down
     // this is compared to value at 4000s
 
     let mut current_simulation_time = Time::ZERO;
-    let max_simulation_time = Time::new::<second>(3800.0);
+    let max_simulation_time = Time::new::<second>(400.0);
 
     // PID controller settings
     let controller_gain = Ratio::new::<ratio>(1.75);
@@ -139,6 +139,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     let mut _final_tchx_outlet_temperature: ThermodynamicTemperature 
         = ThermodynamicTemperature::ZERO;
 
+    let ambient_htc = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
     // calculation loop
     while current_simulation_time < max_simulation_time {
 
@@ -260,8 +261,11 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
                 &pipe_38, 
                 &pipe_39);
 
+        // likely the natural circulation is counter clockwise 
+        let counter_clockwise_dracs_flowrate = absolute_mass_flowrate_dracs;
+
         let absolute_mass_flowrate_pri_loop = 
-            coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate(
+            coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate(
                 &pipe_4, 
                 &pipe_3, 
                 &pipe_2a, 
@@ -284,10 +288,123 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
                 &pipe_19, 
                 &pipe_17b);
 
+        let counter_clockwise_pri_loop_flowrate = absolute_mass_flowrate_pri_loop;
+
+        // next, link up the heat transfer entities 
+        // all lateral linking is done except for DHX
+        coupled_dracs_loop_link_up_components(
+            counter_clockwise_dracs_flowrate, 
+            tchx_heat_transfer_coeff, 
+            average_temperature_for_density_calcs, 
+            timestep, 
+            ambient_htc, 
+            &mut pipe_34, 
+            &mut pipe_33, 
+            &mut pipe_32, 
+            &mut pipe_31a, 
+            &mut static_mixer_61_label_31, 
+            &mut dhx_tube_side_30b, 
+            &mut dhx_sthe, 
+            &mut dhx_tube_side_30a, 
+            &mut tchx_35a, 
+            &mut tchx_35b, 
+            &mut static_mixer_60_label_36, 
+            &mut pipe_36a, 
+            &mut pipe_37, 
+            &mut flowmeter_60_37a, 
+            &mut pipe_38, 
+            &mut pipe_39);
+
+        coupled_dracs_pri_loop_dhx_heater_link_up_components(
+            counter_clockwise_pri_loop_flowrate, 
+            heat_rate_through_heater, 
+            average_temperature_for_density_calcs, 
+            ambient_htc, 
+            &mut pipe_4, 
+            &mut pipe_3, 
+            &mut pipe_2a, 
+            &mut static_mixer_10_label_2, 
+            &mut heater_top_head_1a, 
+            &mut heater_ver_1, 
+            &mut heater_bottom_head_1b, 
+            &mut pipe_18, 
+            &mut pipe_5a, 
+            &mut pipe_26, 
+            &mut pipe_25a, 
+            &mut static_mixer_21_label_25, 
+            &mut dhx_sthe, 
+            &mut static_mixer_20_label_23, 
+            &mut pipe_23a, 
+            &mut pipe_22, 
+            &mut flowmeter_20_21a, 
+            &mut pipe_21, 
+            &mut pipe_20, 
+            &mut pipe_19, 
+            &mut pipe_17b);
+
+        // advance timestep
+        dracs_loop_advance_timestep_except_dhx(
+            timestep, &mut pipe_34, &mut pipe_33, &mut pipe_32, 
+            &mut pipe_31a, &mut static_mixer_61_label_31, 
+            &mut dhx_tube_side_30b, &mut dhx_tube_side_30a, 
+            &mut tchx_35a, &mut tchx_35b, &mut static_mixer_60_label_36, 
+            &mut pipe_36a, &mut pipe_37, &mut flowmeter_60_37a, 
+            &mut pipe_38, &mut pipe_39);
+
+        pri_loop_advance_timestep_except_dhx(
+            timestep, &mut pipe_4, &mut pipe_3, &mut pipe_2a, 
+            &mut static_mixer_10_label_2, &mut heater_top_head_1a, 
+            &mut heater_ver_1, &mut heater_bottom_head_1b, 
+            &mut pipe_18, &mut pipe_5a, &mut pipe_26, &mut pipe_25a, 
+            &mut static_mixer_21_label_25, &mut static_mixer_20_label_23, 
+            &mut pipe_23a, &mut pipe_22, &mut flowmeter_20_21a, 
+            &mut pipe_21, &mut pipe_20, &mut pipe_19, &mut pipe_17b);
+
+        // for dhx, a little more care is needed to do the 
+        // lateral and misc connections and advance timestep 
+        // advance timestep
+        //
+        // by default, dhx flowrate is downwards in this setup
+
+        let prandtl_wall_correction_setting = true; 
+        let tube_side_total_mass_flowrate = -counter_clockwise_dracs_flowrate;
+        let shell_side_total_mass_flowrate = counter_clockwise_pri_loop_flowrate;
+
+        dhx_sthe.lateral_and_miscellaneous_connections(
+            prandtl_wall_correction_setting, 
+            tube_side_total_mass_flowrate, 
+            shell_side_total_mass_flowrate).unwrap();
+
+        dhx_sthe.advance_timestep(timestep).unwrap();
+
+        
+
+        // record 
+        if current_simulation_time > tchx_temperature_record_time_threshold {
+            final_mass_flowrate_dracs_loop = counter_clockwise_dracs_flowrate;
+            final_mass_flowrate_pri_loop = counter_clockwise_pri_loop_flowrate;
+        }
+        
+
+        current_simulation_time += timestep;
 
     }
 
+    dbg!(&(
+            input_power,
+            final_mass_flowrate_pri_loop,
+            final_mass_flowrate_dracs_loop
+            ));
 
-    todo!()
+    approx::assert_relative_eq!(
+        experimental_primary_mass_flowrate.get::<kilogram_per_second>(),
+        final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
+        max_relative=0.01);
+
+    approx::assert_relative_eq!(
+        experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
+        final_mass_flowrate_dracs_loop.get::<kilogram_per_second>(),
+        max_relative=0.01);
+
 
 }

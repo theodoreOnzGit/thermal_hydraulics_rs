@@ -70,7 +70,7 @@ MassRate {
 /// for hydrostatic pressure calculations, note that the angle 
 /// of the dhx shell side is going from top to bottom 
 ///
-pub fn coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate(
+pub fn coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate(
     pipe_4: &InsulatedFluidComponent,
     pipe_3: &InsulatedFluidComponent,
     pipe_2a: &InsulatedFluidComponent,
@@ -160,9 +160,9 @@ pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
     heater_version1_1: &mut InsulatedFluidComponent,
     heater_bottom_head_1b: &mut InsulatedFluidComponent,
     pipe_18: &mut InsulatedFluidComponent,
-    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_5a: &mut InsulatedFluidComponent,
     pipe_26: &mut InsulatedFluidComponent,
-    pipe_25a: &mut NonInsulatedFluidComponent,
+    pipe_25a: &mut InsulatedFluidComponent,
     static_mixer_21_label_25: &mut InsulatedFluidComponent,
     dhx_sthe: &mut SimpleShellAndTubeHeatExchanger,
     static_mixer_20_label_23: &mut InsulatedFluidComponent,
@@ -460,9 +460,9 @@ pub fn pri_loop_advance_timestep_except_dhx(
     heater_version1_1: &mut InsulatedFluidComponent,
     heater_bottom_head_1b: &mut InsulatedFluidComponent,
     pipe_18: &mut InsulatedFluidComponent,
-    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_5a: &mut InsulatedFluidComponent,
     pipe_26: &mut InsulatedFluidComponent,
-    pipe_25a: &mut NonInsulatedFluidComponent,
+    pipe_25a: &mut InsulatedFluidComponent,
     static_mixer_21_label_25: &mut InsulatedFluidComponent,
     static_mixer_20_label_23: &mut InsulatedFluidComponent,
     pipe_23a: &mut InsulatedFluidComponent,

@@ -150,7 +150,7 @@ pub fn coupled_dracs_loop_link_up_components(
     pipe_31a: &mut InsulatedFluidComponent,
     static_mixer_61_label_31: &mut InsulatedFluidComponent,
     dhx_tube_side_30b: &mut NonInsulatedFluidComponent,
-    dhx_tube_side_heat_exchanger_30: &mut SimpleShellAndTubeHeatExchanger,
+    dhx_sthe: &mut SimpleShellAndTubeHeatExchanger,
     dhx_tube_side_30a: &mut NonInsulatedFluidComponent,
     tchx_35a: &mut NonInsulatedFluidComponent,
     tchx_35b: &mut NonInsulatedFluidComponent,
@@ -202,12 +202,12 @@ pub fn coupled_dracs_loop_link_up_components(
             //
 
             dhx_tube_side_30a.pipe_fluid_array.link_to_back(
-                &mut dhx_tube_side_heat_exchanger_30.tube_side_fluid_array_for_single_tube, 
+                &mut dhx_sthe.tube_side_fluid_array_for_single_tube, 
                 advection_heat_transfer_interaction)
                 .unwrap();
 
 
-            dhx_tube_side_heat_exchanger_30.tube_side_fluid_array_for_single_tube.link_to_back(
+            dhx_sthe.tube_side_fluid_array_for_single_tube.link_to_back(
                 &mut dhx_tube_side_30b.pipe_fluid_array, 
                 advection_heat_transfer_interaction)
                 .unwrap();
