@@ -22,12 +22,15 @@ impl SimpleShellAndTubeHeatExchanger {
     /// SimpleShellAndTubeHeatExchanger
     ///
     /// gives each pipe the parallel tube treatment
+    ///
     #[inline]
     pub fn advance_timestep(&mut self, 
     timestep: Time) -> Result<(),ThermalHydraulicsLibError> {
         
         // first, we need to advance timestep for the parallel tube sides 
         // these should be modified by the number of tubes
+        // the parallel treatment is given in the advance timestep portions 
+        // of the code here:
         self.advance_timestep_for_parallel_tube_side_fluid_array_bundle(timestep)?;
         self.advance_timestep_for_parallel_tube_side_solid_column_bundle(timestep)?;
 

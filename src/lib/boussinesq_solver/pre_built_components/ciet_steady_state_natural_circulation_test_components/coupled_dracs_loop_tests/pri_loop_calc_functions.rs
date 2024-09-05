@@ -145,6 +145,8 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
 /// which is assumed to be the same throughout the loop
 /// 
 /// flow goes downwards by default through the DHX
+/// to facilitate this, components are linked in a counter clockwise 
+/// fashion in the primary loop
 pub fn pri_loop_dhx_heater_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_heater: Power,
@@ -198,7 +200,7 @@ pub fn pri_loop_dhx_heater_link_up_components(
         // (no conduction here axially between arrays)
         //
         // note that by default, flow will always go downwards for the 
-        // DHX
+        // DHX so components should be linked in a counter clockwise fashion
         {
             // first is flow from heater branch to DHX branch
             pipe_4.pipe_fluid_array.link_to_front(
@@ -223,10 +225,20 @@ pub fn pri_loop_dhx_heater_link_up_components(
                 advection_heat_transfer_interaction)
                 .unwrap();
 
+            //note: for shell side fluid array, linking normally is okay 
+            //because there is only one entity
+            //
+            // for tube side fluid array, link normally as well, because 
+            // the advance timestep portion takes care of the parallel 
+            // tube treatment
+
             static_mixer_21_label_25.pipe_fluid_array.link_to_front(
                 &mut dhx_sthe.shell_side_fluid_array, 
                 advection_heat_transfer_interaction)
                 .unwrap();
+
+            // for dhx, the flow convention in both shell and tube is 
+            // from top to bottom of the branch
 
             dhx_sthe.shell_side_fluid_array.link_to_front(
                 &mut static_mixer_20_label_23.pipe_fluid_array, 
@@ -375,6 +387,7 @@ pub fn pri_loop_dhx_heater_link_up_components(
         }
         // add lateral heat losses and power through heater
         // for everything except the DHX STHE
+        // because DHX sthe requires mass flowrates in both sides of the loop
         {
             let zero_power: Power = Power::ZERO;
             // heater branch

@@ -62,6 +62,8 @@ impl SimpleShellAndTubeHeatExchanger {
     /// self.heat_exchanger_has_insulation variable, which should be set 
     /// when you construct this struct
     ///
+    ///
+    ///
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         prandtl_wall_correction_setting: bool,
@@ -326,6 +328,11 @@ impl SimpleShellAndTubeHeatExchanger {
     /// to connect the rest of the heat transfer entities, 
     /// use the link to front or back methods within the 
     /// FluidArrays or SolidColumns
+    ///
+    /// note that for the STHE, the link to front and back 
+    /// functions are exactly the same as for non parallel components,
+    /// the parallel treatment is given in the advance timestep 
+    /// portion of the code
     #[inline]
     fn zero_power_bc_axial_connection(&mut self) -> Result<(),ThermalHydraulicsLibError>{
 
