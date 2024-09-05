@@ -32,7 +32,7 @@ pub enum NusseltCorrelation {
     ///
     /// for more fine grained control, please use another enum
     ///
-    PipeGnielinskiGenericPrandtlBulk(GnielinskiData),
+    PipeGnielinskiGeneric(GnielinskiData),
 
     /// pipe nusselt number using Gnielinski Correlation 
     /// for laminar, turbulent and transition region
@@ -199,7 +199,7 @@ impl NusseltCorrelation {
     pub fn try_get(&self) -> Result<Ratio, ThermalHydraulicsLibError> {
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
                 return data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
             NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
@@ -258,7 +258,7 @@ impl NusseltCorrelation {
         reynolds_number_input: Ratio,) -> Result<Ratio, ThermalHydraulicsLibError>{
 
         match self {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
@@ -294,7 +294,7 @@ impl NusseltCorrelation {
 
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
@@ -388,7 +388,7 @@ impl NusseltCorrelation {
 
         let nusselt_number: Ratio = 
         match self {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = wall_prandtl_number_input;
@@ -484,7 +484,7 @@ impl NusseltCorrelation {
         reynolds_number_input: Ratio,) -> Result<Ratio, ThermalHydraulicsLibError>{
 
         match self {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(data) => {
 
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = wall_prandtl_number_input;

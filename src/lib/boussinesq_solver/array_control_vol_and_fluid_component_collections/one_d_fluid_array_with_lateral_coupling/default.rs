@@ -82,7 +82,7 @@ impl Default for FluidArray {
         };
 
         let pipe_nusselt: NusseltCorrelation = 
-        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
+        NusseltCorrelation::PipeGnielinskiGeneric(
             pipe_data
         );
 

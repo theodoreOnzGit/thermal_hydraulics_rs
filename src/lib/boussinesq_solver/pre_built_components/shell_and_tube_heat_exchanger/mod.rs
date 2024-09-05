@@ -290,6 +290,7 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// sthe will have insulation
     ///
+    #[inline]
     pub fn new_custom_circular_single_pass_sthe_with_insulation(
         number_of_tubes: u32,
         number_of_inner_nodes: usize,
@@ -298,7 +299,7 @@ impl SimpleShellAndTubeHeatExchanger {
         tube_side_od: Length,
         tube_side_id: Length,
         tube_side_hydraulic_diameter: Length,
-        tube_side_flow_area: Area,
+        tube_side_flow_area_single_tube: Area,
         shell_side_od: Length,
         shell_side_id: Length,
         shell_side_hydraulic_diameter: Length,
@@ -334,7 +335,7 @@ impl SimpleShellAndTubeHeatExchanger {
             FluidArray::new_odd_shaped_pipe(
                 sthe_length,
                 tube_side_hydraulic_diameter,
-                tube_side_flow_area,
+                tube_side_flow_area_single_tube,
                 tube_side_initial_temperature,
                 fluid_pressure,
                 inner_tube_material, // meant for surface roughness calcs
@@ -405,7 +406,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 heat_exchanger_has_insulation: true, 
                 tube_side_od, 
                 tube_side_id, 
-                tube_side_flow_area, 
+                tube_side_flow_area: tube_side_flow_area_single_tube, 
                 tube_side_custom_component_loss_correlation: tube_loss_correlations, 
                 shell_side_custom_component_loss_correlation: shell_loss_correlations, 
                 number_of_tubes, 
@@ -469,7 +470,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let fluid_pressure = Pressure::new::<atmosphere>(1.0);
         let solid_pressure = Pressure::new::<atmosphere>(1.0);
-        let tube_side_flow_area: Area 
+        let tube_side_flow_area_single_tube: Area 
             = PI * 0.25 * tube_side_id * tube_side_id;
 
         let shell_side_flow_area: Area 
@@ -491,7 +492,7 @@ impl SimpleShellAndTubeHeatExchanger {
             solid_pressure,
             tube_side_od, tube_side_id, 
             tube_side_hydraulic_diameter, 
-            tube_side_flow_area, 
+            tube_side_flow_area_single_tube, 
             shell_side_od, 
             shell_side_id, shell_side_fluid_hydraulic_diameter, 
             shell_side_flow_area, 
@@ -703,7 +704,7 @@ impl SimpleShellAndTubeHeatExchanger {
             };
 
         let tube_side_nusselt_correlation = 
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
+            NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
 
         let shell_side_nusselt_correlation_to_outer_shell = 
             NusseltCorrelation::FixedNusselt(Ratio::ZERO);

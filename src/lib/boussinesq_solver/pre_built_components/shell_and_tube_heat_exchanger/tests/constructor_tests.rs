@@ -200,7 +200,7 @@ pub fn du_heat_exchanger_constructor_test(){
         };
 
     let tube_side_nusselt_correlation = 
-        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
+        NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
 
     let shell_side_nusselt_correlation_to_outer_shell = 
         NusseltCorrelation::FixedNusselt(Ratio::ZERO);
@@ -457,7 +457,7 @@ pub fn insulated_sthe_constructor_test(){
         };
 
     let tube_side_nusselt_correlation = 
-        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
+        NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
 
     let shell_side_nusselt_correlation_to_outer_shell = 
         NusseltCorrelation::FixedNusselt(Ratio::ZERO);
