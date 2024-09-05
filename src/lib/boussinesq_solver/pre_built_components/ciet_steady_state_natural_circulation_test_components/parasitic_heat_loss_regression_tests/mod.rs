@@ -10,3 +10,10 @@
 ///
 /// 
 pub mod wall_correction_isolated_dracs_loop_regression;
+
+/// version 1 of coupled DRACS loop 
+/// for version 1 of coupled DRACS loop
+///
+/// no calibration is done. heat exchanger correlations are Gnielinksi type 
+/// this serves as a baseline as to what kind of heat losses to expect
+pub mod coupled_dracs_loop_ver_1;

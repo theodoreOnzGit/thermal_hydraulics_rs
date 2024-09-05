@@ -28,13 +28,13 @@ use crate::prelude::beta_testing::{LiquidMaterial, SolidMaterial};
 /// insulation thickness for DHX is 0.0508 m of fiberglass
 /// DHX is made of copper tubing on the inside
 /// and assumed to be copper on shell side as well
-pub fn new_dhx_sthe_version_1() -> SimpleShellAndTubeHeatExchanger {
+pub fn new_dhx_sthe_version_1(initial_temperature: ThermodynamicTemperature
+    ) -> SimpleShellAndTubeHeatExchanger {
 
     let insulation_thickness: Length = Length::new::<meter>(0.0508);
     let copper = SolidMaterial::Copper;
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
-    let initial_temperature = ThermodynamicTemperature::new::<degree_celsius>(46.0);
     let sthe_length = Length::new::<meter>(1.18745);
     // tube side
     //
