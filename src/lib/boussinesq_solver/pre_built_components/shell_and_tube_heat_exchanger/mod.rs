@@ -274,15 +274,15 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// heat exchanger constructor
     /// for a generic shell and tube heat exchanger 
-    /// without baffles at near atmospheric pressure
+    /// near atmospheric pressure
     ///
-    /// This is such that the hydraulic diameter on the 
-    /// shell side is 
-    /// D_e = (D_i^2 - N_t d_o^2)/(D_i + N_t d_o)
-    ///
-    /// N_t is number of tubes,
-    /// D_i is shell side id 
-    /// d_o is tube side od
+    /// hydraulic diameter and flow area on the shell side and 
+    /// tube side is up to you to decide for the purposes of fluid 
+    /// mechanics calculations.
+    /// However, shell and tube is meant to be circular for the sake 
+    /// of calculating thermal resistance/conductance through 
+    /// shell and tube, so an inner and outer diameter needs to 
+    /// be provided for both shell and tube
     ///
     /// for fluid calculations, you will also define 
     /// the shell side incline angle and tube side incline 
@@ -290,13 +290,19 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// sthe will have insulation
     ///
-    pub fn new_sthe_with_insulation(
+    pub fn new_custom_circular_single_pass_sthe_with_insulation(
         number_of_tubes: u32,
         number_of_inner_nodes: usize,
+        fluid_pressure: Pressure,
+        solid_pressure: Pressure,
         tube_side_od: Length,
         tube_side_id: Length,
+        tube_side_hydraulic_diameter: Length,
+        tube_side_flow_area: Area,
         shell_side_od: Length,
         shell_side_id: Length,
+        shell_side_hydraulic_diameter: Length,
+        shell_side_flow_area: Area,
         sthe_length: Length,
         tube_side_form_loss: Ratio,
         shell_side_form_loss: Ratio,
@@ -319,20 +325,6 @@ impl SimpleShellAndTubeHeatExchanger {
         shell_side_nusselt_correlation_to_outer_shell: NusseltCorrelation,
         ) -> SimpleShellAndTubeHeatExchanger {
 
-        let fluid_pressure = Pressure::new::<atmosphere>(1.0);
-        let solid_pressure = Pressure::new::<atmosphere>(1.0);
-        let tube_side_flow_area: Area 
-            = PI * 0.25 * tube_side_id * tube_side_id;
-
-        let shell_side_flow_area: Area 
-            = PI * 0.25 * shell_side_id * shell_side_id 
-            - number_of_tubes as f64 *
-            PI * 0.25 * tube_side_od * tube_side_od;
-
-        let shell_side_fluid_hydraulic_diameter: Length = 
-            (shell_side_id * shell_side_id - number_of_tubes as f64 *
-             tube_side_od * tube_side_od)/
-            (shell_side_id + number_of_tubes as f64 * tube_side_od);
 
 
         // inner fluid_array
@@ -341,7 +333,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let tube_side_fluid_array: FluidArray = 
             FluidArray::new_odd_shaped_pipe(
                 sthe_length,
-                tube_side_id,
+                tube_side_hydraulic_diameter,
                 tube_side_flow_area,
                 tube_side_initial_temperature,
                 fluid_pressure,
@@ -354,7 +346,7 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_array: FluidArray = 
             FluidArray::new_odd_shaped_pipe(
                 sthe_length,
-                shell_side_fluid_hydraulic_diameter,
+                shell_side_hydraulic_diameter,
                 shell_side_flow_area,
                 shell_side_initial_temperature,
                 fluid_pressure,
@@ -427,6 +419,104 @@ impl SimpleShellAndTubeHeatExchanger {
             };
 
         sthe
+    }
+    /// heat exchanger constructor
+    /// for a generic shell and tube heat exchanger 
+    /// without baffles at near atmospheric pressure
+    ///
+    /// This is such that the hydraulic diameter on the 
+    /// shell side is 
+    /// D_e = (D_i^2 - N_t d_o^2)/(D_i + N_t d_o)
+    ///
+    /// N_t is number of tubes,
+    /// D_i is shell side id 
+    /// d_o is tube side od
+    ///
+    /// for fluid calculations, you will also define 
+    /// the shell side incline angle and tube side incline 
+    /// angle separately (for maximum flexibility)
+    ///
+    /// sthe will have insulation
+    ///
+    pub fn new_sthe_with_insulation(
+        number_of_tubes: u32,
+        number_of_inner_nodes: usize,
+        tube_side_od: Length,
+        tube_side_id: Length,
+        shell_side_od: Length,
+        shell_side_id: Length,
+        sthe_length: Length,
+        tube_side_form_loss: Ratio,
+        shell_side_form_loss: Ratio,
+        insulation_thickness: Length,
+        tube_side_incline_angle: Angle,
+        shell_side_incline_angle: Angle,
+        shell_side_liquid: LiquidMaterial,
+        tube_side_liquid: LiquidMaterial,
+        inner_tube_material: SolidMaterial,
+        outer_tube_material: SolidMaterial,
+        insulation_material: SolidMaterial,
+        ambient_temperature: ThermodynamicTemperature,
+        heat_transfer_to_ambient: HeatTransfer,
+        tube_side_initial_temperature: ThermodynamicTemperature,
+        shell_side_initial_temperature: ThermodynamicTemperature,
+        shell_loss_correlations: DimensionlessDarcyLossCorrelations,
+        tube_loss_correlations: DimensionlessDarcyLossCorrelations,
+        tube_side_nusselt_correlation: NusseltCorrelation,
+        shell_side_nusselt_correlation_to_tubes: NusseltCorrelation,
+        shell_side_nusselt_correlation_to_outer_shell: NusseltCorrelation,
+        ) -> SimpleShellAndTubeHeatExchanger {
+
+        let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+        let solid_pressure = Pressure::new::<atmosphere>(1.0);
+        let tube_side_flow_area: Area 
+            = PI * 0.25 * tube_side_id * tube_side_id;
+
+        let shell_side_flow_area: Area 
+            = PI * 0.25 * shell_side_id * shell_side_id 
+            - number_of_tubes as f64 *
+            PI * 0.25 * tube_side_od * tube_side_od;
+
+        let shell_side_fluid_hydraulic_diameter: Length = 
+            (shell_side_id * shell_side_id - number_of_tubes as f64 *
+             tube_side_od * tube_side_od)/
+            (shell_side_id + number_of_tubes as f64 * tube_side_od);
+
+        let tube_side_hydraulic_diameter = tube_side_id;
+
+        Self::new_custom_circular_single_pass_sthe_with_insulation(
+            number_of_tubes, 
+            number_of_inner_nodes, 
+            fluid_pressure,
+            solid_pressure,
+            tube_side_od, tube_side_id, 
+            tube_side_hydraulic_diameter, 
+            tube_side_flow_area, 
+            shell_side_od, 
+            shell_side_id, shell_side_fluid_hydraulic_diameter, 
+            shell_side_flow_area, 
+            sthe_length, 
+            tube_side_form_loss, 
+            shell_side_form_loss, 
+            insulation_thickness, 
+            tube_side_incline_angle, 
+            shell_side_incline_angle, 
+            shell_side_liquid, 
+            tube_side_liquid, 
+            inner_tube_material, 
+            outer_tube_material, 
+            insulation_material, 
+            ambient_temperature, 
+            heat_transfer_to_ambient, 
+            tube_side_initial_temperature, 
+            shell_side_initial_temperature, 
+            shell_loss_correlations, 
+            tube_loss_correlations, 
+            tube_side_nusselt_correlation, 
+            shell_side_nusselt_correlation_to_tubes, 
+            shell_side_nusselt_correlation_to_outer_shell)
+
+
     }
 
 
