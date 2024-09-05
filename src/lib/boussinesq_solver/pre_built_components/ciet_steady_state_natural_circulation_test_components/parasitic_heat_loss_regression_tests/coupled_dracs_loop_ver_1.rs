@@ -16,11 +16,14 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dhx_constructor::new_dhx_sthe_version_1;
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::coupled_dracs_fluid_mechanics_calc_abs_mass_rate;
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate;
     use crate::boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
+    use crate::prelude::beta_testing::FluidArray;
     use uom::ConstZero;
 
-    use uom::si::thermodynamic_temperature::degree_celsius;
+    use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::time::second;
 
@@ -104,31 +107,185 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     // pri loop dhx branch top to bottom 5a to 17b 
 
-    let pipe_5a = new_branch_5a(initial_temperature);
-    let pipe_26 = new_pipe_26(initial_temperature);
-    let pipe_25a = new_pipe_25a(initial_temperature);
-    let static_mixer_21_label_25 = new_static_mixer_21_label_25(initial_temperature);
+    let mut pipe_5a = new_branch_5a(initial_temperature);
+    let mut pipe_26 = new_pipe_26(initial_temperature);
+    let mut pipe_25a = new_pipe_25a(initial_temperature);
+    let mut static_mixer_21_label_25 = new_static_mixer_21_label_25(initial_temperature);
     // here is where the dhx shell side should be (component 24)
-    let pipe_23a = new_pipe_23a(initial_temperature);
-    let static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
-    let pipe_22 = new_pipe_22(initial_temperature);
-    let flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
-    let pipe_21 = new_pipe_21(initial_temperature);
-    let pipe_20 = new_pipe_20(initial_temperature);
-    let pipe_19 = new_pipe_19(initial_temperature);
-    let pipe_17b = new_branch_17b(initial_temperature);
+    let mut pipe_23a = new_pipe_23a(initial_temperature);
+    let mut static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
+    let mut pipe_22 = new_pipe_22(initial_temperature);
+    let mut flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
+    let mut pipe_21 = new_pipe_21(initial_temperature);
+    let mut pipe_20 = new_pipe_20(initial_temperature);
+    let mut pipe_19 = new_pipe_19(initial_temperature);
+    let mut pipe_17b = new_branch_17b(initial_temperature);
 
     // heater branch top to bottom 4 to 18
-    let pipe_4 = new_pipe_4(initial_temperature);
-    let pipe_3 = new_pipe_3(initial_temperature);
-    let pipe_2a = new_pipe_2a(initial_temperature);
-    let static_mixer_10_label_2 = new_static_mixer_10_label_2(initial_temperature);
-    let heater_top_head_1a = new_heater_top_head_1a(initial_temperature);
-    let heater_ver_1 = new_heated_section_version_1_label_1(initial_temperature);
-    let heater_bottom_head_1b = new_heater_bottom_head_1b(initial_temperature);
-    let pipe_18 = new_pipe_18(initial_temperature);
+    let mut pipe_4 = new_pipe_4(initial_temperature);
+    let mut pipe_3 = new_pipe_3(initial_temperature);
+    let mut pipe_2a = new_pipe_2a(initial_temperature);
+    let mut static_mixer_10_label_2 = new_static_mixer_10_label_2(initial_temperature);
+    let mut heater_top_head_1a = new_heater_top_head_1a(initial_temperature);
+    let mut heater_ver_1 = new_heated_section_version_1_label_1(initial_temperature);
+    let mut heater_bottom_head_1b = new_heater_bottom_head_1b(initial_temperature);
+    let mut pipe_18 = new_pipe_18(initial_temperature);
 
 
+    let mut final_mass_flowrate_pri_loop: MassRate 
+        = MassRate::ZERO;
+    let mut final_mass_flowrate_dracs_loop: MassRate 
+        = MassRate::ZERO;
+    let mut _final_tchx_outlet_temperature: ThermodynamicTemperature 
+        = ThermodynamicTemperature::ZERO;
+
+    // calculation loop
+    while current_simulation_time < max_simulation_time {
+
+        let tchx_outlet_temperature: ThermodynamicTemperature = {
+
+            // the front of the tchx is connected to static mixer 
+            // 60 label 36
+            let tchx35b_pipe_fluid_array_clone: FluidArray = 
+                tchx_35b.pipe_fluid_array
+                .clone()
+                .try_into()
+                .unwrap();
+
+            // take the front single cv temperature 
+            //
+            // front single cv temperature is defunct
+            // probably need to debug this
+
+            let tchx_35b_front_single_cv_temperature: ThermodynamicTemperature 
+                = tchx35b_pipe_fluid_array_clone
+                .front_single_cv
+                .temperature;
+
+
+
+            let _tchx_35b_array_temperature: Vec<ThermodynamicTemperature>
+                = tchx_35b
+                .pipe_fluid_array_temperature()
+                .unwrap();
+
+            //dbg!(&tchx_35b_array_temperature);
+
+            tchx_35b_front_single_cv_temperature
+
+        };
+        // we will need to change the tchx heat transfer coefficient 
+        // using the PID controller
+        //
+        // record tchx outlet temperature if it is last 5s of time 
+
+        let tchx_temperature_record_time_threshold = max_simulation_time - 
+            Time::new::<second>(5.0);
+
+        if current_simulation_time > tchx_temperature_record_time_threshold {
+            _final_tchx_outlet_temperature = tchx_outlet_temperature;
+        }
+
+        tchx_heat_transfer_coeff = {
+            // first, calculate the set point error 
+
+            let reference_temperature_interval_deg_celsius = 80.0;
+
+            // error = y_sp - y_measured
+            let set_point_abs_error_deg_celsius = 
+                - tchx_outlet_temperature_set_point.get::<kelvin>()
+                + tchx_outlet_temperature.get::<kelvin>();
+
+            let nondimensional_error: Ratio = 
+                (set_point_abs_error_deg_celsius/
+                 reference_temperature_interval_deg_celsius).into();
+
+            // let's get the output 
+
+            let dimensionless_heat_trf_input: Ratio
+                = pid_controller.set_user_input_and_calc(
+                    nondimensional_error, 
+                    current_simulation_time).unwrap();
+
+            // the dimensionless output is:
+            //
+            // (desired output - ref_val)/ref_val = dimensionless_input
+            // 
+            //
+            // the reference value is decided by the user 
+            // in this case 250 W/(m^2 K)
+
+            let mut tchx_heat_trf_output = 
+                dimensionless_heat_trf_input * reference_tchx_htc
+                + reference_tchx_htc;
+
+            // make sure it cannot be less than a certain amount 
+            let tchx_minimum_heat_transfer = 
+                HeatTransfer::new::<watt_per_square_meter_kelvin>(
+                    5.0);
+
+            // this makes it physically realistic
+            if tchx_heat_trf_output < tchx_minimum_heat_transfer {
+                tchx_heat_trf_output = tchx_minimum_heat_transfer;
+            }
+
+            tchx_heat_trf_output
+
+        };
+
+        // fluid calculation loop 
+        //
+        // first, absolute mass flowrate across two branches
+        let dhx_tube_side_heat_exchanger_30 = 
+            dhx_sthe.get_clone_of_tube_side_parallel_tube_fluid_component();
+        let dhx_shell_side_pipe_24 = 
+            dhx_sthe.get_clone_of_shell_side_fluid_component();
+
+        let absolute_mass_flowrate_dracs = 
+            coupled_dracs_fluid_mechanics_calc_abs_mass_rate(
+                &pipe_34, 
+                &pipe_33, 
+                &pipe_32, 
+                &pipe_31a, 
+                &static_mixer_61_label_31, 
+                &dhx_tube_side_30b, 
+                &dhx_tube_side_heat_exchanger_30, 
+                &dhx_tube_side_30a, 
+                &tchx_35a, 
+                &tchx_35b, 
+                &static_mixer_60_label_36, 
+                &pipe_36a, 
+                &pipe_37, 
+                &flowmeter_60_37a, 
+                &pipe_38, 
+                &pipe_39);
+
+        let absolute_mass_flowrate_pri_loop = 
+            coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate(
+                &pipe_4, 
+                &pipe_3, 
+                &pipe_2a, 
+                &static_mixer_10_label_2, 
+                &heater_top_head_1a, 
+                &heater_ver_1, 
+                &heater_bottom_head_1b, 
+                &pipe_18, 
+                &pipe_5a, 
+                &pipe_26, 
+                &pipe_25a, 
+                &static_mixer_21_label_25, 
+                &dhx_shell_side_pipe_24, 
+                &static_mixer_20_label_23, 
+                &pipe_23a, 
+                &pipe_22, 
+                &flowmeter_20_21a, 
+                &pipe_21, 
+                &pipe_20, 
+                &pipe_19, 
+                &pipe_17b);
+
+
+    }
 
 
     todo!()

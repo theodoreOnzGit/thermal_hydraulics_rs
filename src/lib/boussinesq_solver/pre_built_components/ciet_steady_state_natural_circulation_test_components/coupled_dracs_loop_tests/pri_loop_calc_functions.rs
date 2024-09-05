@@ -70,7 +70,7 @@ MassRate {
 /// for hydrostatic pressure calculations, note that the angle 
 /// of the dhx shell side is going from top to bottom 
 ///
-pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
+pub fn coupled_dracs_pri_loop_branches_fluid_mechanics_calc_mass_rate(
     pipe_4: &InsulatedFluidComponent,
     pipe_3: &InsulatedFluidComponent,
     pipe_2a: &InsulatedFluidComponent,
@@ -79,9 +79,9 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
     heater_version1_1: &InsulatedFluidComponent,
     heater_bottom_head_1b: &InsulatedFluidComponent,
     pipe_18: &InsulatedFluidComponent,
-    pipe_5a: &NonInsulatedFluidComponent,
+    pipe_5a: &InsulatedFluidComponent,
     pipe_26: &InsulatedFluidComponent,
-    pipe_25a: &NonInsulatedFluidComponent,
+    pipe_25a: &InsulatedFluidComponent,
     static_mixer_21_label_25: &InsulatedFluidComponent,
     dhx_shell_side_pipe_24: &FluidComponent,
     static_mixer_20_label_23: &InsulatedFluidComponent,
@@ -147,7 +147,7 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
 /// flow goes downwards by default through the DHX
 /// to facilitate this, components are linked in a counter clockwise 
 /// fashion in the primary loop
-pub fn pri_loop_dhx_heater_link_up_components(
+pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_heater: Power,
     average_temperature_for_density_calcs: ThermodynamicTemperature,

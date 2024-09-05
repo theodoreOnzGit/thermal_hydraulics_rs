@@ -40,7 +40,7 @@ heat_transfer_interaction_enums::HeatTransferInteractionType;
 /// DHX + Heater branch (both branches form one loop)
 ///
 /// but its use is primarily for the DRACS branch
-pub fn get_mass_flowrate_across_two_branches(dracs_branches: &FluidComponentSuperCollection) -> 
+pub fn get_abs_mass_flowrate_across_two_branches(dracs_branches: &FluidComponentSuperCollection) -> 
 MassRate {
     let pressure_change_across_each_branch = 
         dracs_branches.get_pressure_change(MassRate::ZERO);
@@ -66,7 +66,7 @@ MassRate {
 /// note that this only works if the components are correct
 /// obtains mass flowrate across the DRACS loop 
 /// gets the absolute flowrate across the hot branch
-pub fn dracs_fluid_mechanics_calc_mass_rate(
+pub fn coupled_dracs_fluid_mechanics_calc_abs_mass_rate(
     pipe_34: &InsulatedFluidComponent,
     pipe_33: &InsulatedFluidComponent,
     pipe_32: &InsulatedFluidComponent,
@@ -117,9 +117,9 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
     dracs_branches.fluid_component_super_vector.push(dracs_hot_branch);
     dracs_branches.fluid_component_super_vector.push(dracs_cold_branch);
 
-    let mass_rate = get_mass_flowrate_across_two_branches(&dracs_branches);
+    let abs_mass_rate = get_abs_mass_flowrate_across_two_branches(&dracs_branches);
 
-    mass_rate
+    abs_mass_rate
 
 }
 
@@ -138,7 +138,7 @@ pub fn dracs_fluid_mechanics_calc_mass_rate(
 ///
 /// the mass_flowrate_counter_clockwise you provide will be converted
 /// into a mass_flowrate_clockwise and used for calculation
-pub fn dracs_loop_link_up_components(
+pub fn coupled_dracs_loop_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     tchx_heat_transfer_coeff: HeatTransfer,
     average_temperature_for_density_calcs: ThermodynamicTemperature,
