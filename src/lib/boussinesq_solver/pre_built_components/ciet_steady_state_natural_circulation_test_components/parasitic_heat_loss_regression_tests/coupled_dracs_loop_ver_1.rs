@@ -1,3 +1,13 @@
+#[test]
+pub fn test_uncalibrated_dracs_loop(){
+
+    verify_coupled_dhx_analytical_solution_version_1(
+        2764.53, 
+        40.0,
+        4.6990e-2,
+        3.4570e-2,
+        ).unwrap();
+}
 
 #[cfg(test)]
 /// function to verify the dhx analytical solution
@@ -44,7 +54,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway
-    let timestep = Time::new::<second>(0.5);
+    let timestep = Time::new::<second>(0.05);
     let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
@@ -406,5 +416,6 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         final_mass_flowrate_dracs_loop.get::<kilogram_per_second>(),
         max_relative=0.01);
 
+    Ok(())
 
 }
