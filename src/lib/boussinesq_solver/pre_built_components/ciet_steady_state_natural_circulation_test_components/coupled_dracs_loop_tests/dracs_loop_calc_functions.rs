@@ -539,7 +539,7 @@ pub fn dracs_loop_dhx_tube_temperature_diagnostics(
     // debug 
     if print_debug_results {
         dbg!(&(
-                "bulk and wall temp degC, before and after dhx_shell respectively",
+                "bulk and wall temp degC, before and after dhx_tube respectively",
                 bt_60.get::<degree_celsius>(),
                 wt_61.get::<degree_celsius>(),
                 bt_23.get::<degree_celsius>(),
