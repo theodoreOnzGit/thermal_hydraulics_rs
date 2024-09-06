@@ -402,6 +402,12 @@ pub fn coupled_dracs_loop_link_up_components(
                     mass_flowrate_clockwise, 
                     zero_power)
                 .unwrap();
+
+            flowmeter_60_37a
+                .lateral_and_miscellaneous_connections_no_wall_correction(
+                    mass_flowrate_clockwise, 
+                    zero_power)
+                .unwrap();
             pipe_38
                 .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_clockwise, 
