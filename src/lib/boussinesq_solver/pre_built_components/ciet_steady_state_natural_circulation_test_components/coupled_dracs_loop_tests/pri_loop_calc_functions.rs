@@ -510,6 +510,10 @@ pub fn pri_loop_advance_timestep_except_dhx(
 ///
 /// so can take heater bottom head temperature (1b) at wall 
 /// and at bulk
+///
+/// I'm also using the bulk fluid temperature inside the static mixer 
+/// and its wall temperature
+/// as a proxy for BT-12 and WT-12
 pub fn pri_loop_heater_temperature_diagnostics(
     heater_bottom_head_1b: &mut InsulatedFluidComponent,
     static_mixer_10_label_2: &mut InsulatedFluidComponent,
@@ -542,5 +546,48 @@ pub fn pri_loop_heater_temperature_diagnostics(
 
 
     return ((bt_11,wt_10),(bt_12,wt_13));
+
+}
+/// these are temperature diagnostic 
+/// functions to check bulk and wall temperature before 
+/// and after the DHX shell side
+///
+/// before dhx shell: BT-21, WT-20 (just before MX-21)
+/// use pipe_25a
+/// after dhx shell and MX-20: BT-27, WT-26
+/// use MX-20
+///
+pub fn pri_loop_dhx_shell_temperature_diagnostics(
+    pipe_25a: &mut InsulatedFluidComponent,
+    static_mixer_20_label_23: &mut InsulatedFluidComponent,
+    print_debug_results: bool)
+-> ((ThermodynamicTemperature,ThermodynamicTemperature),
+(ThermodynamicTemperature,ThermodynamicTemperature)){
+
+    // bulk and wall temperatures before entering dhx_shell
+    let bt_21 = pipe_25a.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_20 = pipe_25a.
+        pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // bulk and wall temperatures after entering dhx_shell 
+    let bt_27 = static_mixer_20_label_23.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_26 = static_mixer_20_label_23 
+        .pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // debug 
+    if print_debug_results {
+        dbg!(&(
+                "bulk and wall temp degC, before and after dhx_shell respectively",
+                bt_21.get::<degree_celsius>(),
+                wt_20.get::<degree_celsius>(),
+                bt_27.get::<degree_celsius>(),
+                wt_26.get::<degree_celsius>(),
+                ));
+    }
+
+
+    return ((bt_21,wt_20),(bt_27,wt_26));
 
 }
