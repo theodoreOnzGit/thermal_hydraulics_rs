@@ -161,6 +161,9 @@ pub fn coupled_dracs_loop_link_up_components(
     pipe_39: &mut InsulatedFluidComponent,
     ){
 
+        // for this function, we consider mass flowrate in clockwise 
+        // fashion rather than counter clockwise
+        let mass_flowrate_clockwise = -mass_flowrate_counter_clockwise;
 
         // create the heat transfer interaction 
         let advection_heat_transfer_interaction: HeatTransferInteractionType;
@@ -179,7 +182,7 @@ pub fn coupled_dracs_loop_link_up_components(
 
         advection_heat_transfer_interaction = 
             HeatTransferInteractionType::
-            new_advection_interaction(mass_flowrate_counter_clockwise, 
+            new_advection_interaction(mass_flowrate_clockwise, 
                 average_therminol_density, 
                 average_therminol_density);
 
@@ -329,7 +332,6 @@ pub fn coupled_dracs_loop_link_up_components(
             //
             // everywhere else is zero heater power
             //
-            let mass_flowrate_clockwise = -mass_flowrate_counter_clockwise;
             dhx_tube_side_30a
                 .lateral_and_miscellaneous_connections_no_wall_correction(
                     mass_flowrate_clockwise, 
