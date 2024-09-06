@@ -679,7 +679,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // (f_darcy L/D + K)
         let fldk: Ratio = self
             .tube_side_custom_component_loss_correlation
-            .fldk_based_on_darcy_friction_factor(reynolds_number_single_tube)
+            .fldk_based_on_darcy_friction_factor(reynolds_number_abs_for_nusselt)
             .unwrap();
 
         // (f_darcy + D/L  K)
@@ -696,7 +696,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
                 pipe_prandtl_reynolds_data.prandtl_wall, 
                 modified_darcy_friction_factor,
-                pipe_prandtl_reynolds_data.reynolds)?;
+                reynolds_number_abs_for_nusselt)?;
 
         // for debugging
         //dbg!(&nusselt_estimate_tube_side);
