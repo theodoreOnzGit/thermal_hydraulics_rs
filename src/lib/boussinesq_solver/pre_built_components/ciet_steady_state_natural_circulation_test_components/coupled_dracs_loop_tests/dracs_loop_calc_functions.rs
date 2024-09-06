@@ -418,59 +418,6 @@ pub fn coupled_dracs_loop_link_up_components(
 
         // now we should be ready to advance timestep
         // for all except the dhx itself
-        {
-            dhx_tube_side_30a
-                .advance_timestep(timestep)
-                .unwrap();
-            dhx_tube_side_30b
-                .advance_timestep(timestep)
-                .unwrap();
-
-            static_mixer_61_label_31
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_31a
-                .advance_timestep(timestep)
-                .unwrap();
-
-            pipe_32
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_33
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_34
-                .advance_timestep(timestep)
-                .unwrap();
-
-            // cold branch 
-            tchx_35a
-                .advance_timestep(timestep)
-                .unwrap();
-            tchx_35b
-                .advance_timestep(timestep)
-                .unwrap();
-
-            static_mixer_60_label_36
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_36a
-                .advance_timestep(timestep)
-                .unwrap();
-
-            pipe_37
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_38
-                .advance_timestep(timestep)
-                .unwrap();
-            pipe_39
-                .advance_timestep(timestep)
-                .unwrap();
-            }
-
-        // we do it in serial, so it keeps things simple 
-        // now we are done
 
 }
 
