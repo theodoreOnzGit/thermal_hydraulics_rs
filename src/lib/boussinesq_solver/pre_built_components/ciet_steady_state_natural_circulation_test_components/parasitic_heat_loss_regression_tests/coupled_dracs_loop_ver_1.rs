@@ -1,11 +1,35 @@
 #[test]
-pub fn test_uncalibrated_dracs_loop(){
+pub fn quick_test_uncalibrated_dracs_loop(){
+
+    let max_simulation_time_seconds: f64 = 400.0;
+    let pri_loop_relative_tolerance = 0.03;
+    let dracs_loop_relative_tolerance = 0.4;
 
     verify_coupled_dhx_analytical_solution_version_1(
         2764.53, 
+        max_simulation_time_seconds,
         40.0,
         4.6990e-2,
         3.5470e-2,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance,
+        ).unwrap();
+}
+#[test]
+pub fn long_test_uncalibrated_dracs_loop(){
+
+    let max_simulation_time_seconds: f64 = 4000.0;
+    let pri_loop_relative_tolerance = 0.03;
+    let dracs_loop_relative_tolerance = 0.01;
+
+    verify_coupled_dhx_analytical_solution_version_1(
+        2764.53, 
+        max_simulation_time_seconds,
+        40.0,
+        4.6990e-2,
+        3.5470e-2,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance,
         ).unwrap();
 }
 
@@ -16,9 +40,12 @@ pub fn test_uncalibrated_dracs_loop(){
 /// to estimate heat transfer coefficients
 pub fn verify_coupled_dhx_analytical_solution_version_1(
     input_power_watts: f64,
+    max_time_seconds: f64,
     tchx_outlet_temperature_set_point_degc: f64,
     experimental_dracs_mass_flowrate_kg_per_s: f64,
-    experimental_primary_mass_flowrate_kg_per_s: f64) -> 
+    experimental_primary_mass_flowrate_kg_per_s: f64,
+    pri_loop_relative_tolerance: f64,
+    dracs_loop_relative_tolerance: f64) -> 
 Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
@@ -67,7 +94,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // this is compared to value at 4000s
 
     let mut current_simulation_time = Time::ZERO;
-    let max_simulation_time = Time::new::<second>(400.0);
+    let max_simulation_time = Time::new::<second>(max_time_seconds);
 
     // PID controller settings
     let controller_gain = Ratio::new::<ratio>(1.75);
@@ -398,7 +425,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         }
 
         // debugging 
-        let debug_settings = true;
+        let debug_settings = false;
 
         // temperatures before and after heater
         let ((_bt_11,_wt_10),(_bt_12,_wt_13)) = 
@@ -429,21 +456,37 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             final_mass_flowrate_pri_loop,
             final_mass_flowrate_dracs_loop
             ));
+    let display_temperatures = true;
+    // temperatures before and after heater
+    let ((_bt_11,_wt_10),(_bt_12,_wt_13)) = 
+        pri_loop_heater_temperature_diagnostics(
+            &mut heater_bottom_head_1b, 
+            &mut static_mixer_10_label_2, 
+            display_temperatures);
+    // temperatures before and after dhx shell
+    let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
+        pri_loop_dhx_shell_temperature_diagnostics(
+            &mut pipe_25a, 
+            &mut static_mixer_20_label_23, 
+            display_temperatures);
+    // temperatures before and after dhx tube
+    let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
+        dracs_loop_dhx_tube_temperature_diagnostics(
+            &mut dhx_tube_side_30a, 
+            &mut dhx_tube_side_30b, 
+            display_temperatures);
 
     approx::assert_relative_eq!(
         experimental_primary_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
-        max_relative=0.03);
+        max_relative=pri_loop_relative_tolerance);
 
     // I doubt we reach steady state at 400s for the dracs loop,
     // so this is not strictly steady state yet.
-    // may need to wait longer, and perhaps even speed up the code?
-    // it takes more than a minute to run 400s simulation 
-    // (about 90s is the thing)
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_dracs_loop.get::<kilogram_per_second>(),
-        max_relative=0.4);
+        max_relative=dracs_loop_relative_tolerance);
 
     Ok(())
 
