@@ -27,7 +27,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dhx_constructor::new_dhx_sthe_version_1;
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_loop_link_up_components, dracs_loop_advance_timestep_except_dhx};
-    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::{coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_pri_loop_dhx_heater_link_up_components, pri_loop_advance_timestep_except_dhx};
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::{coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_pri_loop_dhx_heater_link_up_components, pri_loop_advance_timestep_except_dhx, pri_loop_heater_temperature_diagnostics};
     use crate::boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
     use crate::prelude::beta_testing::FluidArray;
@@ -394,6 +394,16 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             final_mass_flowrate_dracs_loop = counter_clockwise_dracs_flowrate;
             final_mass_flowrate_pri_loop = counter_clockwise_pri_loop_flowrate;
         }
+
+        // debugging 
+        let debug_settings = true;
+
+        // temperatures before and after heater
+        let ((_bt_11,_wt_10),(_bt_12,_wt_13)) = 
+            pri_loop_heater_temperature_diagnostics(
+            &mut heater_bottom_head_1b, 
+            &mut static_mixer_10_label_2, 
+            debug_settings);
         
 
         current_simulation_time += timestep;
