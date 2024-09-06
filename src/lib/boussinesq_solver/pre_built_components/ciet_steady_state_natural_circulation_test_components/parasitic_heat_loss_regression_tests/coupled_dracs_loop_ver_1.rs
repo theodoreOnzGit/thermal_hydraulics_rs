@@ -26,7 +26,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dhx_constructor::new_dhx_sthe_version_1;
-    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_loop_link_up_components, dracs_loop_advance_timestep_except_dhx};
+    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_loop_link_up_components, dracs_loop_advance_timestep_except_dhx, dracs_loop_dhx_tube_temperature_diagnostics};
     use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::{coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_pri_loop_dhx_heater_link_up_components, pri_loop_advance_timestep_except_dhx, pri_loop_dhx_shell_temperature_diagnostics, pri_loop_heater_temperature_diagnostics};
     use crate::boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
@@ -409,6 +409,12 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             pri_loop_dhx_shell_temperature_diagnostics(
             &mut pipe_25a, 
             &mut static_mixer_20_label_23, 
+            debug_settings);
+        // temperatures before and after dhx tube
+        let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
+            dracs_loop_dhx_tube_temperature_diagnostics(
+            &mut dhx_tube_side_30a, 
+            &mut dhx_tube_side_30b, 
             debug_settings);
         
 
