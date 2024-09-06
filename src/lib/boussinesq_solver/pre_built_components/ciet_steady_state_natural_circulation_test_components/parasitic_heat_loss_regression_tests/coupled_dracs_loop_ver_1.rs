@@ -54,7 +54,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway
-    let timestep = Time::new::<second>(0.05);
+    let timestep = Time::new::<second>(0.5);
     let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
@@ -436,7 +436,10 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         max_relative=0.03);
 
     // I doubt we reach steady state at 400s for the dracs loop,
-    // so this is not strictly done yet.
+    // so this is not strictly steady state yet.
+    // may need to wait longer, and perhaps even speed up the code?
+    // it takes more than a minute to run 400s simulation 
+    // (about 90s is the thing)
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_dracs_loop.get::<kilogram_per_second>(),
