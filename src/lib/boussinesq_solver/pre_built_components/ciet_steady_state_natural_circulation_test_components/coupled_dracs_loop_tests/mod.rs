@@ -249,7 +249,7 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
         2764.53, 
         40.0,
         4.6990e-2,
-        3.4570e-2,
+        3.5470e-2,
         ).unwrap();
 }
 
