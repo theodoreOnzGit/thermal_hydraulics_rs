@@ -142,7 +142,6 @@ pub fn coupled_dracs_loop_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     tchx_heat_transfer_coeff: HeatTransfer,
     average_temperature_for_density_calcs: ThermodynamicTemperature,
-    timestep: Time,
     ambient_htc: HeatTransfer,
     pipe_34: &mut InsulatedFluidComponent,
     pipe_33: &mut InsulatedFluidComponent,
@@ -172,7 +171,7 @@ pub fn coupled_dracs_loop_link_up_components(
         // average density using DHX outlet and 
         // TCHX outlet temperatures, average them for the whole loop 
         // doesn't make much diff tho based on Boussinesq approximation
-        // 
+        //
 
         let average_therminol_density = 
             LiquidMaterial::TherminolVP1.density(

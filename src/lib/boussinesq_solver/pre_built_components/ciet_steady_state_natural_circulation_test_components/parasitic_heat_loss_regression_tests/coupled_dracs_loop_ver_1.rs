@@ -306,7 +306,6 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             counter_clockwise_dracs_flowrate, 
             tchx_heat_transfer_coeff, 
             average_temperature_for_density_calcs, 
-            timestep, 
             ambient_htc, 
             &mut pipe_34, 
             &mut pipe_33, 
@@ -380,6 +379,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         let tube_side_total_mass_flowrate = -counter_clockwise_dracs_flowrate;
         let shell_side_total_mass_flowrate = counter_clockwise_pri_loop_flowrate;
 
+        dhx_sthe.heat_transfer_to_ambient = ambient_htc;
         dhx_sthe.lateral_and_miscellaneous_connections(
             prandtl_wall_correction_setting, 
             tube_side_total_mass_flowrate, 
