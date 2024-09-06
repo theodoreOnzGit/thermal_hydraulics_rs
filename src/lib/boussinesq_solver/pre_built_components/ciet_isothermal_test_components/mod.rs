@@ -1780,7 +1780,7 @@ pub fn new_pipe_3(initial_temperature: ThermodynamicTemperature) -> InsulatedFlu
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_static_mixer_10(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
+pub fn new_static_mixer_10_label_2(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -2340,7 +2340,7 @@ pub fn new_pipe_25a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_static_mixer_21(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
+pub fn new_static_mixer_21_label_25(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -2558,7 +2558,7 @@ pub fn new_pipe_23a(initial_temperature: ThermodynamicTemperature) -> InsulatedF
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_static_mixer_20(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
+pub fn new_static_mixer_20_label_23(initial_temperature: ThermodynamicTemperature) -> InsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -2635,6 +2635,8 @@ pub fn new_pipe_22(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
     let pipe_length = Length::new::<meter>(0.69215);
     let flow_area = Area::new::<square_meter>(6.11e-4);
     let incline_angle = Angle::new::<degree>(90.0-180.0);
+    // for SAM model there may be a K value of 45.95 here. 
+    // check again
     let form_loss = Ratio::new::<ratio>(9.95);
     //estimated component wall roughness (doesn't matter here,
     //but i need to fill in)
@@ -2705,7 +2707,7 @@ pub fn new_pipe_22(initial_temperature: ThermodynamicTemperature) -> InsulatedFl
 /// fluoride-salt-cooled, high-temperature reactors. University of 
 /// California, Berkeley, 2015.
 /// Argonne, IL (United States), 2019.
-pub fn new_flowmeter_20_21a(initial_temperature: ThermodynamicTemperature) -> NonInsulatedFluidComponent {
+pub fn new_flowmeter_20_label_21a(initial_temperature: ThermodynamicTemperature) -> NonInsulatedFluidComponent {
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
     let solid_pressure = Pressure::new::<atmosphere>(1.0);

@@ -34,7 +34,7 @@ pub fn heater_branch_with_heater_v2_test(){
     let pipe_4 = new_pipe_4(initial_temperature);
     let pipe_3 = new_pipe_3(initial_temperature);
 
-    let static_mixer_2 = new_static_mixer_10(initial_temperature);
+    let static_mixer_2 = new_static_mixer_10_label_2(initial_temperature);
     let static_mixer_pipe_2a = new_pipe_2a(initial_temperature);
     let heater_top_head_1a = new_heater_top_head_1a(initial_temperature);
     let heated_section_1 = new_heated_section_version_1_label_1(initial_temperature);

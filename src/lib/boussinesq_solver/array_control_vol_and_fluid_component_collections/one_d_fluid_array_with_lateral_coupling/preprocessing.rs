@@ -298,11 +298,14 @@ impl FluidArray {
         let darcy_plus_normalised_form_loss: Ratio = 
             fldk/length_to_diameter;
 
+        // for reverse flow, if Re < 0, take absolute 
+        let reynolds_abs = reynolds.abs();
+
         self.nusselt_correlation.
             estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 prandtl_bulk,
                 prandtl_wall,
                 darcy_plus_normalised_form_loss,
-                reynolds)
+                reynolds_abs)
     }
 }

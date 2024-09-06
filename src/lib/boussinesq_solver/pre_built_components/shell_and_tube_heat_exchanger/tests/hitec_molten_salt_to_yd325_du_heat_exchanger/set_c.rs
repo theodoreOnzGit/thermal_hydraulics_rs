@@ -229,7 +229,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
         };
 
     let tube_side_nusselt_correlation = 
-        NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(tube_side_gnielinski_data);
+        NusseltCorrelation::PipeGnielinskiGeneric(tube_side_gnielinski_data);
 
     let shell_side_nusselt_correlation_to_outer_shell = 
         NusseltCorrelation::FixedNusselt(Ratio::ZERO);
@@ -669,7 +669,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
 
         let gnielinski_data = match tube_side_nusselt_correlation {
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(mut data) => {
+            NusseltCorrelation::PipeGnielinskiGeneric(mut data) => {
                 data.darcy_friction_factor = 
                     darcy_friction_factor.into();
 
@@ -679,7 +679,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
         };
 
         let tube_side_nusselt_correlation = 
-            NusseltCorrelation::PipeGnielinskiGenericPrandtlBulk(
+            NusseltCorrelation::PipeGnielinskiGeneric(
                 gnielinski_data);
 
 

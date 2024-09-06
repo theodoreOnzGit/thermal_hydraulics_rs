@@ -1,5 +1,6 @@
 use uom::si::f64::*;
 
+use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::boussinesq_solver::
 array_control_vol_and_fluid_component_collections::
 fluid_component_collection::
@@ -66,7 +67,10 @@ MassRate {
 /// note: only Flowmeter is  non insulated, all other components 
 /// should be insulated
 ///
-pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
+/// for hydrostatic pressure calculations, note that the angle 
+/// of the dhx shell side is going from top to bottom 
+///
+pub fn coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate(
     pipe_4: &InsulatedFluidComponent,
     pipe_3: &InsulatedFluidComponent,
     pipe_2a: &InsulatedFluidComponent,
@@ -75,11 +79,11 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
     heater_version1_1: &InsulatedFluidComponent,
     heater_bottom_head_1b: &InsulatedFluidComponent,
     pipe_18: &InsulatedFluidComponent,
-    pipe_5a: &NonInsulatedFluidComponent,
+    pipe_5a: &InsulatedFluidComponent,
     pipe_26: &InsulatedFluidComponent,
-    pipe_25a: &NonInsulatedFluidComponent,
+    pipe_25a: &InsulatedFluidComponent,
     static_mixer_21_label_25: &InsulatedFluidComponent,
-    dhx_shell_side_pipe_24: &InsulatedFluidComponent,
+    dhx_shell_side_pipe_24: &FluidComponent,
     static_mixer_20_label_23: &InsulatedFluidComponent,
     pipe_23a: &InsulatedFluidComponent,
     pipe_22: &InsulatedFluidComponent,
@@ -139,9 +143,11 @@ pub fn pri_loop_branches_fluid_mechanics_calc_mass_rate(
 ///
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
-///
-/// TODO: change this to actual DHX and Heater 
-pub fn pri_loop_dhx_heater_link_up_components(
+/// 
+/// flow goes downwards by default through the DHX
+/// to facilitate this, components are linked in a counter clockwise 
+/// fashion in the primary loop
+pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
     mass_flowrate_counter_clockwise: MassRate,
     heat_rate_through_heater: Power,
     average_temperature_for_density_calcs: ThermodynamicTemperature,
@@ -154,9 +160,9 @@ pub fn pri_loop_dhx_heater_link_up_components(
     heater_version1_1: &mut InsulatedFluidComponent,
     heater_bottom_head_1b: &mut InsulatedFluidComponent,
     pipe_18: &mut InsulatedFluidComponent,
-    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_5a: &mut InsulatedFluidComponent,
     pipe_26: &mut InsulatedFluidComponent,
-    pipe_25a: &mut NonInsulatedFluidComponent,
+    pipe_25a: &mut InsulatedFluidComponent,
     static_mixer_21_label_25: &mut InsulatedFluidComponent,
     dhx_sthe: &mut SimpleShellAndTubeHeatExchanger,
     static_mixer_20_label_23: &mut InsulatedFluidComponent,
@@ -194,7 +200,7 @@ pub fn pri_loop_dhx_heater_link_up_components(
         // (no conduction here axially between arrays)
         //
         // note that by default, flow will always go downwards for the 
-        // DHX
+        // DHX so components should be linked in a counter clockwise fashion
         {
             // first is flow from heater branch to DHX branch
             pipe_4.pipe_fluid_array.link_to_front(
@@ -219,10 +225,20 @@ pub fn pri_loop_dhx_heater_link_up_components(
                 advection_heat_transfer_interaction)
                 .unwrap();
 
+            //note: for shell side fluid array, linking normally is okay 
+            //because there is only one entity
+            //
+            // for tube side fluid array, link normally as well, because 
+            // the advance timestep portion takes care of the parallel 
+            // tube treatment
+
             static_mixer_21_label_25.pipe_fluid_array.link_to_front(
                 &mut dhx_sthe.shell_side_fluid_array, 
                 advection_heat_transfer_interaction)
                 .unwrap();
+
+            // for dhx, the flow convention in both shell and tube is 
+            // from top to bottom of the branch
 
             dhx_sthe.shell_side_fluid_array.link_to_front(
                 &mut static_mixer_20_label_23.pipe_fluid_array, 
@@ -371,6 +387,7 @@ pub fn pri_loop_dhx_heater_link_up_components(
         }
         // add lateral heat losses and power through heater
         // for everything except the DHX STHE
+        // because DHX sthe requires mass flowrates in both sides of the loop
         {
             let zero_power: Power = Power::ZERO;
             // heater branch
@@ -395,9 +412,6 @@ pub fn pri_loop_dhx_heater_link_up_components(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
 
             pipe_4.lateral_and_miscellaneous_connections_no_wall_correction(
-                mass_flowrate_counter_clockwise, zero_power).unwrap();
-
-            pipe_5a.lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
 
 
@@ -425,6 +439,8 @@ pub fn pri_loop_dhx_heater_link_up_components(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
             pipe_19.lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
+            pipe_17b.lateral_and_miscellaneous_connections_no_wall_correction(
+                mass_flowrate_counter_clockwise, zero_power).unwrap();
         }
 
         // now we are done
@@ -443,9 +459,9 @@ pub fn pri_loop_advance_timestep_except_dhx(
     heater_version1_1: &mut InsulatedFluidComponent,
     heater_bottom_head_1b: &mut InsulatedFluidComponent,
     pipe_18: &mut InsulatedFluidComponent,
-    pipe_5a: &mut NonInsulatedFluidComponent,
+    pipe_5a: &mut InsulatedFluidComponent,
     pipe_26: &mut InsulatedFluidComponent,
-    pipe_25a: &mut NonInsulatedFluidComponent,
+    pipe_25a: &mut InsulatedFluidComponent,
     static_mixer_21_label_25: &mut InsulatedFluidComponent,
     static_mixer_20_label_23: &mut InsulatedFluidComponent,
     pipe_23a: &mut InsulatedFluidComponent,
@@ -481,5 +497,96 @@ pub fn pri_loop_advance_timestep_except_dhx(
     pipe_20.advance_timestep(timestep).unwrap();
     pipe_19.advance_timestep(timestep).unwrap();
     pipe_17b.advance_timestep(timestep).unwrap();
+
+}
+
+/// these are temperature diagnostic 
+/// functions to check bulk and wall temperature before 
+/// and after the heater 
+///
+/// before heater: BT-11, WT-10 
+/// after heater and MX-10: BT-12, WT-13
+///
+/// so can take heater bottom head temperature (1b) at wall 
+/// and at bulk
+///
+/// I'm also using the bulk fluid temperature inside the static mixer 
+/// and its wall temperature
+/// as a proxy for BT-12 and WT-12
+pub fn pri_loop_heater_temperature_diagnostics(
+    heater_bottom_head_1b: &mut InsulatedFluidComponent,
+    static_mixer_10_label_2: &mut InsulatedFluidComponent,
+    print_debug_results: bool)
+-> ((ThermodynamicTemperature,ThermodynamicTemperature),
+(ThermodynamicTemperature,ThermodynamicTemperature)){
+
+    // bulk and wall temperatures before entering heater
+    let bt_11 = heater_bottom_head_1b.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_10 = heater_bottom_head_1b.
+        pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // bulk and wall temperatures after entering heater 
+    let bt_12 = static_mixer_10_label_2.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_13 = static_mixer_10_label_2 
+        .pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // debug 
+    if print_debug_results {
+        dbg!(&(
+                "bulk and wall temp degC, before and after heater respectively",
+                bt_11.get::<degree_celsius>(),
+                wt_10.get::<degree_celsius>(),
+                bt_12.get::<degree_celsius>(),
+                wt_13.get::<degree_celsius>(),
+                ));
+    }
+
+
+    return ((bt_11,wt_10),(bt_12,wt_13));
+
+}
+/// these are temperature diagnostic 
+/// functions to check bulk and wall temperature before 
+/// and after the DHX shell side
+///
+/// before dhx shell: BT-21, WT-20 (just before MX-21)
+/// use pipe_25a
+/// after dhx shell and MX-20: BT-27, WT-26
+/// use MX-20
+///
+pub fn pri_loop_dhx_shell_temperature_diagnostics(
+    pipe_25a: &mut InsulatedFluidComponent,
+    static_mixer_20_label_23: &mut InsulatedFluidComponent,
+    print_debug_results: bool)
+-> ((ThermodynamicTemperature,ThermodynamicTemperature),
+(ThermodynamicTemperature,ThermodynamicTemperature)){
+
+    // bulk and wall temperatures before entering dhx_shell
+    let bt_21 = pipe_25a.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_20 = pipe_25a.
+        pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // bulk and wall temperatures after entering dhx_shell 
+    let bt_27 = static_mixer_20_label_23.
+        pipe_fluid_array.try_get_bulk_temperature().unwrap();
+    let wt_26 = static_mixer_20_label_23 
+        .pipe_shell.try_get_bulk_temperature().unwrap();
+
+    // debug 
+    if print_debug_results {
+        dbg!(&(
+                "bulk and wall temp degC, before and after dhx_shell respectively",
+                bt_21.get::<degree_celsius>(),
+                wt_20.get::<degree_celsius>(),
+                bt_27.get::<degree_celsius>(),
+                wt_26.get::<degree_celsius>(),
+                ));
+    }
+
+
+    return ((bt_21,wt_20),(bt_27,wt_26));
 
 }

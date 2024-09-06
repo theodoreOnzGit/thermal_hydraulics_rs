@@ -62,6 +62,8 @@ impl SimpleShellAndTubeHeatExchanger {
     /// self.heat_exchanger_has_insulation variable, which should be set 
     /// when you construct this struct
     ///
+    ///
+    ///
     #[inline]
     pub fn lateral_and_miscellaneous_connections(&mut self,
         prandtl_wall_correction_setting: bool,
@@ -326,6 +328,11 @@ impl SimpleShellAndTubeHeatExchanger {
     /// to connect the rest of the heat transfer entities, 
     /// use the link to front or back methods within the 
     /// FluidArrays or SolidColumns
+    ///
+    /// note that for the STHE, the link to front and back 
+    /// functions are exactly the same as for non parallel components,
+    /// the parallel treatment is given in the advance timestep 
+    /// portion of the code
     #[inline]
     fn zero_power_bc_axial_connection(&mut self) -> Result<(),ThermalHydraulicsLibError>{
 
@@ -672,7 +679,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // (f_darcy L/D + K)
         let fldk: Ratio = self
             .tube_side_custom_component_loss_correlation
-            .fldk_based_on_darcy_friction_factor(reynolds_number_single_tube)
+            .fldk_based_on_darcy_friction_factor(reynolds_number_abs_for_nusselt)
             .unwrap();
 
         // (f_darcy + D/L  K)
@@ -689,7 +696,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 pipe_prandtl_reynolds_data.prandtl_bulk, 
                 pipe_prandtl_reynolds_data.prandtl_wall, 
                 modified_darcy_friction_factor,
-                pipe_prandtl_reynolds_data.reynolds)?;
+                reynolds_number_abs_for_nusselt)?;
 
         // for debugging
         //dbg!(&nusselt_estimate_tube_side);

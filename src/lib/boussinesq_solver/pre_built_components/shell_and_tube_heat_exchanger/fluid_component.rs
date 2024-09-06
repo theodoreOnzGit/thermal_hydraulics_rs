@@ -1,8 +1,4 @@
-use std::f64::consts::PI;
-
-use uom::si::area::square_meter;
 use uom::si::f64::*;
-use uom::si::length::meter;
 
 use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
@@ -29,6 +25,20 @@ impl SimpleShellAndTubeHeatExchanger {
 
         return shell_side_fluid_array.into();
 
+    }
+
+    /// clones the tube side fluid array and converts it into 
+    /// a fluid component 
+    pub fn get_clone_of_tube_side_parallel_tube_fluid_component
+        (&self) -> FluidComponent {
+
+            let fluid_array_heat_transfer_entity = self.tube_side_fluid_array_for_single_tube.clone();
+            let fluid_array: FluidArray = fluid_array_heat_transfer_entity.try_into().unwrap();
+
+            let number_of_parallel_tubes: u32 = self.number_of_tubes;
+
+            FluidComponent::ParallelUniformFluidArray(
+                fluid_array,number_of_parallel_tubes)
     }
 
     /// sets the tube side mass flowrate 
@@ -91,32 +101,14 @@ impl SimpleShellAndTubeHeatExchanger {
     pub fn get_shell_side_hydraulic_diameter(&self) -> Length {
 
 
-        // D_i 
-        let shell_side_id = self.shell_side_id;
-        
-
-        //d_o 
-        let tube_side_od = self.tube_side_od;
-
-        // N_t 
-        let number_of_tubes = self.number_of_tubes;
-
-        // (D_i^2 - N_t d_o^2)
-
-        let numerator: f64 = shell_side_id.get::<meter>().powf(2.0)
-            - number_of_tubes as f64 
-            * tube_side_od.get::<meter>().powf(2.0);
-        
-        // (D_i + N_t d_i)
-        let denominator: f64 = 
-            shell_side_id.get::<meter>() 
-            + number_of_tubes as f64 * 
-            tube_side_od.get::<meter>();
-
-        // hydraulic diameter is in meters 
+        // or just take the hydraulic diameter from the 
+        // shell side fluid array 
+        // 
+        let shell_side_fluid_array: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into().unwrap();
 
         let hydraulic_diameter: Length 
-            = Length::new::<meter>(numerator/denominator);
+            = shell_side_fluid_array.get_hydraulic_diameter_immutable();
 
         return hydraulic_diameter;
     }
@@ -131,26 +123,11 @@ impl SimpleShellAndTubeHeatExchanger {
     /// pi/4 * (D_i^2 - N_t d_o^2)
     pub fn get_shell_side_cross_sectional_area(&self) -> Area {
 
-        // D_i 
-        let shell_side_id = self.shell_side_id;
-        
-        //d_o 
-        let tube_side_od = self.tube_side_od;
-
-        // N_t 
-        let number_of_tubes = self.number_of_tubes;
-
-        // (D_i^2 - N_t d_o^2)
-
-        let d_square_term: f64 = shell_side_id.get::<meter>().powf(2.0)
-            - number_of_tubes as f64 
-            * tube_side_od.get::<meter>().powf(2.0);
-        
-        let area_meter_sq_value: f64 
-            = PI * 0.25 * d_square_term;
+        let shell_side_fluid_array: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into().unwrap();
 
         let shell_side_xs_area: Area 
-            = Area::new::<square_meter>(area_meter_sq_value);
+            = shell_side_fluid_array.get_cross_sectional_area_immutable();
 
         return shell_side_xs_area;
     }
