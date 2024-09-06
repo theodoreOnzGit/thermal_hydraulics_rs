@@ -19,8 +19,10 @@ pub fn quick_test_uncalibrated_dracs_loop(){
 pub fn long_test_uncalibrated_dracs_loop(){
 
     let max_simulation_time_seconds: f64 = 4000.0;
-    let pri_loop_relative_tolerance = 0.03;
-    let dracs_loop_relative_tolerance = 0.01;
+    // expect overprediction of mass flowrates in both loops 
+    // to about 10%
+    let pri_loop_relative_tolerance = 0.1;
+    let dracs_loop_relative_tolerance = 0.1;
 
     verify_coupled_dhx_analytical_solution_version_1(
         2764.53, 
