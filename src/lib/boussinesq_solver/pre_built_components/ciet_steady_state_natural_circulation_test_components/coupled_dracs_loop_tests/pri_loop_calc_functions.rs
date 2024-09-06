@@ -414,9 +414,6 @@ pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
             pipe_4.lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
 
-            pipe_5a.lateral_and_miscellaneous_connections_no_wall_correction(
-                mass_flowrate_counter_clockwise, zero_power).unwrap();
-
 
             // DHX branch 
             pipe_5a.lateral_and_miscellaneous_connections_no_wall_correction(
@@ -441,6 +438,8 @@ pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
             pipe_20.lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
             pipe_19.lateral_and_miscellaneous_connections_no_wall_correction(
+                mass_flowrate_counter_clockwise, zero_power).unwrap();
+            pipe_17b.lateral_and_miscellaneous_connections_no_wall_correction(
                 mass_flowrate_counter_clockwise, zero_power).unwrap();
         }
 
