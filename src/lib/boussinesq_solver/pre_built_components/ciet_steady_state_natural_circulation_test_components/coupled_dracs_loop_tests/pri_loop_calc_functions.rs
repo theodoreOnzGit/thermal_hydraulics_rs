@@ -532,11 +532,11 @@ pub fn pri_loop_heater_temperature_diagnostics(
     // debug 
     if print_debug_results {
         dbg!(&(
-                "bulk and wall temp, before and after heater respectively",
-                bt_11,
-                wt_10,
-                bt_12,
-                wt_13,
+                "bulk and wall temp degC, before and after heater respectively",
+                bt_11.get::<degree_celsius>(),
+                wt_10.get::<degree_celsius>(),
+                bt_12.get::<degree_celsius>(),
+                wt_13.get::<degree_celsius>(),
                 ));
     }
 
