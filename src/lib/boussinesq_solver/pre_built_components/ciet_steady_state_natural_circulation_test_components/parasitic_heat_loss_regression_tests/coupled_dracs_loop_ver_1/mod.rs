@@ -40,15 +40,12 @@ pub fn long_test_uncalibrated_dracs_loop(){
 }
 #[cfg(test)]
 #[test]
-pub fn regression_long_test_uncalibrated_dracs_loop(){
+pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
 
     use std::thread;
 
     use regression_coupled_dracs_loop_version_1::*;
-
-
-
-    let thread_1 = thread::spawn(||{
+    let set_c1 = thread::spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -59,10 +56,297 @@ pub fn regression_long_test_uncalibrated_dracs_loop(){
         // to copy over to csv
         let (heater_power_watts,
             tchx_outlet_temp_degc,
-            experimental_primary_mass_flowrate_kg_per_s,
             experimental_dracs_mass_flowrate_kg_per_s,
-            simulated_expected_primary_mass_flowrate_kg_per_s,
-            simulated_expected_dracs_mass_flowrate_kg_per_s) 
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (841.02, 40.0, 2.6860e-2, 2.0030e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c2 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+    let set_c3 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c4 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (1736.11, 40.0, 3.6490e-2, 2.9490e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c5 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c6 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c7 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c8 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
+            = (2685.83, 40.0, 4.5090e-2, 3.5930e-2, 4.9890e-2, 3.8766e-2);
+
+        dbg!(max_simulation_time_seconds,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance);
+
+
+        regression_coupled_dracs_loop_version_1(
+            heater_power_watts, 
+            max_simulation_time_seconds,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
+            pri_loop_relative_tolerance,
+            dracs_loop_relative_tolerance,
+        ).unwrap();
+
+    });
+
+    let set_c9 = thread::spawn(||{
+        let max_simulation_time_seconds: f64 = 3000.0;
+        // expect overprediction of mass flowrates in both loops 
+        // to about 10%
+        let pri_loop_relative_tolerance = 0.1;
+        let dracs_loop_relative_tolerance = 0.1;
+
+        // I'm writing in this format so that the data will be easier 
+        // to copy over to csv
+        let (heater_power_watts,
+            tchx_outlet_temp_degc,
+            experimental_dracs_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
+            simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s) 
             = (2764.53, 40.0, 4.6990e-2, 3.5470e-2, 4.9890e-2, 3.8766e-2);
 
         dbg!(max_simulation_time_seconds,
@@ -74,10 +358,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop(){
             heater_power_watts, 
             max_simulation_time_seconds,
             tchx_outlet_temp_degc,
-            experimental_primary_mass_flowrate_kg_per_s,
             experimental_dracs_mass_flowrate_kg_per_s,
-            simulated_expected_primary_mass_flowrate_kg_per_s,
+            experimental_pri_mass_flowrate_kg_per_s,
             simulated_expected_dracs_mass_flowrate_kg_per_s,
+            simulated_expected_pri_mass_flowrate_kg_per_s,
             pri_loop_relative_tolerance,
             dracs_loop_relative_tolerance,
         ).unwrap();
@@ -85,7 +369,15 @@ pub fn regression_long_test_uncalibrated_dracs_loop(){
     });
 
 
-    thread_1.join().unwrap();
+    set_c1.join().unwrap();
+    set_c2.join().unwrap();
+    set_c3.join().unwrap();
+    set_c4.join().unwrap();
+    set_c5.join().unwrap();
+    set_c6.join().unwrap();
+    set_c7.join().unwrap();
+    set_c8.join().unwrap();
+    set_c9.join().unwrap();
 }
 
 
