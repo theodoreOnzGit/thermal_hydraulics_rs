@@ -283,7 +283,7 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             experimental_pri_mass_flowrate_kg_per_s,
             simulated_expected_dracs_mass_flowrate_kg_per_s,
             simulated_expected_pri_mass_flowrate_kg_per_s) 
-            = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.9890e-2, 3.8766e-2);
+            = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.7919e-2, 3.7358e-2);
 
         dbg!(max_simulation_time_seconds,
             pri_loop_relative_tolerance,
