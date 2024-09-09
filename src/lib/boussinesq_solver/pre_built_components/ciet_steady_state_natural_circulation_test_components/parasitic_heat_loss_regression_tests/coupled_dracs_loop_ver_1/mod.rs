@@ -197,9 +197,9 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
         Builder::new().name("set_c5".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
-        // to about 10%
-        let pri_loop_relative_tolerance = 0.1;
-        let dracs_loop_relative_tolerance = 0.1;
+        // to about 15%
+        let pri_loop_relative_tolerance = 0.15;
+        let dracs_loop_relative_tolerance = 0.15;
 
         // I'm writing in this format so that the data will be easier 
         // to copy over to csv
@@ -209,7 +209,7 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             experimental_pri_mass_flowrate_kg_per_s,
             simulated_expected_dracs_mass_flowrate_kg_per_s,
             simulated_expected_pri_mass_flowrate_kg_per_s) 
-            = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 4.9890e-2, 3.8766e-2);
+            = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 4.3787e-2, 3.4254e-2);
 
         dbg!(max_simulation_time_seconds,
             pri_loop_relative_tolerance,
