@@ -1,46 +1,10 @@
-#[test]
-pub fn quick_test_uncalibrated_dracs_loop(){
-
-    let max_simulation_time_seconds: f64 = 400.0;
-    let pri_loop_relative_tolerance = 0.03;
-    let dracs_loop_relative_tolerance = 0.4;
-
-    verify_coupled_dhx_analytical_solution_version_1(
-        2764.53, 
-        max_simulation_time_seconds,
-        40.0,
-        4.6990e-2,
-        3.5470e-2,
-        pri_loop_relative_tolerance,
-        dracs_loop_relative_tolerance,
-        ).unwrap();
-}
-#[test]
-pub fn long_test_uncalibrated_dracs_loop(){
-
-    let max_simulation_time_seconds: f64 = 4000.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 10%
-    let pri_loop_relative_tolerance = 0.1;
-    let dracs_loop_relative_tolerance = 0.1;
-
-    verify_coupled_dhx_analytical_solution_version_1(
-        2764.53, 
-        max_simulation_time_seconds,
-        40.0,
-        4.6990e-2,
-        3.5470e-2,
-        pri_loop_relative_tolerance,
-        dracs_loop_relative_tolerance,
-        ).unwrap();
-}
-
 #[cfg(test)]
-/// function to verify the dhx analytical solution
+/// function to validate coupled DRACS loop to experimental data 
+/// within a given tolerance
 /// version 1,
 /// the DHX here uses uncalibrated Gnielinski correlations 
 /// to estimate heat transfer coefficients
-pub fn verify_coupled_dhx_analytical_solution_version_1(
+pub fn validate_coupled_dracs_loop_version_1(
     input_power_watts: f64,
     max_time_seconds: f64,
     tchx_outlet_temperature_set_point_degc: f64,
@@ -483,8 +447,6 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
         max_relative=pri_loop_relative_tolerance);
 
-    // I doubt we reach steady state at 400s for the dracs loop,
-    // so this is not strictly steady state yet.
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_dracs_loop.get::<kilogram_per_second>(),
