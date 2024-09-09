@@ -45,7 +45,9 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
     use std::thread;
 
     use regression_coupled_dracs_loop_version_1::*;
-    let set_c1 = thread::spawn(||{
+
+    let set_c1 = thread::Builder::new()
+        .name("set_c1".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -79,9 +81,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c2 = thread::spawn(||{
+    let set_c2 = thread::
+        Builder::new().name("set_c2".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -115,8 +118,9 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
-    let set_c3 = thread::spawn(||{
+    }).unwrap();
+    let set_c3 = thread::
+        Builder::new().name("set_c3".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -150,9 +154,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c4 = thread::spawn(||{
+    let set_c4 = thread::
+        Builder::new().name("set_c4".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -186,9 +191,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c5 = thread::spawn(||{
+    let set_c5 = thread::
+        Builder::new().name("set_c5".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -222,9 +228,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c6 = thread::spawn(||{
+    let set_c6 = thread::
+        Builder::new().name("set_c6".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -258,9 +265,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c7 = thread::spawn(||{
+    let set_c7 = thread::
+        Builder::new().name("set_c7".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -294,9 +302,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c8 = thread::spawn(||{
+    let set_c8 = thread::
+        Builder::new().name("set_c8".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -330,9 +339,10 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
-    let set_c9 = thread::spawn(||{
+    let set_c9 = thread::
+        Builder::new().name("set_c9".to_string()).spawn(||{
         let max_simulation_time_seconds: f64 = 3000.0;
         // expect overprediction of mass flowrates in both loops 
         // to about 10%
@@ -366,7 +376,7 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
             dracs_loop_relative_tolerance,
         ).unwrap();
 
-    });
+    }).unwrap();
 
 
     set_c1.join().unwrap();
