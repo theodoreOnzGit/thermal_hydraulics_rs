@@ -380,7 +380,7 @@ impl SimpleShellAndTubeHeatExchanger {
             );
 
         let insulation_id = shell_side_od;
-        let insulation_od = shell_side_od + insulation_thickness;
+        let insulation_od = shell_side_od + 2.0*insulation_thickness;
 
         let insulation_array: SolidColumn 
             = SolidColumn::new_cylindrical_shell(

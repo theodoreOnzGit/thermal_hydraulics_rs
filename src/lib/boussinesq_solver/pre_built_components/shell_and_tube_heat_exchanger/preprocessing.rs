@@ -424,7 +424,7 @@ impl SimpleShellAndTubeHeatExchanger {
             // the shell. 
 
             id = self.shell_side_od;
-            od = self.shell_side_od + self.insulation_thickness;
+            od = self.shell_side_od + 2.0*self.insulation_thickness;
 
             // heated length is the shell side length 
             // first I need the fluid array as a fluid component
@@ -1286,7 +1286,7 @@ impl SimpleShellAndTubeHeatExchanger {
         + self.shell_side_id);
 
         let insulation_material_mid_section_diameter = 
-            0.5 * self.insulation_thickness + 
+            self.insulation_thickness + 
             self.shell_side_od;
 
         let shell_od = self.shell_side_od;

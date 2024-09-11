@@ -152,7 +152,7 @@ impl InsulatedFluidComponent {
         );
 
         let insulation_id = shell_od;
-        let insulation_od = insulation_id + insulation_thickness;
+        let insulation_od = insulation_id + 2.0*insulation_thickness;
 
         // insulation
         let insulation = 
@@ -181,7 +181,7 @@ impl InsulatedFluidComponent {
             heat_transfer_to_ambient: htc_to_ambient,
             tube_od: shell_od,
             tube_id: shell_id,
-            insulation_od: shell_od+insulation_thickness,
+            insulation_od: shell_od+2.0*insulation_thickness,
             insulation_id: shell_od,
             flow_area,
             darcy_loss_correlation: pipe_loss_correlation,
@@ -255,7 +255,7 @@ impl InsulatedFluidComponent {
         );
 
         let insulation_id = shell_od;
-        let insulation_od = insulation_id + insulation_thickness;
+        let insulation_od = insulation_id + 2.0*insulation_thickness;
 
         // insulation 
         let insulation = 
@@ -287,7 +287,7 @@ impl InsulatedFluidComponent {
             tube_od: shell_od,
             tube_id: shell_id,
             insulation_id: shell_od,
-            insulation_od: shell_od+insulation_thickness,
+            insulation_od: shell_od+2.0*insulation_thickness,
             flow_area,
             darcy_loss_correlation: custom_component_loss_correlation,
             insulation: CVType::SolidArrayCV(insulation).into(),
