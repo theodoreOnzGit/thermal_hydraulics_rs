@@ -6,6 +6,8 @@
 ///
 /// the DHX here uses uncalibrated Gnielinski correlations 
 /// to estimate heat transfer coefficients
+///
+/// note that regression takes very long, might want to flamegraph this
 #[cfg(test)]
 pub fn regression_coupled_dracs_loop_version_1(
     input_power_watts: f64,

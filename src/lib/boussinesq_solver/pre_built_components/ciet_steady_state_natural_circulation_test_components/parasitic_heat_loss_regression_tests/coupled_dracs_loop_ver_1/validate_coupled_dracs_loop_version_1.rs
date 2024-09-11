@@ -53,11 +53,8 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     let reference_tchx_htc = 
         HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
-    let average_temperature_for_density_calcs = 
+    let average_temperature_for_advection_mass_flowrate_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
-    // let's calculate 400 seconds of simulated time 
-    // it takes about that long for the temperature to settle down
-    // this is compared to value at 4000s
 
     let mut current_simulation_time = Time::ZERO;
     let max_simulation_time = Time::new::<second>(max_time_seconds);
@@ -157,9 +154,6 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
                 .unwrap();
 
             // take the front single cv temperature 
-            //
-            // front single cv temperature is defunct
-            // probably need to debug this
 
             let tchx_35b_front_single_cv_temperature: ThermodynamicTemperature 
                 = tchx35b_pipe_fluid_array_clone
@@ -195,7 +189,11 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
             let reference_temperature_interval_deg_celsius = 80.0;
 
-            // error = y_sp - y_measured
+            // error = y_measured - y_sp
+            // anyway, that's how I programmed it,
+            // if it works, it works
+            // in literature and textbooks, we usually use 
+            // y_sp - y_measured
             let set_point_abs_error_deg_celsius = 
                 - tchx_outlet_temperature_set_point.get::<kelvin>()
                 + tchx_outlet_temperature.get::<kelvin>();
@@ -300,7 +298,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         coupled_dracs_loop_link_up_components(
             counter_clockwise_dracs_flowrate, 
             tchx_heat_transfer_coeff, 
-            average_temperature_for_density_calcs, 
+            average_temperature_for_advection_mass_flowrate_calcs, 
             ambient_htc, 
             &mut pipe_34, 
             &mut pipe_33, 
@@ -322,7 +320,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         coupled_dracs_pri_loop_dhx_heater_link_up_components(
             counter_clockwise_pri_loop_flowrate, 
             heat_rate_through_heater, 
-            average_temperature_for_density_calcs, 
+            average_temperature_for_advection_mass_flowrate_calcs, 
             ambient_htc, 
             &mut pipe_4, 
             &mut pipe_3, 
