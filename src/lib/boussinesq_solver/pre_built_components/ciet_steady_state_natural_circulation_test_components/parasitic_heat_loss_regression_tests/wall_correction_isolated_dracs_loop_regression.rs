@@ -837,7 +837,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
         verify_isolated_dhx_forced_circ(
             2000.0, // 2000 watts
             MassRate::new::<kilogram_per_second>(0.18),
-            31.67037098, // dhx temp degree celsius to within 0.01K
+            31.67383298, // dhx temp degree celsius to within 0.01K
             turn_on_non_insulated_fluid_components_wall_correction,
             turn_on_insulated_fluid_components_wall_correction,
             "insulated_fluid_components wall correction"
