@@ -21,6 +21,8 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
     //
     // this is not enough
 
+    // dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
+    // C-1,0.02003,75.22747,71.47752,53.60943,50.45784,
     let set_c1 = thread::Builder::new()
         .name("set_c1".to_string()).spawn(||{
 
@@ -33,7 +35,61 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
                 0.27;
 
             let dhx_inlet_regression_temperature_degc = 
-                71.477;
+                dhx_inlet_temperature_set_point_degc;
+
+            hot_leg_insulation_thickness_calibration_regression_test_v1(
+                experimental_primary_mass_flowrate_kg_per_s, 
+                heater_outlet_temperature_degc, 
+                dhx_inlet_temperature_set_point_degc, 
+                dhx_inlet_regression_temperature_degc,
+                max_time_seconds, 
+                insulation_thickness_cm_for_regression_testing);
+
+
+
+        }).unwrap();
+    // dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
+    // C-2,0.02367,82.41863,78.36713,57.13467,53.79036,
+    let set_c2 = thread::Builder::new()
+        .name("set_c2".to_string()).spawn(||{
+
+            let (experimental_primary_mass_flowrate_kg_per_s,
+                heater_outlet_temperature_degc,
+                dhx_inlet_temperature_set_point_degc) =
+                (0.02367,82.41863,78.36713);
+            let max_time_seconds = 500.0;
+            // temperatures are regressed to within 0.1 K
+            let insulation_thickness_cm_for_regression_testing = 0.21;
+
+            let dhx_inlet_regression_temperature_degc = 
+                dhx_inlet_temperature_set_point_degc;
+
+            hot_leg_insulation_thickness_calibration_regression_test_v1(
+                experimental_primary_mass_flowrate_kg_per_s, 
+                heater_outlet_temperature_degc, 
+                dhx_inlet_temperature_set_point_degc, 
+                dhx_inlet_regression_temperature_degc,
+                max_time_seconds, 
+                insulation_thickness_cm_for_regression_testing);
+
+
+
+        }).unwrap();
+    // dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
+    // C-3,0.02635,87.78188,84.37342,59.82845,56.71891,
+    let set_c3 = thread::Builder::new()
+        .name("set_c3".to_string()).spawn(||{
+
+            let (experimental_primary_mass_flowrate_kg_per_s,
+                heater_outlet_temperature_degc,
+                dhx_inlet_temperature_set_point_degc) =
+                (0.02635,87.78188,84.37342);
+            let max_time_seconds = 500.0;
+            // temperatures are regressed to within 0.1 K
+            let insulation_thickness_cm_for_regression_testing = 0.288;
+
+            let dhx_inlet_regression_temperature_degc = 
+                dhx_inlet_temperature_set_point_degc;
 
             hot_leg_insulation_thickness_calibration_regression_test_v1(
                 experimental_primary_mass_flowrate_kg_per_s, 
@@ -47,7 +103,42 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
 
         }).unwrap();
 
+    // dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
+    // C-4,0.02949,94.71628,90.97595,63.9812,60.83029,
+    let set_c4 = thread::Builder::new()
+        .name("set_c4".to_string()).spawn(||{
+
+            let (experimental_primary_mass_flowrate_kg_per_s,
+                heater_outlet_temperature_degc,
+                dhx_inlet_temperature_set_point_degc) =
+                (0.02949,94.71628,90.97595);
+            let max_time_seconds = 500.0;
+            // temperatures are regressed to within 0.1 K
+            let insulation_thickness_cm_for_regression_testing = 0.23;
+
+            let dhx_inlet_regression_temperature_degc = 
+                dhx_inlet_temperature_set_point_degc;
+
+            hot_leg_insulation_thickness_calibration_regression_test_v1(
+                experimental_primary_mass_flowrate_kg_per_s, 
+                heater_outlet_temperature_degc, 
+                dhx_inlet_temperature_set_point_degc, 
+                dhx_inlet_regression_temperature_degc,
+                max_time_seconds, 
+                insulation_thickness_cm_for_regression_testing);
+
+
+
+        }).unwrap();
+    // C-5,0.0319,100.37023,96.20228,67.05336,64.07406,
+    // C-6,0.03412,105.25073,101.3375,69.85085,67.1654,
+    // C-7,0.03562,110.34289,106.43149,73.21226,70.6215,
+    // C-8,0.03593,115.52364,111.37615,76.13202,73.63344,
+    // C-9,0.03547,119.96879,116.05003,79.02407,76.54479,
     set_c1.join().unwrap();
+    set_c2.join().unwrap();
+    set_c3.join().unwrap();
+    set_c4.join().unwrap();
 
 
 }
@@ -219,7 +310,7 @@ pub fn hot_leg_insulation_thickness_calibration_regression_test_v1(
             static_mixer_21_front_single_cv_temperature
 
         };
-        dbg!(&dhx_inlet_actual_temperature.get::<degree_celsius>());
+        //dbg!(&dhx_inlet_actual_temperature.get::<degree_celsius>());
 
 
         calibrated_insulation_thickness = {
