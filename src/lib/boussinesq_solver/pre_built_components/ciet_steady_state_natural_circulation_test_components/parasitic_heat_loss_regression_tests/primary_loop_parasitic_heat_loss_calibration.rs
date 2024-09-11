@@ -1,3 +1,22 @@
+/// This test attempted to tweak the heat trasnfer coeffcient (htc) 
+/// to ambient in order to obtain the correct dhx inlet temperature 
+/// unfortunately, the parasitic heat losses were not sufficient 
+/// to achieve this objective,
+///
+/// The next thing is to do as the RELAP and SAM model did,
+/// which is to reduce the convective thermal resistance between 
+/// fluid and wall. Either by multiplying the heat transfer 
+/// area density by a certain amount (SAM) or applying a multiplicative 
+/// factor (page 40-41 of Zweibaum's thesis)
+///
+/// Zweibaum, N. (2015). Experimental validation of passive 
+/// safety system models: Application to design and optimization 
+/// of fluoride-salt-cooled, high-temperature reactors. 
+/// University of California, Berkeley.
+///
+///
+/// to do so
+///
 /// dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
 /// C-1,0.02003,75.22747,71.47752,53.60943,50.45784,
 /// C-2,0.02367,82.41863,78.36713,57.13467,53.79036,
@@ -50,6 +69,30 @@ pub fn hot_leg_htc_to_ambient_calibration_v1_failed(){
 
 
 }
+/// This test attempted to tweak the heat trasnfer coeffcient (htc) 
+/// to ambient in order to obtain the correct dhx inlet temperature 
+/// unfortunately, the parasitic heat losses were not sufficient 
+/// to achieve this objective
+///
+///
+/// The next thing is to do as the RELAP and SAM model did,
+/// which is to reduce the convective thermal resistance between 
+/// fluid and wall. Either by multiplying the heat transfer 
+/// area density by a certain amount (SAM) or applying a multiplicative 
+/// factor (page 40-41 of Zweibaum's thesis)
+///
+/// Zweibaum, N. (2015). Experimental validation of passive 
+/// safety system models: Application to design and optimization 
+/// of fluoride-salt-cooled, high-temperature reactors. 
+/// University of California, Berkeley.
+///
+/// to do so, I need to program in capability to introduce this multiplicative 
+/// factor. 
+/// This can be done by nesting an enum within the nusselt correlation
+/// or use the FixedNusselt number in order to pass in a calibrated Nusselt 
+/// number.
+///
+/// 
 ///
 /// dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
 /// C-1,0.02003,75.22747,71.47752,53.60943,50.45784,

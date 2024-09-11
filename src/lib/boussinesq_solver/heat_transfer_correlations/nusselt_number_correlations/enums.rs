@@ -34,6 +34,27 @@ pub enum NusseltCorrelation {
     ///
     PipeGnielinskiGeneric(GnielinskiData),
 
+    /// calibrated 
+    /// pipe nusselt number using Gnielinski Correlation 
+    /// for laminar, turbulent and transition region. Allows you to 
+    /// insert a multiplicative ratio to calibrate the Gnielinski 
+    /// correlation
+    ///
+    /// laminar flow assumes constant heat flux
+    ///
+    /// For this correlation, two prandtl numbers are used for Nusselt number 
+    /// estimation
+    /// Pr_bulk and Pr_wall 
+    /// 
+    /// of course, you may use your own Pr_film instead of Pr_bulk 
+    /// and obtain your Nusselt number based on Pr_film, but the 
+    /// correction factor will become 
+    ///
+    /// (Pr_film/Pr_wall)^0.11
+    ///
+    /// for more fine grained control, please use another enum
+    PipeGnielinskiCalibrated(GnielinskiData, Ratio),
+
     /// pipe nusselt number using Gnielinski Correlation 
     /// for laminar, turbulent and transition region
     ///
@@ -202,6 +223,12 @@ impl NusseltCorrelation {
             NusseltCorrelation::PipeGnielinskiGeneric(data) => {
                 return data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
+            NusseltCorrelation::PipeGnielinskiCalibrated(data,multiplicative_factor) => {
+                let uncalibrated_nusselt = 
+                    data.get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+
+                return Ok(*multiplicative_factor * uncalibrated_nusselt);
+            },
             NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
             ) => 
@@ -267,6 +294,17 @@ impl NusseltCorrelation {
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
             },
+            NusseltCorrelation::PipeGnielinskiCalibrated(data,multiplicative_factor) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                let uncalibrated_nusselt = 
+                    modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+                return Ok(*multiplicative_factor * uncalibrated_nusselt);
+            },
             NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
                 let mut modified_data = data.clone();
                 modified_data.prandtl_wall = bulk_prandtl_number_input;
@@ -301,6 +339,16 @@ impl NusseltCorrelation {
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            NusseltCorrelation::PipeGnielinskiCalibrated(data,multiplicative_factor) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.reynolds = reynolds_number_input;
+                let uncalibrated_nusselt = 
+                    modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+                return Ok(*multiplicative_factor * uncalibrated_nusselt);
             },
             NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
@@ -395,6 +443,16 @@ impl NusseltCorrelation {
                 modified_data.prandtl_bulk = bulk_prandtl_number_input;
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            NusseltCorrelation::PipeGnielinskiCalibrated(data,multiplicative_factor) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = bulk_prandtl_number_input;
+                modified_data.prandtl_bulk = wall_prandtl_number_input;
+                modified_data.reynolds = reynolds_number_input;
+                let uncalibrated_nusselt = 
+                    modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+                return Ok(*multiplicative_factor * uncalibrated_nusselt);
             },
             NusseltCorrelation::CustomGnielinskiGenericPrandtlFilm(
                 data, correlation_coefficient_c, reynolds_exponent_m
@@ -492,6 +550,17 @@ impl NusseltCorrelation {
                 modified_data.darcy_friction_factor = darcy_friction_factor;
                 modified_data.reynolds = reynolds_number_input;
                 return modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl();
+            },
+            NusseltCorrelation::PipeGnielinskiCalibrated(data,multiplicative_factor) => {
+
+                let mut modified_data = data.clone();
+                modified_data.prandtl_wall = wall_prandtl_number_input;
+                modified_data.prandtl_bulk = bulk_prandtl_number_input;
+                modified_data.darcy_friction_factor = darcy_friction_factor;
+                modified_data.reynolds = reynolds_number_input;
+                let uncalibrated_nusselt = 
+                    modified_data.get_nusselt_for_developing_flow_bulk_fluid_prandtl()?;
+                return Ok(*multiplicative_factor * uncalibrated_nusselt);
             },
             NusseltCorrelation::PipeGnielinskiTurbulentPrandtlBulk(data) => {
                 let mut modified_data = data.clone();

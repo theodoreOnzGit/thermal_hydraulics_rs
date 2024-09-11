@@ -4,7 +4,6 @@ use super::SimpleShellAndTubeHeatExchanger;
 use uom::si::f64::*;
 use uom::si::ratio::ratio;
 use uom::si::pressure::atmosphere;
-use uom::si::thermodynamic_temperature::kelvin;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
 use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData;
