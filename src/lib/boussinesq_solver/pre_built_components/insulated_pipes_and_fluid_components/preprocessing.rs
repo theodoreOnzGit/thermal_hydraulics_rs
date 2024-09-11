@@ -738,6 +738,8 @@ impl InsulatedFluidComponent {
 
     }
 
+    /// gets the insulation thickness based on 
+    /// (insulation_od - insulation_id)/2
     pub fn get_insulation_thickness(&self) -> Length {
         let id = self.insulation_id;
         let od = self.insulation_od;
