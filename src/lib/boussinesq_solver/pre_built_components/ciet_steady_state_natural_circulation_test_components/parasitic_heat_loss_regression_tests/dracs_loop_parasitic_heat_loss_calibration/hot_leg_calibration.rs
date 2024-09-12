@@ -1,4 +1,4 @@
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-1,0.02686,53.00304,51.79332,40.42208,39.84713,
 #[test]
 pub fn hot_leg_regression_set_c1(){
@@ -25,7 +25,7 @@ pub fn hot_leg_regression_set_c1(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-2,0.03055,55.30506,54.27495,40.25559,39.73516,
 #[test]
 pub fn hot_leg_regression_set_c2(){
@@ -52,7 +52,7 @@ pub fn hot_leg_regression_set_c2(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-3,0.03345,56.82298,55.83001,39.74061,39.2569,
 #[test]
 pub fn hot_leg_regression_set_c3(){
@@ -79,7 +79,7 @@ pub fn hot_leg_regression_set_c3(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-4,0.03649,59.44921,58.32055,40.25482,39.86112,
 #[test]
 pub fn hot_leg_regression_set_c4(){
@@ -106,7 +106,7 @@ pub fn hot_leg_regression_set_c4(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-5,0.03869,61.31769,60.157,40.37106,40.01355,
 #[test]
 pub fn hot_leg_regression_set_c5(){
@@ -133,7 +133,7 @@ pub fn hot_leg_regression_set_c5(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-6,0.04115,62.69342,61.72605,39.97878,39.53125,
 #[test]
 pub fn hot_leg_regression_set_c6(){
@@ -160,7 +160,7 @@ pub fn hot_leg_regression_set_c6(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-7,0.04312,64.45658,63.45641,40.24987,39.8924,
 #[test]
 pub fn hot_leg_regression_set_c7(){
@@ -187,7 +187,7 @@ pub fn hot_leg_regression_set_c7(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-8,0.04509,66.11271,65.13191,40.14256,39.91183,
 #[test]
 pub fn hot_leg_regression_set_c8(){
@@ -214,7 +214,7 @@ pub fn hot_leg_regression_set_c8(){
 
 
 }
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-9,0.04699,67.40722,66.51369,39.87633,39.64593,
 #[test]
 pub fn hot_leg_regression_set_c9(){
@@ -260,7 +260,7 @@ pub fn hot_leg_regression_set_c9(){
 /// 
 ///
 /// Zweibaum's unpublished data:
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-1,0.02686,53.00304,51.79332,40.42208,39.84713,
 /// C-2,0.03055,55.30506,54.27495,40.25559,39.73516,
 /// C-3,0.03345,56.82298,55.83001,39.74061,39.2569,

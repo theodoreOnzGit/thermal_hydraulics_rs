@@ -2,7 +2,7 @@
 /// until correct parasitic heat loss is achieved
 ///
 /// Zweibaum's unpublished data:
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-1,0.02686,53.00304,51.79332,40.42208,39.84713,
 /// C-2,0.03055,55.30506,54.27495,40.25559,39.73516,
 /// C-3,0.03345,56.82298,55.83001,39.74061,39.2569,
@@ -18,7 +18,7 @@ pub mod hot_leg_calibration;
 /// until correct parasitic heat loss is achieved
 ///
 /// Zweibaum's unpublished data:
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-1,0.02686,53.00304,51.79332,40.42208,39.84713,
 /// C-2,0.03055,55.30506,54.27495,40.25559,39.73516,
 /// C-3,0.03345,56.82298,55.83001,39.74061,39.2569,
