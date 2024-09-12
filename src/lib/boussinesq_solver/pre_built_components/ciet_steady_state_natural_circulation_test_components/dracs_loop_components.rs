@@ -869,6 +869,163 @@ NonInsulatedFluidComponent {
     non_insulated_component
 }
 
+/// cold leg of DRACS (or what I consider the cold branch)
+///
+/// note that we will rotate these components by 180 degrees
+/// for only the hot leg, as the DRACS loop in RELAP is programmed 
+/// in a counter clockwise fashion (see Nico Zweibaum's thesis)
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+/// note that for coupled natural circulation dracs loop calibration 
+/// tchx pipe 35b is evenly split into 35b-1 and 35b-2
+/// 35b-1 is adiabatic towards the environment
+///
+/// label 35b-1 on SAM model by Zweibaum
+/// horizontal part of the TCHX or NDHX, 
+/// has the same loss correlations as the CTAH (horizontal)
+///
+pub fn new_ndhx_tchx_vertical_35b_1(initial_temperature: ThermodynamicTemperature) -> 
+NonInsulatedFluidComponent {
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    // even splitting here
+    let pipe_length = Length::new::<meter>(0.415925*0.5);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(-90.0);
+    let form_loss = Ratio::new::<ratio>(5.8);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    // tchx 35b1 is adiabatic
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(0.0);
+    // from SAM nodalisation, we have 4 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is 4-2
+    let user_specified_inner_nodes = 4-2; 
+
+    let mut non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        id, 
+        od, 
+        pipe_length, 
+        hydraulic_diameter, 
+        surface_roughness, 
+        pipe_shell_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        non_insulated_component.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    non_insulated_component.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
+
+    non_insulated_component
+}
+/// cold leg of DRACS (or what I consider the cold branch)
+///
+/// note that we will rotate these components by 180 degrees
+/// for only the hot leg, as the DRACS loop in RELAP is programmed 
+/// in a counter clockwise fashion (see Nico Zweibaum's thesis)
+///
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+/// note that for coupled natural circulation dracs loop calibration 
+/// tchx pipe 35b is evenly split into 35b-1 and 35b-2
+/// 35b-2 is not adiabatic towards the environment
+///
+/// label 35b-2 on SAM model by Zweibaum
+/// horizontal part of the TCHX or NDHX, 
+/// has the same loss correlations as the CTAH (horizontal)
+///
+pub fn new_ndhx_tchx_vertical_35b_2(initial_temperature: ThermodynamicTemperature) -> 
+NonInsulatedFluidComponent {
+    let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.0);
+    let fluid_pressure = Pressure::new::<atmosphere>(1.0);
+    let solid_pressure = Pressure::new::<atmosphere>(1.0);
+    let hydraulic_diameter = Length::new::<meter>(1.19e-2);
+    // even splitting here
+    let pipe_length = Length::new::<meter>(0.415925*0.5);
+    let flow_area = Area::new::<square_meter>(1.33E-03);
+    let incline_angle = Angle::new::<degree>(-90.0);
+    let form_loss = Ratio::new::<ratio>(5.8);
+    //estimated component wall roughness (doesn't matter here,
+    //but i need to fill in)
+    let surface_roughness = Length::new::<millimeter>(0.015);
+    let id = hydraulic_diameter;
+    let pipe_thickness = Length::new::<meter>(0.000406);
+    let od = id + pipe_thickness;
+    let pipe_shell_material = SolidMaterial::SteelSS304L;
+    let pipe_fluid = LiquidMaterial::TherminolVP1;
+    // tchx 35b1 is non adiabatic
+    let htc_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
+    // from SAM nodalisation, we have 4 nodes only, 
+    // now because there are two outer nodes, the 
+    // number of inner nodes is 4-2
+    let user_specified_inner_nodes = 4-2; 
+
+    let mut non_insulated_component = NonInsulatedFluidComponent::new_bare_pipe(
+        initial_temperature, 
+        ambient_temperature, 
+        fluid_pressure, 
+        solid_pressure, 
+        flow_area, 
+        incline_angle, 
+        form_loss, 
+        id, 
+        od, 
+        pipe_length, 
+        hydraulic_diameter, 
+        surface_roughness, 
+        pipe_shell_material, 
+        pipe_fluid, 
+        htc_to_ambient, 
+        user_specified_inner_nodes);
+
+    // for heat exchangers, I give an ideal Nusselt number correlation 
+    // as an approximation so that film thermal resistance is minimised
+    let mut fluid_array_ideal_nusslet: FluidArray = 
+        non_insulated_component.pipe_fluid_array
+        .clone()
+        .try_into()
+        .unwrap();
+
+    fluid_array_ideal_nusslet.nusselt_correlation = 
+        NusseltCorrelation::IdealNusseltOneBillion;
+
+    non_insulated_component.pipe_fluid_array = 
+        fluid_array_ideal_nusslet.into();
+
+    non_insulated_component
+}
+
 
 
 /// cold leg of DRACS
