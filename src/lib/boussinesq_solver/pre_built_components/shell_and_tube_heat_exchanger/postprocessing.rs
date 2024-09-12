@@ -474,6 +474,253 @@ impl SimpleShellAndTubeHeatExchanger {
             Ok(u_based_on_shell_side_area)
         }
 
+    /// provides nusselt number for tube side 
+    /// wall correction provided by default using a prandlt number 
+    /// correction
+    #[inline]
+    pub fn nusselt_tube_side(&self) -> Ratio {
+        // the thermal conductance here should be based on the 
+        // nusselt number correlation
+
+        // before any calculations, I will first need a clone of 
+        // the fluid array and inner shell array
+        //
+        // the fluid array represents only a single tube
+        let mut tube_side_single_fluid_array_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
+
+
+        let mut pipe_shell_clone: SolidColumn = 
+            self.inner_pipe_shell_array_for_single_tube.clone().try_into().unwrap();
+
+        // also need to get basic temperatures and mass flowrates 
+        // only do this once because some of these methods involve 
+        // cloning, which is computationally expensive
+
+        let single_tube_mass_flowrate: MassRate = 
+            tube_side_single_fluid_array_clone.get_mass_flowrate();
+
+        let tube_fluid_temperature: ThermodynamicTemperature 
+            = tube_side_single_fluid_array_clone.try_get_bulk_temperature().unwrap();
+
+        let wall_temperature: ThermodynamicTemperature 
+            = pipe_shell_clone.try_get_bulk_temperature().unwrap();
+
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+
+
+        let single_tube_hydraulic_diameter = 
+            self.get_tube_side_hydraulic_diameter();
+        let single_tube_flow_area: Area = 
+            tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
+
+        // flow area and hydraulic diameter are ok
+
+
+        let tube_fluid_material: LiquidMaterial
+            = tube_side_single_fluid_array_clone.material_control_volume.try_into().unwrap();
+
+
+        let viscosity: DynamicViscosity = 
+            tube_fluid_material.try_get_dynamic_viscosity(tube_fluid_temperature).unwrap();
+
+        // need to convert hydraulic diameter to an equivalent 
+        // spherical diameter
+        //
+        // but for now, I'm going to use Re and Nu using hydraulic diameter 
+        // and live with it for the time being
+        //
+        let reynolds_number_single_tube_abs_for_nusselt_estimate: Ratio = 
+            (single_tube_mass_flowrate/
+             single_tube_flow_area
+             *single_tube_hydraulic_diameter / viscosity).abs();
+
+        // next, bulk prandtl number 
+
+        let bulk_prandtl_number_tube_side: Ratio 
+            = tube_fluid_material.try_get_prandtl_liquid(
+                tube_fluid_temperature,
+                atmospheric_pressure
+            ).unwrap();
+
+        let wall_prandtl_number_tube_side: Ratio;
+
+        let nusselt_estimate_tube_side: Ratio; 
+
+        // darcy friction factor
+        // todo: this only works for things in a pipe form
+        let darcy_friction_factor_tube_side: Ratio = self.
+            tube_side_custom_component_loss_correlation.
+            darcy_friction_factor(reynolds_number_single_tube_abs_for_nusselt_estimate)
+            .unwrap();
+
+
+        // just use the wall prandtl number 
+        // if the number falls outside the range of correlations,
+        // then use the prandtl number at the max or min 
+
+        let mut wall_temperature_estimate = wall_temperature;
+
+        if wall_temperature_estimate > tube_fluid_material.max_temperature() {
+
+            wall_temperature_estimate = tube_fluid_material.max_temperature();
+
+        } else if wall_temperature_estimate < tube_fluid_material.min_temperature() {
+
+            wall_temperature_estimate = tube_fluid_material.min_temperature();
+
+        }
+
+        wall_prandtl_number_tube_side
+            = tube_fluid_material.try_get_prandtl_liquid(
+                wall_temperature_estimate,
+                atmospheric_pressure
+            ).unwrap();
+
+        nusselt_estimate_tube_side = 
+            self.tube_side_nusselt_correlation
+            .estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
+                bulk_prandtl_number_tube_side, 
+                wall_prandtl_number_tube_side, 
+                darcy_friction_factor_tube_side,
+                reynolds_number_single_tube_abs_for_nusselt_estimate).unwrap();
+
+        nusselt_estimate_tube_side
+    }
+
+    /// returns reynolds number for tube side for a single tube
+    #[inline]
+    pub fn reynolds_tube_side_single_tube(&self) -> Ratio {
+
+        // the thermal conductance here should be based on the 
+        // nusselt number correlation
+
+        // before any calculations, I will first need a clone of 
+        // the fluid array and inner shell array
+        //
+        // the fluid array represents only a single tube
+        let mut tube_side_single_fluid_array_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
+
+
+        // also need to get basic temperatures and mass flowrates 
+        // only do this once because some of these methods involve 
+        // cloning, which is computationally expensive
+
+        let single_tube_mass_flowrate: MassRate = 
+            tube_side_single_fluid_array_clone.get_mass_flowrate();
+
+        let tube_fluid_temperature: ThermodynamicTemperature 
+            = tube_side_single_fluid_array_clone.try_get_bulk_temperature().unwrap();
+
+        let single_tube_hydraulic_diameter = 
+            self.get_tube_side_hydraulic_diameter();
+        let single_tube_flow_area: Area = 
+            tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
+
+        // flow area and hydraulic diameter are ok
+
+
+        let tube_fluid_material: LiquidMaterial
+            = tube_side_single_fluid_array_clone.material_control_volume.try_into().unwrap();
+
+
+        let viscosity: DynamicViscosity = 
+            tube_fluid_material.try_get_dynamic_viscosity(tube_fluid_temperature).unwrap();
+
+        // need to convert hydraulic diameter to an equivalent 
+        // spherical diameter
+        //
+        // but for now, I'm going to use Re and Nu using hydraulic diameter 
+        // and live with it for the time being
+        //
+        let reynolds_number_single_tube_abs_for_nusselt_estimate: Ratio = 
+            (single_tube_mass_flowrate/
+             single_tube_flow_area
+             *single_tube_hydraulic_diameter / viscosity).abs();
+
+        reynolds_number_single_tube_abs_for_nusselt_estimate
+    }
+
+    /// bulk and wall prandtl number for tube side 
+    #[inline]
+    pub fn bulk_prandtl_number_tube_side(&self) -> (Ratio, Ratio) {
+        // the thermal conductance here should be based on the 
+        // nusselt number correlation
+
+        // before any calculations, I will first need a clone of 
+        // the fluid array and inner shell array
+        //
+        // the fluid array represents only a single tube
+        let mut tube_side_single_fluid_array_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().try_into().unwrap();
+
+
+        let mut pipe_shell_clone: SolidColumn = 
+            self.inner_pipe_shell_array_for_single_tube.clone().try_into().unwrap();
+
+        // also need to get basic temperatures and mass flowrates 
+        // only do this once because some of these methods involve 
+        // cloning, which is computationally expensive
+
+
+        let tube_fluid_temperature: ThermodynamicTemperature 
+            = tube_side_single_fluid_array_clone.try_get_bulk_temperature().unwrap();
+
+        let wall_temperature: ThermodynamicTemperature 
+            = pipe_shell_clone.try_get_bulk_temperature().unwrap();
+
+        let atmospheric_pressure = Pressure::new::<atmosphere>(1.0);
+
+
+
+        // flow area and hydraulic diameter are ok
+
+
+        let tube_fluid_material: LiquidMaterial
+            = tube_side_single_fluid_array_clone.material_control_volume.try_into().unwrap();
+
+
+
+        // next, bulk prandtl number 
+
+        let bulk_prandtl_number_tube_side: Ratio 
+            = tube_fluid_material.try_get_prandtl_liquid(
+                tube_fluid_temperature,
+                atmospheric_pressure
+            ).unwrap();
+
+        let wall_prandtl_number_tube_side: Ratio;
+
+
+
+        // just use the wall prandtl number 
+        // if the number falls outside the range of correlations,
+        // then use the prandtl number at the max or min 
+
+        let mut wall_temperature_estimate = wall_temperature;
+
+        if wall_temperature_estimate > tube_fluid_material.max_temperature() {
+
+            wall_temperature_estimate = tube_fluid_material.max_temperature();
+
+        } else if wall_temperature_estimate < tube_fluid_material.min_temperature() {
+
+            wall_temperature_estimate = tube_fluid_material.min_temperature();
+
+        }
+
+        wall_prandtl_number_tube_side
+            = tube_fluid_material.try_get_prandtl_liquid(
+                wall_temperature_estimate,
+                atmospheric_pressure
+            ).unwrap();
+
+
+        return (bulk_prandtl_number_tube_side,wall_prandtl_number_tube_side);
+
+    }
+
     /// provides the tube bundle side heat transfer area 
     /// on the shell side
     pub fn tube_bundle_heat_transfer_area_shell_side(&self) -> Area {

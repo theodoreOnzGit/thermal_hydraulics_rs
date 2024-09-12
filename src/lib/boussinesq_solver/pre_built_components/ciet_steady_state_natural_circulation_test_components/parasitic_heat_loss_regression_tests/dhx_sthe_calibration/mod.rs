@@ -701,7 +701,7 @@ pub fn dhx_calibration_validation_test_v1(
     // settings for checking parasitic heat loss, mostly to do 
     // with shell side
     // to do after calibrating tube side nusselt numbers
-    let check_parasitic_heat_loss = true;
+    let check_parasitic_heat_loss = false;
     if check_parasitic_heat_loss {
 
         // for shell,
