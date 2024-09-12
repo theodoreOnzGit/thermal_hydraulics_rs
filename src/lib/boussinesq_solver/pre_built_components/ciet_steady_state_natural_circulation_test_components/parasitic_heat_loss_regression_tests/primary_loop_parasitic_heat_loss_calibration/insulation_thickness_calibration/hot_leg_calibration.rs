@@ -38,7 +38,7 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
             let dhx_inlet_regression_temperature_degc = 
                 dhx_inlet_temperature_set_point_degc;
 
-            hot_leg_insulation_thickness_calibration_regression_test_v1(
+            pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
                 experimental_primary_mass_flowrate_kg_per_s, 
                 heater_outlet_temperature_degc, 
                 dhx_inlet_temperature_set_point_degc, 
@@ -66,7 +66,7 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
             let dhx_inlet_regression_temperature_degc = 
                 dhx_inlet_temperature_set_point_degc;
 
-            hot_leg_insulation_thickness_calibration_regression_test_v1(
+            pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
                 experimental_primary_mass_flowrate_kg_per_s, 
                 heater_outlet_temperature_degc, 
                 dhx_inlet_temperature_set_point_degc, 
@@ -94,7 +94,7 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
             let dhx_inlet_regression_temperature_degc = 
                 dhx_inlet_temperature_set_point_degc;
 
-            hot_leg_insulation_thickness_calibration_regression_test_v1(
+            pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
                 experimental_primary_mass_flowrate_kg_per_s, 
                 heater_outlet_temperature_degc, 
                 dhx_inlet_temperature_set_point_degc, 
@@ -123,7 +123,7 @@ pub fn hot_leg_insulation_thickness_calibration_v1(){
             let dhx_inlet_regression_temperature_degc = 
                 dhx_inlet_temperature_set_point_degc;
 
-            hot_leg_insulation_thickness_calibration_regression_test_v1(
+            pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
                 experimental_primary_mass_flowrate_kg_per_s, 
                 heater_outlet_temperature_degc, 
                 dhx_inlet_temperature_set_point_degc, 
@@ -157,7 +157,7 @@ pub fn hot_leg_validation_set_c1(){
     let dhx_inlet_regression_temperature_degc = 
         71.25;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -183,7 +183,7 @@ pub fn hot_leg_validation_set_c2(){
     let dhx_inlet_regression_temperature_degc = 
         78.57;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -209,7 +209,7 @@ pub fn hot_leg_validation_set_c3(){
     let dhx_inlet_regression_temperature_degc = 
         84.00;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -235,7 +235,7 @@ pub fn hot_leg_validation_set_c4(){
     let dhx_inlet_regression_temperature_degc = 
         90.98;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -263,7 +263,7 @@ pub fn hot_leg_validation_set_c5(){
     let dhx_inlet_regression_temperature_degc = 
         96.64;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -294,7 +294,7 @@ pub fn hot_leg_validation_set_c6(){
     let dhx_inlet_regression_temperature_degc = 
         101.54;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -322,7 +322,7 @@ pub fn hot_leg_validation_set_c7(){
     let dhx_inlet_regression_temperature_degc = 
         106.58;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -350,7 +350,7 @@ pub fn hot_leg_validation_set_c8(){
     let dhx_inlet_regression_temperature_degc = 
         111.59;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -378,7 +378,7 @@ pub fn hot_leg_validation_set_c9(){
     let dhx_inlet_regression_temperature_degc = 
         115.81;
 
-    hot_leg_insulation_thickness_calibration_validation_test_v1(
+    pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
         experimental_primary_mass_flowrate_kg_per_s, 
         heater_outlet_temperature_degc, 
         dhx_inlet_temperature_set_point_degc, 
@@ -388,7 +388,7 @@ pub fn hot_leg_validation_set_c9(){
 
 
 }
-/// This test attempted to tweak the inner tube nusselt number
+/// This test attempted to tweak the insulation thickness
 /// in order to obtain the correct dhx inlet temperature 
 ///
 /// I follow as the RELAP and SAM model did,
@@ -423,7 +423,7 @@ pub fn hot_leg_validation_set_c9(){
 /// because I have to tune the controller which then tunes the 
 /// insulation thickness
 #[cfg(test)]
-pub fn hot_leg_insulation_thickness_calibration_regression_test_v1(
+pub fn pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
     experimental_primary_mass_flowrate_kg_per_s: f64,
     heater_outlet_temperature_degc: f64,
     dhx_inlet_temperature_set_point_degc: f64,
@@ -761,7 +761,7 @@ pub fn hot_leg_insulation_thickness_calibration_regression_test_v1(
 }
 
 
-/// This test attempted to tweak the inner tube nusselt number
+/// This test attempted to tweak the insulation thickness
 /// in order to obtain the correct dhx inlet temperature 
 ///
 /// I follow as the RELAP and SAM model did,
@@ -794,7 +794,7 @@ pub fn hot_leg_insulation_thickness_calibration_regression_test_v1(
 /// in the correct DHX inlet temperature. At least within 0.5 K 
 /// the regression test temperature should be within 0.05 K
 #[cfg(test)]
-pub fn hot_leg_insulation_thickness_calibration_validation_test_v1(
+pub fn pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
     experimental_primary_mass_flowrate_kg_per_s: f64,
     heater_outlet_temperature_degc: f64,
     dhx_inlet_temperature_set_point_degc: f64,
