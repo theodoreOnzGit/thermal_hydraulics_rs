@@ -485,7 +485,7 @@ pub fn hot_leg_insulation_thickness_calibration_regression_test_v1(
     let mut pipe_26 = new_pipe_26(initial_temperature);
     let mut pipe_25a = new_pipe_25a(initial_temperature);
     let mut static_mixer_21_label_25 = new_static_mixer_21_label_25(initial_temperature);
-    // after this is component 24
+    // after this is component 24 (dhx sthe)
     // create the heat transfer interaction 
     let average_therminol_density = 
         LiquidMaterial::TherminolVP1.density(
@@ -856,7 +856,7 @@ pub fn hot_leg_insulation_thickness_calibration_validation_test_v1(
     let mut pipe_26 = new_pipe_26(initial_temperature);
     let mut pipe_25a = new_pipe_25a(initial_temperature);
     let mut static_mixer_21_label_25 = new_static_mixer_21_label_25(initial_temperature);
-    // after this is component 24
+    // after this is component 24 (dhx sthe)
     // create the heat transfer interaction 
     let average_therminol_density = 
         LiquidMaterial::TherminolVP1.density(
