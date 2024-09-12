@@ -119,7 +119,7 @@ pub fn new_dhx_sthe_version_1(initial_temperature: ThermodynamicTemperature
     // insulation side, accounts for parasitic heat loss
     let insulation_material = SolidMaterial::Fiberglass;
     let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(21.67);
-    let heat_transfer_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(6.0);
+    let heat_transfer_to_ambient = HeatTransfer::new::<watt_per_square_meter_kelvin>(20.0);
     // for heat losses, I use the same Gnielinksi correlation 
     // for estimation
     let shell_side_nusselt_correlation_to_outer_shell = 

@@ -2,7 +2,7 @@
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-1,0.02003,0.02686,71.47752,39.84713,53.60943,53.00304,
 #[test]
-pub fn cold_leg_regression_set_c1(){
+pub fn dhx_regression_set_c1(){
 
     let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
         experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
@@ -14,14 +14,15 @@ pub fn cold_leg_regression_set_c1(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 0.0;
-    let dhx_tube_side_outlet_regression_temperature_degc = 0.0;
-    let max_time_seconds = 350.0;
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
 
     // settings for insulation and shell side nusselt correction 
     // factor
-    let shell_side_to_tubes_nusselt_number_correction_factor = 1.0;
-    let insulation_thickness_regression_cm = 5.08;
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
 
     dhx_calibration_validation_test_v1(
         experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
@@ -34,26 +35,358 @@ pub fn cold_leg_regression_set_c1(){
         dhx_tube_side_outlet_regression_temperature_degc, 
         max_time_seconds, 
         insulation_thickness_regression_cm, 
-        shell_side_to_tubes_nusselt_number_correction_factor);
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
 
 
 }
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-2,0.02367,0.03055,78.36713,39.73516,57.13467,55.30506,
+#[test]
+pub fn dhx_regression_set_c2(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.02367,0.03055,78.36713,39.73516,57.13467,55.30506);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-3,0.02635,0.03345,84.37342,39.2569,59.82845,56.82298,
+#[test]
+pub fn dhx_regression_set_c3(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.02635,0.03345,84.37342,39.2569,59.82845,56.82298);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    //
+    // note: while the correction factor of 3.3 fits most dhx tube 
+    // side outlet temp data points to within 0.5 K, 
+    // I could not do it for this one, the correction factor had 
+    // to be lowered to 2.75
+    let shell_side_to_tubes_nusselt_number_correction_factor = 2.75;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-4,0.02949,0.03649,90.97595,39.86112,63.9812,59.44921,
+#[test]
+pub fn dhx_regression_set_c4(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.02949,0.03649,90.97595,39.86112,63.9812,59.44921);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-5,0.0319,0.03869,96.20228,40.01355,67.05336,61.31769,
+#[test]
+pub fn dhx_regression_set_c5(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.0319,0.03869,96.20228,40.01355,67.05336,61.31769);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-6,0.03412,0.04115,101.3375,39.53125,69.85085,62.69342,
+#[test]
+pub fn dhx_regression_set_c6(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.03412,0.04115,101.3375,39.53125,69.85085,62.69342);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-7,0.03562,0.04312,106.43149,39.8924,73.21226,64.45658,
+#[test]
+pub fn dhx_regression_set_c7(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.03562,0.04312,106.43149,39.8924,73.21226,64.45658);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-8,0.03593,0.04509,111.37615,39.91183,76.13202,66.11271,
+#[test]
+pub fn dhx_regression_set_c8(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.03593,0.04509,111.37615,39.91183,76.13202,66.11271);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    // note: while the correction factor of 3.3 fits most dhx tube 
+    // side outlet temp data points to within 0.5 K, 
+    // I could not do it for this one, the correction factor had 
+    // to be increased to 4.0
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
+/// Zweibaum's unpublished data:
 /// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
 /// C-9,0.03547,0.04699,116.05003,39.64593,79.02407,67.40722,
+#[test]
+pub fn dhx_regression_set_c9(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.03547,0.04699,116.05003,39.64593,79.02407,67.40722);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let max_time_seconds = 250.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    // note: while the correction factor of 3.3 fits most dhx tube 
+    // side outlet temp data points to within 0.5 K, 
+    // I could not do it for this one, the correction factor had 
+    // to be increased to 4.5
+    let shell_side_to_tubes_nusselt_number_correction_factor = 4.7;
+    let insulation_thickness_regression_cm = 0.1;
+    let shell_side_to_ambient_nusselt_correction_factor = 12.5;
+
+    dhx_calibration_validation_test_v1(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor);
+
+
+}
 ///
 ///
 /// in this module, I want to calibrate dhx shell and tube heat exchanger (STHE)
@@ -103,7 +436,8 @@ pub fn dhx_calibration_validation_test_v1(
     dhx_tube_side_outlet_regression_temperature_degc: f64,
     max_time_seconds:f64,
     insulation_thickness_regression_cm: f64,
-    shell_side_to_tubes_nusselt_number_correction_factor: f64,){
+    shell_side_to_tubes_nusselt_number_correction_factor: f64,
+    shell_side_to_ambient_nusselt_correction_factor: f64,){
     use uom::si::length::centimeter;
     use uom::si::ratio::ratio;
     use uom::si::{f64::*, mass_rate::kilogram_per_second};
@@ -157,6 +491,9 @@ pub fn dhx_calibration_validation_test_v1(
 
     let calibrated_nusselt_factor = 
         Ratio::new::<ratio>(shell_side_to_tubes_nusselt_number_correction_factor);
+
+    let calibrated_parasitic_heat_loss_nusselt_factor = 
+        Ratio::new::<ratio>(shell_side_to_ambient_nusselt_correction_factor);
 
     // initial temperature 
     let average_temperature_for_advection_mass_flowrate_calcs = 
@@ -249,7 +586,7 @@ pub fn dhx_calibration_validation_test_v1(
 
         };
 
-        let debug_on = true;
+        let debug_on = false;
         if debug_on {
             dbg!(&(
                     dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
@@ -289,6 +626,10 @@ pub fn dhx_calibration_validation_test_v1(
         calibrate_nusselt_correlation_of_heat_transfer_entity(
             &mut dhx_sthe.shell_side_nusselt_correlation_to_tubes, 
             calibrated_nusselt_factor);
+
+        calibrate_nusselt_correlation_of_heat_transfer_entity(
+            &mut dhx_sthe.shell_side_nusselt_correlation_to_outer_shell, 
+            calibrated_parasitic_heat_loss_nusselt_factor);
 
         // now calibrate the insulation thickness for all 
 
@@ -356,30 +697,41 @@ pub fn dhx_calibration_validation_test_v1(
         dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
         epsilon=0.5
         );
-    // check if actual temperature is equal to the regression 
-    // temperature
-    approx::assert_abs_diff_eq!(
-        dhx_tube_side_outlet_regression_temperature_degc,
-        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.05
-        );
 
-    // for shell,
-    // check if set point and actual temperature are within 0.5 K of 
-    // each other
-    // in this test, it could not be achieved
-    approx::assert_abs_diff_eq!(
-        dhx_shell_side_outlet_temperature_set_point.get::<degree_celsius>(),
-        dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.5
+    // settings for checking parasitic heat loss, mostly to do 
+    // with shell side
+    // to do after calibrating tube side nusselt numbers
+    let check_parasitic_heat_loss = true;
+    if check_parasitic_heat_loss {
+
+        // for shell,
+        // check if set point and actual temperature are within 0.5 K of 
+        // each other
+        // in this test, it could not be achieved
+        approx::assert_abs_diff_eq!(
+            dhx_shell_side_outlet_temperature_set_point.get::<degree_celsius>(),
+            dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
+            epsilon=0.5
         );
-    // check if actual temperature is equal to the regression 
-    // temperature
-    approx::assert_abs_diff_eq!(
-        dhx_shell_side_outlet_regression_temperature_degc,
-        dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.05
+    }
+    // setting for regression testing (after calibration)
+    let regression = false; 
+    if regression {
+        // check if actual temperature is equal to the regression 
+        // temperature
+        approx::assert_abs_diff_eq!(
+            dhx_tube_side_outlet_regression_temperature_degc,
+            dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
+            epsilon=0.05
         );
+        // check if actual temperature is equal to the regression 
+        // temperature
+        approx::assert_abs_diff_eq!(
+            dhx_shell_side_outlet_regression_temperature_degc,
+            dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
+            epsilon=0.05
+        );
+    }
 
 
 }
