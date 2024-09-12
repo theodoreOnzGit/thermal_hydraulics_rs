@@ -219,7 +219,32 @@ pub fn hot_leg_validation_set_c3(){
 
 
 }
+// dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
+// C-4,0.02949,94.71628,90.97595,63.9812,60.83029,
+#[test]
+pub fn hot_leg_validation_set_c4(){
 
+    let (experimental_primary_mass_flowrate_kg_per_s,
+        heater_outlet_temperature_degc,
+        dhx_inlet_temperature_set_point_degc) =
+        (0.02949,94.71628,90.97595);
+    let max_time_seconds = 500.0;
+    // temperatures are validated to within 0.5 K
+    let insulation_thickness_cm_for_regression_testing = 0.24;
+
+    let dhx_inlet_regression_temperature_degc = 
+        90.98;
+
+    hot_leg_insulation_thickness_calibration_validation_test_v1(
+        experimental_primary_mass_flowrate_kg_per_s, 
+        heater_outlet_temperature_degc, 
+        dhx_inlet_temperature_set_point_degc, 
+        dhx_inlet_regression_temperature_degc,
+        max_time_seconds, 
+        insulation_thickness_cm_for_regression_testing);
+
+
+}
 // Based on Set c1 to c4 the average insulation is about 0.2495 cm
 // dataset number,pri loop mass flowrate (kg/s),Heater outlet (DegC),DHX shell top (DegC),DHX shell bottom (DegC),Heater inlet (DegC),
 // C-5,0.0319,100.37023,96.20228,67.05336,64.07406,
