@@ -7,8 +7,8 @@ pub fn cold_leg_regression_set_c1(){
     let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
         experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
         dhx_shell_side_inlet_temp_degc, 
-        dhx_shell_side_outlet_temp_set_point_degc, 
         dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
         dhx_tube_side_outlet_temp_set_point_degc) =
         (0.02003,0.02686,71.47752,39.84713,53.60943,53.00304);
 
@@ -16,7 +16,7 @@ pub fn cold_leg_regression_set_c1(){
     // regression performed to within 0.05K
     let dhx_shell_side_outlet_regression_temperature_degc = 0.0;
     let dhx_tube_side_outlet_regression_temperature_degc = 0.0;
-    let max_time_seconds = 500.0;
+    let max_time_seconds = 350.0;
 
     // settings for insulation and shell side nusselt correction 
     // factor
@@ -248,7 +248,14 @@ pub fn dhx_calibration_validation_test_v1(
             dhx_tube_fluid_arr_back_single_cv_temperature
 
         };
-        //dbg!(&dhx_inlet_actual_temperature.get::<degree_celsius>());
+
+        let debug_on = true;
+        if debug_on {
+            dbg!(&(
+                    dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
+                    dhx_tube_outlet_actual_temperature.get::<degree_celsius>()
+            ));
+        }
         
         // calibrate shell side fluid array to tubes nusselt number correlation 
 
@@ -304,7 +311,7 @@ pub fn dhx_calibration_validation_test_v1(
             tube_side_advection_heat_transfer_interaction)
             .unwrap();
 
-        dhx_sthe.tube_side_fluid_array_for_single_tube.link_to_front(
+        dhx_sthe.tube_side_fluid_array_for_single_tube.link_to_back(
             &mut dhx_tube_outlet_bc, 
             tube_side_advection_heat_transfer_interaction)
             .unwrap();
@@ -337,6 +344,25 @@ pub fn dhx_calibration_validation_test_v1(
             shell_side_to_tubes_nusselt_number_correction_factor
             )
         );
+    // for calibration, calibrate tube side first, 
+    // then shell side,
+
+    // for tube,
+    // check if set point and actual temperature are within 0.5 K of 
+    // each other
+    // in this test, it could not be achieved
+    approx::assert_abs_diff_eq!(
+        dhx_tube_side_outlet_temp_set_point_degc,
+        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
+        epsilon=0.5
+        );
+    // check if actual temperature is equal to the regression 
+    // temperature
+    approx::assert_abs_diff_eq!(
+        dhx_tube_side_outlet_regression_temperature_degc,
+        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
+        epsilon=0.05
+        );
 
     // for shell,
     // check if set point and actual temperature are within 0.5 K of 
@@ -352,22 +378,6 @@ pub fn dhx_calibration_validation_test_v1(
     approx::assert_abs_diff_eq!(
         dhx_shell_side_outlet_regression_temperature_degc,
         dhx_shell_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.05
-        );
-    // for tube,
-    // check if set point and actual temperature are within 0.5 K of 
-    // each other
-    // in this test, it could not be achieved
-    approx::assert_abs_diff_eq!(
-        dhx_tube_side_outlet_temp_set_point_degc,
-        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.5
-        );
-    // check if actual temperature is equal to the regression 
-    // temperature
-    approx::assert_abs_diff_eq!(
-        dhx_tube_side_outlet_regression_temperature_degc,
-        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
         epsilon=0.05
         );
 
