@@ -50,7 +50,7 @@ pub mod primary_loop_parasitic_heat_loss_calibration;
 
 
 /// Zweibaum's unpublished data:
-/// dataset number,pri loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
+/// dataset number,dracs loop mass flowrate (kg/s),DHX tube top (outlet) (DegC),TCHX inlet (DegC),TCHX outlet(DegC),DHX tube bottom (DegC),
 /// C-1,0.02686,53.00304,51.79332,40.42208,39.84713,
 /// C-2,0.03055,55.30506,54.27495,40.25559,39.73516,
 /// C-3,0.03345,56.82298,55.83001,39.74061,39.2569,
@@ -61,3 +61,33 @@ pub mod primary_loop_parasitic_heat_loss_calibration;
 /// C-8,0.04509,66.11271,65.13191,40.14256,39.91183,
 /// C-9,0.04699,67.40722,66.51369,39.87633,39.64593,
 pub mod dracs_loop_parasitic_heat_loss_calibration;
+
+
+/// in this module, I want to calibrate dhx shell and tube heat exchanger (STHE)
+/// heat transfer and calibration.
+///
+/// on page 13 of Zou's publication
+/// Zou, Ling, Rui Hu, and Anne Charpentier. SAM code 
+/// validation using the compact integral effects test (CIET) 
+/// experimental data. No. ANL/NSE-19/11. Argonne National Lab.(ANL), 
+///
+/// Zou writes that the STHE for the DHX has an underestimated heat transfer 
+/// coefficient rather than an overestimated one as mentioned by Zweibaum,
+/// Zou attributes this to a typo error as increased heat transfer area 
+/// densities were used.
+///
+/// Again set C is used to calibrate the DHX data
+///
+/// pri loop is shell side flowrate, dracs loop is tube side flowrate
+/// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
+/// C-1,0.02003,0.02686,71.47752,39.84713,53.60943,53.00304,
+/// C-2,0.02367,0.03055,78.36713,39.73516,57.13467,55.30506,
+/// C-3,0.02635,0.03345,84.37342,39.2569,59.82845,56.82298,
+/// C-4,0.02949,0.03649,90.97595,39.86112,63.9812,59.44921,
+/// C-5,0.0319,0.03869,96.20228,40.01355,67.05336,61.31769,
+/// C-6,0.03412,0.04115,101.3375,39.53125,69.85085,62.69342,
+/// C-7,0.03562,0.04312,106.43149,39.8924,73.21226,64.45658,
+/// C-8,0.03593,0.04509,111.37615,39.91183,76.13202,66.11271,
+/// C-9,0.03547,0.04699,116.05003,39.64593,79.02407,67.40722,
+/// 
+pub mod dhx_sthe_calibration;
