@@ -81,7 +81,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// by default, the internal diameter of the tube side
     /// assumes that tube side is circular
     #[inline]
-    pub fn get_tube_side_hydraulic_diameter(&self) -> Length {
+    pub fn get_tube_side_hydraulic_diameter_circular_tube(&self) -> Length {
         return self.tube_side_id;
     }
 
@@ -111,6 +111,23 @@ impl SimpleShellAndTubeHeatExchanger {
             = shell_side_fluid_array.get_hydraulic_diameter_immutable();
 
         return hydraulic_diameter;
+    }
+
+    /// returns the effective length of the single pass sthe
+    #[inline]
+    pub fn get_effective_length(&self) -> Length {
+
+
+        // or just take the hydraulic diameter from the 
+        // shell side fluid array 
+        // 
+        let shell_side_fluid_array: FluidArray = 
+            self.shell_side_fluid_array.clone().try_into().unwrap();
+
+        let effective_length: Length 
+            = shell_side_fluid_array.get_component_length_immutable();
+
+        return effective_length;
     }
 
 

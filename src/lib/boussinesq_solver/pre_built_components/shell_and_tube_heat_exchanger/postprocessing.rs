@@ -157,7 +157,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 = pipe_shell_clone.try_get_bulk_temperature()?;
 
             let single_tube_hydraulic_diameter = 
-                self.get_tube_side_hydraulic_diameter();
+                self.get_tube_side_hydraulic_diameter_circular_tube();
             let single_tube_flow_area: Area = 
                 tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
 
@@ -504,7 +504,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
         let single_tube_hydraulic_diameter = 
-            self.get_tube_side_hydraulic_diameter();
+            self.get_tube_side_hydraulic_diameter_circular_tube();
         let single_tube_flow_area: Area = 
             tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
 
@@ -608,7 +608,7 @@ impl SimpleShellAndTubeHeatExchanger {
             = tube_side_single_fluid_array_clone.try_get_bulk_temperature().unwrap();
 
         let single_tube_hydraulic_diameter = 
-            self.get_tube_side_hydraulic_diameter();
+            self.get_tube_side_hydraulic_diameter_circular_tube();
         let single_tube_flow_area: Area = 
             tube_side_single_fluid_array_clone.get_cross_sectional_area_immutable();
 
