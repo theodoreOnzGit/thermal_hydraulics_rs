@@ -58,7 +58,7 @@ impl SimpleShellAndTubeHeatExchanger {
     }
 
 
-    /// assuming sthe insulation is cylindrical,
+    /// assuming sthe outer shell is cylindrical,
     /// get the thermal resistance
     ///
     /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation)
@@ -79,7 +79,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
             let l = self.get_effective_length();
 
-            let lambda_insulation: ThermalConductivity;
+            let lambda_outer_shell: ThermalConductivity;
 
             let mut outer_shell_array_clone: SolidColumn = self.outer_shell
                 .clone()
@@ -97,7 +97,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 .try_into()
                 .unwrap();
 
-            lambda_insulation = 
+            lambda_outer_shell = 
                 outer_shell_array_material
                 .try_get_thermal_conductivity(
                     outer_shell_array_temp
@@ -110,7 +110,59 @@ impl SimpleShellAndTubeHeatExchanger {
                 .ln();
 
             let denominator_term: ThermalConductance = 
-                2.0 * PI * lambda_insulation * l;
+                2.0 * PI * lambda_outer_shell * l;
+
+
+            return Ok(log_numerator_term/denominator_term);
+
+    }
+
+    /// assuming sthe inner tubes are cylindrical parallel tubes,
+    /// get the thermal resistance
+    ///
+    /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation N_t)
+    pub fn get_inner_tubes_cylindrical_thermal_resistance(&self) -> 
+        Result<ThermalResistance, ThermalHydraulicsLibError> {
+
+
+
+            let inner_tube_id = self.tube_side_id;
+            let inner_tube_od = self.tube_side_od;
+
+            let l = self.get_effective_length();
+
+            let lambda_inner_tubes: ThermalConductivity;
+
+            let mut inner_single_tube_array_clone: SolidColumn = self.inner_pipe_shell_array_for_single_tube
+                .clone()
+                .try_into()
+                .unwrap();
+
+            let inner_tube_array_temp: ThermodynamicTemperature = 
+                inner_single_tube_array_clone
+                .try_get_bulk_temperature()
+                .unwrap();
+
+            let inner_tube_array_material: SolidMaterial = 
+                inner_single_tube_array_clone.material_control_volume
+                .clone()
+                .try_into()
+                .unwrap();
+
+            lambda_inner_tubes = 
+                inner_tube_array_material
+                .try_get_thermal_conductivity(
+                    inner_tube_array_temp
+                ).unwrap();
+
+
+            let log_numerator_term: f64 = 
+                (inner_tube_od/inner_tube_id)
+                .get::<ratio>()
+                .ln();
+
+            let denominator_term: ThermalConductance = 
+                2.0 * PI * lambda_inner_tubes * l * self.number_of_tubes as f64;
 
 
             return Ok(log_numerator_term/denominator_term);
