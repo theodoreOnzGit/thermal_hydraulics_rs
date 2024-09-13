@@ -475,7 +475,7 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_a(){
         let _ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
                 correct_for_prandtl_wall_temperatures_u_and_ua).unwrap() * 
-            sthe.tube_bundle_heat_transfer_area_shell_side();
+            sthe.circular_tube_bundle_heat_transfer_area_shell_side();
 
         let u_calc_from_postprocess: HeatTransfer = 
             sthe.overall_heat_transfer_coeff_u_shell_side(

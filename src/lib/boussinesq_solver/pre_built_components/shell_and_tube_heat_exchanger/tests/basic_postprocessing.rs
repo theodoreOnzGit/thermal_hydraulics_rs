@@ -414,7 +414,7 @@ pub fn shell_side_tube_bundle_area_basic_test_shell_and_tube_heat_exchanger(){
 
 
     let shell_side_tube_area: Area = 
-        sthe_one_shell_one_tube.tube_bundle_heat_transfer_area_shell_side();
+        sthe_one_shell_one_tube.circular_tube_bundle_heat_transfer_area_shell_side();
 
     let shell_side_tube_area_m2 = 
         shell_side_tube_area.get::<square_meter>();

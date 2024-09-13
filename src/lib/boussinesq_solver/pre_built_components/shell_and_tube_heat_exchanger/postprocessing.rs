@@ -1138,7 +1138,7 @@ impl SimpleShellAndTubeHeatExchanger {
         //
         // this uses the gnielinski correlation for pipes or tubes
 
-        let nusselt_estimate_shell_side: Ratio;
+        let nusselt_estimate_shell_side_to_outer_shell: Ratio;
 
 
 
@@ -1165,7 +1165,7 @@ impl SimpleShellAndTubeHeatExchanger {
             ).unwrap();
 
 
-        nusselt_estimate_shell_side = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
+        nusselt_estimate_shell_side_to_outer_shell = shell_side_fluid_to_inner_tube_surf_nusselt_correlation.
             estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 bulk_prandtl_number_shell_side, 
                 wall_prandtl_number_estimate,
@@ -1173,13 +1173,15 @@ impl SimpleShellAndTubeHeatExchanger {
                 reynolds_number_shell_side_abs_for_nusselt_estimate).unwrap();
 
 
-        nusselt_estimate_shell_side
+        nusselt_estimate_shell_side_to_outer_shell
 
     }
 
     /// provides the tube bundle side heat transfer area 
     /// on the shell side
-    pub fn tube_bundle_heat_transfer_area_shell_side(&self) -> Area {
+    ///
+    /// assuming the bundle of inner tubes is circular
+    pub fn circular_tube_bundle_heat_transfer_area_shell_side(&self) -> Area {
 
         let n_t = self.number_of_tubes;
         let pipe_shell_clone: SolidColumn = 

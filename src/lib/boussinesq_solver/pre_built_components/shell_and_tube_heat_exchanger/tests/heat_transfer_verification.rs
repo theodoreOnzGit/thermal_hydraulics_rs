@@ -389,7 +389,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
             correct_for_prandtl_wall_temperatures).unwrap() * 
-            sthe.tube_bundle_heat_transfer_area_shell_side();
+            sthe.circular_tube_bundle_heat_transfer_area_shell_side();
 
         // shell side outlet temperature 
         let shell_side_outlet_temperature: ThermodynamicTemperature = {
@@ -987,7 +987,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
         let ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
             correct_for_prandtl_wall_temperatures).unwrap() * 
-            sthe.tube_bundle_heat_transfer_area_shell_side();
+            sthe.circular_tube_bundle_heat_transfer_area_shell_side();
 
         // shell side outlet temperature 
         let shell_side_outlet_temperature: ThermodynamicTemperature = {
@@ -1588,7 +1588,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
         let ua: ThermalConductance 
             = sthe.overall_heat_transfer_coeff_u_shell_side(
             correct_for_prandtl_wall_temperatures).unwrap() * 
-            sthe.tube_bundle_heat_transfer_area_shell_side();
+            sthe.circular_tube_bundle_heat_transfer_area_shell_side();
 
         // shell side outlet temperature and inlet cv temperature
         let (shell_side_inlet_cv_temperature, 
