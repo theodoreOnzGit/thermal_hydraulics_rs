@@ -260,6 +260,9 @@ pub mod postprocessing;
 /// type conversion, such as into fluid component and such
 pub mod type_conversion;
 
+/// functions to help calibrate the shell and tube heat exchanger 
+pub mod calibration;
+
 
 /// verification and validation tests for parallel tubing
 /// as well as constructors
