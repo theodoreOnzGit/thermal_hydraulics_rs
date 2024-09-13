@@ -704,18 +704,8 @@ pub fn dhx_calibration_validation_test_v1(
             shell_side_bulk_prandtl,
             inner_tube_wall_prandtl,
             nusselt_number_shell_side_to_tubes
-            )
-        );
-
-    approx::assert_abs_diff_eq!(
-        dhx_tube_side_outlet_temp_set_point_degc,
-        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
-        epsilon=0.5
-        );
-
-    // settings for checking parasitic heat loss, mostly to do 
-    // with shell side
-    // to do after calibrating tube side nusselt numbers
+    )
+    );
     let outer_tube_wall_prandtl = dhx_sthe.wall_prandtl_number_shell_side_fluid_for_outer_tube();
     let nusselt_number_shell_side_to_outer_shell = dhx_sthe.nusselt_to_outer_shell();
 
@@ -726,6 +716,16 @@ pub fn dhx_calibration_validation_test_v1(
             nusselt_number_shell_side_to_outer_shell
     )
     );
+
+    approx::assert_abs_diff_eq!(
+        dhx_tube_side_outlet_temp_set_point_degc,
+        dhx_tube_outlet_actual_temperature.get::<degree_celsius>(),
+        epsilon=0.5
+        );
+
+    // settings for checking parasitic heat loss, mostly to do 
+    // with shell side
+    // to do after calibrating tube side nusselt numbers
     let check_parasitic_heat_loss = false;
     if check_parasitic_heat_loss {
 
