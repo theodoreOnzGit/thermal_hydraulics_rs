@@ -12,8 +12,16 @@ impl SimpleShellAndTubeHeatExchanger {
     /// get the thermal resistance
     ///
     /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation)
-    pub fn get_insulation_cylindrical_thermal_resistance(&self) -> ThermalResistance {
+    pub fn try_get_insulation_cylindrical_thermal_resistance(&self) -> 
+        Result<ThermalResistance, ThermalHydraulicsLibError> {
 
+        if !self.heat_exchanger_has_insulation {
+
+            // thermal resistance is not implemented if we don't have 
+            // insulation,
+            // probably want to have a nicer error for this in future
+            todo!();
+        }
         let insulation_id = self.shell_side_od;
         let insulation_od = insulation_id + 2.0*self.insulation_thickness;
 
@@ -53,7 +61,7 @@ impl SimpleShellAndTubeHeatExchanger {
             2.0 * PI * lambda_insulation * l;
 
 
-        return log_numerator_term/denominator_term;
+        return Ok(log_numerator_term/denominator_term);
 
     }
 
@@ -63,16 +71,9 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation)
     pub fn get_outer_shell_cylindrical_thermal_resistance(&self) -> 
-        Result<ThermalResistance, ThermalHydraulicsLibError> {
+        ThermalResistance {
 
 
-            if !self.heat_exchanger_has_insulation {
-
-                // thermal resistance is not implemented if we don't have 
-                // insulation,
-                // probably want to have a nicer error for this in future
-                todo!();
-            }
 
             let outer_shell_id = self.shell_side_id;
             let outer_shell_od = self.shell_side_od;
@@ -113,7 +114,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 2.0 * PI * lambda_outer_shell * l;
 
 
-            return Ok(log_numerator_term/denominator_term);
+            log_numerator_term/denominator_term
 
     }
 
@@ -122,7 +123,7 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation N_t)
     pub fn get_inner_tubes_cylindrical_thermal_resistance(&self) -> 
-        Result<ThermalResistance, ThermalHydraulicsLibError> {
+        ThermalResistance {
 
 
 
@@ -165,7 +166,34 @@ impl SimpleShellAndTubeHeatExchanger {
                 2.0 * PI * lambda_inner_tubes * l * self.number_of_tubes as f64;
 
 
-            return Ok(log_numerator_term/denominator_term);
+            log_numerator_term/denominator_term
 
     }
+
+
+    /// assuming the outer shell or insulation is cylindrical,
+    /// get the convective thermal resistance to ambient
+    #[inline]
+    pub fn get_thermal_resistance_to_ambient(&self) -> ThermalResistance {
+
+        let mut od = self.shell_side_od;
+
+        if self.heat_exchanger_has_insulation {
+
+            let id = self.shell_side_od;
+            od = id + 2.0*self.insulation_thickness;
+        }
+
+        // now let's get the area 
+        // pi * od * L 
+
+        let outermost_heat_transfer_area: Area
+            = PI * od * self.get_effective_length();
+
+        let conductance_to_ambient: ThermalConductance 
+            = self.heat_transfer_to_ambient * outermost_heat_transfer_area;
+        conductance_to_ambient.recip()
+
+    }
+
 }
