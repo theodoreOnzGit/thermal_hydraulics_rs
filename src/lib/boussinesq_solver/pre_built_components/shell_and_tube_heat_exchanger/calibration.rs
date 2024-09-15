@@ -262,7 +262,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// for single_tube, heat transfer area = P_w * l
     /// for all tubes, heat_transfer_area = P_w * l * N_t
     #[inline] 
-    pub fn get_shell_side_thermal_resistance(
+    pub fn get_shell_side_thermal_resistance_cylindrical(
         &self) -> ThermalResistance {
 
         let mut shell_side_fluid_arr_clone: FluidArray = 
@@ -308,8 +308,65 @@ impl SimpleShellAndTubeHeatExchanger {
             hydraulic_diameter_shell_side;
 
 
-        // 1/(h_t A_t)
+        // 1/(h_s A_s)
         (h_s * area_shell_side_total).recip()
+
+    }
+    /// get shell side thermal resistance assuming cylindrical tubing
+    /// for circle, P_w = pi * d_o
+    ///
+    /// for single_tube, heat transfer area = P_w * l
+    /// for all tubes, heat_transfer_area = P_w * l * N_t
+    /// assumes cylindrical shell
+    #[inline] 
+    pub fn get_shell_side_parasitic_thermal_resistance_cylindrical(
+        &self) -> ThermalResistance {
+
+        let mut shell_side_fluid_arr_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().
+            try_into().unwrap();
+
+        let shell_length: Length = 
+            shell_side_fluid_arr_clone.
+            get_component_length();
+
+        let wetted_perimeter: Length = PI * self.shell_side_id;
+
+        let single_tube_heat_trf_area: Area = 
+            wetted_perimeter * shell_length;
+
+        let area_shell_side_total: Area = 
+            single_tube_heat_trf_area * self.number_of_tubes as f64;
+
+        let parasitic_nusselt_number: Ratio = 
+            self.nusselt_number_shell_side_parasitic();
+
+        // get h_parasitic
+        // Nu_parasitic = h_parasitic * D_e/lambda_s
+        // lambda_s = thermal conductivity
+        let shell_side_temperature: ThermodynamicTemperature = 
+            shell_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+
+        let shell_fluid_material: LiquidMaterial
+            = shell_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let thermal_conductivity_shell_side_fluid: ThermalConductivity = 
+            shell_fluid_material.try_get_thermal_conductivity(
+                shell_side_temperature).unwrap();
+
+        let hydraulic_diameter_shell_side: Length 
+            = shell_side_fluid_arr_clone.
+            get_hydraulic_diameter_immutable();
+
+        let h_parasitic: HeatTransfer = 
+            parasitic_nusselt_number * thermal_conductivity_shell_side_fluid / 
+            hydraulic_diameter_shell_side;
+
+
+        // 1/(h_parasitic A_outer)
+        (h_parasitic * area_shell_side_total).recip()
 
     }
 

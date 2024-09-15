@@ -1054,7 +1054,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
     /// provides nusselt number to outer shell 
     #[inline]
-    pub fn nusselt_to_outer_shell(&self) -> Ratio {
+    pub fn nusselt_number_shell_side_parasitic(&self) -> Ratio {
 
 
 

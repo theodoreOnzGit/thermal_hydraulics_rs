@@ -707,7 +707,7 @@ pub fn dhx_calibration_validation_test_v1(
     )
     );
     let outer_tube_wall_prandtl = dhx_sthe.wall_prandtl_number_shell_side_fluid_for_outer_tube();
-    let nusselt_number_shell_side_to_outer_shell = dhx_sthe.nusselt_to_outer_shell();
+    let nusselt_number_shell_side_to_outer_shell = dhx_sthe.nusselt_number_shell_side_parasitic();
 
     dbg!(&(
             shell_side_reynolds,
