@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use uom::si::{f64::*, ratio::ratio};
 
-use crate::{prelude::beta_testing::{SolidColumn, SolidMaterial}, thermal_hydraulics_error::ThermalHydraulicsLibError};
+use crate::{prelude::beta_testing::{FluidArray, LiquidMaterial, SolidColumn, SolidMaterial}, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
 use super::SimpleShellAndTubeHeatExchanger;
 
@@ -57,13 +57,13 @@ impl SimpleShellAndTubeHeatExchanger {
             .get::<ratio>()
             .ln();
 
-        let denominator_term: ThermalConductance = 
-            2.0 * PI * lambda_insulation * l;
+            let denominator_term: ThermalConductance = 
+                2.0 * PI * lambda_insulation * l;
 
 
-        return Ok(log_numerator_term/denominator_term);
+            return Ok(log_numerator_term/denominator_term);
 
-    }
+        }
 
 
     /// assuming sthe outer shell is cylindrical,
@@ -124,8 +124,6 @@ impl SimpleShellAndTubeHeatExchanger {
     /// ln (d_o/d_i) * 1/(2 pi L lambda_insulation N_t)
     pub fn get_inner_tubes_cylindrical_thermal_resistance(&self) -> 
         ThermalResistance {
-
-
 
             let inner_tube_id = self.tube_side_id;
             let inner_tube_od = self.tube_side_od;
@@ -193,6 +191,125 @@ impl SimpleShellAndTubeHeatExchanger {
         let conductance_to_ambient: ThermalConductance 
             = self.heat_transfer_to_ambient * outermost_heat_transfer_area;
         conductance_to_ambient.recip()
+
+    }
+
+    /// get inner tube thermal resistance using wetted perimeter 
+    /// d_h = 4A_xs/P_w 
+    /// P_w = 4A_xs/d_h
+    /// 
+    /// for circle, P_w = pi * D
+    ///
+    /// for single_tube, heat transfer area = P_w * l
+    #[inline] 
+    pub fn get_inner_tubes_thermal_resistance_based_on_wetted_perimeter(
+        &self) -> ThermalResistance {
+
+        let mut fluid_arr_clone_for_single_inner_tube: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().
+            try_into().unwrap();
+
+        let hydraulic_diameter: Length = 
+            fluid_arr_clone_for_single_inner_tube.
+            get_hydraulic_diameter_immutable();
+
+        let flow_area: Area = 
+            fluid_arr_clone_for_single_inner_tube.
+            get_cross_sectional_area_immutable();
+
+        let tube_length: Length = 
+            fluid_arr_clone_for_single_inner_tube.
+            get_component_length();
+
+        let wetted_perimeter: Length = flow_area/hydraulic_diameter;
+
+        let single_tube_heat_trf_area: Area = 
+            wetted_perimeter * tube_length;
+
+        let area_tube_side_total: Area = 
+            single_tube_heat_trf_area * self.number_of_tubes as f64;
+
+        let nusselt_tube_side: Ratio = 
+            self.nusselt_tube_side();
+
+        // get h_t
+        // Nu_t = h_t * d_t/lambda_t
+        // lambda_t = thermal conductivity
+        let tube_side_temperature: ThermodynamicTemperature = 
+            fluid_arr_clone_for_single_inner_tube.
+            try_get_bulk_temperature().unwrap();
+
+
+        let tube_fluid_material: LiquidMaterial
+            = fluid_arr_clone_for_single_inner_tube.material_control_volume.try_into().unwrap();
+
+        let thermal_conductivity_tube_side_fluid: ThermalConductivity = 
+            tube_fluid_material.try_get_thermal_conductivity(
+                tube_side_temperature).unwrap();
+
+        let h_t: HeatTransfer = 
+            nusselt_tube_side * thermal_conductivity_tube_side_fluid / 
+            hydraulic_diameter;
+
+
+        // 1/(h_t A_t)
+        (h_t * area_tube_side_total).recip()
+
+    }
+    /// get shell side thermal resistance assuming cylindrical tubing
+    /// for circle, P_w = pi * d_o
+    ///
+    /// for single_tube, heat transfer area = P_w * l
+    /// for all tubes, heat_transfer_area = P_w * l * N_t
+    #[inline] 
+    pub fn get_shell_side_thermal_resistance(
+        &self) -> ThermalResistance {
+
+        let mut shell_side_fluid_arr_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().
+            try_into().unwrap();
+
+        let shell_length: Length = 
+            shell_side_fluid_arr_clone.
+            get_component_length();
+
+        let wetted_perimeter: Length = PI * self.tube_side_od;
+
+        let single_tube_heat_trf_area: Area = 
+            wetted_perimeter * shell_length;
+
+        let area_shell_side_total: Area = 
+            single_tube_heat_trf_area * self.number_of_tubes as f64;
+
+        let nusselt_shell_side: Ratio = 
+            self.nusselt_number_shell_side_to_tubes();
+
+        // get h_s
+        // Nu_s = h_s * D_e/lambda_s
+        // lambda_s = thermal conductivity
+        let shell_side_temperature: ThermodynamicTemperature = 
+            shell_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+
+        let shell_fluid_material: LiquidMaterial
+            = shell_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let thermal_conductivity_shell_side_fluid: ThermalConductivity = 
+            shell_fluid_material.try_get_thermal_conductivity(
+                shell_side_temperature).unwrap();
+
+        let hydraulic_diameter_shell_side: Length 
+            = shell_side_fluid_arr_clone.
+            get_hydraulic_diameter_immutable();
+
+        let h_s: HeatTransfer = 
+            nusselt_shell_side * thermal_conductivity_shell_side_fluid / 
+            hydraulic_diameter_shell_side;
+
+
+        // 1/(h_t A_t)
+        (h_s * area_shell_side_total).recip()
 
     }
 
