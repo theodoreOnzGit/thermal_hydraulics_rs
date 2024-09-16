@@ -635,4 +635,57 @@ impl SimpleShellAndTubeHeatExchanger {
 
     }
 
+    /// obtain shell side Nusselt number based on prevailing flowrates 
+    #[inline]
+    pub fn obtain_shell_side_nusselt_number_based_on_expt_data(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        mass_flowrate: MassRate,
+        is_counter_current: bool) -> Ratio {
+
+        let overall_ua: ThermalConductance = 
+            self.get_ua_based_on_mass_flowrates_and_temperature_differences(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate, 
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                mass_flowrate, 
+                is_counter_current);
+
+        let overall_thermal_resistance = overall_ua.recip();
+
+        // 1/(h_s A_s)
+        let shell_side_thermal_resistance_expt_data = 
+            overall_thermal_resistance
+            - self.get_inner_tubes_thermal_resistance_based_on_wetted_perimeter()
+            - self.get_inner_tubes_cylindrical_thermal_resistance();
+
+        // A_s 
+        let total_area_shell_side = 
+            self.circular_tube_bundle_heat_transfer_area_shell_side();
+
+        // 1/(h_s) = A_s * 1/(hs_A_s)
+        // take reciprocal then
+        // h_s
+        let h_s: HeatTransfer = 
+            (shell_side_thermal_resistance_expt_data*total_area_shell_side).recip();
+
+        let shell_side_fluid_hydraulic_diameter =
+            self.get_shell_side_hydraulic_diameter();
+
+        let expt_nusselt_number_shell_side: Ratio = 
+            h_s * shell_side_fluid_hydraulic_diameter/
+            self.get_shell_side_fluid_thermal_conductivity();
+
+        expt_nusselt_number_shell_side
+
+
+    }
+
+
 }

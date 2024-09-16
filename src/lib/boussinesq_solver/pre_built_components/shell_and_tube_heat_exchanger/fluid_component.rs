@@ -3,6 +3,7 @@ use uom::si::f64::*;
 use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
+use crate::prelude::beta_testing::LiquidMaterial;
 
 use super::SimpleShellAndTubeHeatExchanger;
 
@@ -147,6 +148,31 @@ impl SimpleShellAndTubeHeatExchanger {
             = shell_side_fluid_array.get_cross_sectional_area_immutable();
 
         return shell_side_xs_area;
+    }
+
+    /// returns shell side thermal conductivity 
+    pub fn get_shell_side_fluid_thermal_conductivity(&self) -> ThermalConductivity {
+
+        let mut shell_side_fluid_arr_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().
+            try_into().unwrap();
+
+        // get h_parasitic
+        // Nu_parasitic = h_parasitic * D_e/lambda_s
+        // lambda_s = thermal conductivity
+        let shell_side_temperature: ThermodynamicTemperature = 
+            shell_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+
+        let shell_fluid_material: LiquidMaterial
+            = shell_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let thermal_conductivity_shell_side_fluid: ThermalConductivity = 
+            shell_fluid_material.try_get_thermal_conductivity(
+                shell_side_temperature).unwrap();
+
+        thermal_conductivity_shell_side_fluid
     }
 
 }
