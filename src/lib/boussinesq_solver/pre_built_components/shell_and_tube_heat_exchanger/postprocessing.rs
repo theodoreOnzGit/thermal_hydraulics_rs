@@ -1199,6 +1199,29 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
     }
+    /// provides the tube bundle side heat transfer area 
+    /// on the shell side
+    ///
+    /// assuming the bundle of inner tubes is circular
+    pub fn circular_tube_bundle_heat_transfer_area_tube_side(&self) -> Area {
+
+        let n_t = self.number_of_tubes;
+        let pipe_shell_clone: SolidColumn = 
+            self.inner_pipe_shell_array_for_single_tube.
+            clone().try_into().unwrap();
+
+        let l = pipe_shell_clone.get_component_length();
+
+        let d_i = self.tube_side_id;
+
+        let tube_side_area: Area = 
+            n_t as f64 * PI * d_i * l;
+
+        return tube_side_area;
+
+
+    }
+
 
 
 }

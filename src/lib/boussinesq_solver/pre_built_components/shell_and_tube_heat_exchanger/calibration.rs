@@ -540,20 +540,20 @@ impl SimpleShellAndTubeHeatExchanger {
         tube_mass_flowrate: MassRate,
         shell_inlet_temperature: ThermodynamicTemperature,
         shell_outlet_temeprature: ThermodynamicTemperature,
-        mass_flowrate: MassRate,
+        shell_mass_flowrate: MassRate,
         is_counter_current: bool) -> ThermalConductance {
 
         let tube_side_heat_rate: Power = 
             self.get_tube_side_heat_rate_based_on_mass_flowrate(
                 tube_inlet_temperature, 
                 tube_outlet_temeprature, 
-                mass_flowrate);
+                tube_mass_flowrate);
 
         let shell_side_heat_rate: Power = 
             self.get_shell_side_heat_rate_based_on_mass_flowrate(
                 shell_inlet_temperature, 
                 shell_outlet_temeprature, 
-                mass_flowrate);
+                shell_mass_flowrate);
 
         // get the smaller of the two, because there is likely to 
         // be parasitic heat loss 
@@ -644,7 +644,7 @@ impl SimpleShellAndTubeHeatExchanger {
         tube_mass_flowrate: MassRate,
         shell_inlet_temperature: ThermodynamicTemperature,
         shell_outlet_temeprature: ThermodynamicTemperature,
-        mass_flowrate: MassRate,
+        shell_mass_flowrate: MassRate,
         is_counter_current: bool) -> Ratio {
 
         let overall_ua: ThermalConductance = 
@@ -654,7 +654,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 tube_mass_flowrate, 
                 shell_inlet_temperature, 
                 shell_outlet_temeprature, 
-                mass_flowrate, 
+                shell_mass_flowrate, 
                 is_counter_current);
 
         let overall_thermal_resistance = overall_ua.recip();
@@ -683,6 +683,143 @@ impl SimpleShellAndTubeHeatExchanger {
             self.get_shell_side_fluid_thermal_conductivity();
 
         expt_nusselt_number_shell_side
+
+
+    }
+
+    /// obtain tube side nusselt number based on prevailing flowrates
+    /// existing nusselt number correlation at the shell side
+    /// and assuming tubes in the bundle are cylindrical
+    /// outside and inside
+    #[inline]
+    pub fn obtain_tube_side_nusselt_number_based_on_expt_data(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        shell_mass_flowrate: MassRate,
+        is_counter_current: bool) -> Ratio {
+
+        let overall_ua: ThermalConductance = 
+            self.get_ua_based_on_mass_flowrates_and_temperature_differences(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate, 
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                shell_mass_flowrate, 
+                is_counter_current);
+
+        let overall_thermal_resistance = overall_ua.recip();
+
+        // 1/(h_t A_t)
+        let tube_side_thermal_resistance_expt_data = 
+            overall_thermal_resistance
+            - self.get_shell_side_thermal_resistance_cylindrical()
+            - self.get_inner_tubes_cylindrical_thermal_resistance();
+
+        // A_s 
+        let total_area_tube_side = 
+            self.circular_tube_bundle_heat_transfer_area_shell_side();
+
+        // 1/(h_t) = A_t * 1/(ht_A_t)
+        // take reciprocal then
+        // h_t
+        let h_t: HeatTransfer = 
+            (tube_side_thermal_resistance_expt_data*total_area_tube_side).recip();
+
+        let tube_side_fluid_hydraulic_diameter =
+            self.tube_side_id;
+
+        let expt_nusselt_number_tube_side: Ratio = 
+            h_t * tube_side_fluid_hydraulic_diameter/
+            self.get_shell_side_fluid_thermal_conductivity();
+
+        expt_nusselt_number_tube_side
+
+
+    }
+
+    /// obtain parasitic heat loss nusselt number 
+    /// based on experimental data
+    ///
+    /// 1/(U A) = R_conv_parasitic + 1/(h_ambient A_ambient) + R_insulation + R_outer_shell
+    ///
+    /// ambient temperature is based on existing ambient temperature of 
+    /// the STHE
+    #[inline]
+    pub fn obtain_parasitic_nusselt_number_based_on_expt_data(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        shell_mass_flowrate: MassRate) -> Ratio {
+
+
+        let shell_side_heat_rate: Power = 
+            self.get_shell_side_heat_rate_based_on_mass_flowrate(
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                shell_mass_flowrate);
+
+        let tube_side_heat_rate: Power = 
+            self.get_tube_side_heat_rate_based_on_mass_flowrate(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate);
+
+        // parasitic heat losses are that of the tube side minus shell 
+        // side, anything outside is heat supplied
+        //
+        // but I'll just do that anyway
+        let parasitic_heat_transfer_rate: Power = 
+            (shell_side_heat_rate - tube_side_heat_rate).abs();
+        
+        // then get UA and thermal resistance based on LMTD
+        let is_counter_current = true;
+        let ambient_inlet_temperature = self.ambient_temperature;
+        let ambient_outlet_temeprature = self.ambient_temperature;
+
+        let overall_ua: ThermalConductance = 
+            Self::get_ua_based_on_heat_transfer_and_temperature_differences(
+                parasitic_heat_transfer_rate, 
+                ambient_inlet_temperature, 
+                ambient_outlet_temeprature, 
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                is_counter_current);
+
+        let overall_thermal_resistance = overall_ua.recip();
+
+        // 1/(h_t A_t)
+        todo!();
+        let tube_side_thermal_resistance_expt_data = 
+            overall_thermal_resistance
+            - self.get_shell_side_thermal_resistance_cylindrical()
+            - self.get_inner_tubes_cylindrical_thermal_resistance();
+
+        // A_s 
+        let total_area_tube_side = 
+            self.circular_tube_bundle_heat_transfer_area_shell_side();
+
+        // 1/(h_t) = A_t * 1/(ht_A_t)
+        // take reciprocal then
+        // h_t
+        let h_t: HeatTransfer = 
+            (tube_side_thermal_resistance_expt_data*total_area_tube_side).recip();
+
+        let tube_side_fluid_hydraulic_diameter =
+            self.tube_side_id;
+
+        let expt_nusselt_number_tube_side: Ratio = 
+            h_t * tube_side_fluid_hydraulic_diameter/
+            self.get_shell_side_fluid_thermal_conductivity();
+
+        expt_nusselt_number_tube_side
 
 
     }
