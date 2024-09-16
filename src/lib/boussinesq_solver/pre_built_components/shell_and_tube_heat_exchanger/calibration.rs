@@ -202,7 +202,7 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// for single_tube, heat transfer area = P_w * l
     #[inline] 
-    pub fn get_inner_tubes_thermal_resistance_based_on_wetted_perimeter(
+    pub fn get_inner_tubes_convective_thermal_resistance_based_on_wetted_perimeter(
         &self) -> ThermalResistance {
 
         let mut fluid_arr_clone_for_single_inner_tube: FluidArray = 
@@ -221,7 +221,8 @@ impl SimpleShellAndTubeHeatExchanger {
             fluid_arr_clone_for_single_inner_tube.
             get_component_length();
 
-        let wetted_perimeter: Length = flow_area/hydraulic_diameter;
+        // d_h = 4A/P_w
+        let wetted_perimeter: Length = (4.0 * flow_area)/hydraulic_diameter;
 
         let single_tube_heat_trf_area: Area = 
             wetted_perimeter * tube_length;
@@ -262,7 +263,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// for single_tube, heat transfer area = P_w * l
     /// for all tubes, heat_transfer_area = P_w * l * N_t
     #[inline] 
-    pub fn get_shell_side_thermal_resistance_cylindrical(
+    pub fn get_shell_side_convective_thermal_resistance_cylindrical(
         &self) -> ThermalResistance {
 
         let mut shell_side_fluid_arr_clone: FluidArray = 
@@ -662,7 +663,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // 1/(h_s A_s)
         let shell_side_thermal_resistance_expt_data = 
             overall_thermal_resistance
-            - self.get_inner_tubes_thermal_resistance_based_on_wetted_perimeter()
+            - self.get_inner_tubes_convective_thermal_resistance_based_on_wetted_perimeter()
             - self.get_inner_tubes_cylindrical_thermal_resistance();
 
         // A_s 
@@ -717,7 +718,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // 1/(h_t A_t)
         let tube_side_thermal_resistance_expt_data = 
             overall_thermal_resistance
-            - self.get_shell_side_thermal_resistance_cylindrical()
+            - self.get_shell_side_convective_thermal_resistance_cylindrical()
             - self.get_inner_tubes_cylindrical_thermal_resistance();
 
         // A_s 
@@ -796,31 +797,32 @@ impl SimpleShellAndTubeHeatExchanger {
         let overall_thermal_resistance = overall_ua.recip();
 
         // 1/(h_parasitic A_parasitic)
-        todo!();
-        let tube_side_thermal_resistance_expt_data = 
+        let shell_side_parasitic_thermal_resistance_expt_data = 
             overall_thermal_resistance
-            - self.get_shell_side_thermal_resistance_cylindrical()
-            - self.get_inner_tubes_cylindrical_thermal_resistance();
+            - self.get_thermal_resistance_to_ambient()
+            - self.get_outer_shell_cylindrical_thermal_resistance()
+            - self.try_get_insulation_cylindrical_thermal_resistance().unwrap();
 
-        // A_s 
-        let total_area_tube_side = 
+        // A_parasitic
+        let total_area_shell_side_parasitic = 
             self.circular_tube_bundle_heat_transfer_area_shell_side();
 
-        // 1/(h_t) = A_t * 1/(ht_A_t)
+        // 1/(h_parasitic) = A_parasitic * 1/(hparasitic_A_parasitic)
         // take reciprocal then
-        // h_t
-        let h_t: HeatTransfer = 
-            (tube_side_thermal_resistance_expt_data*total_area_tube_side).recip();
+        // h_parasitic
+        let h_parasitic: HeatTransfer = 
+            (shell_side_parasitic_thermal_resistance_expt_data *
+             total_area_shell_side_parasitic
+            ).recip();
 
-        let tube_side_fluid_hydraulic_diameter =
-            self.tube_side_id;
+        let shell_side_fluid_hydraulic_diameter =
+            self.get_shell_side_hydraulic_diameter();
 
         let expt_nusselt_number_tube_side: Ratio = 
-            h_t * tube_side_fluid_hydraulic_diameter/
+            h_parasitic * shell_side_fluid_hydraulic_diameter/
             self.get_shell_side_fluid_thermal_conductivity();
 
         expt_nusselt_number_tube_side
-
 
     }
 

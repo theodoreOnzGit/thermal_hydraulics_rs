@@ -19,3 +19,6 @@ pub mod hitec_molten_salt_to_yd325_du_heat_exchanger;
 
 /// constructor tests
 pub mod constructor_tests;
+
+/// calibration function tests 
+pub mod calibration_functions;
