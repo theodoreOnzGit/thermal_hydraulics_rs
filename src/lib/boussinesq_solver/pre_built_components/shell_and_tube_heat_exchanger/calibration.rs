@@ -448,4 +448,82 @@ impl SimpleShellAndTubeHeatExchanger {
         vol_flowrate * rho_shell_side_fluid * cp_shell_side_fluid * delta_t
     }
 
+    /// obtains tube side heat gain or loss based on 
+    /// temperature difference and mass flowrate
+    ///
+    /// Q = m cp delta T
+    ///
+    /// mass flows from inlet to outlet by convention
+    #[inline]
+    pub fn get_tube_side_heat_rate_based_on_mass_flowrate(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        mass_flowrate: MassRate) -> Power {
+
+        let mut tube_side_fluid_arr_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().
+            try_into().unwrap();
+
+        let tube_fluid_material: LiquidMaterial
+            = tube_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let tube_side_temperature: ThermodynamicTemperature = 
+            tube_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+        let cp_tube_side_fluid: SpecificHeatCapacity = 
+            tube_fluid_material.try_get_cp(
+                tube_side_temperature).unwrap();
+
+        let delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                tube_outlet_temeprature.get::<kelvin>()
+                - tube_inlet_temperature.get::<kelvin>()
+            );
+
+        mass_flowrate * cp_tube_side_fluid * delta_t
+    }
+    /// obtains tube side heat gain or loss based on 
+    /// temperature difference and vol flowrate
+    ///
+    /// Q = V  rho cp delta T
+    ///
+    /// mass flows from inlet to outlet by convention
+    #[inline]
+    pub fn get_tube_side_heat_rate_based_on_vol_flowrate(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        vol_flowrate: VolumeRate) -> Power {
+
+        let mut tube_side_fluid_arr_clone: FluidArray = 
+            self.tube_side_fluid_array_for_single_tube.clone().
+            try_into().unwrap();
+
+        let tube_fluid_material: LiquidMaterial
+            = tube_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let tube_side_temperature: ThermodynamicTemperature = 
+            tube_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+        let cp_tube_side_fluid: SpecificHeatCapacity = 
+            tube_fluid_material.try_get_cp(
+                tube_side_temperature).unwrap();
+
+        let rho_tube_side_fluid: MassDensity = 
+            tube_fluid_material.try_get_density(
+                tube_side_temperature).unwrap();
+
+
+        let delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                tube_outlet_temeprature.get::<kelvin>()
+                - tube_inlet_temperature.get::<kelvin>()
+            );
+
+        vol_flowrate * rho_tube_side_fluid * cp_tube_side_fluid * delta_t
+    }
+
 }
