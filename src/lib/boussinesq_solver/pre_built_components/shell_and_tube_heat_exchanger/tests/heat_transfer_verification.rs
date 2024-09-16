@@ -264,7 +264,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
         let average_temp = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin);
         let average_hitec_density = 
-            LiquidMaterial::HITEC.density(average_temp).unwrap();
+            LiquidMaterial::HITEC.try_get_density(average_temp).unwrap();
 
         let tube_inlet_density = average_hitec_density;
         let tube_back_cv_density = average_hitec_density;
@@ -863,7 +863,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
         let average_temp = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin);
         let average_hitec_density = 
-            LiquidMaterial::HITEC.density(average_temp).unwrap();
+            LiquidMaterial::HITEC.try_get_density(average_temp).unwrap();
 
         let tube_inlet_density = average_hitec_density;
         let tube_back_cv_density = average_hitec_density;
@@ -1463,7 +1463,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
         let average_temp = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin);
         let average_hitec_density = 
-            LiquidMaterial::HITEC.density(average_temp).unwrap();
+            LiquidMaterial::HITEC.try_get_density(average_temp).unwrap();
 
         let tube_inlet_density = average_hitec_density;
         let tube_back_cv_density = average_hitec_density;

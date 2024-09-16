@@ -38,8 +38,8 @@ impl DataAdvection {
         let temperature_2: ThermodynamicTemperature = 
         HeatTransferEntity::temperature(hte_2).unwrap();
 
-        let density_1 = fluid_material.density(temperature_1).unwrap();
-        let density_2 = fluid_material.density(temperature_2).unwrap();
+        let density_1 = fluid_material.try_get_density(temperature_1).unwrap();
+        let density_2 = fluid_material.try_get_density(temperature_2).unwrap();
 
         return Self {
             mass_flowrate: user_input_mass_flowrate,

@@ -513,7 +513,7 @@ pub fn pri_loop_hot_leg_insulation_thickness_calibration_regression_test_v1(
     // after this is component 24 (dhx sthe)
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType
@@ -884,7 +884,7 @@ pub fn pri_loop_hot_leg_insulation_thickness_calibration_validation_test_v1(
     // after this is component 24 (dhx sthe)
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType

@@ -369,7 +369,7 @@ pub fn cold_leg_insulation_thickness_validation_test_v1(
     // after this is heater
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType

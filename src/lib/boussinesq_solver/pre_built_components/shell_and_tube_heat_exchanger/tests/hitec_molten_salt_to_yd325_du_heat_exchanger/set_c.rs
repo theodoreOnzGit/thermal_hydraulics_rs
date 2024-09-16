@@ -278,9 +278,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
 
 
     let inlet_rho_salt = 
-        LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+        LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
     let inlet_rho_oil = 
-        LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+        LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
     //
     // but the direction differs in a counter current setup, 
@@ -329,13 +329,13 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
         let average_temp_hitec = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin_hitec);
         let average_hitec_density = 
-            LiquidMaterial::HITEC.density(average_temp_hitec).unwrap();
+            LiquidMaterial::HITEC.try_get_density(average_temp_hitec).unwrap();
 
         let average_temp_kelvin_oil = tube_inlet_temperature.value;
         let average_temp_oil = ThermodynamicTemperature::new::<kelvin>(
             average_temp_kelvin_oil);
         let average_oil_density = 
-            LiquidMaterial::YD325.density(average_temp_oil).unwrap();
+            LiquidMaterial::YD325.try_get_density(average_temp_oil).unwrap();
 
         let tube_inlet_density = average_oil_density;
         let tube_back_cv_density = average_oil_density;
@@ -935,9 +935,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
@@ -1004,9 +1004,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
@@ -1074,9 +1074,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
@@ -1144,9 +1144,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
@@ -1214,9 +1214,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;
@@ -1284,9 +1284,9 @@ pub fn du_test_shell_and_tube_heat_exchanger_set_c(){
                 // intermediate calcs
 
                 let inlet_rho_salt = 
-                    LiquidMaterial::HITEC.density(inlet_temp_salt).unwrap();
+                    LiquidMaterial::HITEC.try_get_density(inlet_temp_salt).unwrap();
                 let inlet_rho_oil = 
-                    LiquidMaterial::YD325.density(inlet_temp_oil).unwrap();
+                    LiquidMaterial::YD325.try_get_density(inlet_temp_oil).unwrap();
 
                 let m_t: MassRate = inlet_rho_oil * vol_flowrate_oil;
                 let m_s: MassRate = -inlet_rho_salt * vol_flowrate_salt;

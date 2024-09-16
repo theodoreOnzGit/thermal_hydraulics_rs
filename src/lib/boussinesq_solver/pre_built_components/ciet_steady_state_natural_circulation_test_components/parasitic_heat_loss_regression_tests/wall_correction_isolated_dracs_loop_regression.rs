@@ -201,7 +201,7 @@ pub fn parasitic_heat_loss_regression_tchx_out_319_kelvin_46_celsius() {
             // I'm going to create the advection interaction
 
             let average_therminol_density = LiquidMaterial::TherminolVP1
-                .density(average_temperature_for_density_calcs)
+                .try_get_density(average_temperature_for_density_calcs)
                 .unwrap();
 
             advection_heat_transfer_interaction =

@@ -99,7 +99,7 @@ pub fn test_inclusive_heater_top_bottom_head(){
 
 
             let heater_therminol_avg_density: MassDensity = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 heater_fluid_bulk_temp).unwrap();
 
             let generic_advection_interaction = 

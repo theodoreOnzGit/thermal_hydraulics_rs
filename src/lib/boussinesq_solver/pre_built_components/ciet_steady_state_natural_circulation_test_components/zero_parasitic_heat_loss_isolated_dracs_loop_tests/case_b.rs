@@ -279,7 +279,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
                     // I'm going to create the advection interaction
 
                     let average_therminol_density = 
-                        LiquidMaterial::TherminolVP1.density(
+                        LiquidMaterial::TherminolVP1.try_get_density(
                             average_temperature_for_density_calcs).unwrap();
 
                     advection_heat_transfer_interaction = 

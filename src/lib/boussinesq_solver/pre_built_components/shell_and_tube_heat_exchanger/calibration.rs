@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use uom::si::{f64::*, ratio::ratio};
+use uom::si::{f64::*, ratio::ratio, thermodynamic_temperature::kelvin};
 
 use crate::{prelude::beta_testing::{FluidArray, LiquidMaterial, SolidColumn, SolidMaterial}, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
@@ -368,6 +368,84 @@ impl SimpleShellAndTubeHeatExchanger {
         // 1/(h_parasitic A_outer)
         (h_parasitic * area_shell_side_total).recip()
 
+    }
+
+    /// obtains shell side heat gain or loss based on 
+    /// temperature difference and mass flowrate
+    ///
+    /// Q = m cp delta T
+    ///
+    /// mass flows from inlet to outlet by convention
+    #[inline]
+    pub fn get_shell_side_heat_rate_based_on_mass_flowrate(
+        &self,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        mass_flowrate: MassRate) -> Power {
+
+        let mut shell_side_fluid_arr_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().
+            try_into().unwrap();
+
+        let shell_fluid_material: LiquidMaterial
+            = shell_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let shell_side_temperature: ThermodynamicTemperature = 
+            shell_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+        let cp_shell_side_fluid: SpecificHeatCapacity = 
+            shell_fluid_material.try_get_cp(
+                shell_side_temperature).unwrap();
+
+        let delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_outlet_temeprature.get::<kelvin>()
+                - shell_inlet_temperature.get::<kelvin>()
+            );
+
+        mass_flowrate * cp_shell_side_fluid * delta_t
+    }
+    /// obtains shell side heat gain or loss based on 
+    /// temperature difference and vol flowrate
+    ///
+    /// Q = V  rho cp delta T
+    ///
+    /// mass flows from inlet to outlet by convention
+    #[inline]
+    pub fn get_shell_side_heat_rate_based_on_vol_flowrate(
+        &self,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        vol_flowrate: VolumeRate) -> Power {
+
+        let mut shell_side_fluid_arr_clone: FluidArray = 
+            self.shell_side_fluid_array.clone().
+            try_into().unwrap();
+
+        let shell_fluid_material: LiquidMaterial
+            = shell_side_fluid_arr_clone.material_control_volume.try_into().unwrap();
+
+        let shell_side_temperature: ThermodynamicTemperature = 
+            shell_side_fluid_arr_clone.
+            try_get_bulk_temperature().unwrap();
+
+        let cp_shell_side_fluid: SpecificHeatCapacity = 
+            shell_fluid_material.try_get_cp(
+                shell_side_temperature).unwrap();
+
+        let rho_shell_side_fluid: MassDensity = 
+            shell_fluid_material.try_get_density(
+                shell_side_temperature).unwrap();
+
+
+        let delta_t: TemperatureInterval = 
+            TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_outlet_temeprature.get::<kelvin>()
+                - shell_inlet_temperature.get::<kelvin>()
+            );
+
+        vol_flowrate * rho_shell_side_fluid * cp_shell_side_fluid * delta_t
     }
 
 }

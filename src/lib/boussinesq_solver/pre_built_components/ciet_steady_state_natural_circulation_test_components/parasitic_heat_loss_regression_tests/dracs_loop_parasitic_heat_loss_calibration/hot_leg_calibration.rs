@@ -337,7 +337,7 @@ pub fn dracs_hot_leg_insulation_thickness_calibration_validation_test_v1(
     // after this is the tchx horizontal side (component 35a)
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType

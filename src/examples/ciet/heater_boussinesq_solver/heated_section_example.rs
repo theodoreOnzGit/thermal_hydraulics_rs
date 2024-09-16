@@ -52,7 +52,7 @@ pub fn example_heated_section_test(){
         // inlet fluid density 
 
         let inlet_fluid_density: MassDensity = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             inlet_temperature).unwrap();
 
         // first node of heater fluid density 
@@ -79,11 +79,11 @@ pub fn example_heated_section_test(){
         *therminol_array_temperature.iter().last().unwrap();
 
         let back_cv_density: MassDensity = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             back_cv_temperature).unwrap();
 
         let front_cv_density: MassDensity = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             heated_section_exit_temperature).unwrap();
 
         // probably want to make this bit a little more user friendly

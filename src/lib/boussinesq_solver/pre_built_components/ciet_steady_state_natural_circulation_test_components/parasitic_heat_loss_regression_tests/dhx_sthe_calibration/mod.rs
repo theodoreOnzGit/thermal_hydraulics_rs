@@ -510,7 +510,7 @@ pub fn dhx_calibration_validation_test_v1(
     let mut dhx_sthe = new_dhx_sthe_version_1(initial_temperature);
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let shell_side_advection_heat_transfer_interaction: HeatTransferInteractionType

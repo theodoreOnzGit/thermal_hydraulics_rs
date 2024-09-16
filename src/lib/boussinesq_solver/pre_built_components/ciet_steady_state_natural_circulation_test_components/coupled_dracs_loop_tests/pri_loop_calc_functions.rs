@@ -187,7 +187,7 @@ pub fn coupled_dracs_pri_loop_dhx_heater_link_up_components(
         // doesn't make much diff tho based on Boussinesq approximation
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         advection_heat_transfer_interaction = 

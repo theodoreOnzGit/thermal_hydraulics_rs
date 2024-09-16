@@ -194,7 +194,7 @@ pub fn hot_leg_nusselt_calibration_regression_test_v2_failed(
     // after this is component 24
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType
@@ -603,7 +603,7 @@ pub fn hot_leg_nusselt_calibration_regression_test_v1_failed(
     // after this is component 24
     // create the heat transfer interaction 
     let average_therminol_density = 
-        LiquidMaterial::TherminolVP1.density(
+        LiquidMaterial::TherminolVP1.try_get_density(
             average_temperature_for_advection_mass_flowrate_calcs).unwrap();
 
     let advection_heat_transfer_interaction: HeatTransferInteractionType

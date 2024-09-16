@@ -166,7 +166,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 
@@ -295,7 +295,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 
@@ -537,7 +537,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 
@@ -666,7 +666,7 @@ pub fn parallel_bare_pipes_debugging_heat_addition_with_parasitic_heat_loss(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 
@@ -919,7 +919,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 
@@ -1049,7 +1049,7 @@ pub fn parallel_bare_pipes_debugging_parasitic_heat_loss_thermal_inertia(){
             new::<degree_celsius>(50.0);
 
         let average_therminol_density = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 average_temperature_for_density_calcs).unwrap();
 
         let advection_heat_transfer_interaction = 

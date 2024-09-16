@@ -155,7 +155,7 @@ fn liquid_density(material: Material,
 impl LiquidMaterial {
 
     /// returns density of liquid material
-    pub fn density(&self,
+    pub fn try_get_density(&self,
         fluid_temp: ThermodynamicTemperature,) -> 
     Result<MassDensity,ThermalHydraulicsLibError> {
 
