@@ -526,4 +526,113 @@ impl SimpleShellAndTubeHeatExchanger {
         vol_flowrate * rho_tube_side_fluid * cp_tube_side_fluid * delta_t
     }
 
+    /// gets the overall thermal resistance for heat 
+    /// exchanger based on Q = UA (LMTD) 
+    /// Q is based on shell or tube side, whichever is smaller 
+    /// because we don't want to include parasitic heat losses 
+    ///
+    /// also allows you to specify if the sthe is counter current 
+    /// manually
+    #[inline]
+    pub fn get_ua_based_on_mass_flowrates_and_temperature_differences(&self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        mass_flowrate: MassRate,
+        is_counter_current: bool) -> ThermalConductance {
+
+        let tube_side_heat_rate: Power = 
+            self.get_tube_side_heat_rate_based_on_mass_flowrate(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                mass_flowrate);
+
+        let shell_side_heat_rate: Power = 
+            self.get_shell_side_heat_rate_based_on_mass_flowrate(
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                mass_flowrate);
+
+        // get the smaller of the two, because there is likely to 
+        // be parasitic heat loss 
+        let heat_transfer_rate_through_sthe_no_parasitic_losses: Power;
+
+        if tube_side_heat_rate > shell_side_heat_rate {
+            heat_transfer_rate_through_sthe_no_parasitic_losses = 
+                shell_side_heat_rate;
+        } else {
+
+            heat_transfer_rate_through_sthe_no_parasitic_losses = 
+                tube_side_heat_rate;
+        }
+
+        // then get ua 
+        Self::get_ua_based_on_heat_transfer_and_temperature_differences(
+            heat_transfer_rate_through_sthe_no_parasitic_losses, 
+            tube_inlet_temperature, 
+            tube_outlet_temeprature, 
+            shell_inlet_temperature, 
+            shell_outlet_temeprature, 
+            is_counter_current)
+
+
+    }
+
+    /// gets the overall thermal resistance for heat 
+    /// exchanger based on Q = UA (LMTD) 
+    ///
+    /// also allows you to specify if the sthe is counter current 
+    /// manually
+    /// 
+    #[inline]
+    pub fn get_ua_based_on_heat_transfer_and_temperature_differences(
+        heat_transfer_rate: Power,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        is_counter_current: bool,) -> ThermalConductance {
+
+        let delta_t_min: TemperatureInterval;
+        let delta_t_max: TemperatureInterval;
+
+        if is_counter_current {
+            delta_t_min = TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_inlet_temperature.get::<kelvin>() 
+                - tube_outlet_temeprature.get::<kelvin>()
+            );
+            delta_t_max = TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_outlet_temeprature.get::<kelvin>() 
+                - tube_inlet_temperature.get::<kelvin>()
+            );
+        } else {
+            delta_t_min = TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_outlet_temeprature.get::<kelvin>() 
+                - tube_outlet_temeprature.get::<kelvin>()
+            );
+            delta_t_max = TemperatureInterval::new::<uom::si::temperature_interval::kelvin>(
+                shell_inlet_temperature.get::<kelvin>() 
+                - tube_inlet_temperature.get::<kelvin>()
+            );
+
+        }
+
+        let log_mean_temperature_difference: TemperatureInterval;
+
+        let numerator_term_lmtd: TemperatureInterval = 
+            delta_t_max - delta_t_min;
+
+        let denominator_term_lmtd: Ratio = 
+            (delta_t_max/delta_t_min).get::<ratio>().ln().into();
+
+        log_mean_temperature_difference = 
+            numerator_term_lmtd/denominator_term_lmtd;
+
+
+        return heat_transfer_rate/log_mean_temperature_difference;
+
+    }
+
 }
