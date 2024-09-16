@@ -366,13 +366,13 @@ pub fn dhx_calibration_validation_test_v1(
     )
     );
     let outer_tube_wall_prandtl = dhx_sthe.wall_prandtl_number_shell_side_fluid_for_outer_tube();
-    let nusselt_number_shell_side_to_outer_shell = dhx_sthe.nusselt_number_shell_side_parasitic();
+    let nusselt_number_shell_side_parasitic = dhx_sthe.nusselt_number_shell_side_parasitic();
 
     dbg!(&(
             shell_side_reynolds,
             shell_side_bulk_prandtl,
             outer_tube_wall_prandtl,
-            nusselt_number_shell_side_to_outer_shell
+            nusselt_number_shell_side_parasitic
     )
     );
     let correct_prandtl_for_wall_temperatures = true;
@@ -386,24 +386,86 @@ pub fn dhx_calibration_validation_test_v1(
     let shell_side_heat_transfer_area: Area = 
         dhx_sthe.circular_tube_bundle_heat_transfer_area_shell_side();
 
-    let thermal_resistance_shell_side_expected: ThermalResistance
+    let thermal_resistance_overall_expected: ThermalResistance
         = (overall_htc_postprocessing*shell_side_heat_transfer_area).recip();
 
-    let thermal_resistance_shell_side_actual: ThermalResistance = 
+    let thermal_resistance_overall_actual: ThermalResistance = 
         dhx_sthe.get_shell_side_convective_thermal_resistance_cylindrical()
         + dhx_sthe.get_inner_tubes_convective_thermal_resistance_based_on_wetted_perimeter()
         + dhx_sthe.get_inner_tubes_cylindrical_thermal_resistance();
 
 
-    dbg!(&(thermal_resistance_shell_side_expected,
-            thermal_resistance_shell_side_actual));
+    dbg!(&(thermal_resistance_overall_expected,
+            thermal_resistance_overall_actual));
 
+    // assert shell to tube side thermal resistance
 
     approx::assert_relative_eq!(
-        thermal_resistance_shell_side_expected.get::<kelvin_per_watt>(),
-        thermal_resistance_shell_side_actual.get::<kelvin_per_watt>(),
+        thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
+        thermal_resistance_overall_actual.get::<kelvin_per_watt>(),
         max_relative = 0.01
         );
 
 
+
+    // assert nusselt number
+    let tube_inlet_temperature = dhx_tube_side_inlet_temperature;
+    let tube_outlet_temeprature = dhx_tube_outlet_actual_temperature;
+    let tube_mass_flowrate = experimental_dracs_mass_flowrate;
+    let shell_inlet_temperature = dhx_shell_side_inlet_temperature;
+    let shell_outlet_temeprature = dhx_shell_outlet_actual_temperature;
+    let shell_mass_flowrate = experimental_pri_mass_flowrate;
+    let is_counter_current = true;
+    // assert overall thermal resistance 
+    // vs that gained from expt data
+    let thermal_resistance_based_on_expt_data: ThermalResistance = 
+        dhx_sthe.get_ua_based_on_mass_flowrates_and_temperature_differences(
+            tube_inlet_temperature, 
+            tube_outlet_temeprature, 
+            tube_mass_flowrate, 
+            shell_inlet_temperature, 
+            shell_outlet_temeprature, 
+            shell_mass_flowrate, 
+            is_counter_current).recip();
+
+    approx::assert_relative_eq!(
+        thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
+        thermal_resistance_based_on_expt_data.get::<kelvin_per_watt>(),
+        max_relative = 0.02
+        );
+
+    // assert shell side nusselt number 
+    let nusselt_number_shell_side_to_tubes_actual =
+        dhx_sthe.obtain_shell_side_nusselt_number_based_on_expt_data(
+            tube_inlet_temperature, 
+            tube_outlet_temeprature, 
+            tube_mass_flowrate, 
+            shell_inlet_temperature, 
+            shell_outlet_temeprature, 
+            shell_mass_flowrate, 
+            is_counter_current);
+
+    // these two should agree to within 10%
+    approx::assert_relative_eq!(
+        nusselt_number_shell_side_to_tubes.get::<ratio>(),
+        nusselt_number_shell_side_to_tubes_actual.get::<ratio>(),
+        max_relative = 0.10
+        );
+
+    // parasitic heat loss nusselt number
+
+    let nusselt_number_shell_side_parasitic_actual = 
+        dhx_sthe.obtain_parasitic_nusselt_number_based_on_expt_data(
+            tube_inlet_temperature, 
+            tube_outlet_temeprature, 
+            tube_mass_flowrate, 
+            shell_inlet_temperature, 
+            shell_outlet_temeprature, 
+            shell_mass_flowrate);
+
+    approx::assert_relative_eq!(
+        nusselt_number_shell_side_parasitic.get::<ratio>(),
+        nusselt_number_shell_side_parasitic_actual.get::<ratio>(),
+        max_relative = 0.0001
+        );
 }

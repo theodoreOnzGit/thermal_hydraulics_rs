@@ -632,7 +632,7 @@ impl SimpleShellAndTubeHeatExchanger {
             numerator_term_lmtd/denominator_term_lmtd;
 
 
-        return heat_transfer_rate/log_mean_temperature_difference;
+        return (heat_transfer_rate/log_mean_temperature_difference).abs();
 
     }
 
@@ -818,11 +818,11 @@ impl SimpleShellAndTubeHeatExchanger {
         let shell_side_fluid_hydraulic_diameter =
             self.get_shell_side_hydraulic_diameter();
 
-        let expt_nusselt_number_tube_side: Ratio = 
+        let expt_nusselt_number_parasitic_shell_side: Ratio = 
             h_parasitic * shell_side_fluid_hydraulic_diameter/
             self.get_shell_side_fluid_thermal_conductivity();
 
-        expt_nusselt_number_tube_side
+        expt_nusselt_number_parasitic_shell_side
 
     }
 
