@@ -795,7 +795,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let overall_thermal_resistance = overall_ua.recip();
 
-        // 1/(h_t A_t)
+        // 1/(h_parasitic A_parasitic)
         todo!();
         let tube_side_thermal_resistance_expt_data = 
             overall_thermal_resistance
