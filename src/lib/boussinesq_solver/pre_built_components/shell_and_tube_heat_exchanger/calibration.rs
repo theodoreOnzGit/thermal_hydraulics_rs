@@ -169,7 +169,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// assuming the outer shell or insulation is cylindrical,
     /// get the convective thermal resistance to ambient
     #[inline]
-    pub fn get_thermal_resistance_to_ambient(&self) -> ThermalResistance {
+    pub fn get_convective_thermal_resistance_to_ambient(&self) -> ThermalResistance {
 
         let mut od = self.shell_side_od;
 
@@ -316,7 +316,7 @@ impl SimpleShellAndTubeHeatExchanger {
     /// for single_tube, heat transfer area = P_w * l
     /// assumes cylindrical shell
     #[inline] 
-    pub fn get_shell_side_parasitic_thermal_resistance_cylindrical(
+    pub fn get_shell_side_parasitic_convective_thermal_resistance_cylindrical(
         &self) -> ThermalResistance {
 
         let mut shell_side_fluid_arr_clone: FluidArray = 
@@ -375,7 +375,7 @@ impl SimpleShellAndTubeHeatExchanger {
         &self,
         shell_inlet_temperature: ThermodynamicTemperature,
         shell_outlet_temeprature: ThermodynamicTemperature,
-        mass_flowrate: MassRate) -> Power {
+        shell_mass_flowrate: MassRate) -> Power {
 
         let mut shell_side_fluid_arr_clone: FluidArray = 
             self.shell_side_fluid_array.clone().
@@ -398,7 +398,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 - shell_inlet_temperature.get::<kelvin>()
             );
 
-        mass_flowrate * cp_shell_side_fluid * delta_t
+        shell_mass_flowrate * cp_shell_side_fluid * delta_t
     }
     /// obtains shell side heat gain or loss based on 
     /// temperature difference and vol flowrate
@@ -453,7 +453,7 @@ impl SimpleShellAndTubeHeatExchanger {
         &self,
         tube_inlet_temperature: ThermodynamicTemperature,
         tube_outlet_temeprature: ThermodynamicTemperature,
-        mass_flowrate: MassRate) -> Power {
+        tube_mass_flowrate: MassRate) -> Power {
 
         let mut tube_side_fluid_arr_clone: FluidArray = 
             self.tube_side_fluid_array_for_single_tube.clone().
@@ -476,7 +476,7 @@ impl SimpleShellAndTubeHeatExchanger {
                 - tube_inlet_temperature.get::<kelvin>()
             );
 
-        mass_flowrate * cp_tube_side_fluid * delta_t
+        tube_mass_flowrate * cp_tube_side_fluid * delta_t
     }
     /// obtains tube side heat gain or loss based on 
     /// temperature difference and vol flowrate
@@ -551,9 +551,11 @@ impl SimpleShellAndTubeHeatExchanger {
 
         // get the smaller of the two, because there is likely to 
         // be parasitic heat loss 
+        // note that it must be absolute, heat loss, because 
+        // they are likely to be negative numbers
         let heat_transfer_rate_through_sthe_no_parasitic_losses: Power;
 
-        if tube_side_heat_rate > shell_side_heat_rate {
+        if tube_side_heat_rate.abs() > shell_side_heat_rate.abs() {
             heat_transfer_rate_through_sthe_no_parasitic_losses = 
                 shell_side_heat_rate;
         } else {
@@ -765,7 +767,7 @@ impl SimpleShellAndTubeHeatExchanger {
         // 1/(h_parasitic A_parasitic)
         let mut shell_side_parasitic_thermal_resistance_expt_data = 
             overall_thermal_resistance
-            - self.get_thermal_resistance_to_ambient()
+            - self.get_convective_thermal_resistance_to_ambient()
             - self.get_outer_shell_cylindrical_thermal_resistance();
 
         if self.heat_exchanger_has_insulation {
@@ -808,24 +810,14 @@ impl SimpleShellAndTubeHeatExchanger {
         shell_outlet_temeprature: ThermodynamicTemperature,
         shell_mass_flowrate: MassRate) -> ThermalResistance {
 
-        let shell_side_heat_rate: Power = 
-            self.get_shell_side_heat_rate_based_on_mass_flowrate(
+        let parasitic_heat_transfer_rate = 
+            self.obtain_parasitic_heat_loss_rate_based_on_expt_data(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate, 
                 shell_inlet_temperature, 
                 shell_outlet_temeprature, 
                 shell_mass_flowrate);
-
-        let tube_side_heat_rate: Power = 
-            self.get_tube_side_heat_rate_based_on_mass_flowrate(
-                tube_inlet_temperature, 
-                tube_outlet_temeprature, 
-                tube_mass_flowrate);
-
-        // parasitic heat losses are that of the tube side minus shell 
-        // side, anything outside is heat supplied
-        //
-        // but I'll just do that anyway
-        let parasitic_heat_transfer_rate: Power = 
-            (shell_side_heat_rate - tube_side_heat_rate).abs();
         
         // then get UA and thermal resistance based on LMTD
         let is_counter_current = true;
@@ -845,6 +837,39 @@ impl SimpleShellAndTubeHeatExchanger {
 
         overall_thermal_resistance
 
+    }
+
+    /// obtain parasitic heat losses based on expt data 
+    #[inline]
+    pub fn obtain_parasitic_heat_loss_rate_based_on_expt_data(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        shell_mass_flowrate: MassRate) -> Power {
+
+        let shell_side_heat_rate: Power = 
+            self.get_shell_side_heat_rate_based_on_mass_flowrate(
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                shell_mass_flowrate);
+
+        let tube_side_heat_rate: Power = 
+            self.get_tube_side_heat_rate_based_on_mass_flowrate(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate);
+
+        // parasitic heat losses are that of the tube side minus shell 
+        // side, anything outside is heat supplied
+        //
+        // but I'll just do that anyway
+        let parasitic_heat_transfer_rate: Power = 
+            (shell_side_heat_rate - tube_side_heat_rate).abs();
+
+        parasitic_heat_transfer_rate
     }
 
 
