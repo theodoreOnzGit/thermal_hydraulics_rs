@@ -187,7 +187,7 @@ pub fn overall_htc_postprocessing_basic_test_shell_and_tube_heat_exchanger(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };
@@ -407,7 +407,7 @@ pub fn shell_side_tube_bundle_area_basic_test_shell_and_tube_heat_exchanger(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };

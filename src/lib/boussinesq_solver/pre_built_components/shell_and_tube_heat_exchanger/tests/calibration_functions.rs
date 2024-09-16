@@ -29,7 +29,7 @@ pub fn calibration_regression_set_c9(){
     let insulation_thickness_regression_cm = 0.1;
     let shell_side_to_ambient_nusselt_correction_factor = 12.5;
 
-    dhx_calibration_validation_test_v1(
+    dhx_calibration_regression_unit_test(
         experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
         experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
         dhx_shell_side_inlet_temp_degc, 
@@ -83,15 +83,15 @@ pub fn calibration_regression_set_c9(){
 /// (2) secondly, adjust the insulation thickness until the shell side 
 /// outlet temperature is correct
 #[cfg(test)]
-pub fn dhx_calibration_validation_test_v1(
+pub fn dhx_calibration_regression_unit_test(
     experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs: f64,
     experimental_pri_shell_side_mass_flowrate_kg_per_s_abs: f64,
     dhx_shell_side_inlet_temp_degc: f64,
     dhx_shell_side_outlet_temp_set_point_degc: f64,
-    dhx_shell_side_outlet_regression_temperature_degc: f64,
+    _dhx_shell_side_outlet_regression_temperature_degc: f64,
     dhx_tube_side_inlet_temp_degc: f64,
     dhx_tube_side_outlet_temp_set_point_degc: f64,
-    dhx_tube_side_outlet_regression_temperature_degc: f64,
+    _dhx_tube_side_outlet_regression_temperature_degc: f64,
     max_time_seconds:f64,
     insulation_thickness_regression_cm: f64,
     shell_side_to_tubes_nusselt_number_correction_factor: f64,
@@ -287,7 +287,7 @@ pub fn dhx_calibration_validation_test_v1(
             calibrated_nusselt_factor);
 
         calibrate_nusselt_correlation_of_heat_transfer_entity(
-            &mut dhx_sthe.shell_side_nusselt_correlation_to_outer_shell, 
+            &mut dhx_sthe.shell_side_nusselt_correlation_parasitic, 
             calibrated_parasitic_heat_loss_nusselt_factor);
 
         // now calibrate the insulation thickness for all 
@@ -450,6 +450,51 @@ pub fn dhx_calibration_validation_test_v1(
         nusselt_number_shell_side_to_tubes.get::<ratio>(),
         nusselt_number_shell_side_to_tubes_actual.get::<ratio>(),
         max_relative = 0.10
+        );
+
+    // thermal resistance for parasitic heat loss
+    // should agree to the experimental thermal resistance to within 
+    // 10%
+    let thermal_resistance_for_parasitic_heat_loss: ThermalResistance;
+
+    thermal_resistance_for_parasitic_heat_loss = 
+        dhx_sthe.get_thermal_resistance_to_ambient()
+        + dhx_sthe.get_outer_shell_cylindrical_thermal_resistance()
+        + dhx_sthe.try_get_insulation_cylindrical_thermal_resistance().unwrap()
+        + dhx_sthe.get_shell_side_parasitic_thermal_resistance_cylindrical();
+    
+    let thermal_resistance_for_parasitic_heat_loss_experimental 
+        = dhx_sthe.obtain_parasitic_thermal_resistance_based_on_expt_data(
+            tube_inlet_temperature, 
+            tube_outlet_temeprature, 
+            tube_mass_flowrate, 
+            shell_inlet_temperature, 
+            shell_outlet_temeprature, 
+            shell_mass_flowrate);
+
+
+    // these two agree to within 8%
+    approx::assert_relative_eq!(
+        thermal_resistance_for_parasitic_heat_loss.get::<kelvin_per_watt>(),
+        thermal_resistance_for_parasitic_heat_loss_experimental.get::<kelvin_per_watt>(),
+        max_relative = 0.08
+        );
+
+    // thermal resistance for shell side compared 
+
+    let thermal_resistance_for_shell_side_parasitic = 
+        dhx_sthe.get_shell_side_parasitic_thermal_resistance_cylindrical();
+
+    let thermal_resistance_for_shell_side_parasitic_actual = 
+        thermal_resistance_for_parasitic_heat_loss_experimental 
+        - dhx_sthe.get_thermal_resistance_to_ambient()
+        - dhx_sthe.get_outer_shell_cylindrical_thermal_resistance()
+        - dhx_sthe.try_get_insulation_cylindrical_thermal_resistance().unwrap();
+
+    approx::assert_relative_eq!(
+        thermal_resistance_for_shell_side_parasitic.get::<kelvin_per_watt>(),
+        thermal_resistance_for_shell_side_parasitic_actual.get::<kelvin_per_watt>(),
+        max_relative = 0.08
         );
 
     // parasitic heat loss nusselt number

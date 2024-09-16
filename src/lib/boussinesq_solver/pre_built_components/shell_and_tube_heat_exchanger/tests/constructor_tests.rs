@@ -231,7 +231,7 @@ pub fn du_heat_exchanger_constructor_test(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes: shell_side_nusselt_correlation_to_tubes.clone(), 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation: tube_side_nusselt_correlation.clone(), 
             insulation_thickness: dummy_insulation_thickness,
         };
@@ -486,7 +486,7 @@ pub fn insulated_sthe_constructor_test(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes: shell_side_nusselt_correlation_to_tubes.clone(), 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation: tube_side_nusselt_correlation.clone(), 
             insulation_thickness: dummy_insulation_thickness,
         };

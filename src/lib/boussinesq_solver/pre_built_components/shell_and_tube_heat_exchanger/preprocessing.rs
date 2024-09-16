@@ -1108,17 +1108,8 @@ impl SimpleShellAndTubeHeatExchanger {
             )?;
 
         let shell_side_fluid_to_outer_tube_surf_nusselt_correlation: NusseltCorrelation
-            = self.shell_side_nusselt_correlation_to_outer_shell;
+            = self.shell_side_nusselt_correlation_parasitic;
 
-
-        let mut pipe_prandtl_reynolds_gnielinksi_data: GnielinskiData 
-        = GnielinskiData::default();
-        pipe_prandtl_reynolds_gnielinksi_data.reynolds = reynolds_number_abs_for_nusselt_estimate;
-        pipe_prandtl_reynolds_gnielinksi_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_gnielinksi_data.prandtl_wall = bulk_prandtl_number;
-        pipe_prandtl_reynolds_gnielinksi_data.length_to_diameter = 
-            shell_side_fluid_array_clone.get_component_length_immutable()/
-            shell_side_fluid_hydraulic_diameter;
 
 
         // I need to use Nusselt correlations present in this struct 

@@ -628,7 +628,7 @@ pub fn dhx_calibration_validation_test_v1(
             calibrated_nusselt_factor);
 
         calibrate_nusselt_correlation_of_heat_transfer_entity(
-            &mut dhx_sthe.shell_side_nusselt_correlation_to_outer_shell, 
+            &mut dhx_sthe.shell_side_nusselt_correlation_parasitic, 
             calibrated_parasitic_heat_loss_nusselt_factor);
 
         // now calibrate the insulation thickness for all 

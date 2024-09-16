@@ -199,7 +199,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };
@@ -798,7 +798,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };
@@ -1398,7 +1398,7 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
             shell_side_od, 
             shell_side_flow_area, 
             shell_side_nusselt_correlation_to_tubes, 
-            shell_side_nusselt_correlation_to_outer_shell, 
+            shell_side_nusselt_correlation_parasitic: shell_side_nusselt_correlation_to_outer_shell, 
             tube_side_nusselt_correlation, 
             insulation_thickness: dummy_insulation_thickness,
         };

@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use uom::si::{f64::*, ratio::ratio, thermodynamic_temperature::kelvin};
+use uom::si::{f64::*, ratio::ratio, thermal_resistance::kelvin_per_watt, thermodynamic_temperature::kelvin};
 
 use crate::{prelude::beta_testing::{FluidArray, LiquidMaterial, SolidColumn, SolidMaterial}, thermal_hydraulics_error::ThermalHydraulicsLibError};
 
@@ -17,10 +17,7 @@ impl SimpleShellAndTubeHeatExchanger {
 
         if !self.heat_exchanger_has_insulation {
 
-            // thermal resistance is not implemented if we don't have 
-            // insulation,
-            // probably want to have a nicer error for this in future
-            todo!();
+            return Ok(ThermalResistance::new::<kelvin_per_watt>(0.0));
         }
         let insulation_id = self.shell_side_od;
         let insulation_od = insulation_id + 2.0*self.insulation_thickness;
@@ -317,7 +314,6 @@ impl SimpleShellAndTubeHeatExchanger {
     /// for circle, P_w = pi * d_o
     ///
     /// for single_tube, heat transfer area = P_w * l
-    /// for all tubes, heat_transfer_area = P_w * l * N_t
     /// assumes cylindrical shell
     #[inline] 
     pub fn get_shell_side_parasitic_thermal_resistance_cylindrical(
@@ -333,11 +329,8 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let wetted_perimeter: Length = PI * self.shell_side_id;
 
-        let single_tube_heat_trf_area: Area = 
-            wetted_perimeter * shell_length;
 
-        let area_shell_side_total: Area = 
-            single_tube_heat_trf_area * self.number_of_tubes as f64;
+        let area_shell_side_total: Area = wetted_perimeter * shell_length;
 
         let parasitic_nusselt_number: Ratio = 
             self.nusselt_number_shell_side_parasitic();
@@ -760,6 +753,60 @@ impl SimpleShellAndTubeHeatExchanger {
         shell_outlet_temeprature: ThermodynamicTemperature,
         shell_mass_flowrate: MassRate) -> Ratio {
 
+        let overall_thermal_resistance = 
+            self.obtain_parasitic_thermal_resistance_based_on_expt_data(
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                tube_mass_flowrate, 
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                shell_mass_flowrate);
+
+        // 1/(h_parasitic A_parasitic)
+        let mut shell_side_parasitic_thermal_resistance_expt_data = 
+            overall_thermal_resistance
+            - self.get_thermal_resistance_to_ambient()
+            - self.get_outer_shell_cylindrical_thermal_resistance();
+
+        if self.heat_exchanger_has_insulation {
+            shell_side_parasitic_thermal_resistance_expt_data 
+                -= self.try_get_insulation_cylindrical_thermal_resistance().unwrap();
+        }
+
+        // A_parasitic
+        let total_area_shell_side_parasitic = 
+            self.parasitic_heat_transfer_area_shell_side();
+
+        // 1/(h_parasitic) = A_parasitic * 1/(h_parasitic_A_parasitic)
+        // take reciprocal then
+        // h_parasitic
+        let h_parasitic: HeatTransfer = 
+            (shell_side_parasitic_thermal_resistance_expt_data *
+             total_area_shell_side_parasitic
+            ).recip();
+
+        let shell_side_fluid_hydraulic_diameter =
+            self.get_shell_side_hydraulic_diameter();
+
+        let expt_nusselt_number_parasitic_shell_side: Ratio = 
+            h_parasitic * shell_side_fluid_hydraulic_diameter/
+            self.get_shell_side_fluid_thermal_conductivity();
+
+        expt_nusselt_number_parasitic_shell_side
+
+    }
+
+    /// gets thermal resistance for parasitic heat losses 
+    /// based on expt
+    #[inline]
+    pub fn obtain_parasitic_thermal_resistance_based_on_expt_data(
+        &self,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        tube_mass_flowrate: MassRate,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        shell_mass_flowrate: MassRate) -> ThermalResistance {
 
         let shell_side_heat_rate: Power = 
             self.get_shell_side_heat_rate_based_on_mass_flowrate(
@@ -796,35 +843,10 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let overall_thermal_resistance = overall_ua.recip();
 
-        // 1/(h_parasitic A_parasitic)
-        let shell_side_parasitic_thermal_resistance_expt_data = 
-            overall_thermal_resistance
-            - self.get_thermal_resistance_to_ambient()
-            - self.get_outer_shell_cylindrical_thermal_resistance()
-            - self.try_get_insulation_cylindrical_thermal_resistance().unwrap();
-
-        // A_parasitic
-        let total_area_shell_side_parasitic = 
-            self.circular_tube_bundle_heat_transfer_area_shell_side();
-
-        // 1/(h_parasitic) = A_parasitic * 1/(hparasitic_A_parasitic)
-        // take reciprocal then
-        // h_parasitic
-        let h_parasitic: HeatTransfer = 
-            (shell_side_parasitic_thermal_resistance_expt_data *
-             total_area_shell_side_parasitic
-            ).recip();
-
-        let shell_side_fluid_hydraulic_diameter =
-            self.get_shell_side_hydraulic_diameter();
-
-        let expt_nusselt_number_parasitic_shell_side: Ratio = 
-            h_parasitic * shell_side_fluid_hydraulic_diameter/
-            self.get_shell_side_fluid_thermal_conductivity();
-
-        expt_nusselt_number_parasitic_shell_side
+        overall_thermal_resistance
 
     }
+
 
 
 }

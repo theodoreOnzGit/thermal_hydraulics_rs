@@ -1116,8 +1116,8 @@ impl SimpleShellAndTubeHeatExchanger {
 
 
 
-        let shell_side_fluid_to_outer_tube_surf_nusselt_correlation: NusseltCorrelation
-            = self.shell_side_nusselt_correlation_to_outer_shell;
+        let shell_side_fluid_parasitic_nusselt_correlation: NusseltCorrelation
+            = self.shell_side_nusselt_correlation_parasitic;
 
         let fldk_shell_side: Ratio = self.
             shell_side_custom_component_loss_correlation.
@@ -1165,7 +1165,8 @@ impl SimpleShellAndTubeHeatExchanger {
             ).unwrap();
 
 
-        nusselt_estimate_shell_side_to_outer_shell = shell_side_fluid_to_outer_tube_surf_nusselt_correlation.
+        nusselt_estimate_shell_side_to_outer_shell = 
+            shell_side_fluid_parasitic_nusselt_correlation.
             estimate_based_on_prandtl_darcy_and_reynolds_wall_correction(
                 bulk_prandtl_number_shell_side, 
                 wall_prandtl_number_estimate,
