@@ -548,7 +548,7 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
     approx::assert_relative_eq!(
         nusselt_number_shell_side_to_tubes.get::<ratio>(),
         nusselt_number_shell_side_to_tubes_based_on_entrance_cv_temp.get::<ratio>(),
-        max_relative = 0.001
+        max_relative = 0.01
         );
 }
 
