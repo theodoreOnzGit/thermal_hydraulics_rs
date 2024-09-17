@@ -655,6 +655,60 @@ impl SimpleShellAndTubeHeatExchanger {
 
         let overall_thermal_resistance = overall_ua.recip();
 
+        // 1/(U A)_overall = 1/(h_s A_s) + 1/(h_t A_t) + inner_tubes_thermal_resistance
+        //
+        // 1/(h_s A_s)
+        let shell_side_thermal_resistance_expt_data = 
+            overall_thermal_resistance
+            - self.get_inner_tubes_convective_thermal_resistance_based_on_wetted_perimeter()
+            - self.get_inner_tubes_cylindrical_thermal_resistance();
+
+        // A_s 
+        let total_area_shell_side = 
+            self.circular_tube_bundle_heat_transfer_area_shell_side();
+
+        // 1/(h_s) = A_s * 1/(hs_A_s)
+        // take reciprocal then
+        // h_s
+        let h_s: HeatTransfer = 
+            (shell_side_thermal_resistance_expt_data*total_area_shell_side).recip();
+
+        let shell_side_fluid_hydraulic_diameter =
+            self.get_shell_side_hydraulic_diameter();
+
+        let expt_nusselt_number_shell_side: Ratio = 
+            h_s * shell_side_fluid_hydraulic_diameter/
+            self.get_shell_side_fluid_thermal_conductivity();
+
+        expt_nusselt_number_shell_side
+
+
+    }
+    /// obtain shell side Nusselt number based on prevailing flowrates 
+    /// and heat rate
+    #[inline]
+    pub fn obtain_shell_side_nusselt_number_based_on_expt_data_and_heat_rate(
+        &self,
+        sthe_heat_transfer_rate: Power,
+        tube_inlet_temperature: ThermodynamicTemperature,
+        tube_outlet_temeprature: ThermodynamicTemperature,
+        shell_inlet_temperature: ThermodynamicTemperature,
+        shell_outlet_temeprature: ThermodynamicTemperature,
+        is_counter_current: bool) -> Ratio {
+
+        let overall_ua: ThermalConductance = 
+            Self::get_ua_based_on_heat_transfer_and_temperature_differences(
+                sthe_heat_transfer_rate,
+                tube_inlet_temperature, 
+                tube_outlet_temeprature, 
+                shell_inlet_temperature, 
+                shell_outlet_temeprature, 
+                is_counter_current);
+
+        let overall_thermal_resistance = overall_ua.recip();
+
+        // 1/(U A)_overall = 1/(h_s A_s) + 1/(h_t A_t) + inner_tubes_thermal_resistance
+        //
         // 1/(h_s A_s)
         let shell_side_thermal_resistance_expt_data = 
             overall_thermal_resistance
