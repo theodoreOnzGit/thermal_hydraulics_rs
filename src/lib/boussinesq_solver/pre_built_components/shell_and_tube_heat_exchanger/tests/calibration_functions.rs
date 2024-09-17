@@ -35,6 +35,7 @@ pub fn calibration_regression_set_c9_no_heat_loss(){
     let shell_side_to_tubes_nusselt_number_correction_factor = 1.0;
     let insulation_thickness_regression_cm = 5.08;
     let shell_side_to_ambient_nusselt_correction_factor = 0.0;
+    let mesh_refined_setting = false;
 
     dhx_calibration_regression_unit_test_shell_to_tube_only(
         experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
@@ -48,7 +49,64 @@ pub fn calibration_regression_set_c9_no_heat_loss(){
         max_time_seconds, 
         insulation_thickness_regression_cm, 
         shell_side_to_tubes_nusselt_number_correction_factor,
-        shell_side_to_ambient_nusselt_correction_factor);
+        shell_side_to_ambient_nusselt_correction_factor,
+        mesh_refined_setting);
+
+
+}
+/// based on 
+/// Zweibaum's unpublished data:
+/// dataset number,pri loop mass flowrate (kg/s),DRACS loop mass flowrate (kg/s),DHX shell top inlet (DegC),DHX tube bottom inlet(DegC),DHX shell bottom outlet (DegC),DHX tube top outlet (DegC),
+/// C-9,0.03547,0.04699,116.05003,39.64593,79.02407,67.40722,
+///
+/// but modified to test calibration functions 
+///
+/// firstly, one regression test without heat loss
+/// with a mesh refined version with slightly stricter criteria
+#[test]
+pub fn calibration_regression_set_c9_no_heat_loss_mesh_refined(){
+
+    let (experimental_pri_shell_side_mass_flowrate_kg_per_s_abs,
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs,
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc) =
+        (0.03547,0.04699,116.05003,39.64593,79.02407,67.40722);
+
+    // temperatures are validated to within 0.5 K
+    // regression performed to within 0.05K
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    // tested that at 1500s, the results are more or less the same 
+    // as at 750s and even 500s
+    //
+    // let max_time_seconds = 1500.0;
+    // let max_time_seconds = 750.0;
+    // let max_time_seconds = 500.0;
+    let max_time_seconds = 400.0;
+
+    // settings for insulation and shell side nusselt correction 
+    // factor
+    let shell_side_to_tubes_nusselt_number_correction_factor = 1.0;
+    let insulation_thickness_regression_cm = 5.08;
+    let shell_side_to_ambient_nusselt_correction_factor = 0.0;
+    let mesh_refined_setting = true;
+
+    dhx_calibration_regression_unit_test_shell_to_tube_only(
+        experimental_dracs_tube_side_mass_flowrate_kg_per_s_abs, 
+        experimental_pri_shell_side_mass_flowrate_kg_per_s_abs, 
+        dhx_shell_side_inlet_temp_degc, 
+        dhx_shell_side_outlet_temp_set_point_degc, 
+        dhx_shell_side_outlet_regression_temperature_degc, 
+        dhx_tube_side_inlet_temp_degc, 
+        dhx_tube_side_outlet_temp_set_point_degc, 
+        dhx_tube_side_outlet_regression_temperature_degc, 
+        max_time_seconds, 
+        insulation_thickness_regression_cm, 
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        shell_side_to_ambient_nusselt_correction_factor,
+        mesh_refined_setting);
 
 
 }
@@ -102,7 +160,8 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
     max_time_seconds:f64,
     insulation_thickness_regression_cm: f64,
     shell_side_to_tubes_nusselt_number_correction_factor: f64,
-    shell_side_to_ambient_nusselt_correction_factor: f64,){
+    shell_side_to_ambient_nusselt_correction_factor: f64,
+    mesh_refined: bool){
     use uom::si::length::centimeter;
     use uom::si::ratio::ratio;
     use uom::si::thermal_resistance::kelvin_per_watt;
@@ -174,7 +233,11 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
     // in dracs loop
 
 
-    let mut dhx_sthe = new_dhx_sthe_version_1_mesh_refined(initial_temperature);
+    let mut dhx_sthe = new_dhx_sthe_version_1(initial_temperature);
+
+    if mesh_refined {
+        dhx_sthe = new_dhx_sthe_version_1_mesh_refined(initial_temperature);
+    }
     // create the heat transfer interaction 
     let average_therminol_density = 
         LiquidMaterial::TherminolVP1.try_get_density(
@@ -453,16 +516,28 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
             shell_mass_flowrate, 
             is_counter_current).recip();
 
-    // should agree within 3%
+    // should agree within 5%
     //
-    // issue not due to mesh refinement, but perhaps that the inlet 
+    // issue not mainly due to mesh refinement, but perhaps that the inlet 
     // temperature BCs used to calculate LMTD are not actually used for 
     // calculating temperature differences
-    // 
+    //
+    // mesh refinement does play a role though, reduces the 
+    // effect of the error from 5% to 3% when I roughly double the number 
+    // of cvs
+
+    if mesh_refined {
+        approx::assert_relative_eq!(
+            thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
+            thermal_resistance_based_on_expt_data.get::<kelvin_per_watt>(),
+            max_relative = 0.03
+        );
+    }
+     
     approx::assert_relative_eq!(
         thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
         thermal_resistance_based_on_expt_data.get::<kelvin_per_watt>(),
-        max_relative = 0.03
+        max_relative = 0.05
         );
 
     // now lets base it on entrance cv temperature instead
@@ -499,11 +574,20 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
             thermal_resistance_based_on_entrance_cv_temp));
 
 
-    // the one based on entrance cv should agree to within 0.1%
+    // the one based on entrance cv should agree to within 0.5%
+    // note: mesh refinement gets it to within 0.1%
+    if mesh_refined {
+        approx::assert_relative_eq!(
+            thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
+            thermal_resistance_based_on_entrance_cv_temp.get::<kelvin_per_watt>(),
+            max_relative = 0.001
+        );
+
+    }
     approx::assert_relative_eq!(
         thermal_resistance_overall_expected.get::<kelvin_per_watt>(),
         thermal_resistance_based_on_entrance_cv_temp.get::<kelvin_per_watt>(),
-        max_relative = 0.001
+        max_relative = 0.005
         );
     // assert shell side nusselt number 
     let nusselt_number_shell_side_to_tubes_actual =
@@ -516,14 +600,23 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
             shell_mass_flowrate, 
             is_counter_current);
 
-    // these two should agree to within 5%
+    // these two should agree to within 8%
     // now due to error propagation, the calculated shell side nusselt 
-    // number agrees to wihtin 5%
+    // number agrees to wihtin 8%
     approx::assert_relative_eq!(
         nusselt_number_shell_side_to_tubes.get::<ratio>(),
         nusselt_number_shell_side_to_tubes_actual.get::<ratio>(),
-        max_relative = 0.05
+        max_relative = 0.08
         );
+
+    if mesh_refined {
+        approx::assert_relative_eq!(
+            nusselt_number_shell_side_to_tubes.get::<ratio>(),
+            nusselt_number_shell_side_to_tubes_actual.get::<ratio>(),
+            max_relative = 0.05
+        );
+
+    }
 
     // if one wants to factor out the effect of the entrance cv and 
     // boundary condition differences 
@@ -545,11 +638,19 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
 
     // once this correction is made, nusselt numbers of shell side should 
     // agree to within 0.5%
+    if mesh_refined {
+        // should agree to within 0.2% if mesh refined
+        approx::assert_relative_eq!(
+            nusselt_number_shell_side_to_tubes.get::<ratio>(),
+            nusselt_number_shell_side_to_tubes_based_on_entrance_cv_temp.get::<ratio>(),
+            max_relative = 0.002
+        );
+    }
     approx::assert_relative_eq!(
         nusselt_number_shell_side_to_tubes.get::<ratio>(),
         nusselt_number_shell_side_to_tubes_based_on_entrance_cv_temp.get::<ratio>(),
         max_relative = 0.005
-        );
+    );
 }
 
 
