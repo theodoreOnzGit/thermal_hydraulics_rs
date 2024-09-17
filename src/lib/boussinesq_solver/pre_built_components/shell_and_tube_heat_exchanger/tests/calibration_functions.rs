@@ -544,11 +544,11 @@ pub fn dhx_calibration_regression_unit_test_shell_to_tube_only(
     ));
 
     // once this correction is made, nusselt numbers of shell side should 
-    // agree to within 1%
+    // agree to within 0.5%
     approx::assert_relative_eq!(
         nusselt_number_shell_side_to_tubes.get::<ratio>(),
         nusselt_number_shell_side_to_tubes_based_on_entrance_cv_temp.get::<ratio>(),
-        max_relative = 0.01
+        max_relative = 0.005
         );
 }
 
