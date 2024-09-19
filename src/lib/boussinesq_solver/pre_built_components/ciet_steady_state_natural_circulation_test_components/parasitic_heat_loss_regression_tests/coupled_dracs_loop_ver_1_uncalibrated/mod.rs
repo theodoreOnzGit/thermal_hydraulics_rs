@@ -42,6 +42,11 @@ pub fn long_test_uncalibrated_dracs_loop(){
 #[test]
 pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
 
+    // running this 
+    // took about 210s for the simulations
+    // on Arch Linux i7-10875H gaming laptop
+    // 8 cores 16 threads
+
     use std::thread;
 
     use regression_coupled_dracs_loop_version_1::*;
