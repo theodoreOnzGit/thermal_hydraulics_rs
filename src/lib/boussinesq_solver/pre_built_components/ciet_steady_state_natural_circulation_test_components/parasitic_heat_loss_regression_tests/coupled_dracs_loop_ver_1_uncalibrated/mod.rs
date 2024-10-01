@@ -46,6 +46,12 @@ pub fn regression_long_test_uncalibrated_dracs_loop_set_c(){
     // took about 210s for the simulations
     // on Arch Linux i7-10875H gaming laptop
     // 8 cores 16 threads
+    //
+    // on the i5-13500H, Linux Mint gaming laptop,
+    // it took about 118s
+    //
+    // since the simulation time is 3000s, and the computation time is 
+    // 210s at most, real-time simulation capability has been demonstrated
 
     use std::thread;
 
