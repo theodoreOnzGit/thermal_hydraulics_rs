@@ -553,10 +553,6 @@ pub fn insulated_sthe_constructor_test(){
         sthe_with_insulation.heat_transfer_to_ambient);
 
     assert_eq!(
-        modified_du_heat_exchanger_reference.insulation_array,
-        sthe_with_insulation.insulation_array);
-
-    assert_eq!(
         modified_du_heat_exchanger_reference.tube_side_flow_area,
         sthe_with_insulation.tube_side_flow_area);
 
@@ -567,6 +563,11 @@ pub fn insulated_sthe_constructor_test(){
     assert_eq!(
         modified_du_heat_exchanger_reference.shell_side_custom_component_loss_correlation,
         sthe_with_insulation.shell_side_custom_component_loss_correlation);
+
+    assert_eq!(
+        modified_du_heat_exchanger_reference.insulation_array,
+        sthe_with_insulation.insulation_array);
+
 
     assert_eq!(
         modified_du_heat_exchanger_reference,
