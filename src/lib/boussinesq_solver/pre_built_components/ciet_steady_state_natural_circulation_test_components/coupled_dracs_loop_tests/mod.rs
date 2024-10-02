@@ -259,10 +259,10 @@ pub fn case_c_tchx_out_313_kelvin_40_celsius(){
 /// the DHX here uses uncalibrated Gnielinski correlations 
 /// to estimate heat transfer coefficients
 pub fn verify_coupled_dhx_analytical_solution_version_1(
-    input_power_watts: f64,
-    tchx_outlet_temperature_set_point_degc: f64,
-    experimental_dracs_mass_flowrate_kg_per_s: f64,
-    experimental_primary_mass_flowrate_kg_per_s: f64) -> 
+    _input_power_watts: f64,
+    _tchx_outlet_temperature_set_point_degc: f64,
+    _experimental_dracs_mass_flowrate_kg_per_s: f64,
+    _experimental_primary_mass_flowrate_kg_per_s: f64) -> 
 Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     //use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
