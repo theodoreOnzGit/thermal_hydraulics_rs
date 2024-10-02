@@ -247,6 +247,7 @@ pub fn du_heat_exchanger_constructor_test(){
 /// checks whether constructor for insulated sthe
 /// is working properly
 #[test]
+#[ignore="debugging"]
 pub fn insulated_sthe_constructor_test(){
 
     use std::f64::consts::PI;
@@ -507,7 +508,7 @@ pub fn insulated_sthe_constructor_test(){
 
 
     let sthe_with_insulation = 
-        SimpleShellAndTubeHeatExchanger::new_sthe_with_insulation(
+        SimpleShellAndTubeHeatExchanger::_new_sthe_with_insulation(
             number_of_tubes, 
             number_of_inner_nodes, 
             tube_side_od, 

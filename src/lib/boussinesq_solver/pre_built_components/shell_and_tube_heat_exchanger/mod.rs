@@ -439,7 +439,8 @@ impl SimpleShellAndTubeHeatExchanger {
     ///
     /// sthe will have insulation
     ///
-    pub fn new_sthe_with_insulation(
+    /// not properly tested and verified yet
+    fn _new_sthe_with_insulation(
         number_of_tubes: u32,
         number_of_inner_nodes: usize,
         tube_side_od: Length,
