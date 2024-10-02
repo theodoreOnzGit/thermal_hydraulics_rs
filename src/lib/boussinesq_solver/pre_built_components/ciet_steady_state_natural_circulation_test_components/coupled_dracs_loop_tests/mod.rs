@@ -264,95 +264,95 @@ pub fn verify_coupled_dhx_analytical_solution_version_1(
     experimental_dracs_mass_flowrate_kg_per_s: f64,
     experimental_primary_mass_flowrate_kg_per_s: f64) -> 
 Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
-    use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
+    //use uom::si::{f64::*, mass_rate::kilogram_per_second, power::watt};
 
-    use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
+    //use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    use crate::boussinesq_solver::pre_built_components::
-        ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
-    use uom::ConstZero;
+    //use crate::boussinesq_solver::pre_built_components::
+    //    ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
+    //use uom::ConstZero;
 
-    use uom::si::thermodynamic_temperature::degree_celsius;
-    use uom::si::heat_transfer::watt_per_square_meter_kelvin;
-    use uom::si::time::second;
+    //use uom::si::thermodynamic_temperature::degree_celsius;
+    //use uom::si::heat_transfer::watt_per_square_meter_kelvin;
+    //use uom::si::time::second;
 
-    let input_power = Power::new::<watt>(input_power_watts);
-    let _experimental_dracs_mass_flowrate = 
-        MassRate::new::<kilogram_per_second>(
-            experimental_dracs_mass_flowrate_kg_per_s);
-    let _experimental_primary_mass_flowrate = 
-        MassRate::new::<kilogram_per_second>(
-            experimental_primary_mass_flowrate_kg_per_s);
+    //let input_power = Power::new::<watt>(input_power_watts);
+    //let _experimental_dracs_mass_flowrate = 
+    //    MassRate::new::<kilogram_per_second>(
+    //        experimental_dracs_mass_flowrate_kg_per_s);
+    //let _experimental_primary_mass_flowrate = 
+    //    MassRate::new::<kilogram_per_second>(
+    //        experimental_primary_mass_flowrate_kg_per_s);
 
-    let tchx_outlet_temperature_set_point = 
-        ThermodynamicTemperature::new::<degree_celsius>(
-            tchx_outlet_temperature_set_point_degc);
-    use chem_eng_real_time_process_control_simulator::alpha_nightly::transfer_fn_wrapper_and_enums::TransferFnTraits;
-    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
-    use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
+    //let tchx_outlet_temperature_set_point = 
+    //    ThermodynamicTemperature::new::<degree_celsius>(
+    //        tchx_outlet_temperature_set_point_degc);
+    //use chem_eng_real_time_process_control_simulator::alpha_nightly::transfer_fn_wrapper_and_enums::TransferFnTraits;
+    //use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::ProportionalController;
+    //use chem_eng_real_time_process_control_simulator::alpha_nightly::controllers::AnalogController;
 
-    // max error is 0.5% according to SAM 
-    // is okay, because typical flowmeter measurement error is 2% anyway
-    let timestep = Time::new::<second>(0.5);
-    let heat_rate_through_dhx = input_power;
-    let mut tchx_heat_transfer_coeff: HeatTransfer;
+    //// max error is 0.5% according to SAM 
+    //// is okay, because typical flowmeter measurement error is 2% anyway
+    //let timestep = Time::new::<second>(0.5);
+    //let heat_rate_through_dhx = input_power;
+    //let mut tchx_heat_transfer_coeff: HeatTransfer;
 
-    let reference_tchx_htc = 
-        HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
-    let average_temperature_for_density_calcs = 
-        ThermodynamicTemperature::new::<degree_celsius>(80.0);
-    // let's calculate 3800 seconds of simulated time 
-    // it takes about that long for the temperature to settle down
-    // this is compared to value at 4000s
+    //let reference_tchx_htc = 
+    //    HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
+    //let average_temperature_for_density_calcs = 
+    //    ThermodynamicTemperature::new::<degree_celsius>(80.0);
+    //// let's calculate 3800 seconds of simulated time 
+    //// it takes about that long for the temperature to settle down
+    //// this is compared to value at 4000s
 
-    let mut current_simulation_time = Time::ZERO;
-    let max_simulation_time = Time::new::<second>(3800.0);
+    //let mut current_simulation_time = Time::ZERO;
+    //let max_simulation_time = Time::new::<second>(3800.0);
 
-    // PID controller settings
-    let controller_gain = Ratio::new::<ratio>(1.75);
-    let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
-    let derivative_time: Time = Time::new::<second>(1.0);
-    // derivative time ratio
-    let alpha: Ratio = Ratio::new::<ratio>(1.0);
+    //// PID controller settings
+    //let controller_gain = Ratio::new::<ratio>(1.75);
+    //let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
+    //let derivative_time: Time = Time::new::<second>(1.0);
+    //// derivative time ratio
+    //let alpha: Ratio = Ratio::new::<ratio>(1.0);
 
-    let mut pid_controller: AnalogController = 
-        AnalogController::new_filtered_pid_controller(controller_gain,
-            integral_time,
-            derivative_time,
-            alpha).unwrap();
+    //let mut pid_controller: AnalogController = 
+    //    AnalogController::new_filtered_pid_controller(controller_gain,
+    //        integral_time,
+    //        derivative_time,
+    //        alpha).unwrap();
 
-    // we also have a measurement delay of 0.0001 s 
-    // or 0.1 ms
-    let measurement_delay = Time::new::<millisecond>(0.1);
+    //// we also have a measurement delay of 0.0001 s 
+    //// or 0.1 ms
+    //let measurement_delay = Time::new::<millisecond>(0.1);
 
-    let mut measurement_delay_block: AnalogController = 
-        ProportionalController::new(Ratio::new::<ratio>(1.0)).unwrap().into();
+    //let mut measurement_delay_block: AnalogController = 
+    //    ProportionalController::new(Ratio::new::<ratio>(1.0)).unwrap().into();
 
-    measurement_delay_block.set_dead_time(measurement_delay);
+    //measurement_delay_block.set_dead_time(measurement_delay);
 
 
 
-    let initial_temperature = tchx_outlet_temperature_set_point;
+    //let initial_temperature = tchx_outlet_temperature_set_point;
 
-    // DRACS hot branch or (mostly) hot leg
-    let mut pipe_34 = new_pipe_34(initial_temperature);
-    let mut pipe_33 = new_pipe_33(initial_temperature);
-    let mut pipe_32 = new_pipe_32(initial_temperature);
-    let mut pipe_31a = new_pipe_31a(initial_temperature);
-    let mut static_mixer_61_label_31 = new_static_mixer_61_label_31(initial_temperature);
-    let mut dhx_tube_side_30b = new_dhx_tube_side_30b(initial_temperature);
-    let mut dhx_tube_side_heat_exchanger_30 = new_isolated_dhx_tube_side_30(initial_temperature);
-    let mut dhx_tube_side_30a = new_dhx_tube_side_30a(initial_temperature);
+    //// DRACS hot branch or (mostly) hot leg
+    //let mut pipe_34 = new_pipe_34(initial_temperature);
+    //let mut pipe_33 = new_pipe_33(initial_temperature);
+    //let mut pipe_32 = new_pipe_32(initial_temperature);
+    //let mut pipe_31a = new_pipe_31a(initial_temperature);
+    //let mut static_mixer_61_label_31 = new_static_mixer_61_label_31(initial_temperature);
+    //let mut dhx_tube_side_30b = new_dhx_tube_side_30b(initial_temperature);
+    //let mut dhx_tube_side_heat_exchanger_30 = new_isolated_dhx_tube_side_30(initial_temperature);
+    //let mut dhx_tube_side_30a = new_dhx_tube_side_30a(initial_temperature);
 
-    // DRACS cold branch or (mostly) cold leg
-    let mut tchx_35a = new_ndhx_tchx_horizontal_35a(initial_temperature);
-    let mut tchx_35b = new_ndhx_tchx_vertical_35b(initial_temperature);
-    let mut static_mixer_60_label_36 = new_static_mixer_60_label_36(initial_temperature);
-    let mut pipe_36a = new_pipe_36a(initial_temperature);
-    let mut pipe_37 = new_pipe_37(initial_temperature);
-    let mut flowmeter_60_37a = new_flowmeter_60_37a(initial_temperature);
-    let mut pipe_38 = new_pipe_38(initial_temperature);
-    let mut pipe_39 = new_pipe_39(initial_temperature);
+    //// DRACS cold branch or (mostly) cold leg
+    //let mut tchx_35a = new_ndhx_tchx_horizontal_35a(initial_temperature);
+    //let mut tchx_35b = new_ndhx_tchx_vertical_35b(initial_temperature);
+    //let mut static_mixer_60_label_36 = new_static_mixer_60_label_36(initial_temperature);
+    //let mut pipe_36a = new_pipe_36a(initial_temperature);
+    //let mut pipe_37 = new_pipe_37(initial_temperature);
+    //let mut flowmeter_60_37a = new_flowmeter_60_37a(initial_temperature);
+    //let mut pipe_38 = new_pipe_38(initial_temperature);
+    //let mut pipe_39 = new_pipe_39(initial_temperature);
     todo!()
 
 }
