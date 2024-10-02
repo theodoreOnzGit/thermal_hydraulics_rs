@@ -171,9 +171,9 @@ pub fn yd325_tube_reynolds_prandtl_nusselt(){
     use uom::si::length::meter;
     use uom::si::diffusion_coefficient::square_meter_per_second;
     use crate::prelude::beta_testing::LiquidMaterial;
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::{boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, prelude::beta_testing::SolidMaterial};
-    use crate::boussinesq_solver::fluid_mechanics_correlations::darcy;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::{tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, prelude::beta_testing::SolidMaterial};
+    use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::darcy;
 
     fn test(temperature_val_celsius: f64,
         kinematic_viscosity_val_sq_m_per_s: f64,

@@ -3,12 +3,12 @@ use uom::si::f64::*;
 use uom::si::available_energy::joule_per_kilogram;
 use uom::si::thermodynamic_temperature::{degree_celsius,kelvin};
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe::get_flibe_specific_enthalpy;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flinak::get_flinak_specific_enthalpy;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil::get_yd325_specific_enthalpy;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::{self, dowtherm_a};
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt::get_hitec_specific_enthalpy;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe::get_flibe_specific_enthalpy;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flinak::get_flinak_specific_enthalpy;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil::get_yd325_specific_enthalpy;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::{self, dowtherm_a};
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt::get_hitec_specific_enthalpy;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
 
 use super::LiquidMaterial;
 use super::Material;
@@ -23,11 +23,11 @@ use peroxide::prelude::*;
 // future
 //
 // 
-// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+// pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
-pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 fn solid_specific_enthalpy(material: Material,
     solid_temp: ThermodynamicTemperature) -> AvailableEnergy {
     
@@ -62,11 +62,11 @@ fn solid_specific_enthalpy(material: Material,
 }
 
 // should the material happen to be a liquid, use this function
-// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties)
+// pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties)
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
-pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 fn liquid_specific_enthalpy(material: Material, 
     fluid_temp: ThermodynamicTemperature) -> AvailableEnergy {
 

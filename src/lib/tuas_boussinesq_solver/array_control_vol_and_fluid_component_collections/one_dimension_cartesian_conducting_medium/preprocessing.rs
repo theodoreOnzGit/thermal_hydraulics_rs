@@ -2,12 +2,12 @@ use super::CartesianConduction1DArray;
 use ndarray::*;
 use uom::si::area::square_meter;
 use uom::si::f64::*;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
 
 
 impl CartesianConduction1DArray {

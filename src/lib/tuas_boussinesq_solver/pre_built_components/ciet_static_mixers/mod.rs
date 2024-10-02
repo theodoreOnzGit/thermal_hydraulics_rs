@@ -1,8 +1,8 @@
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 
 use super::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;

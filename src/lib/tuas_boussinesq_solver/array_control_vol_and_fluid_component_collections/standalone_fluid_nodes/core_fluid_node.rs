@@ -4,11 +4,11 @@ use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::solve_conductance_matrix_power_vector;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction
@@ -414,13 +414,13 @@ pub fn fluid_node_calculation_initial_test(){
     use uom::si::pressure::atmosphere;
     use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
-    use crate::boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
-    use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
+    use crate::tuas_boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
+    use crate::tuas_boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
         heat_transfer_interaction_enums::*;
 
 
@@ -924,13 +924,13 @@ fn fluid_node_backflow_calculation_initial_test(){
     use uom::si::pressure::atmosphere;
     use uom::si::thermodynamic_temperature::{degree_celsius, kelvin};
 
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
-    use crate::boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
-    use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::volumetric_heat_capacity::try_get_rho_cp;
+    use crate::tuas_boussinesq_solver::control_volume_dimensions::RadialCylindricalThicknessThermalConduction;
+    use crate::tuas_boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
         heat_transfer_interaction_enums::*;
 
 

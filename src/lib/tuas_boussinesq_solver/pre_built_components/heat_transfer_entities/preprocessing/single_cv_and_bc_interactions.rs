@@ -4,14 +4,14 @@ use std::f64::consts::PI;
 use super::heat_transfer_interaction_enums::HeatTransferInteractionType;
 use uom::si::f64::*;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
 
 use uom::num_traits::Zero;
 

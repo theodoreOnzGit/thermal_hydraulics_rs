@@ -5,21 +5,21 @@ use uom::ConstZero;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::pressure::pascal;
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::{FluidComponentCollection, FluidComponentCollectionMethods}, fluid_component_super_collection::FluidComponentSuperCollection};
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::{fluid_component_collection::{FluidComponentCollection, FluidComponentCollectionMethods}, fluid_component_super_collection::FluidComponentSuperCollection};
 
 
 #[test]
 pub fn heater_branch_with_heater_v2_test(){
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_collection::FluidComponentCollection;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_collection::FluidComponentCollectionOreintation;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component::FluidComponent;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
     use uom::si::pressure::pascal;
@@ -144,12 +144,12 @@ pub fn heater_branch_with_heater_v2_test(){
 #[test]
 pub fn ctah_branch_test(){
 
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::*;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_collection::FluidComponentCollection;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
     use uom::si::pressure::pascal;

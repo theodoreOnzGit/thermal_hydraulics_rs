@@ -1,6 +1,6 @@
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::f64::*;
 

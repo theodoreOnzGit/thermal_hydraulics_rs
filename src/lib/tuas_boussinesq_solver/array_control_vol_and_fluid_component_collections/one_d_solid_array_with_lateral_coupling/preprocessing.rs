@@ -1,5 +1,5 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
 use uom::si::f64::*;
 use ndarray::*;
 use uom::si::thermodynamic_temperature::kelvin;

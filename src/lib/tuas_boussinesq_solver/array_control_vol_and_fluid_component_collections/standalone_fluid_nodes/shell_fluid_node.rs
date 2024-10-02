@@ -4,11 +4,11 @@ use uom::num_traits::Zero;
 use uom::si::f64::*;
 use uom::si::power::watt;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::solve_conductance_matrix_power_vector;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 /// for high peclet number flows, we can advance timestep without 
 /// considering axial conduction within the fluid

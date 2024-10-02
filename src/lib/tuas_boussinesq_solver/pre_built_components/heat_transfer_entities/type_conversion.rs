@@ -1,7 +1,7 @@
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-use crate::boussinesq_solver::boundary_conditions::BCType;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 use super::cv_types::CVType;

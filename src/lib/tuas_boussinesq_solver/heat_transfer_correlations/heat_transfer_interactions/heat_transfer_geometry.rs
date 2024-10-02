@@ -1,5 +1,5 @@
-use crate::boussinesq_solver::control_volume_dimensions::*;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::*;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
 
 
 /// for a curved surface, be it cylindrical or spherical,

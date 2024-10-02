@@ -5,11 +5,11 @@ use uom::si::pressure::atmosphere;
 
 use super::boussinesq_thermophysical_properties::Material;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 specific_enthalpy::try_get_h;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 specific_enthalpy::try_get_temperature_from_h;
 
 

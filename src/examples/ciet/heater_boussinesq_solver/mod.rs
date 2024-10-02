@@ -45,17 +45,17 @@ use std::time::SystemTime;
 
 use csv::Writer;
 
-use thermal_hydraulics_rs::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-use thermal_hydraulics_rs::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use thermal_hydraulics_rs::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_heater_top_and_bottom_head_bare::HeaterTopBottomHead;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_static_mixers::StaticMixers;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::ciet_struct_supports::StructuralSupport;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::ciet_heater_top_and_bottom_head_bare::HeaterTopBottomHead;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::ciet_heater_version_2_bare::HeaterVersion2Bare;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::ciet_static_mixers::StaticMixers;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::ciet_struct_supports::StructuralSupport;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 use uom::si::f64::*;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::si::thermodynamic_temperature::degree_celsius;

@@ -65,8 +65,8 @@ use uom::si::ratio::ratio;
 use uom::si::thermodynamic_temperature::degree_celsius;
 use uom::si::pressure::atmosphere;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 
 use super::insulated_pipes_and_fluid_components::InsulatedFluidComponent;
 use super::non_insulated_fluid_components::NonInsulatedFluidComponent;

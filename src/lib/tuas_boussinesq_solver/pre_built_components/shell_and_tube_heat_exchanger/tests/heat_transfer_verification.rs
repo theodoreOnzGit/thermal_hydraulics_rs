@@ -15,10 +15,10 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
     use uom::si::time::second;
     use uom::si::thermodynamic_temperature::kelvin;
 
-    use crate::boussinesq_solver::heat_transfer_correlations::
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::
         heat_transfer_interactions::heat_transfer_interaction_enums
         ::HeatTransferInteractionType;
-    use crate::boussinesq_solver::boundary_conditions::BCType;
+    use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
 
 
     use uom::si::angle::degree;
@@ -31,14 +31,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger(){
     use uom::si::mass_rate::kilogram_per_second;
     //use uom::si::area::square_meter;
 
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+    use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::tuas_boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
     use uom::si::f64::*;
     let number_of_tubes = 1_u32;
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -614,10 +614,10 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
     use uom::si::time::second;
     use uom::si::thermodynamic_temperature::kelvin;
 
-    use crate::boussinesq_solver::heat_transfer_correlations::
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::
         heat_transfer_interactions::heat_transfer_interaction_enums
         ::HeatTransferInteractionType;
-    use crate::boussinesq_solver::boundary_conditions::BCType;
+    use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
 
 
     use uom::si::angle::degree;
@@ -630,14 +630,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_two(){
     use uom::si::mass_rate::kilogram_per_second;
     //use uom::si::area::square_meter;
 
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+    use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::tuas_boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
     use uom::si::f64::*;
     let number_of_tubes = 1_u32;
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);
@@ -1212,10 +1212,10 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
     use uom::si::time::second;
     use uom::si::thermodynamic_temperature::kelvin;
 
-    use crate::boussinesq_solver::heat_transfer_correlations::
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::
         heat_transfer_interactions::heat_transfer_interaction_enums
         ::HeatTransferInteractionType;
-    use crate::boussinesq_solver::boundary_conditions::BCType;
+    use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
 
 
     use uom::si::angle::degree;
@@ -1228,14 +1228,14 @@ pub fn basic_test_shell_and_tube_heat_exchanger_set_three(){
     use uom::si::mass_rate::kilogram_per_second;
     //use uom::si::area::square_meter;
 
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+    use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, SolidMaterial};
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::tuas_boussinesq_solver::pre_built_components::shell_and_tube_heat_exchanger::SimpleShellAndTubeHeatExchanger;
     use uom::si::f64::*;
     let number_of_tubes = 19_u32;
     let fluid_pressure = Pressure::new::<atmosphere>(1.0);

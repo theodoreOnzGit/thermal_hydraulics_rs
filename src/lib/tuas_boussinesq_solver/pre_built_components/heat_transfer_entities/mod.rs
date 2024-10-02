@@ -1,6 +1,6 @@
 use self::cv_types::CVType;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::boundary_conditions::BCType;
+use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
 use uom::num_traits::Zero;
 use uom::si::f64::*;
 /// Contains entities which transfer heat and interact with each 

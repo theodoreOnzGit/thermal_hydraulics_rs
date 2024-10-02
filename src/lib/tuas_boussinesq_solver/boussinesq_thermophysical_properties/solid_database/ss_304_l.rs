@@ -3,7 +3,7 @@ use uom::si::length::millimeter;
 use uom::si::mass_density::kilogram_per_cubic_meter;
 use uom::si::specific_heat_capacity::joule_per_kilogram_kelvin;
 use uom::si::thermal_conductivity::watt_per_meter_kelvin;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::*;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 use uom::si::thermodynamic_temperature::kelvin;
 

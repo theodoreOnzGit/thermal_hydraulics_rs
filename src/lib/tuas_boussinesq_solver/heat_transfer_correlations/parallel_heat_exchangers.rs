@@ -1,6 +1,6 @@
 use uom::si::f64::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::
 thermal_resistance::subtract_two_thermodynamic_temperatures;
 /// LMTD = (delta T in - delta T out) / (ln delta T in - ln delta T out)
 ///
@@ -13,7 +13,7 @@ thermal_resistance::subtract_two_thermodynamic_temperatures;
 ///
 /// ```rust
 /// extern crate approx;
-/// use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::
+/// use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::
 /// parallel_heat_exchangers::log_mean_temperature_difference;
 /// 
 ///

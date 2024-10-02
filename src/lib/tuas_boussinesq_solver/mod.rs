@@ -5,12 +5,12 @@
 pub mod boussinesq_thermophysical_properties;
 
 /// Module for correlations of fluid mechanics 
-/// suitable for boussinesq_solver (single phase, negligble density changes
+/// suitable for tuas_boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
 pub mod fluid_mechanics_correlations;
 
 /// Module for heat transfer correlations 
-/// suitable for boussinesq_solver (single phase, negligble density changes
+/// suitable for tuas_boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
 pub mod heat_transfer_correlations;
 
@@ -44,7 +44,7 @@ pub mod single_control_vol;
 
 /// Module for array control volumes (mainly for fluid control volumes,
 /// but solid control volumes are set by setting flowrate to zero)
-/// suitable for boussinesq_solver (single phase, negligble density changes
+/// suitable for tuas_boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
 ///
 /// also contains code to help calculate pressure drop and mass flow rate 
@@ -65,10 +65,10 @@ pub mod single_control_vol;
 pub mod array_control_vol_and_fluid_component_collections;
 
 /// Module for pre-built-components 
-/// suitable for boussinesq_solver (single phase, negligble density changes
+/// suitable for tuas_boussinesq_solver (single phase, negligble density changes
 /// except for buoyancy)
 ///
-/// It's dependent on all the other modules within the boussinesq_solver
+/// It's dependent on all the other modules within the tuas_boussinesq_solver
 ///
 /// You don't want to write everything from scratch right? 
 pub mod pre_built_components;

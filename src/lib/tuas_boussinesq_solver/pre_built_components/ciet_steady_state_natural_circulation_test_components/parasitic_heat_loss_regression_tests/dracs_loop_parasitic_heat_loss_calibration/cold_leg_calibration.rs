@@ -288,7 +288,7 @@ pub fn dracs_cold_leg_insulation_thickness_calibration_validation_test_v1(
     use uom::si::{f64::*, mass_rate::kilogram_per_second};
 
 
-    use crate::boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
     use crate::prelude::beta_testing::{FluidArray, HeatTransferEntity, HeatTransferInteractionType, LiquidMaterial};
     use uom::ConstZero;
 

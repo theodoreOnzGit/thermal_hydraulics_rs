@@ -7,11 +7,11 @@ pub fn heater_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollectionMethods;
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::
         ciet_branch_builders_isothermal::heater_branch_builder_isothermal_test;
     use uom::si::f64::*;
@@ -52,11 +52,11 @@ pub fn ctah_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollectionMethods;
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::
         ciet_branch_builders_isothermal::ctah_branch_builder_isothermal_test;
     use uom::si::f64::*;
@@ -98,11 +98,11 @@ pub fn ctah_branch_pressure_change_test(){
 #[test]
 pub fn partial_ctah_branch_test(){
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_branch_17, new_ctah_pump, new_flowmeter_40_14a, new_inactive_ctah_horizontal, new_inactive_ctah_vertical, new_pipe_10, new_pipe_11, new_pipe_12, new_pipe_13, new_pipe_14, new_pipe_15, new_pipe_16, new_pipe_6a, new_pipe_8a, new_pipe_9, new_static_mixer_40, new_static_mixer_41};
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::{new_branch_17, new_ctah_pump, new_flowmeter_40_14a, new_inactive_ctah_horizontal, new_inactive_ctah_vertical, new_pipe_10, new_pipe_11, new_pipe_12, new_pipe_13, new_pipe_14, new_pipe_15, new_pipe_16, new_pipe_6a, new_pipe_8a, new_pipe_9, new_static_mixer_40, new_static_mixer_41};
     use uom::si::f64::*;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollection;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_collection::FluidComponentCollectionMethods;
 
     use uom::si::pressure::pascal;
     // first let's construct the ctah branch
@@ -202,10 +202,10 @@ pub fn partial_ctah_branch_test(){
 pub fn ctah_pump_should_give_zero_resistance(){
     use uom::si::f64::*;
     use uom::si::mass_rate::kilogram_per_second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
     let test_temperature = ThermodynamicTemperature::
         new::<uom::si::thermodynamic_temperature::degree_celsius>(21.7);
-    let ctah_pump = crate::boussinesq_solver::pre_built_components::
+    let ctah_pump = crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::new_ctah_pump(test_temperature);
 
     let mass_rate = MassRate::new::<kilogram_per_second>(0.18);
@@ -237,17 +237,17 @@ pub fn isothermal_ctah_and_heater_branch_parallel_associated_functions_regressio
     use uom::si::f64::*;
     use uom::si::mass_rate::kilogram_per_second;
     use uom::si::pressure::pascal;
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::ciet_branch_builders_isothermal
         ::*;
     use uom::ConstZero;
     use uom::si::thermodynamic_temperature::degree_celsius;
 
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_super_collection::FluidComponentSuperCollection;
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollectionMethods;

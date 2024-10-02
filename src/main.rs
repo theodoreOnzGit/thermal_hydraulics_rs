@@ -67,7 +67,7 @@
 //! Btw, I no affiliation with the Rust Foundation. 
 //!
 extern crate uom;
-use thermal_hydraulics_rs::boussinesq_solver::fluid_mechanics_correlations::{darcy, fldk};
+use thermal_hydraulics_rs::tuas_boussinesq_solver::fluid_mechanics_correlations::{darcy, fldk};
 mod manual_tests;
 
 

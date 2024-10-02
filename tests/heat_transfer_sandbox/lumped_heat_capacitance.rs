@@ -3,22 +3,22 @@ use std::f64::consts::PI;
 use std::ops::{DerefMut, Deref};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::{OuterDiameterThermalConduction, SurfaceArea};
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
-use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::control_volume_dimensions::{OuterDiameterThermalConduction, SurfaceArea};
+use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use thermal_hydraulics_rs::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 
 
 
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{Material, SolidMaterial};
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{Material, SolidMaterial};
 use uom::si::f64::*;
 use uom::si::length::centimeter;
 use uom::si::power::watt;

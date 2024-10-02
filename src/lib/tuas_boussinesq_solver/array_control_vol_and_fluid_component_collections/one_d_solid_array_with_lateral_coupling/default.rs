@@ -1,6 +1,6 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 use super::SolidColumn;
 

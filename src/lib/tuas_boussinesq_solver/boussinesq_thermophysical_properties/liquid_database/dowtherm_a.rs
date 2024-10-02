@@ -66,7 +66,7 @@ use uom::si::available_energy::joule_per_kilogram;
 extern crate peroxide;
 use peroxide::prelude::*;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// function to obtain dowtherm A density
@@ -159,7 +159,7 @@ pub fn get_dowtherm_a_thermal_conductivity(
 ///
 /// use uom::si::f64::*;
 /// use uom::si::thermodynamic_temperature::kelvin;
-/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
+/// use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 /// liquid_database::dowtherm_a::get_dowtherm_a_enthalpy;
 /// 
 ///
@@ -232,7 +232,7 @@ Result<AvailableEnergy,ThermalHydraulicsLibError>{
 /// use uom::si::f64::*;
 /// use uom::si::thermodynamic_temperature::kelvin;
 /// use uom::si::available_energy::joule_per_kilogram;
-/// use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::
+/// use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 /// liquid_database::dowtherm_a::get_temperature_from_enthalpy;
 ///
 ///

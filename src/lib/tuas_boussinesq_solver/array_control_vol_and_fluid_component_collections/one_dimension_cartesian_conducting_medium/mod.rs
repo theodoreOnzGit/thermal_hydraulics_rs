@@ -3,9 +3,9 @@ use ndarray::*;
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
-use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 

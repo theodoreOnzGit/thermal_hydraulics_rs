@@ -1,5 +1,5 @@
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 
 use super::heat_transfer_entities::cv_types::CVType;
 use super::heat_transfer_entities::HeatTransferEntity;

@@ -66,7 +66,7 @@ use uom::si::available_energy::joule_per_kilogram;
 extern crate peroxide;
 use peroxide::prelude::*;
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{range_check, LiquidMaterial, Material};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 /// function to obtain flibe salt density

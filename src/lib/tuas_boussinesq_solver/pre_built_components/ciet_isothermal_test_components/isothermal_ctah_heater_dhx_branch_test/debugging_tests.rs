@@ -5,11 +5,11 @@ pub fn dhx_branch_pressure_change_test(){
 
     // let's construct the branches with test pressures and obtain 
     // mass flowrates
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollectionMethods;
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_isothermal_test_components::
         ciet_branch_builders_isothermal::dhx_branch_builder_isothermal_test;
     use uom::si::f64::*;

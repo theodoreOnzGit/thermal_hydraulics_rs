@@ -1,10 +1,10 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::prandtl::try_get_prandtl;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::prandtl::try_get_prandtl;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 use super::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use super::FluidArray;

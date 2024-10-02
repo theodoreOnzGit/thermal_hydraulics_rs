@@ -4,10 +4,10 @@
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::kelvin;
 
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
 
 use uom::num_traits::Zero;
 

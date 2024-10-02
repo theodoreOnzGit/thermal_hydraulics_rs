@@ -56,7 +56,7 @@ pub fn du_correlation_empirical_test(){
     use uom::si::ratio::ratio;
     use uom::si::f64::*;
 
-    use crate::boussinesq_solver::heat_transfer_correlations::
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::
         nusselt_number_correlations::pipe_correlations::
         custom_gnielinski_turbulent_nusselt_correlation;
 
@@ -235,7 +235,7 @@ pub fn du_interpolated_correlation_empirical_test(){
     use uom::si::ratio::ratio;
     use uom::si::f64::*;
 
-    use crate::boussinesq_solver::heat_transfer_correlations::
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::
         nusselt_number_correlations::pipe_correlations::
         custom_gnielinski_correlation_interpolated_uniform_heat_flux_liquids_developing;
 

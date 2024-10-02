@@ -112,9 +112,9 @@ pub fn hot_leg_nusselt_calibration_regression_test_v2_failed(
 
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
     use crate::prelude::beta_testing::{FluidArray, HeatTransferEntity, HeatTransferInteractionType, LiquidMaterial};
     use uom::ConstZero;
 
@@ -521,9 +521,9 @@ pub fn hot_leg_nusselt_calibration_regression_test_v1_failed(
 
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    use crate::boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
-    use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::nusselt_number_correlations::enums::NusseltCorrelation;
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
     use crate::prelude::beta_testing::{FluidArray, HeatTransferEntity, HeatTransferInteractionType, LiquidMaterial};
     use uom::ConstZero;
 

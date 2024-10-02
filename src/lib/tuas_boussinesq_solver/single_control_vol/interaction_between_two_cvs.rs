@@ -1,15 +1,15 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_heat_capacity::try_get_cp;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::advection_heat_rate;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_heat_capacity::try_get_cp;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_conductivity::try_get_kappa_thermal_conductivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::thermal_diffusivity::try_get_alpha_thermal_diffusivity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::advection_heat_rate;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::
 heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
-use crate::boussinesq_solver::heat_transfer_correlations::
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::
 heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::
 specific_enthalpy::try_get_temperature_from_h;
 
 use super::SingleCVNode;

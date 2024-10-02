@@ -4,10 +4,10 @@ use uom::si::area::square_meter;
 use ndarray::*;
 use uom::si::power::watt;
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::conductance_array_functions::advance_timestep_for_specified_conductance_array_cv;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::conductance_array_functions::advance_timestep_for_specified_conductance_array_cv;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
 
 impl CartesianConduction1DArray {
     /// calculates the temperature array for the next timestep 

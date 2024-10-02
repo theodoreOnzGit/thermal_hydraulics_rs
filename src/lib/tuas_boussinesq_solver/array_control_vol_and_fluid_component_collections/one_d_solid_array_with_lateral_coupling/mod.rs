@@ -1,6 +1,6 @@
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_h;
 use uom::si::f64::*;
 use ndarray::*;
 

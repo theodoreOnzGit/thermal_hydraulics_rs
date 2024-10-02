@@ -2,16 +2,16 @@
 use std::f64::consts::PI;
 
 use uom::si::f64::*;
-use crate::boussinesq_solver::boundary_conditions::BCType;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
-use crate::boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
-use crate::boussinesq_solver::single_control_vol::boundary_condition_interactions::constant_heat_addition_to_bcs::calculate_single_cv_front_constant_heat_addition_back;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::InnerDiameterThermalConduction;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::OuterDiameterThermalConduction;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_geometry::CylindricalAndSphericalSolidFluidArrangement;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
+use crate::tuas_boussinesq_solver::single_control_vol::boundary_condition_interactions::constant_heat_addition_to_bcs::calculate_single_cv_front_constant_heat_addition_back;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
 
 use self::single_cv_and_bc_interactions::calculate_bc_front_cv_back_advection_for_heat_flux_or_heat_addition;
 use self::single_cv_and_bc_interactions::calculate_constant_heat_addition_front_single_cv_back;

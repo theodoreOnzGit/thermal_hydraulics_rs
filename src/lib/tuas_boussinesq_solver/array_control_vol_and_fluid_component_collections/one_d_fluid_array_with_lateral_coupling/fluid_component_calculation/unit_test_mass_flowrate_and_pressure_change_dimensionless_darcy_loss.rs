@@ -10,7 +10,7 @@ pub fn dimensionless_darcy_loss_correlation_get_pressure_loss() -> Result<(),
 {
     use uom::si::f64::*; 
     use uom::si::ratio::ratio;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         one_d_fluid_array_with_lateral_coupling::DimensionlessDarcyLossCorrelations;
     use uom::si::length::meter;
     use uom::si::pressure::pascal;
@@ -71,7 +71,7 @@ pub fn dimensionless_darcy_loss_correlation_get_mass_flowrate_from_pressure_loss
 {
     use uom::si::f64::*; 
     use uom::si::ratio::ratio;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
         one_d_fluid_array_with_lateral_coupling::DimensionlessDarcyLossCorrelations;
     use uom::si::length::meter;
     use uom::si::mass_density::kilogram_per_cubic_meter;

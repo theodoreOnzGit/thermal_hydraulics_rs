@@ -1,10 +1,10 @@
-use crate::boussinesq_solver::control_volume_dimensions::*;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material};
+use crate::tuas_boussinesq_solver::control_volume_dimensions::*;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material};
 use uom::si::f64::*;
 
 use super::heat_transfer_geometry::*;
 
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::*;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 

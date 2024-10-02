@@ -1,9 +1,9 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::advection_heat_rate;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy::try_get_temperature_from_h;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::advection_heat_rate;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
 heat_transfer_interaction_enums::{DataAdvection, HeatTransferInteractionType};
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 use uom::si::thermodynamic_temperature::kelvin;
 use uom::si::f64::*;

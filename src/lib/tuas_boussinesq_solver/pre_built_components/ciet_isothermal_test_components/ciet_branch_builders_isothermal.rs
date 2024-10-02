@@ -1,7 +1,7 @@
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
 fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::
 fluid_component_collection::fluid_component_collection::FluidComponentCollection;
 
 use super::*;

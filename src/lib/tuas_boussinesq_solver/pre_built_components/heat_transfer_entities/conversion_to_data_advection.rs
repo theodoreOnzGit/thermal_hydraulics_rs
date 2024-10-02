@@ -1,5 +1,5 @@
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use uom::si::f64::*;
 
 use super::HeatTransferEntity;

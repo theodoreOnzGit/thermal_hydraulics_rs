@@ -46,36 +46,36 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
     use uom::si::thermodynamic_temperature::kelvin;
 
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollection;
     // let's construct the branches with test pressures and obtain 
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_collection::FluidComponentCollectionMethods;
     use uom::ConstZero;
 
     use uom::si::thermodynamic_temperature::degree_celsius;
-    use crate::boussinesq_solver::
+    use crate::tuas_boussinesq_solver::
         array_control_vol_and_fluid_component_collections::
         fluid_component_collection::
         fluid_component_super_collection::FluidComponentSuperCollection;
 
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         insulated_pipes_and_fluid_components::InsulatedFluidComponent;
-    use crate::boussinesq_solver::pre_built_components::
+    use crate::tuas_boussinesq_solver::pre_built_components::
         non_insulated_fluid_components::NonInsulatedFluidComponent;
 
-    use crate::boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
-    use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
+    use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
+    use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::
         heat_transfer_interaction_enums::HeatTransferInteractionType;
     use uom::si::heat_transfer::watt_per_square_meter_kelvin;
     use uom::si::time::second;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
 
 
     use chem_eng_real_time_process_control_simulator::alpha_nightly::transfer_fn_wrapper_and_enums::TransferFnTraits;
@@ -85,7 +85,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
     fn verify_isolated_dhx_sam_solution(
         input_power_watts: f64,
         sam_solution_mass_flowrate_kg_per_s: f64,
-        boussinesq_solver_flowrate_kg_per_s_at_4000s_time: f64,
+        tuas_boussinesq_solver_flowrate_kg_per_s_at_4000s_time: f64,
         max_error_tolerance_fraction: f64) -> 
         Result<(),ThermalHydraulicsLibError>{
 
@@ -769,7 +769,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             dbg!(&(sam_solution_mass_flowrate_kg_per_s,final_mass_flowrate));
 
             approx::assert_relative_eq!(
-                boussinesq_solver_flowrate_kg_per_s_at_4000s_time,
+                tuas_boussinesq_solver_flowrate_kg_per_s_at_4000s_time,
                 final_mass_flowrate.get::<kilogram_per_second>(),
                 max_relative = 0.44e-2 // this is the max error between SAM and analytical
             );
@@ -789,7 +789,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 454.4, // dhx input power in watts
                 2.4343e-2, //  / SAM mass flowrate kg/s
-                2.4663e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                2.4663e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -800,7 +800,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 766.0, // dhx input power in watts
                 3.0558e-2, //  / SAM mass flowrate kg/s
-                3.1149e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.1149e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -811,7 +811,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 1004.4, // dhx input power in watts
                 3.4364e-2,//  / SAM mass flowrate kg/s
-                3.5051e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.5051e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -822,7 +822,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 1211.2, // dhx input power in watts
                 3.7117e-2,//  / SAM mass flowrate kg/s
-                3.7992e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                3.7992e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -833,7 +833,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 1409.0, // dhx input power in watts
                 3.9599e-2,//  / SAM mass flowrate kg/s
-                4.0523e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.0523e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
         }
@@ -843,7 +843,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 1607.4, // dhx input power in watts
                 4.1851e-2,//  / SAM mass flowrate kg/s
-                4.2844e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.2844e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -854,7 +854,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 1804.6, // dhx input power in watts
                 4.3913e-2,//  / SAM mass flowrate kg/s
-                4.4977e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.4977e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
         }
@@ -864,7 +864,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 2004.9, // dhx input power in watts
                 4.5834e-2,//  / SAM mass flowrate kg/s
-                4.6995e-2, //boussinesq_solver_flowrate_kg_per_s (expected)
+                4.6995e-2, //tuas_boussinesq_solver_flowrate_kg_per_s (expected)
                 0.032, // max error tolerance fraction
             ).unwrap();
 
@@ -875,7 +875,7 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
             verify_isolated_dhx_sam_solution(
                 2211.0, // dhx input power in watts
                 4.7704e-2,//  / SAM mass flowrate kg/s
-                4.8940e-2, // boussinesq_solver_flowrate_kg_per_s at 4000s
+                4.8940e-2, // tuas_boussinesq_solver_flowrate_kg_per_s at 4000s
                 0.032, // max error tolerance fraction
             ).unwrap();
 

@@ -97,7 +97,7 @@ pub fn custom_kpipe(reynolds_number: f64,
     custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> 
 Result<f64, ThermalHydraulicsLibError>{
 
-    let darcy_fn = crate::boussinesq_solver::fluid_mechanics_correlations::
+    let darcy_fn = crate::tuas_boussinesq_solver::fluid_mechanics_correlations::
         darcy;
 
     let f_ldk_result = custom_f_ldk(&darcy_fn,

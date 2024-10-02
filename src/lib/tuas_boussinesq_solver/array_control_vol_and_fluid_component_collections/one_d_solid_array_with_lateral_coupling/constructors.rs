@@ -1,10 +1,10 @@
 use std::f64::consts::PI;
 
 
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::Material;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
-use crate::boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
-use crate::boussinesq_solver::single_control_vol::SingleCVNode;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::Material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
+use crate::tuas_boussinesq_solver::control_volume_dimensions::UNIT_AREA_SQ_METER_FOR_ONE_DIMENSIONAL_CALCS;
+use crate::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 
 use super::SolidColumn;
 use uom::si::area::square_meter;

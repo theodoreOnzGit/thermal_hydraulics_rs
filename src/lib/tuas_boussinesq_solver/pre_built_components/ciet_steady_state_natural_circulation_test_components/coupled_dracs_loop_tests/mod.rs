@@ -269,7 +269,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     //use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    //use crate::boussinesq_solver::pre_built_components::
+    //use crate::tuas_boussinesq_solver::pre_built_components::
     //    ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
     //use uom::ConstZero;
 

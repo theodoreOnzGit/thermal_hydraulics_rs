@@ -4,10 +4,10 @@ use uom::si::acceleration::meter_per_second_squared;
 use uom::si::mass_rate::kilogram_per_second;
 use uom::ConstZero;
 
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::fluid_mechanics_correlations::dimensionalisation;
-use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
+use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::dimensionalisation;
+use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
 /// This is a generic fluid component trait,
 /// which specifies that fluid components in general
 /// should have the following properties accessed

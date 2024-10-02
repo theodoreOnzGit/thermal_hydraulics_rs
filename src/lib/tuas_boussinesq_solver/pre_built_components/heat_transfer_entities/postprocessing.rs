@@ -4,8 +4,8 @@ use uom::si::f64::*;
 use super::HeatTransferEntity;
 use super::cv_types::CVType;
 
-use crate::boussinesq_solver::boundary_conditions::BCType;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
 impl HeatTransferEntity {

@@ -116,7 +116,7 @@ pub fn hot_leg_htc_to_ambient_calibration_regression_test_v1_failed(
 
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::prelude::beta_testing::{FluidArray, HeatTransferEntity, HeatTransferInteractionType, LiquidMaterial};
     use uom::ConstZero;
 

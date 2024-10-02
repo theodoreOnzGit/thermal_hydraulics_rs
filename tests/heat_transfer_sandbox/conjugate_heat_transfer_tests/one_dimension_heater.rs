@@ -6,17 +6,17 @@ use std::thread;
 use csv::Writer;
 
 
-use thermal_hydraulics_rs::boussinesq_solver::boundary_conditions::BCType;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use thermal_hydraulics_rs::boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material, SolidMaterial};
-use thermal_hydraulics_rs::boussinesq_solver::control_volume_dimensions::SurfaceArea;
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataUserSpecifiedConvectionResistance;
-use thermal_hydraulics_rs::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
-use thermal_hydraulics_rs::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
-use thermal_hydraulics_rs::boussinesq_solver::single_control_vol::SingleCVNode;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boundary_conditions::BCType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::boussinesq_thermophysical_properties::{LiquidMaterial, Material, SolidMaterial};
+use thermal_hydraulics_rs::tuas_boussinesq_solver::control_volume_dimensions::SurfaceArea;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataAdvection;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::DataUserSpecifiedConvectionResistance;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::HeatTransferInteractionType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::cv_types::CVType;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::link_heat_transfer_entity;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use thermal_hydraulics_rs::tuas_boussinesq_solver::single_control_vol::SingleCVNode;
 use uom::si::angle::radian;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::area::square_centimeter;

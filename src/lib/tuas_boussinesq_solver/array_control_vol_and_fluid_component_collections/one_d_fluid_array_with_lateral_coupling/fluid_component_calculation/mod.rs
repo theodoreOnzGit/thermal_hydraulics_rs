@@ -1,7 +1,7 @@
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::density::try_get_rho;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::dynamic_viscosity::try_get_mu_viscosity;
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
-use crate::boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
+use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::churchill_friction_factor;
 use roots::*;
 use uom::typenum::P2;
 use uom::num_traits::Zero;

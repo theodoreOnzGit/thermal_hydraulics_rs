@@ -1,8 +1,8 @@
 use uom::si::f64::*;
 
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
+use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::FluidArray;
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent;
 use crate::prelude::beta_testing::LiquidMaterial;
 
 use super::SimpleShellAndTubeHeatExchanger;

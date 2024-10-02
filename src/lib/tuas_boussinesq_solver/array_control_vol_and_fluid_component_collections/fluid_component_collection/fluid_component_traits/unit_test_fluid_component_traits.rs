@@ -6,8 +6,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
     use uom::ConstZero;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
     use uom::si::length::inch;
     use std::f64::consts::PI;
     use uom::si::ratio::ratio;
@@ -23,18 +23,18 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     impl FluidCustomComponentCalcPressureLoss for TestComponent {
         fn get_custom_loss_correlations(&mut self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn get_custom_loss_correlations_immutable(&self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn set_custom_loss_correlations(
             &mut self,
-            custom_loss_correlation: crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
+            custom_loss_correlation: crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
             self.loss_correlation = custom_loss_correlation;
         }
 
@@ -115,8 +115,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
     use uom::ConstZero;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
     use uom::si::length::inch;
     use std::f64::consts::PI;
     use uom::si::ratio::ratio;
@@ -132,18 +132,18 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     impl FluidCustomComponentCalcPressureLoss for TestComponent {
         fn get_custom_loss_correlations(&mut self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn get_custom_loss_correlations_immutable(&self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn set_custom_loss_correlations(
             &mut self,
-            custom_loss_correlation: crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
+            custom_loss_correlation: crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
             self.loss_correlation = custom_loss_correlation;
         }
 
@@ -225,8 +225,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
     use uom::ConstZero;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
     use uom::si::length::inch;
     use std::f64::consts::PI;
     use uom::si::ratio::ratio;
@@ -237,8 +237,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     use uom::si::length::meter;
     use uom::si::angle::degree;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureChange;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureChange;
 
     // this is the test component
     pub struct TestComponent {
@@ -250,18 +250,18 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     impl FluidCustomComponentCalcPressureLoss for TestComponent {
         fn get_custom_loss_correlations(&mut self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn get_custom_loss_correlations_immutable(&self) ->
-            crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
+            crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations {
                 self.loss_correlation.clone()
         }
 
         fn set_custom_loss_correlations(
             &mut self,
-            custom_loss_correlation: crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
+            custom_loss_correlation: crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations) {
             self.loss_correlation = custom_loss_correlation;
         }
 
@@ -508,8 +508,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // this tests the calc pressure loss for fluid component 
     use uom::si::f64::*;
     use uom::ConstZero;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_fluid_array_with_lateral_coupling::fluid_component_calculation::DimensionlessDarcyLossCorrelations;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureLoss;
     use uom::si::length::inch;
     use std::f64::consts::PI;
     use uom::si::ratio::ratio;
@@ -520,8 +520,8 @@ crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     use uom::si::length::meter;
     use uom::si::angle::degree;
 
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureChange;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidCustomComponentCalcPressureChange;
 
     // this is the test component
     pub struct TestComponent {

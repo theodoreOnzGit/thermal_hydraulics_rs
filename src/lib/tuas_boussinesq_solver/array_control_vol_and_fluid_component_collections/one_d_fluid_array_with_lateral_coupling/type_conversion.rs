@@ -1,4 +1,4 @@
-use crate::{boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent, prelude::beta_testing::ThermalHydraulicsLibError};
+use crate::{tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component::FluidComponent, prelude::beta_testing::ThermalHydraulicsLibError};
 
 use super::FluidArray;
 

@@ -9,14 +9,14 @@ use super::SolidMaterial;
 use super::SolidMaterial::*;
 use super::LiquidMaterial::*;
 use uom::si::pressure::atmosphere;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flinak;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
-use crate::boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::dowtherm_a;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flibe;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::flinak;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::hitec_nitrate_salt;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::liquid_database::yd_325_heat_transfer_oil;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::solid_database::custom_solid_material;
+use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::specific_enthalpy
 ::try_get_h;
 
 // for spline method
@@ -31,11 +31,11 @@ use roots::find_root_brent;
 // probably should have a temperature range checker in 
 // future
 //
-// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties)
+// pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties)
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
-pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 fn get_solid_temperature_from_specific_enthalpy(material: Material,
     h_material: AvailableEnergy) -> ThermodynamicTemperature {
     
@@ -84,11 +84,11 @@ fn get_solid_temperature_from_specific_enthalpy(material: Material,
 }
 
 // should the material happen to be a liquid, use this function
-// pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+// pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 // here only makes it accessible to the 
 // specific_enthalpy/mod.rs 
 // nothing else
-pub(in crate::boussinesq_solver::boussinesq_thermophysical_properties) 
+pub(in crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties) 
 fn get_liquid_temperature_from_specific_enthalpy(material: Material, 
     fluid_enthalpy: AvailableEnergy) -> ThermodynamicTemperature {
 

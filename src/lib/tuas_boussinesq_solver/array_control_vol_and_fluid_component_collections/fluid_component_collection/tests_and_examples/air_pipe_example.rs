@@ -26,9 +26,9 @@ pub fn simple_fluid_pipe_example_1 () {
     use uom::si::dynamic_viscosity::millipascal_second;
     use uom::si::angle::degree;
 
-    use crate::boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_pressure_loss;
-    use crate::boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_mass_flowrate;
-    use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
+    use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_pressure_loss;
+    use crate::tuas_boussinesq_solver::fluid_mechanics_correlations::pipe_calculations::pipe_calc_mass_flowrate;
+    use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::fluid_component_collection::fluid_component_traits::FluidComponentTrait;
     use uom::si::f64::*;
     // first we create an air pipe struct
     //

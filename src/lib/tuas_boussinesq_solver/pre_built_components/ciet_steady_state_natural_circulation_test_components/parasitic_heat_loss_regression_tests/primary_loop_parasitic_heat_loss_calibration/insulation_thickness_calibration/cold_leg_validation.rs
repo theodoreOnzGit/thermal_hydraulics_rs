@@ -290,7 +290,7 @@ pub fn cold_leg_insulation_thickness_validation_test_v1(
 
     use uom::si::{frequency::hertz, ratio::ratio, time::millisecond};
 
-    use crate::boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::prelude::beta_testing::{FluidArray, HeatTransferEntity, HeatTransferInteractionType, LiquidMaterial};
     use uom::ConstZero;
 

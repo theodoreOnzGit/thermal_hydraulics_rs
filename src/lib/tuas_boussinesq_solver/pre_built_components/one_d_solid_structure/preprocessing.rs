@@ -6,11 +6,11 @@ use uom::ConstZero;
 use uom::si::f64::*;
 use ndarray::*;
 use super::SolidStructure;
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction;
-use crate::boussinesq_solver::boundary_conditions::BCType;
-use crate::boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
-use crate::boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
-use crate::boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
+use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction;
+use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
+use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::HeatTransferEntity;
+use crate::tuas_boussinesq_solver::heat_transfer_correlations::heat_transfer_interactions::heat_transfer_interaction_enums::{DataUserSpecifiedConvectionResistance, HeatTransferInteractionType};
+use crate::tuas_boussinesq_solver::array_control_vol_and_fluid_component_collections::one_d_solid_array_with_lateral_coupling::SolidColumn;
 
 use crate::thermal_hydraulics_error::ThermalHydraulicsLibError;
 
