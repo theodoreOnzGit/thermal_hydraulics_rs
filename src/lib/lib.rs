@@ -69,8 +69,6 @@
 #![warn(missing_docs)]
 extern crate uom;
 
-/// Heat Transfer Module (testing)
-//pub mod heat_transfer_lib;
 
 /// for mostly incompressible fluids using the Boussinesq Approximation
 /// that is, density doesn't change much except for natural convection
@@ -79,6 +77,14 @@ extern crate uom;
 /// though to be honest, it is not too different in implementation compared 
 /// to conduction
 pub mod boussinesq_solver;
+
+// /// for mostly incompressible fluids using the Boussinesq Approximation
+// /// that is, density doesn't change much except for natural convection
+// ///
+// /// also, radiation heat transfer is NOT included in this one (yet)
+// /// though to be honest, it is not too different in implementation compared 
+// /// to conduction
+// pub mod tuas_boussinesq_solver;
 
 /// use peroxide macros 
 #[macro_use]
