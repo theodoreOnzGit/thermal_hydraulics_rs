@@ -1,5 +1,18 @@
 
 # Patch Notes 
+## v 0.0.11 
+
+Note: I skipped v 0.0.10,
+
+But v0.0.11 has updated several dependencies including Peroxide.
+
+Moreover, I have added uncalibrated coupled DRACS loop for CIET as a 
+regression test case.
+
+## v 0.0.10 
+
+Added the Shell and Tube Heat Exchanger case by Du et al. and the isolated 
+DRACS loop for CIET as test cases.
 
 ## v 0.0.9
 

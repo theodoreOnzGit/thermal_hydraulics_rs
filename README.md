@@ -35,9 +35,12 @@ Please refer to crate documentation for more details,
 especially the prelude documentation for more examples.
 
 Right now, only the boussinesq_solver, or what I call the
+Thermo-hydraulic Uniphase solver for Advection and convection in Salt 
+flows (TUAS), named after the Tuas industrial region in Singapore, is 
+available. I would have liked to name it the 
 Coding and Homogeneous fluid simulation ENvironment for Gen IV molten 
 salt Thermal hydraulics and Natural circulation Governed flows (CHENG TNG),
-is available. 
+as well, but maybe that name is for another project.
 
 
 ## Prerequisites
@@ -61,6 +64,8 @@ sudo pacman -S openblas
 Tested on Arch Linux and Linux Mint distros. 
 
 
+
+
 ## Development to do list:
 
 So far, I'm thinking of the following features:
@@ -76,6 +81,12 @@ code a new nusselt number correlation. Either seems like quite the hassle.
 Perhaps I'll do a crude copy of the coupled loop first. Then think about 
 calibration later. 
 
+## Cargo update dependencies 
+
+```bash
+cargo install cargo-edit
+cargo upgrade -i allow && cargo update
+```
 
 # Tests and Examples
 If you want to use cargo watch for testing, 

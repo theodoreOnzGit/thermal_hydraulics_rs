@@ -183,7 +183,7 @@ pub fn heater_plus_mx_10_with_supports(){
 
 
             let heater_therminol_avg_density: MassDensity = 
-            LiquidMaterial::TherminolVP1.density(
+            LiquidMaterial::TherminolVP1.try_get_density(
                 heater_fluid_bulk_temp).unwrap();
 
             let generic_advection_interaction = 
