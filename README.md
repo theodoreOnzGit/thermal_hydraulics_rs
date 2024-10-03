@@ -12,31 +12,36 @@ in development and not fully featured yet.
 The crate contains many useful traits and examples of how to use 
 those traits for your own projects.
 
-## Add to Cargo
+## Adding to Cargo
 
 An easy way to start is to use cargo to add the fluid mechanics rust
 package
 ```bash
 cargo add thermal_hydraulics_rs
 ```
-If you want the fluid mechanics library, 
-```rust
-extern crate thermal_hydraulics_rs;
-use thermal_hydraulics_rs::fluid_mechanics_lib::prelude::*;
-```
 
 If you want the full thermal hydraulics library: 
 
 ```rust 
 extern crate thermal_hydraulics_rs;
-use thermal_hydraulics_rs::prelude::alpha_nightly::*;
+use thermal_hydraulics_rs::prelude::beta_testing::*;
 ```
 
 Do note that the alpha nightly API 
-is still highly unstable and subject to change.
+is still highly unstable and subject to change. The beta testing 
+library is more stable, but still subject to change
 
 Please refer to crate documentation for more details,
-especially the prelude documentation for more examples
+especially the prelude documentation for more examples.
+
+Right now, only the boussinesq_solver, or what I call the
+Thermo-hydraulic Uniphase solver for Advection and convection in Salt 
+flows (TUAS), named after the Tuas industrial region in Singapore, is 
+available. I would have liked to name it the 
+Coding and Homogeneous fluid simulation ENvironment for Gen IV molten 
+salt Thermal hydraulics and Natural circulation Governed flows (CHENG TNG),
+as well, but maybe that name is for another project.
+
 
 ## Prerequisites
 
@@ -55,9 +60,35 @@ For Arch Linux based distros, eg. endeavourOS and Arch Linux:
 sudo pacman -S openblas
 ```
 
+
 Tested on Arch Linux and Linux Mint distros. 
 
-# tests 
+
+
+
+## Development to do list:
+
+So far, I'm thinking of the following features:
+
+1. DHX heat exchanger is not properly incorporated into loop solver for 
+Shell side pri loop or tube side DRACS loop for coupled natural circulation 
+for CIET.
+2. DHX needs to be calibrated. Not sure how though!
+3. I wonder how to do things for heat exchanger calibration. Because the 
+Gnielinski correlation is already hard coded. To add a multiplicative factor,
+I need to either multiply the heat transfer area by a fixed amount, or 
+code a new nusselt number correlation. Either seems like quite the hassle.
+Perhaps I'll do a crude copy of the coupled loop first. Then think about 
+calibration later. 
+
+## Cargo update dependencies 
+
+```bash
+cargo install cargo-edit
+cargo upgrade -i allow && cargo update
+```
+
+# Tests and Examples
 If you want to use cargo watch for testing, 
 this is because you will likely run into csv files. When Rust 
 produces csv files, cargo watch catches those new csv files and thinks 
