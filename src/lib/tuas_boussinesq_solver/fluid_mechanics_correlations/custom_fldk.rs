@@ -172,11 +172,11 @@ pub fn custom_f_ldk_be_d(custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHy
 /// that is up to the user to decide when 
 /// customDarcy and customK is put in
 pub fn get_reynolds(
-    custom_darcy: &dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>, 
+    custom_darcy: &'static dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>, 
     bejan_d: f64,
     roughness_ratio: f64,
     length_to_diameter: f64,
-    custom_k: &dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> Result<f64,ThermalHydraulicsLibError> {
+    custom_k: &'static dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>) -> Result<f64,ThermalHydraulicsLibError> {
 
     if length_to_diameter <= 0.0 {
         panic!("lengthToDiameterRatio<=0.0");
@@ -191,6 +191,7 @@ pub fn get_reynolds(
     // invalid Be_L values
 
     let max_reynolds = 1.0e12;
+    let min_reynolds = 0.0;
 
     // i calculate the Be_D corresponding to 
     // Re = 1e12
@@ -213,46 +214,81 @@ pub fn get_reynolds(
     // Be = 0.5*fLDK*Re^2
 
 
-    let pressure_drop_root = |reynolds: AD| -> AD {
-        // i'm solving for
-        // Be - 0.5*fLDK*Re^2 = 0 
-        // the fLDK term can be calculated using
-        // getBe
-        //
-        // now i don't really need the interpolation
-        // term in here because when Re = 0,
-        // Be = 0 in the getBe code.
-        // so really, no need for fancy interpolation.
-        //
-        // Now in peroxide, the type taken in and out
-        // is not a f64 double
-        // but rather AD which stands for automatic 
-        // differentiation
-        // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
 
-        let reynolds_double = reynolds.x();
-        let f_ldk_term = custom_f_ldk_be_d(
-            custom_darcy,
-            reynolds_double, 
-            roughness_ratio,
-            length_to_diameter,
-            custom_k).unwrap();
-
-        return AD0(bejan_d - f_ldk_term);
-
+    let bisect = BisectionMethod { max_iter: 100, tol: 1e-8 };
+    let problem = ReynoldsFromBejanDCustom {
+        max_reynolds,
+        min_reynolds,
+        custom_darcy,
+        bejan_number_d: bejan_d,
+        roughness_ratio,
+        length_to_diameter,
+        custom_k,
     };
-
-    let reynolds_number_result = bisection(pressure_drop_root,
-        (-max_reynolds,max_reynolds),
-        100,
-        1e-8);
 
 
 
     // the unwrap turns the result into f64
-    let reynolds_number = reynolds_number_result.unwrap();
+    let reynolds_number = bisect.find(&problem).unwrap();
 
-    return Ok(reynolds_number);
+    return Ok(reynolds_number[0]);
 }
 
 
+
+use anyhow::Result;
+
+struct ReynoldsFromBejanDCustom {
+    pub max_reynolds: f64,
+    pub min_reynolds: f64,
+    pub custom_darcy: &'static dyn Fn(f64, f64) -> Result<f64,ThermalHydraulicsLibError>,
+    pub bejan_number_d: f64,
+    pub roughness_ratio: f64,
+    pub length_to_diameter: f64,
+    pub custom_k: &'static dyn Fn(f64) -> Result<f64,ThermalHydraulicsLibError>,
+}
+
+impl ReynoldsFromBejanDCustom {
+    // i'm solving for
+    // Be - 0.5*fLDK*Re^2 = 0 
+    // the fLDK term can be calculated using
+    // getBe
+    //
+    // now i don't really need the interpolation
+    // term in here because when Re = 0,
+    // Be = 0 in the getBe code.
+    // so really, no need for fancy interpolation.
+    //
+    // Now in peroxide, the type taken in and out
+    // is not a f64 double
+    // but rather AD which stands for automatic 
+    // differentiation
+    // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
+    fn pressure_drop_root(&self, reynolds_number: Pt<1>) -> Result<Pt<1>> {
+        let lhs_value: f64 = self.bejan_number_d;
+
+        let reynolds_double: f64 = reynolds_number[0];
+        let f_ldk_term = custom_f_ldk_be_d(
+            self.custom_darcy,
+            reynolds_double, 
+            self.roughness_ratio,
+            self.length_to_diameter,
+            self.custom_k).unwrap();
+
+        let rhs_value = f_ldk_term;
+
+        return Ok([lhs_value - rhs_value]);
+    }
+}
+impl RootFindingProblem<1, 1, (f64, f64)> for ReynoldsFromBejanDCustom {
+    fn function(&self, reynolds_number: Pt<1>) -> Result<Pt<1>> {
+        self.pressure_drop_root(reynolds_number)
+    }
+    fn initial_guess(&self) -> (f64, f64) {
+        let upper_bound = 
+            self.max_reynolds;
+        let lower_bound = 
+            self.min_reynolds;
+        (lower_bound, upper_bound)
+    }
+}

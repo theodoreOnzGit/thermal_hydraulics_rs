@@ -271,10 +271,10 @@ pub fn get_temperature_from_enthalpy(
     // enthalpy value = 1518*T +2.82/2.0 T^2 - 30924
     // LHS is actual enthalpy value
 
-    let enthalpy_root = |temp_degrees_c_value : AD| -> AD {
+    let enthalpy_root = |temp_degrees_c_value : f64| -> f64 {
         let lhs_value = enthalpy_value_joule_per_kg;
         // convert AD type into double
-        let temp_degrees_c_value_double = temp_degrees_c_value.x();
+        let temp_degrees_c_value_double = temp_degrees_c_value;
 
         let fluid_temperature = 
             ThermodynamicTemperature::new::<degree_celsius>(
@@ -282,13 +282,14 @@ pub fn get_temperature_from_enthalpy(
         let rhs = get_dowtherm_a_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
-        return AD0(lhs_value-rhs_value);
+        return lhs_value-rhs_value;
     };
     
     // now solve using bisection
+    use anyhow::Result;
     
     let fluid_temperature_degrees_cresult 
-        = bisection(enthalpy_root,
+        = bisection!(enthalpy_root,
                     (20.0,180.0),
                     100,
                     1e-8);

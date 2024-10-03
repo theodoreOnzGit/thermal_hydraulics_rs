@@ -169,7 +169,7 @@ pub fn copper_specific_enthalpy(
     let s = CubicSpline::from_nodes(&specific_enthalpy_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
-    let copper_specific_enthalpy_value = s.
+    let copper_specific_enthalpy_value = s.unwrap().
         integrate((273.15,temperature_value_kelvin));
 
     return AvailableEnergy::new::<joule_per_kilogram>(
@@ -200,7 +200,7 @@ pub fn steel_304_l_spline_specific_enthalpy_ciet_zweibaum(
     let s = CubicSpline::from_nodes(&specific_enthalpy_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
-    let steel_specific_enthalpy_value = s.integrate(
+    let steel_specific_enthalpy_value = s.unwrap().integrate(
         (273.15,temperature_value_kelvin));
 
     return AvailableEnergy::new::<joule_per_kilogram>(

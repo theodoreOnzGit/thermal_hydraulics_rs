@@ -236,55 +236,70 @@ pub fn get_custom_solid_temperature_from_enthalpy(
                enthalpy < 0.0 , out of correlation range");
     }
 
-    // i use degrees c for conversion here because of legacy reasons.
-    // as long as the conversions are consistent, it doesn't matter whether 
-    // I use degrees c or degrees kelvin
-    let upper_bound_temp_degc = 
-        upper_bound_temperature.get::<degree_celsius>();
-    let lower_bound_temp_degc = 
-        lower_bound_temperature.get::<degree_celsius>();
-
-    // first let's convert enthalpy to a double (f64)
-    let enthalpy_value_joule_per_kg = 
-        solid_enthalpy.get::<joule_per_kilogram>();
-
-    // second let's define a function 
-    // or actually a closure or anonymous function that
-    // is aware of the variables declared
-    // enthalpy value is calculated based on the cp function,
-    // and numerically integrated
-    // LHS is actual enthalpy value we compare against
-
-    let enthalpy_root = |temp_degrees_c_value : AD| -> AD {
-        let lhs_value = enthalpy_value_joule_per_kg;
-        // convert AD type into double
-        let temp_degrees_c_value_double = temp_degrees_c_value.x();
-
-        let solid_temperature = 
-            ThermodynamicTemperature::new::<degree_celsius>(
-                temp_degrees_c_value_double);
-        let rhs = get_custom_solid_enthalpy(solid_temperature,
-            cp_function,
-            upper_bound_temperature,
-            lower_bound_temperature).unwrap();
-        let rhs_value = rhs.get::<joule_per_kilogram>();
-
-        return AD0(lhs_value-rhs_value);
-    };
-    
     // now solve using bisection
     
+    let bisect = BisectionMethod { max_iter: 100, tol: 1e-8 };
+    let problem = CustomSolidTemperatureFromEnthalpy {
+        lower_bound_temperature,
+        upper_bound_temperature,
+        solid_enthalpy,
+        cp_function,
+    };
     let solid_temperature_degrees_cresult 
-        = bisection(enthalpy_root,
-                    (lower_bound_temp_degc,upper_bound_temp_degc),
-                    100,
-                    1e-8);
+        = bisect.find(&problem).unwrap();
 
-    let solid_temperature_degrees_c = solid_temperature_degrees_cresult.unwrap();
+    let solid_temperature_degrees_c = solid_temperature_degrees_cresult[0];
 
     return Ok(ThermodynamicTemperature::
         new::<degree_celsius>(solid_temperature_degrees_c));
 
+}
+use anyhow::Result;
+struct CustomSolidTemperatureFromEnthalpy {
+    pub lower_bound_temperature: ThermodynamicTemperature,
+    pub upper_bound_temperature: ThermodynamicTemperature,
+    pub solid_enthalpy: AvailableEnergy,
+    pub cp_function: fn(ThermodynamicTemperature) -> SpecificHeatCapacity,
+}
+
+impl CustomSolidTemperatureFromEnthalpy {
+    // let's define a function for solving the enthalpy root
+    // LHS is actual enthalpy value we compare against
+    fn enthalpy_root(&self, temp_degrees_c: Pt<1>) -> Result<Pt<1>> {
+
+        // first let's convert enthalpy to a double (f64)
+        let enthalpy_value_joule_per_kg = 
+            self.solid_enthalpy.get::<joule_per_kilogram>();
+        let lhs_value = enthalpy_value_joule_per_kg;
+        let temp_degrees_c_value_double: f64 = temp_degrees_c[0];
+
+        let fluid_temperature = 
+            ThermodynamicTemperature::new::<degree_celsius>(
+                temp_degrees_c_value_double);
+        let rhs = get_custom_solid_enthalpy(fluid_temperature,
+            self.cp_function,
+            self.upper_bound_temperature,
+            self.lower_bound_temperature).unwrap();
+        let rhs_value = rhs.get::<joule_per_kilogram>();
+
+        return Ok([lhs_value-rhs_value]);
+    }
+}
+
+impl RootFindingProblem<1, 1, (f64, f64)> for CustomSolidTemperatureFromEnthalpy {
+    fn function(&self, temp_degrees_c: Pt<1>) -> Result<Pt<1>> {
+        self.enthalpy_root(temp_degrees_c)
+    }
+    fn initial_guess(&self) -> (f64, f64) {
+        // i use degrees c for conversion here because of legacy reasons.
+        // as long as the conversions are consistent, it doesn't matter whether 
+        // I use degrees c or degrees kelvin
+        let upper_bound_temp_degc = 
+            self.upper_bound_temperature.get::<degree_celsius>();
+        let lower_bound_temp_degc = 
+            self.lower_bound_temperature.get::<degree_celsius>();
+        (lower_bound_temp_degc, upper_bound_temp_degc)
+    }
 }
 
 /// function checks if a solid temperature falls in a range (20-180C)

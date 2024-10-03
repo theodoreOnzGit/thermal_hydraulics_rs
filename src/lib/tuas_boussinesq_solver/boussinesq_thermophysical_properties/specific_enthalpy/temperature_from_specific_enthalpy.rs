@@ -198,7 +198,7 @@ fn fiberglass_spline_temp_attempt_1_from_specific_enthalpy(
     let h_fiberglass_joules_per_kg = h_fiberglass.get::<joule_per_kilogram>();
 
     let temperature_from_enthalpy_kelvin = 
-    enthalpy_to_temperature_spline.eval(h_fiberglass_joules_per_kg);
+    enthalpy_to_temperature_spline.unwrap().eval(h_fiberglass_joules_per_kg);
 
     // now, the fiberglass enthalpy will not be quite near 
     // enough, but it is very close. We can bracket 
@@ -369,7 +369,7 @@ fn copper_spline_temp_attempt_2_from_specific_enthalpy(
     let h_copper_joules_per_kg = h_copper.get::<joule_per_kilogram>();
 
     let temperature_from_enthalpy_kelvin = 
-    enthalpy_to_temperature_spline.eval(h_copper_joules_per_kg);
+    enthalpy_to_temperature_spline.unwrap().eval(h_copper_joules_per_kg);
 
     // now, the copper enthalpy will not be quite near 
     // enough, but it is very close. We can bracket 
@@ -544,7 +544,7 @@ fn steel_304_l_spline_temp_attempt_3_from_specific_enthalpy_ciet_zweibaum(
     let h_steel_joules_per_kg = h_steel.get::<joule_per_kilogram>();
 
     let temperature_from_enthalpy_kelvin = 
-    enthalpy_to_temperature_spline.eval(h_steel_joules_per_kg);
+    enthalpy_to_temperature_spline.unwrap().eval(h_steel_joules_per_kg);
 
     let enthalpy_root = |temp_degrees_c_value : f64| -> f64 {
         let lhs_value = h_steel.get::<joule_per_kilogram>();

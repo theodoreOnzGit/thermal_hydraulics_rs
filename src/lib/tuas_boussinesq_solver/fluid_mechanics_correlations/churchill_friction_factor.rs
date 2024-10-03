@@ -247,59 +247,34 @@ pub fn get_reynolds_from_bejan(
     }
 
     let max_reynolds = 1.0e12;
+    let min_reynolds = 0.0;
 
     // i calculate the Be_D corresponding to 
     // Re = 1e12
-    let max_bejan_d = get_bejan_number_d(max_reynolds,roughness_ratio, 
-                        length_to_diameter,form_loss_k)?;
+    let max_bejan_d: f64 = get_bejan_number_d(max_reynolds,roughness_ratio, 
+        length_to_diameter,form_loss_k)?;
 
     if bejan_number_d >= max_bejan_d {
         panic!("Be too large");
     }
-    // the above checks for all the relevant exceptions
-    // including formLossK < 0
-    //
-    // now we are ready to do root finding
-    //
-    // the underlying equation is 
-    // Be = 0.5*fLDK*Re^2
 
 
-    let pressure_drop_root = |reynolds: AD| -> AD {
-        // i'm solving for
-        // Be - 0.5*fLDK*Re^2 = 0 
-        // the fLDK term can be calculated using
-        // getBe
-        //
-        // now i don't really need the interpolation
-        // term in here because when Re = 0,
-        // Be = 0 in the getBe code.
-        // so really, no need for fancy interpolation.
-        //
-        // Now in peroxide, the type taken in and out
-        // is not a f64 double
-        // but rather AD which stands for automatic 
-        // differentiation
-        // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
 
-        let reynolds_double = reynolds.x();
-        let f_ldk_term = get_bejan_number_d(reynolds_double, roughness_ratio,
-                             length_to_diameter,
-                             form_loss_k).unwrap();
-
-        return AD0(bejan_number_d - f_ldk_term);
-
+    let bisect = BisectionMethod { max_iter: 100, tol: 1e-8 };
+    let problem = ReynoldsFromBejanD {
+        max_reynolds,
+        min_reynolds,
+        bejan_number_d,
+        roughness_ratio,
+        length_to_diameter,
+        form_loss_k,
     };
-
-    let reynolds_number_result = bisection(pressure_drop_root,
-                                         (0.0,max_reynolds),
-                                         100,
-                                         1e-8);
+    let reynolds_number_result = bisect.find(&problem).unwrap();
 
 
 
     // the unwrap turns the result into f64
-    let mut reynolds_number = reynolds_number_result.unwrap();
+    let mut reynolds_number = reynolds_number_result[0];
 
 
     if is_negative
@@ -309,4 +284,58 @@ pub fn get_reynolds_from_bejan(
     }
 
     return Ok(reynolds_number);
+}
+
+use anyhow::Result;
+
+struct ReynoldsFromBejanD {
+    pub max_reynolds: f64,
+    pub min_reynolds: f64,
+    pub bejan_number_d: f64,
+    pub roughness_ratio: f64,
+    pub length_to_diameter: f64,
+    pub form_loss_k: f64,
+}
+
+impl ReynoldsFromBejanD {
+    // i'm solving for
+    // Be - 0.5*fLDK*Re^2 = 0 
+    // the fLDK term can be calculated using
+    // getBe
+    //
+    // now i don't really need the interpolation
+    // term in here because when Re = 0,
+    // Be = 0 in the getBe code.
+    // so really, no need for fancy interpolation.
+    //
+    // Now in peroxide, the type taken in and out
+    // is not a f64 double
+    // but rather AD which stands for automatic 
+    // differentiation
+    // https://docs.rs/peroxide/latest/peroxide/structure/ad/index.html
+    fn pressure_drop_root(&self, reynolds_number: Pt<1>) -> Result<Pt<1>> {
+        let lhs_value: f64 = self.bejan_number_d;
+
+        let reynolds_double: f64 = reynolds_number[0];
+        let f_ldk_term = get_bejan_number_d(reynolds_double, 
+            self.roughness_ratio,
+            self.length_to_diameter,
+            self.form_loss_k).unwrap();
+
+        let rhs_value = f_ldk_term;
+
+        return Ok([lhs_value - rhs_value]);
+    }
+}
+impl RootFindingProblem<1, 1, (f64, f64)> for ReynoldsFromBejanD {
+    fn function(&self, reynolds_number: Pt<1>) -> Result<Pt<1>> {
+        self.pressure_drop_root(reynolds_number)
+    }
+    fn initial_guess(&self) -> (f64, f64) {
+        let upper_bound = 
+            self.max_reynolds;
+        let lower_bound = 
+            self.min_reynolds;
+        (lower_bound, upper_bound)
+    }
 }

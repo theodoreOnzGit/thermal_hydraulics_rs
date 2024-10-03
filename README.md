@@ -64,6 +64,8 @@ sudo pacman -S openblas
 Tested on Arch Linux and Linux Mint distros. 
 
 
+
+
 ## Development to do list:
 
 So far, I'm thinking of the following features:
@@ -79,6 +81,12 @@ code a new nusselt number correlation. Either seems like quite the hassle.
 Perhaps I'll do a crude copy of the coupled loop first. Then think about 
 calibration later. 
 
+## Cargo update dependencies 
+
+```bash
+cargo install cargo-edit
+cargo upgrade -i allow && cargo update
+```
 
 # Tests and Examples
 If you want to use cargo watch for testing, 

@@ -59,7 +59,7 @@ pub fn copper_specific_heat_capacity_zou_zweibaum_spline(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
-    let copper_specific_heat_capacity_value = s.
+    let copper_specific_heat_capacity_value = s.unwrap().
         eval(temperature_value_kelvin);
 
     Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
@@ -93,7 +93,7 @@ pub fn copper_thermal_conductivity_zou_zweibaum_spline(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &thermal_conductivity_values_watt_per_meter_kelin);
 
-    let copper_thermal_conductivity_value = s.
+    let copper_thermal_conductivity_value = s.unwrap().
         eval(temperature_value_kelvin);
 
     Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(

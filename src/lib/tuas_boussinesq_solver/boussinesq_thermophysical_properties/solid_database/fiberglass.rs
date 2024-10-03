@@ -67,7 +67,7 @@ pub fn fiberglass_thermal_conductivity_zou_zweibaum_spline(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &thermal_conductivity_values_watt_per_meter_kelin);
 
-    let fiberglass_thermal_conductivity_value = s.eval(
+    let fiberglass_thermal_conductivity_value = s.unwrap().eval(
         temperature_value_kelvin);
 
     return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(

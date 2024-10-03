@@ -37,7 +37,7 @@ pub fn steel_304_l_spline_specific_heat_capacity_ciet_zweibaum(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &specific_heat_capacity_values_joule_per_kilogram_kelvin);
 
-    let steel_specific_heat_capacity_value = s.eval(
+    let steel_specific_heat_capacity_value = s.unwrap().eval(
         temperature_value_kelvin);
 
     return Ok(SpecificHeatCapacity::new::<joule_per_kilogram_kelvin>(
@@ -213,7 +213,7 @@ pub fn steel_304_l_spline_thermal_conductivity(
     let s = CubicSpline::from_nodes(&thermal_cond_temperature_values_kelvin, 
         &thermal_conductivity_values_watt_per_meter_kelin);
 
-    let steel_thermal_conductivity_value = s.eval(
+    let steel_thermal_conductivity_value = s.unwrap().eval(
         temperature_value_kelvin);
 
     return Ok(ThermalConductivity::new::<watt_per_meter_kelvin>(

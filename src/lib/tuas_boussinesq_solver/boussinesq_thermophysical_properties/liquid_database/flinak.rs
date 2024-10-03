@@ -256,10 +256,9 @@ pub fn get_temperature_from_enthalpy(
     // is aware of the variables declared
     // LHS is actual enthalpy value
 
-    let enthalpy_root = |temp_degrees_kelvin_value : AD| -> AD {
+    let enthalpy_root = |temp_degrees_kelvin_value : f64| -> f64 {
         let lhs_value = enthalpy_value_joule_per_kg;
-        // convert AD type into double
-        let temp_degrees_kelvin_value_double = temp_degrees_kelvin_value.x();
+        let temp_degrees_kelvin_value_double = temp_degrees_kelvin_value;
 
         let fluid_temperature = 
             ThermodynamicTemperature::new::<kelvin>(
@@ -267,14 +266,15 @@ pub fn get_temperature_from_enthalpy(
         let rhs = get_flinak_specific_enthalpy(fluid_temperature).unwrap();
         let rhs_value = rhs.get::<joule_per_kilogram>();
 
-        return AD0(lhs_value-rhs_value);
+        return lhs_value-rhs_value;
     };
     
     // now solve using bisection
     // the range is from 940.0 K - 1073.0 K
     
+    use anyhow::Result;
     let fluid_temperature_degrees_kelvin_result 
-        = bisection(enthalpy_root,
+        = bisection!(enthalpy_root,
                     (940.0,1073.0),
                     100,
                     1e-8);
