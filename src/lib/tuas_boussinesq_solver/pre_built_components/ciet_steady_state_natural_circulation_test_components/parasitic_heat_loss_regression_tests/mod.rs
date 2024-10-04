@@ -21,6 +21,12 @@ pub mod wall_correction_isolated_dracs_loop_regression;
 /// this serves as a baseline as to what kind of heat losses to expect
 pub mod coupled_dracs_loop_ver_1_uncalibrated;
 
+
+/// version 2 of coupled DRACS loop 
+///
+/// for version 2, simple calibration is done
+pub mod coupled_dracs_loop_ver_2_calibrated;
+
 /// for the coupled dracs loop, we need to calibrate heat loss 
 /// through the primary loop 
 /// hot leg (from heater outlet to dhx shell inlet)
