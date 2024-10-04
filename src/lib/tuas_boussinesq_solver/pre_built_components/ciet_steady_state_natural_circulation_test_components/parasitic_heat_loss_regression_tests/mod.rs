@@ -90,4 +90,13 @@ pub mod dracs_loop_parasitic_heat_loss_calibration;
 /// C-8,0.03593,0.04509,111.37615,39.91183,76.13202,66.11271,
 /// C-9,0.03547,0.04699,116.05003,39.64593,79.02407,67.40722,
 /// 
+/// The calibration process was this:
+///
+/// (1) set insulation to about 0.15 cm, it was a value that worked for 
+/// other calibration
+/// (2) calibrate nusselt number for shell and tube sides accordingly,
+/// just use whatever value works 
+/// (3) take arithmetic average of calibrated nusselt numbers and check against 
+/// set A, B and C data for mass flowrate over the loop
+///
 pub mod dhx_sthe_calibration;
