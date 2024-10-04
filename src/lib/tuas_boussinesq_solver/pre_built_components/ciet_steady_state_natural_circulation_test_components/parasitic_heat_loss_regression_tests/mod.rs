@@ -98,5 +98,7 @@ pub mod dracs_loop_parasitic_heat_loss_calibration;
 /// just use whatever value works 
 /// (3) take arithmetic average of calibrated nusselt numbers and check against 
 /// set A, B and C data for mass flowrate over the loop
-///
+/// 
+/// this is a best effort estimate, I couldn't have one set of parameters to fit 
+/// everything
 pub mod dhx_sthe_calibration;
