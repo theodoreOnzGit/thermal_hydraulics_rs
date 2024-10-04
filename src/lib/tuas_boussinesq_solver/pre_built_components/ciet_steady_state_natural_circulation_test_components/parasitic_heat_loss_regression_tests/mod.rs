@@ -100,5 +100,5 @@ pub mod dracs_loop_parasitic_heat_loss_calibration;
 /// set A, B and C data for mass flowrate over the loop
 /// 
 /// this is a best effort estimate, I couldn't have one set of parameters to fit 
-/// everything
+/// everything, so each test set in dataset c has its own parameters
 pub mod dhx_sthe_calibration;

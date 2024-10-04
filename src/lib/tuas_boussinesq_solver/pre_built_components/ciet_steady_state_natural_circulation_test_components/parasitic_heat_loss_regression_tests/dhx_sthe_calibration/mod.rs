@@ -16,8 +16,8 @@ pub fn dhx_regression_set_c1(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 53.20;
+    let dhx_tube_side_outlet_regression_temperature_degc = 53.31;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -62,8 +62,8 @@ pub fn dhx_regression_set_c2(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 57.31;
+    let dhx_tube_side_outlet_regression_temperature_degc = 55.51;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -108,8 +108,8 @@ pub fn dhx_regression_set_c3(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 60.06;
+    let dhx_tube_side_outlet_regression_temperature_degc = 56.85;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -159,8 +159,8 @@ pub fn dhx_regression_set_c4(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 63.70;
+    let dhx_tube_side_outlet_regression_temperature_degc = 59.51;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -204,8 +204,8 @@ pub fn dhx_regression_set_c5(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 67.05;
+    let dhx_tube_side_outlet_regression_temperature_degc = 61.18;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -252,8 +252,8 @@ pub fn dhx_regression_set_c6(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 70.28;
+    let dhx_tube_side_outlet_regression_temperature_degc = 62.34;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -298,8 +298,8 @@ pub fn dhx_regression_set_c7(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 73.59;
+    let dhx_tube_side_outlet_regression_temperature_degc = 63.97;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -345,8 +345,8 @@ pub fn dhx_regression_set_c8(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 76.49;
+    let dhx_tube_side_outlet_regression_temperature_degc = 65.99;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 
@@ -398,8 +398,8 @@ pub fn dhx_regression_set_c9(){
 
     // temperatures are validated to within 0.5 K
     // regression performed to within 0.05K
-    let dhx_shell_side_outlet_regression_temperature_degc = 53.58;
-    let dhx_tube_side_outlet_regression_temperature_degc = 53.02;
+    let dhx_shell_side_outlet_regression_temperature_degc = 78.88;
+    let dhx_tube_side_outlet_regression_temperature_degc = 67.39;
     let max_time_seconds = 750.0;
 
     // settings for insulation and shell side nusselt correction 

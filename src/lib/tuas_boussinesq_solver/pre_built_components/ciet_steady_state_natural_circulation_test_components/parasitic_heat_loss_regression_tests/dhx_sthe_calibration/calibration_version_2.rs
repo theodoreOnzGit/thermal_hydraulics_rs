@@ -361,7 +361,7 @@ pub fn dhx_calibration_validation_test_v2(
         );
     }
     // setting for regression testing (after calibration)
-    let regression = false; 
+    let regression = true; 
     if regression {
         // check if actual temperature is equal to the regression 
         // temperature
