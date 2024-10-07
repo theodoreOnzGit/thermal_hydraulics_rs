@@ -1,4 +1,5 @@
 
+
 /// functions used for calculating the thermal hydraulics inside the DRACS 
 /// loop
 ///
@@ -216,6 +217,8 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
 /// Table 3 also provides the data 
 /// 
 ///
+pub mod dataset_c;
+
 #[test]
 #[ignore = "under construction"]
 pub fn case_c_tchx_out_313_kelvin_40_celsius(){
@@ -380,6 +383,10 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     todo!()
 
 }
+
+
+
+
 /// constructor for the dhx shell and tube heat exchanger 
 /// based on Zou's specifications
 pub mod dhx_constructor;
