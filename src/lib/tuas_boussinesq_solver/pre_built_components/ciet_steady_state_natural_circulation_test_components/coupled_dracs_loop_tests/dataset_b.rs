@@ -1293,7 +1293,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // is okay, because typical flowmeter measurement error is 2% anyway
     // set timestep to lower values for set b9
     // as compared to the rest
-    let timestep = Time::new::<second>(0.05);
+    let timestep = Time::new::<second>(0.01);
     let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
