@@ -2,8 +2,29 @@
 /// functions used for calculating the thermal hydraulics inside the DRACS 
 /// loop
 ///
-/// mostly without tchx calibration
+/// mostly without tchx calibration, that is to say,
+/// the vertical TCHX is not split into two parts as was done in SAM:
+///
+/// Zou, L., Hu, G., O'Grady, D., & Hu, R. (2021). Code validation of 
+/// SAM using natural-circulation experimental data from the compact 
+/// integral effects test (CIET) facility. 
+/// Nuclear Engineering and Design, 377, 111144.
+///
 pub mod dracs_loop_calc_functions_no_tchx_calibration;
+
+/// functions used for calculating the thermal hydraulics inside the DRACS 
+/// loop
+///
+/// mostly with tchx calibration, that is to say,
+/// the vertical TCHX is split into two parts (35b-1 and 35b-2) 
+/// as was done in SAM:
+///
+/// Zou, L., Hu, G., O'Grady, D., & Hu, R. (2021). Code validation of 
+/// SAM using natural-circulation experimental data from the compact 
+/// integral effects test (CIET) facility. 
+/// Nuclear Engineering and Design, 377, 111144.
+///
+pub mod dracs_loop_calc_functions_sam_tchx_calibration;
 
 /// functions used for calculating the thermal hydraulics inside 
 /// the Heater and DHX branch 
