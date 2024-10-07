@@ -25,7 +25,17 @@ pub mod coupled_dracs_loop_ver_1_uncalibrated;
 /// version 2 of coupled DRACS loop 
 ///
 /// for version 2, simple calibration is done
+/// that is, STHE calibration and parasitic heat loss calibration over the loop 
+/// the vertical TCHX is not split into equal halves
 pub mod coupled_dracs_loop_ver_2_calibrated;
+
+/// version 3 of coupled DRACS loop 
+///
+/// for version 3, simple calibration is done as with version 2,
+/// but the vertical TCHX is split into two equal halves as was done in SAM,
+/// only the bottom half will have the calibrated heat transfer coefficient.
+/// The rest of the TCHX, the horizontal TCHX and 35b1, will be insulated.
+pub mod coupled_dracs_loop_ver_3_calibrated;
 
 /// for the coupled dracs loop, we need to calibrate heat loss 
 /// through the primary loop 
