@@ -35,7 +35,7 @@ pub fn ciet_coupled_nat_circ_set_c1(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -93,7 +93,7 @@ pub fn ciet_coupled_nat_circ_set_c2(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -151,7 +151,7 @@ pub fn ciet_coupled_nat_circ_set_c3(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -209,7 +209,7 @@ pub fn ciet_coupled_nat_circ_set_c4(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -268,7 +268,7 @@ pub fn ciet_coupled_nat_circ_set_c5(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -327,7 +327,7 @@ pub fn ciet_coupled_nat_circ_set_c6(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -386,7 +386,7 @@ pub fn ciet_coupled_nat_circ_set_c7(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -446,7 +446,7 @@ pub fn ciet_coupled_nat_circ_set_c8(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -506,7 +506,7 @@ pub fn ciet_coupled_nat_circ_set_c9(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_3(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -558,8 +558,14 @@ pub fn ciet_coupled_nat_circ_set_c9(){
 /// heat loss to ambient is 33.9 W/(m^2 K)
 ///
 /// I programmed this though, to have these parameters not hard coded
+///
+/// for version 4 
+/// the TCHX was split into two parts as per the SAM paper
+/// in addition to these adjustments, the pipe 22 form loss was adjusted to 
+/// 45.95 as per the SAM model 
+/// because the flow in the primary loop was overpredicted
 #[cfg(test)]
-pub fn regression_coupled_dracs_loop_version_3(
+pub fn regression_coupled_dracs_loop_version_4(
     input_power_watts: f64,
     max_time_seconds: f64,
     tchx_outlet_temperature_set_point_degc: f64,
@@ -687,7 +693,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // here is where the dhx shell side should be (component 24)
     let mut pipe_23a = new_pipe_23a(initial_temperature);
     let mut static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
-    let mut pipe_22 = new_pipe_22(initial_temperature);
+    let mut pipe_22 = new_pipe_22_sam_model(initial_temperature);
     let mut flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
     let mut pipe_21 = new_pipe_21(initial_temperature);
     let mut pipe_20 = new_pipe_20(initial_temperature);

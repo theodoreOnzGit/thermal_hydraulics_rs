@@ -155,7 +155,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // here is where the dhx shell side should be (component 24)
     let mut pipe_23a = new_pipe_23a(initial_temperature);
     let mut static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
-    let mut pipe_22 = new_pipe_22(initial_temperature);
+    let mut pipe_22 = new_pipe_22_relap_model(initial_temperature);
     let mut flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
     let mut pipe_21 = new_pipe_21(initial_temperature);
     let mut pipe_20 = new_pipe_20(initial_temperature);
