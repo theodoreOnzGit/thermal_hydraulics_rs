@@ -7,8 +7,8 @@ pub fn ciet_coupled_nat_circ_set_b1(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -65,8 +65,8 @@ pub fn ciet_coupled_nat_circ_set_b2(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -123,8 +123,8 @@ pub fn ciet_coupled_nat_circ_set_b3(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -181,8 +181,8 @@ pub fn ciet_coupled_nat_circ_set_b4(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -240,8 +240,8 @@ pub fn ciet_coupled_nat_circ_set_b5(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -299,8 +299,8 @@ pub fn ciet_coupled_nat_circ_set_b6(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -358,8 +358,8 @@ pub fn ciet_coupled_nat_circ_set_b7(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -418,8 +418,8 @@ pub fn ciet_coupled_nat_circ_set_b8(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.057;
-    let dracs_loop_relative_tolerance = 0.035;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.0571;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
