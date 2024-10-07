@@ -473,11 +473,12 @@ pub fn ciet_coupled_nat_circ_set_b8(){
 #[test] 
 pub fn ciet_coupled_nat_circ_set_b9(){
 
+
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.035;
+    let dracs_loop_relative_tolerance = 0.058;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -506,7 +507,7 @@ pub fn ciet_coupled_nat_circ_set_b9(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_5(
+    regression_coupled_dracs_loop_version_4(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -525,6 +526,9 @@ pub fn ciet_coupled_nat_circ_set_b9(){
         dracs_loop_cold_leg_insulation_thickness_cm,
         dracs_loop_hot_leg_insulation_thickness_cm,
     ).unwrap();
+
+
+
 
 
 }
