@@ -3,8 +3,6 @@
 pub fn ciet_coupled_nat_circ_set_a1(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -61,8 +59,6 @@ pub fn ciet_coupled_nat_circ_set_a1(){
 pub fn ciet_coupled_nat_circ_set_a2(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -119,8 +115,6 @@ pub fn ciet_coupled_nat_circ_set_a2(){
 pub fn ciet_coupled_nat_circ_set_a3(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -177,8 +171,6 @@ pub fn ciet_coupled_nat_circ_set_a3(){
 pub fn ciet_coupled_nat_circ_set_a4(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -236,8 +228,6 @@ pub fn ciet_coupled_nat_circ_set_a4(){
 pub fn ciet_coupled_nat_circ_set_a5(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -295,8 +285,6 @@ pub fn ciet_coupled_nat_circ_set_a5(){
 pub fn ciet_coupled_nat_circ_set_a6(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
@@ -354,8 +342,6 @@ pub fn ciet_coupled_nat_circ_set_a6(){
 pub fn ciet_coupled_nat_circ_set_a7(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    // expect overprediction of mass flowrates in both loops 
-    // to about 8.5%
     let pri_loop_relative_tolerance = 0.043;
     let dracs_loop_relative_tolerance = 0.036;
 
