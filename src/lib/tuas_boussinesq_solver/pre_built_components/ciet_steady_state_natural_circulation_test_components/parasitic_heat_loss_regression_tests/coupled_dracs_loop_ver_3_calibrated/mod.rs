@@ -295,6 +295,74 @@ pub fn regression_long_test_calibrated_ver3_set_c5(){
 
 
 }
+/// took about 151 s on the i5-13500H 
+#[test] 
+pub fn regression_long_test_calibrated_ver3_set_c6_extra_long(){
+    use regression_coupled_dracs_loop_version_3::*;
+
+    let max_simulation_time_seconds: f64 = 5000.0;
+    // expect overprediction of mass flowrates in both loops 
+    // to about 8.5%
+    let pri_loop_relative_tolerance = 0.085;
+    let dracs_loop_relative_tolerance = 0.085;
+
+    // I'm writing in this format so that the data will be easier 
+    // to copy over to csv
+    // for 3800s, this is the result:
+    // let (heater_power_watts,
+    //     tchx_outlet_temp_degc,
+    //     experimental_dracs_mass_flowrate_kg_per_s,
+    //     experimental_pri_mass_flowrate_kg_per_s,
+    //     simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //     simulated_expected_pri_mass_flowrate_kg_per_s) 
+    // = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.2519e-2, 3.5072e-2);
+    let (heater_power_watts,
+        tchx_outlet_temp_degc,
+        experimental_dracs_mass_flowrate_kg_per_s,
+        experimental_pri_mass_flowrate_kg_per_s,
+        simulated_expected_dracs_mass_flowrate_kg_per_s,
+        simulated_expected_pri_mass_flowrate_kg_per_s) 
+        = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.2253e-2, 3.5005e-2);
+
+
+    let (shell_side_to_tubes_nusselt_number_correction_factor,
+        insulation_thickness_regression_cm,
+        shell_side_to_ambient_nusselt_correction_factor,
+        dhx_heat_loss_to_ambient_watts_per_m2_kelvin) 
+        = (4.7,0.161,10.3,33.9);
+
+    let ( pri_loop_cold_leg_insulation_thickness_cm,
+        pri_loop_hot_leg_insulation_thickness_cm,
+        dracs_loop_cold_leg_insulation_thickness_cm,
+        dracs_loop_hot_leg_insulation_thickness_cm,) 
+        = (0.15, 0.24, 3.00, 0.75);
+
+    dbg!(max_simulation_time_seconds,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance);
+
+    regression_coupled_dracs_loop_version_3(
+        heater_power_watts, 
+        max_simulation_time_seconds,
+        tchx_outlet_temp_degc,
+        experimental_dracs_mass_flowrate_kg_per_s,
+        experimental_pri_mass_flowrate_kg_per_s,
+        simulated_expected_dracs_mass_flowrate_kg_per_s,
+        simulated_expected_pri_mass_flowrate_kg_per_s,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance,
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        insulation_thickness_regression_cm,
+        shell_side_to_ambient_nusselt_correction_factor,
+        dhx_heat_loss_to_ambient_watts_per_m2_kelvin,
+        pri_loop_cold_leg_insulation_thickness_cm,
+        pri_loop_hot_leg_insulation_thickness_cm,
+        dracs_loop_cold_leg_insulation_thickness_cm,
+        dracs_loop_hot_leg_insulation_thickness_cm,
+    ).unwrap();
+
+
+}
 /// took about 131 s on the i5-13500H 
 #[test] 
 pub fn regression_long_test_calibrated_ver3_set_c6(){
