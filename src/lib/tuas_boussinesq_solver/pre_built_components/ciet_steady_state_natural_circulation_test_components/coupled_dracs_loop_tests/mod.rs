@@ -1,7 +1,9 @@
 
 /// functions used for calculating the thermal hydraulics inside the DRACS 
 /// loop
-pub mod dracs_loop_calc_functions;
+///
+/// mostly without tchx calibration
+pub mod dracs_loop_calc_functions_no_tchx_calibration;
 
 /// functions used for calculating the thermal hydraulics inside 
 /// the Heater and DHX branch 
