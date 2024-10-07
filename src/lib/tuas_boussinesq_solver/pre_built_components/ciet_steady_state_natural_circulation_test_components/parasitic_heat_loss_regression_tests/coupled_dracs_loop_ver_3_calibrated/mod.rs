@@ -3,7 +3,7 @@
 pub fn regression_long_test_calibrated_ver3_set_c1(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -62,7 +62,7 @@ pub fn regression_long_test_calibrated_ver3_set_c1(){
 pub fn regression_long_test_calibrated_ver3_set_c2(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -76,7 +76,7 @@ pub fn regression_long_test_calibrated_ver3_set_c2(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0965e-2, 2.5347e-2);
+        = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0649e-2, 2.4946e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -121,7 +121,7 @@ pub fn regression_long_test_calibrated_ver3_set_c2(){
 pub fn regression_long_test_calibrated_ver3_set_c3(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -135,7 +135,7 @@ pub fn regression_long_test_calibrated_ver3_set_c3(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.4296e-2, 2.7981e-2);
+        = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.3765e-2, 2.7611e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -180,7 +180,7 @@ pub fn regression_long_test_calibrated_ver3_set_c3(){
 pub fn regression_long_test_calibrated_ver3_set_c4(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -240,7 +240,7 @@ pub fn regression_long_test_calibrated_ver3_set_c4(){
 pub fn regression_long_test_calibrated_ver3_set_c5(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -299,6 +299,65 @@ pub fn regression_long_test_calibrated_ver3_set_c5(){
 pub fn regression_long_test_calibrated_ver3_set_c6(){
     use regression_coupled_dracs_loop_version_3::*;
 
+    let max_simulation_time_seconds: f64 = 3800.0;
+    // expect overprediction of mass flowrates in both loops 
+    // to about 8.5%
+    let pri_loop_relative_tolerance = 0.085;
+    let dracs_loop_relative_tolerance = 0.085;
+
+    // I'm writing in this format so that the data will be easier 
+    // to copy over to csv
+    let (heater_power_watts,
+        tchx_outlet_temp_degc,
+        experimental_dracs_mass_flowrate_kg_per_s,
+        experimental_pri_mass_flowrate_kg_per_s,
+        simulated_expected_dracs_mass_flowrate_kg_per_s,
+        simulated_expected_pri_mass_flowrate_kg_per_s) 
+        = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.3127e-2, 3.5222e-2);
+
+
+    let (shell_side_to_tubes_nusselt_number_correction_factor,
+        insulation_thickness_regression_cm,
+        shell_side_to_ambient_nusselt_correction_factor,
+        dhx_heat_loss_to_ambient_watts_per_m2_kelvin) 
+        = (4.7,0.161,10.3,33.9);
+
+    let ( pri_loop_cold_leg_insulation_thickness_cm,
+        pri_loop_hot_leg_insulation_thickness_cm,
+        dracs_loop_cold_leg_insulation_thickness_cm,
+        dracs_loop_hot_leg_insulation_thickness_cm,) 
+        = (0.15, 0.24, 3.00, 0.75);
+
+    dbg!(max_simulation_time_seconds,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance);
+
+    regression_coupled_dracs_loop_version_3(
+        heater_power_watts, 
+        max_simulation_time_seconds,
+        tchx_outlet_temp_degc,
+        experimental_dracs_mass_flowrate_kg_per_s,
+        experimental_pri_mass_flowrate_kg_per_s,
+        simulated_expected_dracs_mass_flowrate_kg_per_s,
+        simulated_expected_pri_mass_flowrate_kg_per_s,
+        pri_loop_relative_tolerance,
+        dracs_loop_relative_tolerance,
+        shell_side_to_tubes_nusselt_number_correction_factor,
+        insulation_thickness_regression_cm,
+        shell_side_to_ambient_nusselt_correction_factor,
+        dhx_heat_loss_to_ambient_watts_per_m2_kelvin,
+        pri_loop_cold_leg_insulation_thickness_cm,
+        pri_loop_hot_leg_insulation_thickness_cm,
+        dracs_loop_cold_leg_insulation_thickness_cm,
+        dracs_loop_hot_leg_insulation_thickness_cm,
+    ).unwrap();
+
+
+}
+#[test] 
+pub fn regression_long_test_calibrated_ver3_set_c6_shorter(){
+    use regression_coupled_dracs_loop_version_3::*;
+
     let max_simulation_time_seconds: f64 = 3000.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
@@ -313,7 +372,7 @@ pub fn regression_long_test_calibrated_ver3_set_c6(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.3369e-2, 3.5275e-2);
+        = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.3127e-2, 3.5222e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -359,7 +418,7 @@ pub fn regression_long_test_calibrated_ver3_set_c6(){
 pub fn regression_long_test_calibrated_ver3_set_c7(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -373,7 +432,7 @@ pub fn regression_long_test_calibrated_ver3_set_c7(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.5232e-2, 3.6764e-2);
+        = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.4351e-2, 3.6600e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -420,7 +479,7 @@ pub fn regression_long_test_calibrated_ver3_set_c7(){
 pub fn regression_long_test_calibrated_ver3_set_c8(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
@@ -434,7 +493,7 @@ pub fn regression_long_test_calibrated_ver3_set_c8(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2685.83, 40.0, 4.5090e-2, 3.5930e-2, 4.6650e-2, 3.7891e-2);
+        = (2685.83, 40.0, 4.5090e-2, 3.5930e-2, 4.5752e-2, 3.7756e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -481,7 +540,7 @@ pub fn regression_long_test_calibrated_ver3_set_c8(){
 pub fn regression_long_test_calibrated_ver3_set_c9(){
     use regression_coupled_dracs_loop_version_3::*;
 
-    let max_simulation_time_seconds: f64 = 3000.0;
+    let max_simulation_time_seconds: f64 = 3800.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
     let pri_loop_relative_tolerance = 0.085;
