@@ -1,6 +1,8 @@
+
+
 /// test series took about 230 s
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c1(){
+pub fn ciet_coupled_nat_circ_set_b1(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -16,7 +18,7 @@ pub fn ciet_coupled_nat_circ_set_c1(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (841.02, 40.0, 2.6860e-2, 2.0030e-2, 2.5247e-2, 2.0459e-2);
+        = ( 655.16, 35.0, 2.3290e-2, 1.7310e-2, 2.5247e-2, 2.0459e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -58,7 +60,7 @@ pub fn ciet_coupled_nat_circ_set_c1(){
 
 }
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c2(){
+pub fn ciet_coupled_nat_circ_set_b2(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -74,7 +76,7 @@ pub fn ciet_coupled_nat_circ_set_c2(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0203e-2, 2.4099e-2);
+        = ( 1054.32, 35.0, 2.9520e-2, 2.1980e-2, 3.0203e-2, 2.4099e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -116,7 +118,7 @@ pub fn ciet_coupled_nat_circ_set_c2(){
 
 }
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c3(){
+pub fn ciet_coupled_nat_circ_set_b3(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -132,7 +134,7 @@ pub fn ciet_coupled_nat_circ_set_c3(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.3384e-2, 2.6578e-2);
+        = ( 1394.70, 35.0, 3.3240e-2, 2.5700e-2, 3.3384e-2, 2.6578e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -174,7 +176,7 @@ pub fn ciet_coupled_nat_circ_set_c3(){
 
 }
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c4(){
+pub fn ciet_coupled_nat_circ_set_b4(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -190,7 +192,7 @@ pub fn ciet_coupled_nat_circ_set_c4(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1736.11, 40.0, 3.6490e-2, 2.9490e-2, 3.6972e-2, 2.9426e-2);
+        = ( 1685.62, 35.0, 3.6110e-2, 2.8460e-2, 3.6972e-2, 2.9426e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -233,7 +235,7 @@ pub fn ciet_coupled_nat_circ_set_c4(){
 }
 
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c5(){
+pub fn ciet_coupled_nat_circ_set_b5(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -249,7 +251,7 @@ pub fn ciet_coupled_nat_circ_set_c5(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 3.9791e-2, 3.1663e-2);
+        = ( 1987.75, 35.0, 3.8410e-2, 3.1180e-2, 3.9791e-2, 3.1663e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -292,7 +294,7 @@ pub fn ciet_coupled_nat_circ_set_c5(){
 }
 /// took about 131 s on the i5-13500H 
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c6(){
+pub fn ciet_coupled_nat_circ_set_b6(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -308,7 +310,7 @@ pub fn ciet_coupled_nat_circ_set_c6(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2288.83, 40.0, 4.1150e-2, 3.4120e-2, 4.2119e-2, 3.3494e-2);
+        = (2282.01, 35.0, 4.0630e-2, 3.3740e-2, 4.2119e-2, 3.3494e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -351,7 +353,7 @@ pub fn ciet_coupled_nat_circ_set_c6(){
 }
 
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c7(){
+pub fn ciet_coupled_nat_circ_set_b7(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -367,7 +369,7 @@ pub fn ciet_coupled_nat_circ_set_c7(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.3939e-2, 3.4907e-2);
+        = ( 2546.60, 35.0, 4.2700e-2, 3.5770e-2, 4.3939e-2, 3.4907e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -411,7 +413,7 @@ pub fn ciet_coupled_nat_circ_set_c7(){
 //
 //
 #[test] 
-pub fn ciet_coupled_nat_circ_set_c8(){
+pub fn ciet_coupled_nat_circ_set_b8(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
@@ -427,7 +429,7 @@ pub fn ciet_coupled_nat_circ_set_c8(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2685.83, 40.0, 4.5090e-2, 3.5930e-2, 4.533e-2, 3.5975e-2);
+        = ( 2874.03, 35.0, 4.4560e-2, 3.7960e-2, 4.533e-2, 3.5975e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -485,7 +487,7 @@ pub fn ciet_coupled_nat_circ_set_c9(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2764.53, 40.0, 4.6990e-2, 3.5470e-2, 4.5929e-2, 3.6431e-2);
+        = (3031.16, 35.0, 4.6360e-2, 3.8490e-2, 4.5929e-2, 3.6431e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,

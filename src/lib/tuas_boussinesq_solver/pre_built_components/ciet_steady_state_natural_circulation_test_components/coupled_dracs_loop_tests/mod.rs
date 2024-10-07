@@ -130,65 +130,7 @@ pub fn case_a_tchx_out_319_kelvin_46_celsius(){
 /// Table 3 also provides the data 
 /// 
 ///
-#[test]
-#[ignore = "under construction"]
-pub fn case_b_tchx_out_308_kelvin_35_celsius(){
-
-    verify_coupled_dhx_analytical_solution_version_1(
-        655.16, 
-        35.0,
-        2.3290e-2,
-        1.7310e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1054.32, 
-        35.0,
-        2.9520e-2,
-        2.1980e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1394.70, 
-        35.0,
-        3.3240e-2,
-        2.5700e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1685.62, 
-        35.0,
-        3.6110e-2,
-        2.8460e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1987.75, 
-        35.0,
-        3.8410e-2,
-        3.1180e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2282.01, 
-        35.0,
-        4.0630e-2,
-        3.3740e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2546.60, 
-        35.0,
-        4.2700e-2,
-        3.5770e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2874.03, 
-        35.0,
-        4.4560e-2,
-        3.7960e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        3031.16, 
-        35.0,
-        4.6360e-2,
-        3.8490e-2,
-        ).unwrap();
-}
+pub mod dataset_b;
 
 /// In the original SAM publication
 ///
@@ -219,65 +161,6 @@ pub fn case_b_tchx_out_308_kelvin_35_celsius(){
 ///
 pub mod dataset_c;
 
-#[test]
-#[ignore = "under construction"]
-pub fn case_c_tchx_out_313_kelvin_40_celsius(){
-
-    verify_coupled_dhx_analytical_solution_version_1(
-        841.02, 
-        40.0,
-        2.6860e-2,
-        2.0030e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1158.69, 
-        40.0,
-        3.0550e-2,
-        2.3670e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1409.22, 
-        40.0,
-        3.3450e-2,
-        2.6350e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        1736.11, 
-        40.0,
-        3.6490e-2,
-        2.9490e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2026.29, 
-        40.0,
-        3.8690e-2,
-        3.1900e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2288.83, 
-        40.0,
-        4.1150e-2,
-        3.4120e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2508.71, 
-        40.0,
-        4.3120e-2,
-        3.5620e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2685.83, 
-        40.0,
-        4.5090e-2,
-        3.5930e-2,
-        ).unwrap();
-    verify_coupled_dhx_analytical_solution_version_1(
-        2764.53, 
-        40.0,
-        4.6990e-2,
-        3.5470e-2,
-        ).unwrap();
-}
 
 #[cfg(test)]
 /// function to verify the dhx analytical solution
