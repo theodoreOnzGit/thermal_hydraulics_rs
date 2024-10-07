@@ -439,7 +439,7 @@ pub fn regression_coupled_dracs_loop_version_4(
     experimental_primary_mass_flowrate_kg_per_s: f64,
     simulated_expected_dracs_mass_flowrate_kg_per_s: f64,
     simulated_expected_primary_mass_flowrate_kg_per_s: f64,
-    pri_loop_simulated_flowrate: f64,
+    pri_loop_relative_tolerance: f64,
     dracs_loop_relative_tolerance: f64,
     shell_side_to_tubes_nusselt_number_correction_factor: f64,
     dhx_insulation_thickness_regression_cm: f64,
@@ -1037,7 +1037,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     approx::assert_relative_eq!(
         experimental_primary_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
-        max_relative=pri_loop_simulated_flowrate);
+        max_relative=pri_loop_relative_tolerance);
 
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),

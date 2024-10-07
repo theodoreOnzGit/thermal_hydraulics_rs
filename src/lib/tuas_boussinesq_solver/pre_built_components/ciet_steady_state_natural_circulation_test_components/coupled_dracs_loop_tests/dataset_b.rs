@@ -7,8 +7,8 @@ pub fn ciet_coupled_nat_circ_set_b1(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -18,7 +18,7 @@ pub fn ciet_coupled_nat_circ_set_b1(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 655.16, 35.0, 2.3290e-2, 1.7310e-2, 2.1967e-2, 1.7641e-2);
+        = (655.16, 35.0, 2.3290e-2, 1.7310e-2, 2.1967e-2, 1.7641e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -65,8 +65,8 @@ pub fn ciet_coupled_nat_circ_set_b2(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -123,8 +123,8 @@ pub fn ciet_coupled_nat_circ_set_b3(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -181,8 +181,8 @@ pub fn ciet_coupled_nat_circ_set_b4(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -240,8 +240,8 @@ pub fn ciet_coupled_nat_circ_set_b5(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -299,8 +299,8 @@ pub fn ciet_coupled_nat_circ_set_b6(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -358,8 +358,8 @@ pub fn ciet_coupled_nat_circ_set_b7(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -418,8 +418,8 @@ pub fn ciet_coupled_nat_circ_set_b8(){
     let max_simulation_time_seconds: f64 = 6300.0;
     // expect overprediction of mass flowrates in both loops 
     // to about 8.5%
-    let pri_loop_relative_tolerance = 0.028;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.057;
+    let dracs_loop_relative_tolerance = 0.035;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -573,7 +573,7 @@ pub fn regression_coupled_dracs_loop_version_4(
     experimental_primary_mass_flowrate_kg_per_s: f64,
     simulated_expected_dracs_mass_flowrate_kg_per_s: f64,
     simulated_expected_primary_mass_flowrate_kg_per_s: f64,
-    pri_loop_simulated_flowrate: f64,
+    pri_loop_relative_tolerance: f64,
     dracs_loop_relative_tolerance: f64,
     shell_side_to_tubes_nusselt_number_correction_factor: f64,
     dhx_insulation_thickness_regression_cm: f64,
@@ -1171,7 +1171,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     approx::assert_relative_eq!(
         experimental_primary_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
-        max_relative=pri_loop_simulated_flowrate);
+        max_relative=pri_loop_relative_tolerance);
 
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
@@ -1243,7 +1243,7 @@ pub fn regression_coupled_dracs_loop_version_5(
     experimental_primary_mass_flowrate_kg_per_s: f64,
     simulated_expected_dracs_mass_flowrate_kg_per_s: f64,
     simulated_expected_primary_mass_flowrate_kg_per_s: f64,
-    pri_loop_simulated_flowrate: f64,
+    pri_loop_relative_tolerance: f64,
     dracs_loop_relative_tolerance: f64,
     shell_side_to_tubes_nusselt_number_correction_factor: f64,
     dhx_insulation_thickness_regression_cm: f64,
@@ -1842,7 +1842,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     approx::assert_relative_eq!(
         experimental_primary_mass_flowrate.get::<kilogram_per_second>(),
         final_mass_flowrate_pri_loop.get::<kilogram_per_second>(),
-        max_relative=pri_loop_simulated_flowrate);
+        max_relative=pri_loop_relative_tolerance);
 
     approx::assert_relative_eq!(
         experimental_dracs_mass_flowrate.get::<kilogram_per_second>(),
