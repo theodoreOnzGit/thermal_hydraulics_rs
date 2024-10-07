@@ -1291,8 +1291,9 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     // max error is 0.5% according to SAM 
     // is okay, because typical flowmeter measurement error is 2% anyway
-    // set timestep to 0.1 for set b9
-    let timestep = Time::new::<second>(0.1);
+    // set timestep to lower values for set b9
+    // as compared to the rest
+    let timestep = Time::new::<second>(0.05);
     let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
