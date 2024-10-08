@@ -470,6 +470,8 @@ pub fn ciet_coupled_nat_circ_set_b8(){
 
 
 }
+// test took about 255s on a i7-10875H 2.4 GHz
+// real time achieved!
 #[test] 
 pub fn ciet_coupled_nat_circ_set_b9(){
 
