@@ -66,7 +66,7 @@ MassRate {
 /// note that this only works if the components are correct
 /// obtains mass flowrate across the DRACS loop 
 /// gets the absolute flowrate across the hot branch
-pub fn coupled_dracs_fluid_mechanics_calc_abs_mass_rate(
+pub fn coupled_dracs_fluid_mechanics_calc_abs_mass_rate_no_tchx_calibration(
     pipe_34: &InsulatedFluidComponent,
     pipe_33: &InsulatedFluidComponent,
     pipe_32: &InsulatedFluidComponent,
@@ -138,7 +138,7 @@ pub fn coupled_dracs_fluid_mechanics_calc_abs_mass_rate(
 ///
 /// the mass_flowrate_counter_clockwise you provide will be converted
 /// into a mass_flowrate_clockwise and used for calculation
-pub fn coupled_dracs_loop_link_up_components(
+pub fn coupled_dracs_loop_link_up_components_no_tchx_calibration(
     mass_flowrate_counter_clockwise: MassRate,
     tchx_heat_transfer_coeff: HeatTransfer,
     average_temperature_for_density_calcs: ThermodynamicTemperature,
@@ -435,7 +435,7 @@ pub fn coupled_dracs_loop_link_up_components(
 ///
 /// you also must specify the heat transfer coefficient to ambient 
 /// which is assumed to be the same throughout the loop
-pub fn dracs_loop_advance_timestep_except_dhx(
+pub fn dracs_loop_advance_timestep_except_dhx_no_tchx_calibration(
     timestep: Time,
     pipe_34: &mut InsulatedFluidComponent,
     pipe_33: &mut InsulatedFluidComponent,

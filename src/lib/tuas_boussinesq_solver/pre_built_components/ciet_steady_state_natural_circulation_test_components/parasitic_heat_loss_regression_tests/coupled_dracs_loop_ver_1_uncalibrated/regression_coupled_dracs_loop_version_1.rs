@@ -26,7 +26,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
     use crate::tuas_boussinesq_solver::pre_built_components::ciet_isothermal_test_components::*;
     use crate::tuas_boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dhx_constructor::new_dhx_sthe_version_1;
-    use crate::tuas_boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_loop_link_up_components, dracs_loop_advance_timestep_except_dhx, dracs_loop_dhx_tube_temperature_diagnostics};
+    use crate::tuas_boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::dracs_loop_calc_functions_no_tchx_calibration::{coupled_dracs_fluid_mechanics_calc_abs_mass_rate_no_tchx_calibration, coupled_dracs_loop_link_up_components_no_tchx_calibration, dracs_loop_advance_timestep_except_dhx_no_tchx_calibration, dracs_loop_dhx_tube_temperature_diagnostics};
     use crate::tuas_boussinesq_solver::pre_built_components::ciet_steady_state_natural_circulation_test_components::coupled_dracs_loop_tests::pri_loop_calc_functions::{coupled_dracs_pri_loop_branches_fluid_mechanics_calc_abs_mass_rate, coupled_dracs_pri_loop_dhx_heater_link_up_components, pri_loop_advance_timestep_except_dhx, pri_loop_dhx_shell_temperature_diagnostics, pri_loop_heater_temperature_diagnostics};
     use crate::tuas_boussinesq_solver::pre_built_components::
         ciet_steady_state_natural_circulation_test_components::dracs_loop_components::*;
@@ -124,7 +124,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // here is where the dhx shell side should be (component 24)
     let mut pipe_23a = new_pipe_23a(initial_temperature);
     let mut static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
-    let mut pipe_22 = new_pipe_22(initial_temperature);
+    let mut pipe_22 = new_pipe_22_relap_model(initial_temperature);
     let mut flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
     let mut pipe_21 = new_pipe_21(initial_temperature);
     let mut pipe_20 = new_pipe_20(initial_temperature);
@@ -255,7 +255,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
 
         let absolute_mass_flowrate_dracs = 
-            coupled_dracs_fluid_mechanics_calc_abs_mass_rate(
+            coupled_dracs_fluid_mechanics_calc_abs_mass_rate_no_tchx_calibration(
                 &pipe_34, 
                 &pipe_33, 
                 &pipe_32, 
@@ -304,7 +304,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 
         // next, link up the heat transfer entities 
         // all lateral linking is done except for DHX
-        coupled_dracs_loop_link_up_components(
+        coupled_dracs_loop_link_up_components_no_tchx_calibration(
             counter_clockwise_dracs_flowrate, 
             tchx_heat_transfer_coeff, 
             average_temperature_for_density_calcs, 
@@ -354,7 +354,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
             &mut pipe_17b);
 
         // advance timestep
-        dracs_loop_advance_timestep_except_dhx(
+        dracs_loop_advance_timestep_except_dhx_no_tchx_calibration(
             timestep, &mut pipe_34, &mut pipe_33, &mut pipe_32, 
             &mut pipe_31a, &mut static_mixer_61_label_31, 
             &mut dhx_tube_side_30b, &mut dhx_tube_side_30a, 

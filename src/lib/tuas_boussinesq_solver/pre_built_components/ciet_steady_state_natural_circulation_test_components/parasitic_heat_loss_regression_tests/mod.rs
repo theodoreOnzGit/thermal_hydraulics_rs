@@ -21,6 +21,22 @@ pub mod wall_correction_isolated_dracs_loop_regression;
 /// this serves as a baseline as to what kind of heat losses to expect
 pub mod coupled_dracs_loop_ver_1_uncalibrated;
 
+
+/// version 2 of coupled DRACS loop 
+///
+/// for version 2, simple calibration is done
+/// that is, STHE calibration and parasitic heat loss calibration over the loop 
+/// the vertical TCHX is not split into equal halves
+pub mod coupled_dracs_loop_ver_2_calibrated;
+
+/// version 3 of coupled DRACS loop 
+///
+/// for version 3, simple calibration is done as with version 2,
+/// but the vertical TCHX is split into two equal halves as was done in SAM,
+/// only the bottom half will have the calibrated heat transfer coefficient.
+/// The rest of the TCHX, the horizontal TCHX and 35b1, will be insulated.
+pub mod coupled_dracs_loop_ver_3_calibrated;
+
 /// for the coupled dracs loop, we need to calibrate heat loss 
 /// through the primary loop 
 /// hot leg (from heater outlet to dhx shell inlet)
@@ -90,4 +106,15 @@ pub mod dracs_loop_parasitic_heat_loss_calibration;
 /// C-8,0.03593,0.04509,111.37615,39.91183,76.13202,66.11271,
 /// C-9,0.03547,0.04699,116.05003,39.64593,79.02407,67.40722,
 /// 
+/// The calibration process was this:
+///
+/// (1) set insulation to about 0.15 cm, it was a value that worked for 
+/// other calibration
+/// (2) calibrate nusselt number for shell and tube sides accordingly,
+/// just use whatever value works 
+/// (3) take arithmetic average of calibrated nusselt numbers and check against 
+/// set A, B and C data for mass flowrate over the loop
+/// 
+/// this is a best effort estimate, I couldn't have one set of parameters to fit 
+/// everything, so each test set in dataset c has its own parameters
 pub mod dhx_sthe_calibration;
