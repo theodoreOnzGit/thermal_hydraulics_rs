@@ -123,6 +123,13 @@ CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph
 
 This is a classic OpenFOAM tutorial method to track test data.
 
+For Profiling:
+
+```bash
+sudo sysctl kernel.perf_event_paranoid=2
+cargo flamegraph --unit-test thermal_hydraulics_rs
+```
+
 
 ## Licensing
 

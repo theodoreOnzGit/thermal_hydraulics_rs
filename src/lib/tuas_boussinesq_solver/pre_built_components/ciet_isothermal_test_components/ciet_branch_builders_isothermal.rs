@@ -19,7 +19,7 @@ pub fn dhx_branch_builder_isothermal_test(
     let dhx_shell_side_24 = new_inactive_dhx_shell_side_heat_exchanger(initial_temperature);
     let static_mixer_20_label_23 = new_static_mixer_20_label_23(initial_temperature);
     let static_mixer_pipe_23a = new_pipe_23a(initial_temperature);
-    let pipe_22 = new_pipe_22(initial_temperature);
+    let pipe_22 = new_pipe_22_relap_model(initial_temperature);
     let flowmeter_20_21a = new_flowmeter_20_label_21a(initial_temperature);
     let pipe_21 = new_pipe_21(initial_temperature);
     let pipe_20 = new_pipe_20(initial_temperature);
