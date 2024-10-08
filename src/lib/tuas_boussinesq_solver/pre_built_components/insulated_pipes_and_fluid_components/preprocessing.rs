@@ -7,7 +7,7 @@ use uom::si::f64::*;
 use ndarray::*;
 use super::InsulatedFluidComponent;
 use crate::tuas_boussinesq_solver::heat_transfer_correlations::thermal_resistance::try_get_thermal_conductance_annular_cylinder;
-use crate::tuas_boussinesq_solver::{heat_transfer_correlations::nusselt_number_correlations::input_structs::GnielinskiData, pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction};
+use crate::tuas_boussinesq_solver::pre_built_components::heat_transfer_entities::preprocessing::try_get_thermal_conductance_based_on_interaction;
 use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::LiquidMaterial;
 use crate::tuas_boussinesq_solver::boussinesq_thermophysical_properties::SolidMaterial;
 use crate::tuas_boussinesq_solver::boundary_conditions::BCType;
@@ -447,16 +447,6 @@ impl InsulatedFluidComponent {
         // constants are ignored, so we use the default method
         // and manually adjust the reynolds and prandtl numbers
 
-        let mut pipe_prandtl_reynolds_data: GnielinskiData 
-        = GnielinskiData::default();
-
-        // no wall correction given for this case yet
-        pipe_prandtl_reynolds_data.reynolds = reynolds_number;
-        pipe_prandtl_reynolds_data.prandtl_bulk = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.prandtl_wall = bulk_prandtl_number;
-        pipe_prandtl_reynolds_data.length_to_diameter = 
-            self.get_component_length_immutable()/
-            self.get_hydraulic_diameter_immutable();
 
 
         // I need to use Nusselt correlations present in this struct 
@@ -468,6 +458,7 @@ impl InsulatedFluidComponent {
         let nusselt_estimate: Ratio;
 
         if !correct_prandtl_for_wall_temperatures {
+            // nusselt estimate is gotten straight from fluid array
             nusselt_estimate = fluid_array.get_nusselt(
                 reynolds_number, 
                 bulk_prandtl_number, 

@@ -488,7 +488,7 @@ pub fn ciet_coupled_nat_circ_set_b9(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (3031.16, 35.0, 4.6360e-2, 3.8490e-2, 4.5929e-2, 3.6431e-2);
+        = (3031.16, 35.0, 4.6360e-2, 3.8490e-2, 4.8482e-2, 3.8490e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -507,7 +507,10 @@ pub fn ciet_coupled_nat_circ_set_b9(){
         pri_loop_relative_tolerance,
         dracs_loop_relative_tolerance);
 
-    regression_coupled_dracs_loop_version_4(
+    // this regression method increases the heater shell to 
+    // fluid nusselt number by about 5 times. This prevents the heater 
+    // shell from overheating to 700 degree celsius, which is quite unphysical
+    regression_coupled_dracs_loop_version_5(
         heater_power_watts, 
         max_simulation_time_seconds,
         tchx_outlet_temp_degc,
@@ -641,6 +644,7 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     let max_simulation_time = Time::new::<second>(max_time_seconds);
 
     // PID controller settings
+    // for version 4, nothing changes
     let controller_gain = Ratio::new::<ratio>(1.75);
     let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
     let derivative_time: Time = Time::new::<second>(1.0);
@@ -1237,7 +1241,20 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
 /// because the flow in the primary loop was overpredicted
 ///
 /// this is specially for set b9, because we were experiencing numerical 
-/// instability with this dataset, hence, smaller timestep was required
+/// instability with this dataset, 
+///
+/// hence, possibly smaller timestep was required, but adjusting timestep 
+/// to 0.01s didn't make a difference, instability still happened (07 oct 2024)
+///
+/// my second suspicion was that there was a problem with controller tuning.
+///
+/// Originally, controllers were tuned to have the heat transfer coeff 
+/// over the whole TCHX prior to the SAM calibration where almost 2/3 of 
+/// the TCHX was adiabatic. I did not adjust controller parameters.
+///
+/// Now, however, where the power is so high, more cooling is required.
+/// I suspect the jump in temperature and high cooling loads required 
+/// messed with the controller. So I'm adjusting some of the parameters
 #[cfg(test)]
 pub fn regression_coupled_dracs_loop_version_5(
     input_power_watts: f64,
@@ -1297,7 +1314,29 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     // is okay, because typical flowmeter measurement error is 2% anyway
     // set timestep to lower values for set b9
     // as compared to the rest
-    let timestep = Time::new::<second>(0.01);
+    //
+    // setting to 0.01s didn't work, so my second candidate for change is 
+    // to change the controller, but set timestep at 0.5s
+    //
+    // This is because this dataset b9, has the highest heater power 
+    // but lowest TCHX outlet temperature of all datasets. And therefore, 
+    // the highest cooling loads are placed on the TCHX 
+    //
+    // It is understandable at this extreme then, for the controller 
+    // to be unstable if we don't change settings
+    //
+    // let timestep = Time::new::<second>(0.1);
+    // for this timestep, the simulation fails around 181s of simulated time
+    //
+    //
+    // let timestep = Time::new::<second>(0.01);
+    // for this timestep, the simulation fails around 181s of simulated time
+    //
+    // let timestep = Time::new::<second>(0.5);
+    // for this timestep, the simulation fails around 185s of simulated time
+    //
+    // the conclusion is that this instability is almost independent of timestep
+    let timestep = Time::new::<second>(0.5);
     let heat_rate_through_heater = input_power;
     let mut tchx_heat_transfer_coeff: HeatTransfer;
 
@@ -1305,14 +1344,15 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         HeatTransfer::new::<watt_per_square_meter_kelvin>(40.0);
     let average_temperature_for_density_calcs = 
         ThermodynamicTemperature::new::<degree_celsius>(80.0);
-    // let's calculate 400 seconds of simulated time 
-    // it takes about that long for the temperature to settle down
-    // this is compared to value at 4000s
 
     let mut current_simulation_time = Time::ZERO;
     let max_simulation_time = Time::new::<second>(max_time_seconds);
 
     // PID controller settings
+    // for version 5, controller settings are 
+    // altered from version 4, to introduce more stability for set b9
+    //
+    // setting controller gain to 1.55 and 1.0 didn't work, still unstable
     let controller_gain = Ratio::new::<ratio>(1.75);
     let integral_time: Time = controller_gain / Frequency::new::<hertz>(1.0);
     let derivative_time: Time = Time::new::<second>(1.0);
@@ -1450,6 +1490,21 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
     calibrate_nusselt_correlation_of_heat_transfer_entity(
         &mut dhx_sthe.shell_side_nusselt_correlation_parasitic, 
         calibrated_parasitic_heat_loss_nusselt_factor);
+
+    // for the heater, i also calibrate the Nusselt correlation by 5 times,
+    // to prevent the steel from overheating due to high power 
+    //
+    // nusselt number change and calibration should be easier though, 
+    // may want some quality of life improvements for user interface in future
+    let heater_calibrated_nusselt_factor = Ratio::new::<ratio>(5.0);
+    let mut heater_fluid_array_clone: FluidArray 
+        = heater_ver_1.pipe_fluid_array.clone().try_into().unwrap();
+
+    calibrate_nusselt_correlation_of_heat_transfer_entity(
+        &mut heater_fluid_array_clone.nusselt_correlation, 
+        heater_calibrated_nusselt_factor);
+
+    heater_ver_1.pipe_fluid_array = heater_fluid_array_clone.into();
 
     // now calibrate the insulation thickness for all 
 
@@ -1794,24 +1849,28 @@ Result<(),crate::thermal_hydraulics_error::ThermalHydraulicsLibError>{
         // debugging 
         let debug_settings = false;
 
-        // temperatures before and after heater
-        let ((_bt_11,_wt_10),(_bt_12,_wt_13)) = 
-            pri_loop_heater_temperature_diagnostics(
-            &mut heater_bottom_head_1b, 
-            &mut static_mixer_10_label_2, 
-            debug_settings);
-        // temperatures before and after dhx shell
-        let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
-            pri_loop_dhx_shell_temperature_diagnostics(
-            &mut pipe_25a, 
-            &mut static_mixer_20_label_23, 
-            debug_settings);
-        // temperatures before and after dhx tube
-        let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
-            dracs_loop_dhx_tube_temperature_diagnostics(
-            &mut dhx_tube_side_30a, 
-            &mut dhx_tube_side_30b, 
-            debug_settings);
+        if debug_settings == true {
+            dbg!(&current_simulation_time);
+            // temperatures before and after heater
+            let ((_bt_11,_wt_10),(_bt_12,_wt_13)) = 
+                pri_loop_heater_temperature_diagnostics(
+                    &mut heater_bottom_head_1b, 
+                    &mut static_mixer_10_label_2, 
+                    debug_settings);
+            // temperatures before and after dhx shell
+            let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
+                pri_loop_dhx_shell_temperature_diagnostics(
+                    &mut pipe_25a, 
+                    &mut static_mixer_20_label_23, 
+                    debug_settings);
+            // temperatures before and after dhx tube
+            let ((_bt_21,_wt_20),(_bt_27,_wt_26)) = 
+                dracs_loop_dhx_tube_temperature_diagnostics(
+                    &mut dhx_tube_side_30a, 
+                    &mut dhx_tube_side_30b, 
+                    debug_settings);
+        }
+
         
 
         current_simulation_time += timestep;
