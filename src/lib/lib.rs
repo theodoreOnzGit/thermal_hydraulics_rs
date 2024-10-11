@@ -96,9 +96,3 @@ pub mod thermal_hydraulics_error;
 /// prelude, for easy importing 
 pub mod prelude;
 
-// to do:
-// 1. transfer heat transfer sandbox to use boussinesq solver 
-// 2. test the infinite medium test case using the pre built components
-// 3. build and validate natural circulation loop
-// 4. update the steel ss304L libraries to use correlation rather than spline building
-// this is because graves correlation steel temperature range is too small
