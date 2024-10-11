@@ -1,5 +1,14 @@
 
 # Patch Notes 
+
+## v 0.0.13 
+
+Moved the TUAS boussinesq solver to another 
+[github repository](https://github.com/theodoreOnzGit/tuas_boussinesq_solver).
+The thermal_hydraulics_rs solver now has the coupled natural circulation 
+regression case as an example of how to use the tuas_boussinesq_solver in 
+your own library. The prelude here also includes the tuas_boussinesq_solver.
+
 ## v 0.0.12 
 
 Now, I tentatively call the boussinesq solver the tuas_boussinesq_solver,

@@ -66,8 +66,6 @@
 //!
 //! Btw, I no affiliation with the Rust Foundation. 
 //!
-#![warn(missing_docs)]
-extern crate uom;
 
 
 // /// for mostly incompressible fluids using the Boussinesq Approximation
@@ -86,9 +84,6 @@ extern crate uom;
 /// to conduction
 pub mod tuas_boussinesq_solver;
 
-/// use peroxide macros 
-#[macro_use]
-extern crate peroxide;
 
 /// provides error types for thermal_hydraulics_rs
 pub mod thermal_hydraulics_error;
