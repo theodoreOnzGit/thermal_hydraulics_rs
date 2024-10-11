@@ -11,13 +11,22 @@ pub fn ciet_coupled_nat_circ_set_c1(){
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
+    //// based on version 4
+    //let (heater_power_watts,
+    //    tchx_outlet_temp_degc,
+    //    experimental_dracs_mass_flowrate_kg_per_s,
+    //    experimental_pri_mass_flowrate_kg_per_s,
+    //    simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //    simulated_expected_pri_mass_flowrate_kg_per_s) 
+    //    = (841.02, 40.0, 2.6860e-2, 2.0030e-2, 2.5247e-2, 2.0459e-2);
+    // based on version 5
     let (heater_power_watts,
         tchx_outlet_temp_degc,
         experimental_dracs_mass_flowrate_kg_per_s,
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (841.02, 40.0, 2.6860e-2, 2.0030e-2, 2.5247e-2, 2.0459e-2);
+        = (841.02, 40.0, 2.6860e-2, 2.0030e-2, 2.5742e-2, 2.0802e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -67,13 +76,23 @@ pub fn ciet_coupled_nat_circ_set_c2(){
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
+    // old data ver 4
+    //let (heater_power_watts,
+    //    tchx_outlet_temp_degc,
+    //    experimental_dracs_mass_flowrate_kg_per_s,
+    //    experimental_pri_mass_flowrate_kg_per_s,
+    //    simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //    simulated_expected_pri_mass_flowrate_kg_per_s) 
+    //    = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0203e-2, 2.4099e-2);
+    //
+    // new data ver 5
     let (heater_power_watts,
         tchx_outlet_temp_degc,
         experimental_dracs_mass_flowrate_kg_per_s,
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0203e-2, 2.4099e-2);
+        = (1158.69, 40.0, 3.0550e-2, 2.3670e-2, 3.0725e-2, 2.4500e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -123,13 +142,22 @@ pub fn ciet_coupled_nat_circ_set_c3(){
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
+    // old data ver 4
+    //let (heater_power_watts,
+    //    tchx_outlet_temp_degc,
+    //    experimental_dracs_mass_flowrate_kg_per_s,
+    //    experimental_pri_mass_flowrate_kg_per_s,
+    //    simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //    simulated_expected_pri_mass_flowrate_kg_per_s) 
+    //    = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.3384e-2, 2.6578e-2);
+    //    new data ver 5
     let (heater_power_watts,
         tchx_outlet_temp_degc,
         experimental_dracs_mass_flowrate_kg_per_s,
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.3384e-2, 2.6578e-2);
+        = (1409.22, 40.0, 3.3450e-2, 2.6350e-2, 3.3942e-2, 2.7018e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -179,13 +207,24 @@ pub fn ciet_coupled_nat_circ_set_c4(){
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
+    //
+    // version 4 old data
+    //let (heater_power_watts,
+    //    tchx_outlet_temp_degc,
+    //    experimental_dracs_mass_flowrate_kg_per_s,
+    //    experimental_pri_mass_flowrate_kg_per_s,
+    //    simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //    simulated_expected_pri_mass_flowrate_kg_per_s) 
+    //    = (1736.11, 40.0, 3.6490e-2, 2.9490e-2, 3.6972e-2, 2.9426e-2);
+
+    // version 5 
     let (heater_power_watts,
         tchx_outlet_temp_degc,
         experimental_dracs_mass_flowrate_kg_per_s,
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1736.11, 40.0, 3.6490e-2, 2.9490e-2, 3.6972e-2, 2.9426e-2);
+        = (1736.11, 40.0, 3.6490e-2, 2.9490e-2, 3.7582e-2, 2.9910e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -350,13 +389,23 @@ pub fn ciet_coupled_nat_circ_set_c7(){
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
+    // old data ver 4
+    // let (heater_power_watts,
+    //     tchx_outlet_temp_degc,
+    //     experimental_dracs_mass_flowrate_kg_per_s,
+    //     experimental_pri_mass_flowrate_kg_per_s,
+    //     simulated_expected_dracs_mass_flowrate_kg_per_s,
+    //     simulated_expected_pri_mass_flowrate_kg_per_s) 
+    //     = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.3939e-2, 3.4907e-2);
+    
+    // new data ver 5
     let (heater_power_watts,
         tchx_outlet_temp_degc,
         experimental_dracs_mass_flowrate_kg_per_s,
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.3939e-2, 3.4907e-2);
+        = (2508.71, 40.0, 4.3120e-2, 3.5620e-2, 4.4675e-2, 3.5473e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
