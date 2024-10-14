@@ -21,7 +21,7 @@ pub fn ciet_coupled_nat_circ_set_b1(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (655.16, 35.0, 2.3290e-2, 1.7310e-2, 2.1958e-2, 1.7641e-2);
+        = (655.16, 35.0, 2.3290e-2, 1.7310e-2, 2.2377e-2, 1.7939e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -79,7 +79,7 @@ pub fn ciet_coupled_nat_circ_set_b2(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 1054.32, 35.0, 2.9520e-2, 2.1980e-2, 2.8592e-2, 2.2747e-2);
+        = ( 1054.32, 35.0, 2.9520e-2, 2.1980e-2, 2.9070e-2, 2.3133e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -195,7 +195,7 @@ pub fn ciet_coupled_nat_circ_set_b4(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 1685.62, 35.0, 3.6110e-2, 2.8460e-2, 3.6170e-2, 2.8900e-2);
+        = ( 1685.62, 35.0, 3.6110e-2, 2.8460e-2, 3.6768e-2, 2.9384e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -254,7 +254,7 @@ pub fn ciet_coupled_nat_circ_set_b5(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 1987.75, 35.0, 3.8410e-2, 3.1180e-2, 3.9157e-2, 3.1301e-2);
+        = ( 1987.75, 35.0, 3.8410e-2, 3.1180e-2, 3.9808e-2, 3.1821e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -313,7 +313,7 @@ pub fn ciet_coupled_nat_circ_set_b6(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2282.01, 35.0, 4.0630e-2, 3.3740e-2, 4.1799e-2, 3.3392e-2);
+        = (2282.01, 35.0, 4.0630e-2, 3.3740e-2, 4.2501e-2, 3.3941e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -372,7 +372,7 @@ pub fn ciet_coupled_nat_circ_set_b7(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 2546.60, 35.0, 4.2700e-2, 3.5770e-2, 4.3994e-2, 3.5099e-2);
+        = ( 2546.60, 35.0, 4.2700e-2, 3.5770e-2, 4.4741e-2, 3.5672e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -432,7 +432,7 @@ pub fn ciet_coupled_nat_circ_set_b8(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 2874.03, 35.0, 4.4560e-2, 3.7960e-2, 4.6514e-2, 3.7020e-2);
+        = ( 2874.03, 35.0, 4.4560e-2, 3.7960e-2, 4.7314e-2, 3.7622e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,

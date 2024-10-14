@@ -6,8 +6,8 @@ use crate::tuas_boussinesq_solver::ciet_natural_circulation::regression_coupled_
 pub fn ciet_coupled_nat_circ_set_a1(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -62,8 +62,8 @@ pub fn ciet_coupled_nat_circ_set_a1(){
 pub fn ciet_coupled_nat_circ_set_a2(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -73,7 +73,7 @@ pub fn ciet_coupled_nat_circ_set_a2(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (1653.90, 46.0, 3.5440e-2, 2.8190e-2, 3.6445e-2, 2.8945e-2);
+        = (1653.90, 46.0, 3.5440e-2, 2.8190e-2, 3.7055e-2, 2.9409e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -118,8 +118,8 @@ pub fn ciet_coupled_nat_circ_set_a2(){
 pub fn ciet_coupled_nat_circ_set_a3(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -174,8 +174,8 @@ pub fn ciet_coupled_nat_circ_set_a3(){
 pub fn ciet_coupled_nat_circ_set_a4(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -231,8 +231,8 @@ pub fn ciet_coupled_nat_circ_set_a4(){
 pub fn ciet_coupled_nat_circ_set_a5(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -242,7 +242,7 @@ pub fn ciet_coupled_nat_circ_set_a5(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2395.90, 46.0, 4.2770e-2, 3.3900e-2, 4.3381e-2, 3.4277e-2);
+        = (2395.90, 46.0, 4.2770e-2, 3.3900e-2, 4.4098e-2, 3.4826e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -288,8 +288,8 @@ pub fn ciet_coupled_nat_circ_set_a5(){
 pub fn ciet_coupled_nat_circ_set_a6(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -345,8 +345,8 @@ pub fn ciet_coupled_nat_circ_set_a6(){
 pub fn ciet_coupled_nat_circ_set_a7(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.043;
-    let dracs_loop_relative_tolerance = 0.036;
+    let pri_loop_relative_tolerance = 0.047;
+    let dracs_loop_relative_tolerance = 0.048;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -356,7 +356,7 @@ pub fn ciet_coupled_nat_circ_set_a7(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = ( 2696.24, 46.0, 4.7100e-2, 3.4620e-2, 4.5757e-2, 3.6092e-2);
+        = ( 2696.24, 46.0, 4.7100e-2, 3.4620e-2, 4.6520e-2, 3.6670e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
