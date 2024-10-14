@@ -6,8 +6,8 @@ use crate::tuas_boussinesq_solver::ciet_natural_circulation::regression_coupled_
 pub fn ciet_coupled_nat_circ_set_c1(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -71,8 +71,8 @@ pub fn ciet_coupled_nat_circ_set_c1(){
 pub fn ciet_coupled_nat_circ_set_c2(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -137,8 +137,8 @@ pub fn ciet_coupled_nat_circ_set_c2(){
 pub fn ciet_coupled_nat_circ_set_c3(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -202,8 +202,8 @@ pub fn ciet_coupled_nat_circ_set_c3(){
 pub fn ciet_coupled_nat_circ_set_c4(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -270,8 +270,8 @@ pub fn ciet_coupled_nat_circ_set_c4(){
 pub fn ciet_coupled_nat_circ_set_c5(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -281,7 +281,7 @@ pub fn ciet_coupled_nat_circ_set_c5(){
         experimental_pri_mass_flowrate_kg_per_s,
         simulated_expected_dracs_mass_flowrate_kg_per_s,
         simulated_expected_pri_mass_flowrate_kg_per_s) 
-        = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 4.0448e-2, 3.2812e-2);
+        = (2026.29, 40.0, 3.8690e-2, 3.1900e-2, 4.0448e-2, 3.2182e-2);
 
 
     let (shell_side_to_tubes_nusselt_number_correction_factor,
@@ -327,8 +327,8 @@ pub fn ciet_coupled_nat_circ_set_c5(){
 pub fn ciet_coupled_nat_circ_set_c6(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -384,8 +384,8 @@ pub fn ciet_coupled_nat_circ_set_c6(){
 pub fn ciet_coupled_nat_circ_set_c7(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -452,8 +452,8 @@ pub fn ciet_coupled_nat_circ_set_c7(){
 pub fn ciet_coupled_nat_circ_set_c8(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
@@ -508,8 +508,8 @@ pub fn ciet_coupled_nat_circ_set_c8(){
 pub fn ciet_coupled_nat_circ_set_c9(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.05;
-    let dracs_loop_relative_tolerance = 0.061;
+    let pri_loop_relative_tolerance = 0.044;
+    let dracs_loop_relative_tolerance = 0.045;
 
     // I'm writing in this format so that the data will be easier 
     // to copy over to csv
