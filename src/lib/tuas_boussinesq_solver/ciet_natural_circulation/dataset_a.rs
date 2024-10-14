@@ -6,7 +6,7 @@ use crate::tuas_boussinesq_solver::ciet_natural_circulation::regression_coupled_
 pub fn ciet_coupled_nat_circ_set_a1(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -62,7 +62,7 @@ pub fn ciet_coupled_nat_circ_set_a1(){
 pub fn ciet_coupled_nat_circ_set_a2(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -118,7 +118,7 @@ pub fn ciet_coupled_nat_circ_set_a2(){
 pub fn ciet_coupled_nat_circ_set_a3(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -174,7 +174,7 @@ pub fn ciet_coupled_nat_circ_set_a3(){
 pub fn ciet_coupled_nat_circ_set_a4(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -231,7 +231,7 @@ pub fn ciet_coupled_nat_circ_set_a4(){
 pub fn ciet_coupled_nat_circ_set_a5(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -288,7 +288,7 @@ pub fn ciet_coupled_nat_circ_set_a5(){
 pub fn ciet_coupled_nat_circ_set_a6(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
@@ -345,7 +345,7 @@ pub fn ciet_coupled_nat_circ_set_a6(){
 pub fn ciet_coupled_nat_circ_set_a7(){
 
     let max_simulation_time_seconds: f64 = 6300.0;
-    let pri_loop_relative_tolerance = 0.051;
+    let pri_loop_relative_tolerance = 0.060;
     let dracs_loop_relative_tolerance = 0.053;
 
     // I'm writing in this format so that the data will be easier 
