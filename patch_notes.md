@@ -1,10 +1,44 @@
 
 # Patch Notes 
+
+## v 0.0.13 
+
+Moved the TUAS boussinesq solver to another 
+[github repository](https://github.com/theodoreOnzGit/tuas_boussinesq_solver).
+The thermal_hydraulics_rs solver now has the coupled natural circulation 
+regression case as an example of how to use the tuas_boussinesq_solver in 
+your own library. The prelude here also includes the tuas_boussinesq_solver.
+
+## v 0.0.12 
+
+Now, I tentatively call the boussinesq solver the tuas_boussinesq_solver,
+which is named after the Tuas industrial area in Singapore.
+
+It is also an acronym for Thermo-hydraulic Uniphase Advection and Convection 
+Solvers (TUAS). 
+
+In v0.0.12, I have also added all calibrated coupled DRACS loop results 
+for datasets A, B and C within the SAM publication. It has matched the 
+DRACS loop flowrate experimental data to within 6.1%, and pri loop flowrate 
+experimental data to within 4.4%. In contrast to SAM, agreement with 
+experimental data, the max error was 6.76% for the DRACS loop flowrate 
+and 6.65% for the primary loop flowrate. See reference:
+
+Zou, L., Hu, G., O'Grady, D., & Hu, R. (2021). Code validation of 
+SAM using natural-circulation experimental data from the compact integral 
+effects test (CIET) facility. Nuclear Engineering and Design, 377, 111144.
+
+Given that the calibrated simulation with the TUAS solver agreed better with 
+experimental data than SAM, I consider this validation effort successful.
+The tests are parked under the pre_built_components module, where we have 
+the ciet_steady_state_natural_circulation_test_components module. Inside that,
+I put the coupled_dracs_loop_tests modules with dataset_a, dataset_b 
+and dataset_c.
+
+
 ## v 0.0.11 
 
-Note: I skipped v 0.0.10,
-
-But v0.0.11 has updated several dependencies including Peroxide.
+v0.0.11 has updated several dependencies including Peroxide.
 
 Moreover, I have added uncalibrated coupled DRACS loop for CIET as a 
 regression test case.
